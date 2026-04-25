@@ -125,40 +125,42 @@ export default function KikoInsights({ onAction, open, onClose }) {
             <div style={{ marginBottom: 16 }}>
               <div style={{ padding: '4px 8px 8px', fontSize: 11, color: '#A0A0A0', fontFamily: T.font, fontWeight: 500, letterSpacing: '0.5px' }}>INTELLIGENCE SIGNALS</div>
               {partnershipAlerts.map(alert => (
-                <div key={alert.id} style={{ marginBottom: 4 }}>
-                  <div style={{ ...pillStyle, background: expanded === alert.id ? 'rgba(6,214,160,0.06)' : 'rgba(6,214,160,0.03)', border: '1px solid rgba(6,214,160,0.08)', cursor: 'pointer', borderRadius: expanded === alert.id ? '12px 12px 0 0' : 12 }}
+                <div key={alert.id} style={{ marginBottom: 6, borderRadius: 12, background: 'rgba(6,214,160,0.03)', border: '1px solid rgba(6,214,160,0.08)', overflow: 'hidden' }}>
+                  {/* Alert header row */}
+                  <div style={{ ...pillStyle, border: 'none', marginBottom: 0, cursor: 'pointer' }}
                     onClick={() => setExpanded(expanded === alert.id ? null : alert.id)}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: alert.type === 'prediction' ? 'rgba(124,92,252,0.6)' : alert.type === 'self_discovery' ? 'rgba(245,158,11,0.6)' : 'rgba(6,214,160,0.6)' }} />
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: alert.type === 'prediction' ? 'rgba(124,92,252,0.6)' : alert.type === 'self_discovery' ? 'rgba(245,158,11,0.6)' : alert.type === 'stale_deal' ? 'rgba(220,38,38,0.5)' : 'rgba(6,214,160,0.6)' }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontSize: 13, color: '#6B6B6B', fontWeight: 400, fontFamily: T.font, display: 'block', lineHeight: 1.4 }}>{alert.title}</span>
-                      <span style={{ fontSize: 11, color: '#A0A0A0', fontFamily: T.font }}>{alert.entity_name ? alert.entity_name + ' · ' : ''}{alert.created_at ? new Date(alert.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}</span>
+                      <span style={{ fontSize: 13, color: '#4A4A4A', fontWeight: 400, fontFamily: T.font, display: 'block', lineHeight: 1.4 }}>{alert.title}</span>
+                      <span style={{ fontSize: 11, color: '#A0A0A0', fontFamily: T.font }}>{alert.type?.replace(/_/g, ' ')} · {alert.entity_name || ''} · {alert.created_at ? new Date(alert.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}</span>
                     </div>
-                    <ChevronRight size={12} style={{ color: '#A0A0A0', transform: expanded === alert.id ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
-                    <button onClick={(e) => { e.stopPropagation(); dismissPartnership(alert) }} style={{ ...btnBase, background: 'transparent', color: '#A0A0A0' }}><X size={10} /></button>
+                    <ChevronRight size={12} style={{ color: '#A0A0A0', transform: expanded === alert.id ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s', flexShrink: 0 }} />
                   </div>
-                  {/* Expanded detail + action buttons */}
-                  {expanded === alert.id && (
-                    <div style={{ padding: '10px 14px', background: 'rgba(6,214,160,0.03)', borderLeft: '1px solid rgba(6,214,160,0.08)', borderRight: '1px solid rgba(6,214,160,0.08)', borderBottom: '1px solid rgba(6,214,160,0.08)', borderRadius: '0 0 12px 12px', marginTop: -1 }}>
-                      {alert.detail && <p style={{ fontSize: 12.5, color: '#5A6470', fontFamily: T.font, lineHeight: 1.6, margin: '0 0 10px', whiteSpace: 'pre-line' }}>{alert.detail}</p>}
+                  {/* Inline CTA — always visible, no expand needed */}
+                  <div style={{ padding: '0 12px 8px', display: 'flex', gap: 6 }}>
+                    <button onClick={() => onAction?.(`Brief me on "${alert.title}" for ${alert.entity_name || 'this entity'}. The alert says: "${alert.detail || ''}". Search the web for latest details, then give me your strategic assessment and recommended next steps.`)}
+                      style={{ padding: '4px 10px', borderRadius: 6, background: '#0A0A0A', color: '#fff', border: 'none', fontSize: 10, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Brief me</button>
+                    <button onClick={() => {
+                      const action = alert.detail?.includes('→') ? alert.detail.split('→').pop().trim() : alert.detail?.slice(0, 200) || alert.title
+                      onAction?.(`Take action on this alert for ${alert.entity_name || 'the entity'}: ${action}. Full context: ${alert.title}. Do what needs to be done — draft an email, update the pipeline, research the company, or whatever the right next step is.`)
+                    }}
+                      style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(0,212,170,0.1)', color: '#06a87d', border: '1px solid rgba(0,212,170,0.2)', fontSize: 10, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Act on this</button>
+                    <button onClick={(e) => { e.stopPropagation(); dismissPartnership(alert) }}
+                      style={{ padding: '4px 10px', borderRadius: 6, background: 'transparent', color: '#A0A0A0', border: '1px solid rgba(0,0,0,0.06)', fontSize: 10, fontFamily: T.font, cursor: 'pointer' }}>×</button>
+                  </div>
+                  {/* Expanded detail — shows full context + extra actions */}
+                  {expanded === alert.id && alert.detail && (
+                    <div style={{ padding: '0 14px 10px', borderTop: '1px solid rgba(6,214,160,0.08)' }}>
+                      <p style={{ fontSize: 12, color: '#5A6470', fontFamily: T.font, lineHeight: 1.6, margin: '8px 0', whiteSpace: 'pre-line' }}>{alert.detail}</p>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        <button onClick={() => { onAction?.(`Brief me on "${alert.title}" for ${alert.entity_name || 'this entity'}. The alert says: "${alert.detail || ''}". Search the web for latest details, then give me your strategic assessment and recommended next steps.`); onClose?.() }}
-                          style={{ padding: '5px 12px', borderRadius: 6, background: '#0A0A0A', color: '#fff', border: 'none', fontSize: 11, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Brief me</button>
-                        <button onClick={() => {
-                          const action = alert.detail?.includes('→') ? alert.detail.split('→').pop().trim() : alert.detail?.slice(0, 200) || alert.title
-                          onAction?.(`Take action on this alert for ${alert.entity_name || 'the entity'}: ${action}. Full context: ${alert.title}. Do what needs to be done — draft an email, update the pipeline, research the company, or whatever the right next step is.`)
-                          onClose?.()
-                        }}
-                          style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(0,212,170,0.1)', color: '#06a87d', border: '1px solid rgba(0,212,170,0.2)', fontSize: 11, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Act on this</button>
                         {alert.entity_name && (
-                          <button onClick={() => { onAction?.(`Search the web for the latest news about ${alert.entity_name}. What are they doing right now? Any sponsorship activity, partnerships, leadership changes, or funding?`); onClose?.() }}
-                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.04)', color: '#6B6B6B', border: '1px solid rgba(0,0,0,0.08)', fontSize: 11, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Research</button>
+                          <button onClick={() => onAction?.(`Search the web for the latest news about ${alert.entity_name}. What are they doing right now? Any sponsorship activity, partnerships, leadership changes, or funding?`)}
+                            style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(0,0,0,0.04)', color: '#6B6B6B', border: '1px solid rgba(0,0,0,0.08)', fontSize: 10, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Research {alert.entity_name}</button>
                         )}
                         {(alert.type === 'new_partnership' || alert.type === 'partnership_detected') && (
-                          <button onClick={() => { onAction?.(`Add this to the partnership matrix: "${alert.title}". Search the web for details — identify the team, the sponsor, the category, and update the matrix.`); onClose?.() }}
-                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(124,92,252,0.06)', color: '#7C5CFC', border: '1px solid rgba(124,92,252,0.15)', fontSize: 11, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Add to matrix</button>
+                          <button onClick={() => onAction?.(`Add this to the partnership matrix: "${alert.title}". Search the web for details — identify the team, the sponsor, the category, and update the matrix.`)}
+                            style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(124,92,252,0.06)', color: '#7C5CFC', border: '1px solid rgba(124,92,252,0.15)', fontSize: 10, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Add to matrix</button>
                         )}
-                        <button onClick={(e) => { e.stopPropagation(); dismissPartnership(alert) }}
-                          style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(220,38,38,0.06)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.12)', fontSize: 11, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Dismiss</button>
                       </div>
                     </div>
                   )}

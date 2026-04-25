@@ -1659,7 +1659,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
               {/* Alerts pill (permanent sage, left) + 4 dynamic chips — hidden on mobile */}
               {!isMobile && <div id="kikoChipsWrap" style={{
-                display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center', maxWidth: 720, marginBottom: voiceActive ? 0 : 20,
+                display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center',
+                width: '100%', maxWidth: 660,
+                marginBottom: voiceActive ? 0 : 20,
                 opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 44,
                 transform: voiceActive ? 'translateY(30px)' : 'translateY(0)',
                 transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.1s',
@@ -1686,10 +1688,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   {alertCount || 0} alerts
                 </button>}
                 {/* Dynamic chips — live data, up to 4 */}
-                {dynamicChips.slice(0, alertCount > 0 ? 4 : 5).map((c, i) => {
+                {dynamicChips.slice(0, alertCount > 0 ? 3 : 4).map((c, i) => {
                   const label = typeof c === 'string' ? c : c.label
                   const prompt = typeof c === 'string' ? c : c.prompt
                   const navTo = typeof c === 'string' ? null : c.navigate
+                  const truncLabel = label.length > 28 ? label.slice(0, 26) + '…' : label
                   return (
                   <button key={label + i} onClick={() => { if (navTo) navigate(navTo); handleSubmit(prompt) }} style={{
                     padding: '6px 14px', borderRadius: 50,
@@ -1698,11 +1701,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                     color: '#0A0A0A',
                     fontSize: 12, cursor: 'pointer', fontFamily: C.font, fontWeight: 450,
                     boxShadow: '0 1px 2px rgba(0,0,0,0.03)', whiteSpace: 'nowrap',
+                    overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, flexShrink: 1, minWidth: 0,
                     transition: 'all 250ms cubic-bezier(0.34, 1.56, 0.64, 1)',
                   }}
                     onMouseOver={e => { e.currentTarget.style.background = '#0A0A0A'; e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = '#0A0A0A'; e.currentTarget.style.transform = 'translateY(-1px)' }}
                     onMouseOut={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#0A0A0A'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
-                  >{label}</button>
+                  >{truncLabel}</button>
                   )
                 })}
               </div>}

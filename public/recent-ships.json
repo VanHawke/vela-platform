@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-25T09:12:01.347Z",
+  "generated_at": "2026-04-25T09:46:38.931Z",
   "commits": [
+    {
+      "hash": "cd3428b",
+      "subject": "Fix 4 bugs: alert actions, pill visibility, count sync, CC reconciliation",
+      "when": "34 minutes ago"
+    },
     {
       "hash": "ff6e695",
       "subject": "RLS fix + dynamic pills + Vercel free tier cleanup",
-      "when": "12 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "77a720c",
       "subject": "Alert visibility fix: null user_ids + direct count loading",
-      "when": "17 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "ac86acd",
       "subject": "Command Centre + Alerts: data sync, actionable alerts, stale deal fix",
-      "when": "25 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "8005214",
       "subject": "Command Centre: role-based signal filtering",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "3e1afbd",
       "subject": "Command Centre upgrade: follow-up tracker, campaign activity, expanded signals",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "3f291c1",
@@ -44,7 +49,7 @@
     {
       "hash": "b8c800a",
       "subject": "Proactive Intelligence v2 — Hetzner-native monitors",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "e7dbcdc",
@@ -54,12 +59,12 @@
     {
       "hash": "fecd3bb",
       "subject": "COMPLETE SESSION BRIEF: 242-line definitive architecture document covering ALL 58 sessions (April 7-24). Full build history, current state, all monitors, all tools, all memory systems, all research do",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "e0d5069",
       "subject": "SESSION BRIEF: Complete architecture document for session handoff — every system, every file, every tool, every table, every monitor, every pending task documented. 289 lines covering environment, rin",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "842493c",
@@ -79,12 +84,12 @@
     {
       "hash": "f774ee1",
       "subject": "Kiko self-knowledge: document generation capability documented — types, divisions, purposes, branding, timing, when to use.",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "a992019",
       "subject": "DOCUMENT GENERATION PIPELINE — COMPLETE: (1) generate-document.js: researches topic via Haiku + web search, structures via Sonnet, renders branded HTML or PPTX. (2) Van Hawke brand system: #7C5CFC pur",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "0b6f37d",
@@ -94,11 +99,6 @@
     {
       "hash": "e52ccf7",
       "subject": "STRATEGIC INTELLIGENCE EXPANSION: (1) 8 Van Hawke competitive domains replacing 4 — now covers agency competitors (self-discovering), F1 deal economics, prospect signals, positioning, business buildin",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "3497dd1",
-      "subject": "PROACTIVE INTEL WORKING: First scan found 6 events, created 5 strategic alerts — Cadillac F1 title sponsorship open, Omni AI M Series C prospect signal, Kering/Google smart glasses (Maison competitive",
       "when": "15 hours ago"
     }
   ]

@@ -385,6 +385,20 @@ export default function OutreachIntelligence({ user }) {
     payload: c,
   })
 
+  const clearAllOverdue = async () => {
+    const toClose = overdueTasks.map(t => t.id)
+    if (!toClose.length) return
+    setTasks(prev => prev.filter(t => !toClose.includes(t.id)))
+    if (selected?.kind === 'task' && toClose.includes(selected.id)) setSelected(null)
+    for (const id of toClose) {
+      await supabase.from('tasks').update({
+        data: { ...(tasks.find(t => t.id === id)?.data || {}), completed: true, completedAt: new Date().toISOString(), autoCompleted: 'bulk_cleared' },
+        updated_at: new Date().toISOString()
+      }).eq('id', id)
+    }
+    showToast(`${toClose.length} overdue tasks cleared`, 'success')
+  }
+
   const createTask = async () => {
     if (!newTaskTitle.trim()) return
     const taskData = {
@@ -425,7 +439,6 @@ export default function OutreachIntelligence({ user }) {
   const staleDeals = useMemo(() => {
     return deals
       .map(d => {
-        // Use the MOST RECENT of lastActivity OR updated_at (covers stage changes, notes, etc.)
         const lastAct = d.data?.lastActivity ? new Date(d.data.lastActivity).getTime() : 0
         const updatedAt = d.updated_at ? new Date(d.updated_at).getTime() : 0
         const mostRecent = Math.max(lastAct, updatedAt)
@@ -434,9 +447,11 @@ export default function OutreachIntelligence({ user }) {
         const prob = (STAGE_PROB[stage] || 10) / 100
         return { ...d.data, _id: d.id, daysSince: days, stage, weighted: (parseFloat(d.data?.value) || 0) * prob }
       })
-      .filter(x => x.daysSince > 30)
+      // Only show deals with genuine activity that went stale (30-180 days)
+      // Exclude "never touched" deals (999d) — those aren't stale, they're untouched
+      .filter(x => x.daysSince > 30 && x.daysSince < 365)
       .sort((a, b) => b.weighted - a.weighted)
-      .slice(0, 10)
+      .slice(0, 8)
   }, [deals, now])
 
   // ── Kiko brief loader (SSE streaming from /api/kiko) ──
@@ -630,6 +645,9 @@ export default function OutreachIntelligence({ user }) {
               <div className="cc-group-h">
                 <h3><AlertTriangle size={10} />{taskFilter === 'overdue' ? 'Overdue' : taskFilter === 'week' ? 'This week' : 'All tasks'}</h3>
                 <span className="cc-group-count">{(taskFilter === 'overdue' ? overdueTasks : taskFilter === 'week' ? thisWeekTasks : tasks).length}</span>
+                {taskFilter === 'overdue' && overdueTasks.length > 0 && (
+                  <button onClick={clearAllOverdue} style={{ marginLeft: 'auto', padding: '3px 10px', borderRadius: 6, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.12)', color: '#dc2626', fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 500, cursor: 'pointer' }}>Clear all overdue</button>
+                )}
               </div>
               {(() => {
                 const filtered = taskFilter === 'overdue' ? overdueTasks : taskFilter === 'week' ? thisWeekTasks : tasks
