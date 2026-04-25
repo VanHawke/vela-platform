@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   try {
     // Get pending jobs (oldest first, max 3 per run)
-    const jobs = await sbFetch('kiko_background_jobs?status=eq.queued&order=created_at.asc&limit=3');
+    const jobs = await sbFetch('kiko_background_jobs?status=eq.queued&order=queued_at.asc&limit=3');
     if (!Array.isArray(jobs) || jobs.length === 0) {
       await cronHeartbeat('cron-job-processor', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
       return res.json({ ok: true, processed: 0 });
