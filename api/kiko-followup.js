@@ -109,7 +109,7 @@ Return only 3 plain sentences. No bullet points. No JSON.` }]
       : 'No prior email history found.';
 
     const draftRes = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6', max_tokens: 800,
+      model: 'claude-haiku-4-5-20251001', max_tokens: 800,
       system: `You are drafting a follow-up email for Sunny Sidhu, CEO of Van Hawke Group — an F1/Formula E sponsorship advisory firm.
 
 SUNNY'S STYLE (always match this):

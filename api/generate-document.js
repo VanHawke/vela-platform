@@ -104,7 +104,7 @@ async function generateStructuredContent(research, topic, division, purpose, doc
 5-8 sections. Each section should have substantive content, not bullet lists.`;
 
   const res = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6', max_tokens: 8000,
+    model: 'claude-sonnet-4-6', max_tokens: 4000,
     system: `You are a senior consultant creating a ${purpose} for Van Hawke. Write with authority — no hedging, no generic statements. Every claim must be specific. Use the research provided. The tone should be: direct, confident, board-level, premium. Return ONLY valid JSON — no markdown fences, no preamble, no explanation.`,
     messages: [{ role: 'user', content: `Topic: "${topic}"\nDivision: ${division}\n\nResearch:\n${research.slice(0, 6000)}\n\n${structurePrompt}` }],
   });

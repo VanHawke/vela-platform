@@ -100,26 +100,14 @@ export async function startRealtimeListener() {
     }
   } catch (e) { console.error('[realtime] Cache init failed:', e.message); }
 
-  // Subscribe to deals changes
-  const dealsChannel = supabase.channel('deals-changes')
+  // Single consolidated channel for all realtime subscriptions
+  const channel = supabase.channel('kiko-monitor')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'deals' }, (payload) => {
       try { handleDealChange(payload); } catch (e) { console.error('[realtime] Deal handler error:', e.message); }
     })
-    .subscribe((status) => {
-      console.log(`[realtime] Deals channel: ${status}`);
-    });
-
-  // Subscribe to contacts changes
-  const contactsChannel = supabase.channel('contacts-changes')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contacts' }, (payload) => {
       try { handleContactChange(payload); } catch (e) { console.error('[realtime] Contact handler error:', e.message); }
     })
-    .subscribe((status) => {
-      console.log(`[realtime] Contacts channel: ${status}`);
-    });
-
-  // Subscribe to campaign_targets changes (prospect replies detected)
-  const campaignChannel = supabase.channel('campaign-changes')
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'campaign_targets' }, (payload) => {
       try {
         const newStatus = payload.new?.status;
@@ -132,28 +120,24 @@ export async function startRealtimeListener() {
             detail: `Status changed to replied. Check inbox for their response.`,
             entity_type: 'campaign_target', entity_id: payload.new?.id || 'unknown', entity_name: name,
             metadata: { old_status: oldStatus, new_status: newStatus, sequence_id: payload.new?.sequence_id },
-            user_id: null, expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
+            user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+            expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
           });
         }
       } catch (e) { console.error('[realtime] Campaign handler error:', e.message); }
     })
     .subscribe((status) => {
-      console.log(`[realtime] Campaign channel: ${status}`);
+      console.log(`[realtime] Consolidated channel: ${status}`);
     });
 
   // Reconnection monitoring — check every 60s
   setInterval(() => {
-    const states = [dealsChannel.state, contactsChannel.state, campaignChannel.state];
-    const allJoined = states.every(s => s === 'joined');
-    if (!allJoined) {
-      console.warn(`[realtime] Channel states: deals=${dealsChannel.state} contacts=${contactsChannel.state} campaigns=${campaignChannel.state}`);
-      // Attempt reconnection for any errored channels
-      if (dealsChannel.state === 'errored' || dealsChannel.state === 'closed') dealsChannel.subscribe();
-      if (contactsChannel.state === 'errored' || contactsChannel.state === 'closed') contactsChannel.subscribe();
-      if (campaignChannel.state === 'errored' || campaignChannel.state === 'closed') campaignChannel.subscribe();
+    if (channel.state !== 'joined') {
+      console.warn(`[realtime] Channel state: ${channel.state} — attempting reconnect`);
+      if (channel.state === 'errored' || channel.state === 'closed') channel.subscribe();
     }
   }, 60000);
 
-  console.log('[realtime] Supabase Realtime listener started — watching deals, contacts, campaign_targets');
-  return { dealsChannel, contactsChannel, campaignChannel };
+  console.log('[realtime] Supabase Realtime listener started — 1 channel, 3 tables (deals, contacts, campaign_targets)');
+  return { channel };
 }

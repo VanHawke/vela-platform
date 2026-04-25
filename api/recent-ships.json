@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-25T10:34:35.088Z",
+  "generated_at": "2026-04-25T15:17:04.713Z",
   "commits": [
+    {
+      "hash": "9269446",
+      "subject": "Fix homepage centering: collapsed sidebar was stealing 28px",
+      "when": "5 hours ago"
+    },
     {
       "hash": "c3a4a15",
       "subject": "Nav alignment fix: grid-template-columns auto 1fr auto → 1fr auto 1fr",
-      "when": "4 minutes ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "5bee0b7",
       "subject": "Homepage CSS fix + session brief update",
-      "when": "9 minutes ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "c8d32bc",
       "subject": "KikoLiveContext: real-time shared state across all surfaces",
-      "when": "18 minutes ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "aa476ff",
       "subject": "Clean slate: all overdue cleared, alert CTAs fixed, data synced",
-      "when": "38 minutes ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "1d44b71",
       "subject": "Pills width fix, inline alert CTAs, CC clear all overdue, stale deal cleanup",
-      "when": "46 minutes ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "cd3428b",
       "subject": "Fix 4 bugs: alert actions, pill visibility, count sync, CC reconciliation",
-      "when": "82 minutes ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "ff6e695",
       "subject": "RLS fix + dynamic pills + Vercel free tier cleanup",
-      "when": "2 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "77a720c",
       "subject": "Alert visibility fix: null user_ids + direct count loading",
-      "when": "2 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "ac86acd",
       "subject": "Command Centre + Alerts: data sync, actionable alerts, stale deal fix",
-      "when": "2 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "8005214",
       "subject": "Command Centre: role-based signal filtering",
-      "when": "12 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "3e1afbd",
       "subject": "Command Centre upgrade: follow-up tracker, campaign activity, expanded signals",
-      "when": "12 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "3f291c1",
       "subject": "Session 59: Updated session brief + bible with new capabilities",
-      "when": "12 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "0ac9f22",
       "subject": "Hetzner consolidation: 16 dormant crons activated, full API sync, Vercel decoupled",
-      "when": "12 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "aed1953",
       "subject": "Knowledge visibility fix + search_knowledge upgrade",
-      "when": "12 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "b8c800a",
       "subject": "Proactive Intelligence v2 — Hetzner-native monitors",
-      "when": "13 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "e7dbcdc",
       "subject": "Proactive Intelligence v2: Self-Discovery Engine + Predictive Synthesis + Agency Structure Intelligence",
-      "when": "13 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "fecd3bb",
       "subject": "COMPLETE SESSION BRIEF: 242-line definitive architecture document covering ALL 58 sessions (April 7-24). Full build history, current state, all monitors, all tools, all memory systems, all research do",
-      "when": "13 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "e0d5069",
       "subject": "SESSION BRIEF: Complete architecture document for session handoff — every system, every file, every tool, every table, every monitor, every pending task documented. 289 lines covering environment, rin",
-      "when": "14 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "842493c",
       "subject": "FIX HOMEPAGE ALIGNMENT: (1) Top nav switched from flexbox space-between to CSS grid with 3 columns — links are now TRUE center, not pushed-between. (2) Home content offset: when sidebar collapsed (28p",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "c66c6dd",
-      "subject": "FIX ALIGNMENT: Homepage content padding matched to nav padding (32px both). Document generation pipeline: research uses Haiku (53s vs 105s), structure max_tokens 8000, robust JSON repair for truncatio",
-      "when": "14 hours ago"
+      "when": "19 hours ago"
     }
   ]
 }
