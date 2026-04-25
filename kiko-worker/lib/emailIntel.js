@@ -271,6 +271,8 @@ async function prospeoFindEmail(firstName, lastName, domain) {
 
 // Pattern cache — avoid re-detecting for same domain
 const patternCache = new Map();
+// Gateway cache — skip SMTP for domains that block verification
+const gatewayCache = new Set();
 
 // ══════════════════════════════════════════════
 // STEP 1: DETECT EMAIL PATTERN FOR A DOMAIN
@@ -594,20 +596,27 @@ export async function findEmail({ firstName, lastName, company, domain }) {
     // Step 5: Get MX host
     const mxHost = await getMxHost(domainClean);
     if (!mxHost) {
-      // No MX record — return best guess without verification
       const bestGuess = candidates[0];
       return {
         ok: true,
         email: bestGuess?.email || `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${domainClean}`,
-        verified: false,
-        confidence: 0.3,
-        pattern: pattern.pattern,
-        reason: 'no_mx_record',
-        duration_ms: Date.now() - startTime,
-        log,
+        verified: false, confidence: 0.3, pattern: pattern.pattern,
+        reason: 'no_mx_record', duration_ms: Date.now() - startTime, log,
       };
     }
     log.push(`MX host: ${mxHost}`);
+
+    // Step 5.5: Check gateway cache — skip SMTP for domains that block it
+    if (gatewayCache.has(domainClean)) {
+      const bestGuess = candidates[0];
+      log.push(`⚡ Gateway cached — skipping SMTP, using pattern directly`);
+      return {
+        ok: true, email: bestGuess.email,
+        verified: false, confidence: Math.min(0.75, pattern.confidence),
+        pattern: bestGuess.pattern, reason: 'gateway_cached',
+        gateway: true, duration_ms: Date.now() - startTime, log,
+      };
+    }
     
     // Step 6: Check if catch-all domain
     const catchAll = await isCatchAll(mxHost, domainClean);
@@ -670,6 +679,7 @@ export async function findEmail({ firstName, lastName, company, domain }) {
       // Gateway detection: if first 2 checks timeout, this server blocks RCPT TO
       if (timeoutCount >= maxTimeouts) {
         log.push('⚠ Gateway detected (SMTP blocked) — using pattern-based guess');
+        gatewayCache.add(domainClean); // Cache so subsequent contacts skip SMTP
         const bestGuess = candidates[0];
         return {
           ok: true,

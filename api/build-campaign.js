@@ -346,6 +346,7 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
     // Prospeo → Pattern detection + SMTP verification
     await stageStart(5.5, 'Finding verified emails', `Running email intelligence cascade for ${webTargetRows.length} contacts`);
     const emailIntelUrl = 'http://127.0.0.1:3000/email-intel/find';
+    const emailIntelAuth = process.env.KIKO_WORKER_SECRET || 'kiko-hetzner-2026-vanhawke';
     let emailsFound = 0;
     let emailsFailed = 0;
 
@@ -373,7 +374,7 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
 
         const res = await fetch(emailIntelUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${emailIntelAuth}` },
           body: JSON.stringify({ firstName, lastName, company: target.company_name, domain }),
           signal: AbortSignal.timeout(15000),
         });
