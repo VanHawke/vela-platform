@@ -211,7 +211,6 @@ VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning, 
 3. **Email drafts still \~22s** for complex (Sonnet). Simple use Haiku (\~12s)
 
 ### Should Build
-
 4. **ChatGPT re-import** — User has extensive ChatGPT conversations to import
 5. **Supabase pg_cron audit** — 11 crons run via pg_cron, some may overlap with the newly activated cron-scheduler. Verify no double execution
 6. **Proactive synthesis feedback** — Predictions should feed into morning brief and greeting. Verify alert → brief pipeline works
@@ -225,6 +224,7 @@ VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning, 
 11. **SponsorSignal LinkedIn posting system**
 
 ---
+
 ## OPERATING RULES
 
 ### Email

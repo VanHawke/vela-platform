@@ -1656,28 +1656,32 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
                 flexWrap: 'wrap',
               }}>
-                {/* Permanent alerts pill — sage so it stands out */}
+                {/* Permanent alerts pill — orange bg, white text, pulsating */}
                 <button onClick={() => setInsightsOpen(true)} style={{
                   padding: '6px 14px', borderRadius: 50,
-                  background: 'rgba(184,100,62,0.10)',
-                  border: '1px solid rgba(184,100,62,0.20)',
-                  color: '#B8643E',
-                  fontSize: 12, fontWeight: 500,
+                  background: alertCount > 0 ? '#E8700A' : 'rgba(184,100,62,0.10)',
+                  border: alertCount > 0 ? '1px solid #E8700A' : '1px solid rgba(184,100,62,0.20)',
+                  color: alertCount > 0 ? '#FFFFFF' : '#B8643E',
+                  fontSize: 12, fontWeight: alertCount > 0 ? 600 : 500,
                   cursor: 'pointer', fontFamily: C.font,
                   whiteSpace: 'nowrap',
                   display: 'inline-flex', alignItems: 'center', gap: 6,
-                  animation: alertCount > 0 ? 'pulse-pill 2.5s ease-in-out infinite' : 'none',
+                  animation: alertCount > 0 ? 'pulse-alert 2s ease-in-out infinite' : 'none',
                   transition: 'all 250ms cubic-bezier(0.34, 1.56, 0.64, 1)',
                 }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(184,100,62,0.22)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(184,100,62,0.10)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                  onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; if (alertCount > 0) e.currentTarget.style.background = '#D4600A' }}
+                  onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; if (alertCount > 0) e.currentTarget.style.background = '#E8700A' }}
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
                   {alertCount || 0} alerts
                 </button>
-                {/* Dynamic chips — Kiko decides (up to 4) */}
-                {dynamicChips.slice(0, 4).map(c => (
-                  <button key={c} onClick={() => handleSubmit(c)} style={{
+                {/* Dynamic chips — live data, up to 5 */}
+                {dynamicChips.slice(0, 5).map((c, i) => {
+                  const label = typeof c === 'string' ? c : c.label
+                  const prompt = typeof c === 'string' ? c : c.prompt
+                  const navTo = typeof c === 'string' ? null : c.navigate
+                  return (
+                  <button key={label + i} onClick={() => { if (navTo) navigate(navTo); handleSubmit(prompt) }} style={{
                     padding: '6px 14px', borderRadius: 50,
                     background: '#FFFFFF',
                     border: '1px solid rgba(0,0,0,0.08)',
@@ -1688,8 +1692,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   }}
                     onMouseOver={e => { e.currentTarget.style.background = '#0A0A0A'; e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = '#0A0A0A'; e.currentTarget.style.transform = 'translateY(-1px)' }}
                     onMouseOut={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#0A0A0A'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
-                  >{c}</button>
-                ))}
+                  >{label}</button>
+                  )
+                })}
               </div>}
 
           {/* Bottom spacer — desktop only, mobile has prompt bar at bottom */}

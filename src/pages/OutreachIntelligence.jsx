@@ -279,7 +279,54 @@ export default function OutreachIntelligence({ user }) {
           .limit(15),
       ])
       setDeals(dealsRes.data || [])
-      setTasks((tasksRes.data || []).filter(t => !t.data?.completed))
+      const openTasks = (tasksRes.data || []).filter(t => !t.data?.completed)
+
+      // ── Auto-reconcile: close follow-up tasks where outreach was already sent ──
+      // Pull recent activities (last 14 days) to check if emails were sent to task contacts/companies
+      try {
+        const twoWeeksAgo = new Date(Date.now() - 14 * 86400000).toISOString()
+        const { data: recentActivity } = await supabase.from('activities')
+          .select('entity_name, type, created_at')
+          .in('type', ['email_sent', 'sequence_sent', 'email', 'outreach'])
+          .gte('created_at', twoWeeksAgo)
+        const sentTo = new Set((recentActivity || []).map(a => (a.entity_name || '').toLowerCase().trim()).filter(Boolean))
+
+        // Also check sequence enrollments — if contact is enrolled and active, task is redundant
+        const enrolledContacts = new Set((campaignRes.data || []).map(c => (c.contact_name || '').toLowerCase().trim()).filter(Boolean))
+        const enrolledCompanies = new Set((campaignRes.data || []).map(c => (c.company || '').toLowerCase().trim()).filter(Boolean))
+
+        const tasksToClose = []
+        const stillOpen = []
+        for (const t of openTasks) {
+          const d = t.data || {}
+          const taskType = (d.type || '').toLowerCase()
+          if (!['follow_up', 'reengagement', 're-engagement', 'follow-up', 'outreach'].includes(taskType)) {
+            stillOpen.push(t); continue
+          }
+          const contact = (d.contact || '').toLowerCase().trim()
+          const company = (d.company || '').toLowerCase().trim()
+          const wasContacted = (contact && sentTo.has(contact)) || (company && sentTo.has(company))
+            || (contact && enrolledContacts.has(contact)) || (company && enrolledCompanies.has(company))
+          if (wasContacted) tasksToClose.push(t)
+          else stillOpen.push(t)
+        }
+
+        // Auto-close matched tasks in background
+        if (tasksToClose.length > 0) {
+          for (const t of tasksToClose) {
+            supabase.from('tasks').update({
+              data: { ...t.data, completed: true, completedAt: new Date().toISOString(), autoCompleted: 'outreach_detected' },
+              updated_at: new Date().toISOString()
+            }).eq('id', t.id).then(() => {})
+          }
+          console.log(`[CC] Auto-closed ${tasksToClose.length} tasks (outreach detected)`)
+        }
+
+        setTasks(stillOpen)
+      } catch {
+        setTasks(openTasks)
+      }
+
       setHotReplies(hotRes.data || [])
       setSignals(signalRes.data || [])
       setFollowUps(followUpRes.data || [])
@@ -363,8 +410,11 @@ export default function OutreachIntelligence({ user }) {
   const staleDeals = useMemo(() => {
     return deals
       .map(d => {
-        const last = d.data?.lastActivity ? new Date(d.data.lastActivity) : new Date(d.updated_at)
-        const days = Math.floor((now - last) / 86400000)
+        // Use the MOST RECENT of lastActivity OR updated_at (covers stage changes, notes, etc.)
+        const lastAct = d.data?.lastActivity ? new Date(d.data.lastActivity).getTime() : 0
+        const updatedAt = d.updated_at ? new Date(d.updated_at).getTime() : 0
+        const mostRecent = Math.max(lastAct, updatedAt)
+        const days = mostRecent ? Math.floor((now - mostRecent) / 86400000) : 999
         const stage = d.data?.stage
         const prob = (STAGE_PROB[stage] || 10) / 100
         return { ...d.data, _id: d.id, daysSince: days, stage, weighted: (parseFloat(d.data?.value) || 0) * prob }
