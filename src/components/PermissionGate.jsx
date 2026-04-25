@@ -10,7 +10,9 @@ export default function PermissionGate({ pageKey, user, children }) {
   const { canSee, loading } = usePagePermissions(user, ORG_ID)
   const nav = useNavigate()
 
-  if (loading) return null // prevent flash
+  // Show content while loading — don't flash blank. If permissions deny access,
+  // the page will switch to the "no access" view after load completes.
+  if (loading) return children
 
   if (!canSee(pageKey)) {
     return (

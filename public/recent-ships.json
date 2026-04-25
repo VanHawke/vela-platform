@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-25T18:01:39.267Z",
+  "generated_at": "2026-04-25T18:45:33.322Z",
   "commits": [
+    {
+      "hash": "90d1e70",
+      "subject": "Fix background task display: show emails_found instead of prospects_found",
+      "when": "44 minutes ago"
+    },
     {
       "hash": "fe96144",
       "subject": "Fix job processor: order by queued_at not created_at (column didn't exist)",
-      "when": "17 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "354021c",
       "subject": "Campaign builder: background email enrichment + end-to-end fix",
-      "when": "42 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "44dd241",
       "subject": "Auth fix + gateway cache for email cascade",
-      "when": "46 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b6f8f0d",
       "subject": "Apollo moved behind free methods — preserves 75 credits/month",
-      "when": "55 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "7a34ac4",
       "subject": "Apollo.io integration live — 270M verified contacts, Source 1 in cascade",
-      "when": "57 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a5b70e9",
       "subject": "Fix campaign enrollment: accept all targets, flag email status",
-      "when": "74 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "7bca8b4",
@@ -44,7 +49,7 @@
     {
       "hash": "2066584",
       "subject": "CRITICAL: Kill fabricated email pipeline + purge bad data",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2156f7a",
@@ -59,7 +64,7 @@
     {
       "hash": "9269446",
       "subject": "Fix homepage centering: collapsed sidebar was stealing 28px",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "c3a4a15",
@@ -79,27 +84,22 @@
     {
       "hash": "aa476ff",
       "subject": "Clean slate: all overdue cleared, alert CTAs fixed, data synced",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "1d44b71",
       "subject": "Pills width fix, inline alert CTAs, CC clear all overdue, stale deal cleanup",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "cd3428b",
       "subject": "Fix 4 bugs: alert actions, pill visibility, count sync, CC reconciliation",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "ff6e695",
       "subject": "RLS fix + dynamic pills + Vercel free tier cleanup",
-      "when": "9 hours ago"
-    },
-    {
-      "hash": "77a720c",
-      "subject": "Alert visibility fix: null user_ids + direct count loading",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     }
   ]
 }

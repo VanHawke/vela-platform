@@ -12,11 +12,12 @@ export function usePagePermissions(user, orgId) {
 
   useEffect(() => {
     if (!user?.id || !orgId) return
-    // Fast path: cached for this user
+    // Fast path: cached for this user — don't flash loading
     if (cacheUserId === user.id && cachedEffective) { setEffective(cachedEffective); setLoading(false); return }
 
     let cancelled = false
-    setLoading(true)
+    // Only show loading if we genuinely have no cached data
+    if (!cachedEffective) setLoading(true)
 
     // Share one in-flight fetch across all concurrent callers on mount
     if (!inFlight || cacheUserId !== user.id) {

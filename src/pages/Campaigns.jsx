@@ -2,7 +2,7 @@
 // Left rail: campaign list. Main: prospects table for selected campaign.
 // Real data from Supabase. Realtime updates. Pause/activate per-campaign and per-prospect.
 import React, { useState, useEffect, useCallback } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import T from '@/lib/theme'
@@ -77,6 +77,7 @@ function deriveStatus(enr, queueRows) {
 // ── main component ──
 export default function Campaigns({ user }) {
   const nav = useNavigate()
+  const loc = useLocation()
   const [searchParams] = useSearchParams()
   const [campaigns, setCampaigns] = useState([])
   const [selectedId, setSelectedId] = useState(searchParams.get('selected') || null)
@@ -142,7 +143,7 @@ export default function Campaigns({ user }) {
     setPageContext({ page: 'campaigns', summary: `Campaigns: ${arr.length} sequences` })
   }, [selectedId])
 
-  useEffect(() => { loadCampaigns() }, [loadCampaigns])
+  useEffect(() => { loadCampaigns() }, [loadCampaigns, loc.key])
 
   // Load prospects for the selected campaign
   const loadProspects = useCallback(async (sequenceId) => {
