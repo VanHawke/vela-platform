@@ -35,20 +35,25 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
   const avatarRef = useRef(null)
   const tasksRef = useRef(null)
 
-  // Fetch background tasks
+  // Fetch background tasks — Realtime subscription + fallback poll
   useEffect(() => {
     const loadTasks = async () => {
       try {
-        const { data } = await supabase.from('kiko_background_jobs').select('id,title,status,job_type,result,queued_at,finished_at,related_entity_id').order('queued_at', { ascending: false }).limit(10)
+        const { data } = await supabase.from('kiko_background_jobs').select('id,title,status,job_type,result,queued_at,finished_at,related_entity_id,progress_pct,progress_message').order('queued_at', { ascending: false }).limit(10)
         setBgTasks(data || [])
       } catch {}
     }
     loadTasks()
-    const interval = setInterval(loadTasks, 15000)
-    // Listen for immediate refresh requests (e.g. after creating a background job)
+    // Realtime subscription — instant updates when any job changes
+    const channel = supabase.channel('bg-tasks')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kiko_background_jobs' }, () => loadTasks())
+      .subscribe()
+    // Fallback poll every 30s for safety
+    const interval = setInterval(loadTasks, 30000)
+    // Listen for immediate refresh requests
     const onRefresh = () => loadTasks()
     window.addEventListener('kiko_refresh_tasks', onRefresh)
-    return () => { clearInterval(interval); window.removeEventListener('kiko_refresh_tasks', onRefresh) }
+    return () => { supabase.removeChannel(channel); clearInterval(interval); window.removeEventListener('kiko_refresh_tasks', onRefresh) }
   }, [])
 
   // Close tasks dropdown on outside click
@@ -282,9 +287,9 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
                       <span style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</span>
                     </div>
                     {isActive && <div style={{ marginBottom: 4 }}>
-                      <div style={{ width: '100%', height: 3, background: 'rgba(0,0,0,0.06)', borderRadius: 2, overflow: 'hidden' }}><div style={{ width: t.status === 'processing' ? '60%' : '20%', height: '100%', background: '#7C5CFC', borderRadius: 2, transition: 'width 1s', animation: 'pulse 1.5s ease-in-out infinite' }} /></div>
+                      <div style={{ width: '100%', height: 3, background: 'rgba(0,0,0,0.06)', borderRadius: 2, overflow: 'hidden' }}><div style={{ width: `${t.progress_pct || (t.status === 'processing' ? 50 : 10)}%`, height: '100%', background: '#7C5CFC', borderRadius: 2, transition: 'width 1s' }} /></div>
                       <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 3, display: 'flex', justifyContent: 'space-between' }}>
-                        <span>{t.status === 'processing' ? 'Processing...' : 'Queued'} · {elapsed}m</span>
+                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.progress_message || (t.status === 'processing' ? 'Processing...' : 'Queued')} · {elapsed}m</span>
                         <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_background_jobs').update({ status: 'cancelled', finished_at: new Date().toISOString() }).eq('id', t.id); setBgTasks(prev => prev.map(x => x.id === t.id ? { ...x, status: 'cancelled' } : x)) }} style={{ fontSize: 10, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Cancel</button>
                       </div>
                     </div>}

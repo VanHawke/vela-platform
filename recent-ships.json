@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-25T21:27:32.032Z",
+  "generated_at": "2026-04-25T21:30:57.917Z",
   "commits": [
+    {
+      "hash": "efb347e",
+      "subject": "Fix: build-campaign now creates enrollments so prospects appear in UI",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "172c2f4",
       "subject": "KIKO_BIBLE comprehensive update: sequence quality + all knowledge gaps",
-      "when": "3 minutes ago"
+      "when": "7 minutes ago"
     },
     {
       "hash": "33a4ab4",
       "subject": "Fix: source_companies_bg now populates campaign_targets + async job processor",
-      "when": "6 minutes ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "13f0091",
       "subject": "KIKO_BIBLE + self-knowledge: full Session 59-60 update",
-      "when": "42 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "f596d01",
       "subject": "Session 60: build_campaign tool + legal_ai category + alphabetical sorting",
-      "when": "51 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "8c2d8b7",
       "subject": "Session 59 close: Session 60 priorities logged in KIKO_SESSION_BRIEF.md",
-      "when": "59 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "ad6dcf0",
       "subject": "KikoFloat dynamic pills: page-aware chips + campaigns/documents pages",
-      "when": "80 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "2b988ae",
@@ -94,11 +99,6 @@
     {
       "hash": "7bca8b4",
       "subject": "Email cascade reordered: free methods first, paid APIs last resort",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "2156e89",
-      "subject": "Wire email intelligence cascade into campaign builder",
       "when": "5 hours ago"
     }
   ]

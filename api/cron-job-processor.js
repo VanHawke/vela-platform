@@ -48,17 +48,19 @@ async function processJob(job) {
   if (job.job_type === 'source_companies_bg') {
     const params = job.params || {};
     const category = params.category || 'technology';
+    const description = params.description || category;
+    const campaignNameParam = params.campaignName;
     const count = params.count || 15;
     const sequenceId = params.sequence_id;
-    let campaignName = category, targetPersona = `C-suite at ${category} companies`;
+    let campaignName = campaignNameParam || category, targetPersona = `C-suite at ${category} companies`;
     if (sequenceId) {
       const seq = await sbFetch(`kiko_sequences?id=eq.${sequenceId}&limit=1`);
-      if (seq?.[0]) { campaignName = seq[0].name || category; targetPersona = seq[0].target_persona || targetPersona; }
+      if (seq?.[0]) { campaignName = seq[0].name || campaignName; targetPersona = seq[0].target_persona || targetPersona; }
     }
 
     const spRes = await fetch(`http://127.0.0.1:3000/api/source-prospects`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ campaignName, description: category, targetPersona, maxCompanies: Math.min(count, 20), contactsPerCompany: 2 }),
+      body: JSON.stringify({ campaignName, description, targetPersona, maxCompanies: Math.min(count, 20), contactsPerCompany: 2 }),
       signal: AbortSignal.timeout(180000),
     });
     const text = await spRes.text();

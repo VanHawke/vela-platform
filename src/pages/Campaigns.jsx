@@ -1257,10 +1257,10 @@ export default function Campaigns({ user }) {
                   <button onClick={async () => {
                     try {
                       const userId = user?.id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
-                      const category = addProspectsQuery || selectedCampaign?.description || selectedCampaign?.target_persona || selectedCampaign?.name || ''
+                      const description = addProspectsQuery || selectedCampaign?.description || selectedCampaign?.target_persona || selectedCampaign?.name || ''
                       const resp = await fetch(`https://api.vanhawke.agency/api/kiko-jobs?user_id=${userId}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ job_type: 'source_companies_bg', title: `Source contacts for "${selectedCampaign?.name}"`, params: { category, count: 15, sequence_id: selectedId }, related_entity_type: 'sequence', related_entity_id: selectedId, user_id: userId }),
+                        body: JSON.stringify({ job_type: 'source_companies_bg', title: `Source contacts for "${selectedCampaign?.name}"`, params: { category: description, description, campaignName: selectedCampaign?.name, count: 15, sequence_id: selectedId }, related_entity_type: 'sequence', related_entity_id: selectedId, user_id: userId }),
                       })
                       if (resp.ok) window.dispatchEvent(new Event('kiko_refresh_tasks'))
                     } catch {}
