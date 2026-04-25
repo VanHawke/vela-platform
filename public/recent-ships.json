@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-25T16:04:06.813Z",
+  "generated_at": "2026-04-25T16:18:23.415Z",
   "commits": [
+    {
+      "hash": "2066584",
+      "subject": "CRITICAL: Kill fabricated email pipeline + purge bad data",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "2156f7a",
       "subject": "11 dormant crons discovered + activated, doc gen → background job",
-      "when": "36 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "1ba31d1",
       "subject": "Session 59 final: email speed, Realtime consolidation, deploy script, Bible, doc gen",
-      "when": "47 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "9269446",
       "subject": "Fix homepage centering: collapsed sidebar was stealing 28px",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "c3a4a15",
@@ -39,7 +44,7 @@
     {
       "hash": "1d44b71",
       "subject": "Pills width fix, inline alert CTAs, CC clear all overdue, stale deal cleanup",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "cd3428b",
@@ -59,7 +64,7 @@
     {
       "hash": "ac86acd",
       "subject": "Command Centre + Alerts: data sync, actionable alerts, stale deal fix",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "8005214",
@@ -74,12 +79,12 @@
     {
       "hash": "3f291c1",
       "subject": "Session 59: Updated session brief + bible with new capabilities",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "0ac9f22",
       "subject": "Hetzner consolidation: 16 dormant crons activated, full API sync, Vercel decoupled",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "aed1953",
@@ -89,16 +94,11 @@
     {
       "hash": "b8c800a",
       "subject": "Proactive Intelligence v2 — Hetzner-native monitors",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "e7dbcdc",
       "subject": "Proactive Intelligence v2: Self-Discovery Engine + Predictive Synthesis + Agency Structure Intelligence",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "fecd3bb",
-      "subject": "COMPLETE SESSION BRIEF: 242-line definitive architecture document covering ALL 58 sessions (April 7-24). Full build history, current state, all monitors, all tools, all memory systems, all research do",
       "when": "19 hours ago"
     }
   ]

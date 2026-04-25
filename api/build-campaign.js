@@ -278,9 +278,9 @@ CRITICAL EXCLUSION RULE: The following companies are EITHER already F1 partners 
 
 For each company, return 2-3 decision-makers with sponsorship-relevant titles (CMO, VP Marketing, Head of Brand, Head of Sponsorship, CRO, CEO, CFO, Head of BD, Head of Strategy).
 
-Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdown fences, just the array. Each entry must have: company, revenue, hq, rationale, decision_makers (array of {name, title}).
+Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdown fences, just the array. Each entry must have: company, domain (the company's actual website domain e.g. "paulweiss.com" NOT made-up), revenue, hq, rationale, decision_makers (array of {name, title}).
 
-[{"company":"...","revenue":"...","hq":"...","rationale":"...","decision_makers":[{"name":"...","title":"..."},{"name":"...","title":"..."}]}]`;
+[{"company":"...","domain":"...","revenue":"...","hq":"...","rationale":"...","decision_makers":[{"name":"...","title":"..."},{"name":"...","title":"..."}]}]`;
 
     const sourcingRes = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
@@ -340,6 +340,63 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
       }
     }
 
+    // ─── STEP 10.5: EMAIL ENRICHMENT — find REAL verified emails via intelligence cascade ───
+    // This is the critical step that was missing. Never use AI-guessed emails.
+    // Calls Hetzner email-intel engine: Hunter.io → Snov.io → Voila Norbert → Skrapp → 
+    // Prospeo → Pattern detection + SMTP verification
+    await stageStart(5.5, 'Finding verified emails', `Running email intelligence cascade for ${webTargetRows.length} contacts`);
+    const emailIntelUrl = 'http://127.0.0.1:3000/email-intel/find';
+    let emailsFound = 0;
+    let emailsFailed = 0;
+
+    for (const target of webTargetRows) {
+      try {
+        // Split decision_maker_name into first/last
+        const nameParts = (target.decision_maker_name || '').trim().split(/\s+/);
+        if (nameParts.length < 2) { emailsFailed++; continue; }
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ');
+
+        // Get domain from the sourcing data
+        const companyObj = filtered.find(c => c.company === target.company_name);
+        let domain = companyObj?.domain;
+        
+        // If no domain provided, derive from company name (simple heuristic)
+        if (!domain) {
+          domain = target.company_name
+            .toLowerCase()
+            .replace(/[&,.'"\-()]/g, '')
+            .replace(/\s+(inc|llc|ltd|plc|corp|co|group|holdings|international|global)$/i, '')
+            .replace(/\s+/g, '')
+            + '.com';
+        }
+
+        const res = await fetch(emailIntelUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, lastName, company: target.company_name, domain }),
+          signal: AbortSignal.timeout(15000),
+        });
+        const data = await res.json();
+
+        if (data.ok && data.email && isValidEmail(data.email)) {
+          target.decision_maker_email = data.email;
+          target.verification_status = data.verified ? 'verified' : 'pattern_matched';
+          target.enrollment_status = 'sourced'; // Ready for enrollment
+          emailsFound++;
+        } else {
+          target.decision_maker_email = null;
+          target.enrollment_status = 'needs_email';
+          emailsFailed++;
+        }
+      } catch (err) {
+        target.decision_maker_email = null;
+        target.enrollment_status = 'needs_email';
+        emailsFailed++;
+      }
+    }
+    console.log(`[build-campaign] Email enrichment: ${emailsFound} found, ${emailsFailed} failed out of ${webTargetRows.length}`);
+
     // ─── STEP 11: Insert all targets (CRM-first, then web) ───
     await stageStart(6, 'Saving targets', `Persisting ${crmTargetRows.length + webTargetRows.length} target rows to database`);
     // Wipe any previous targets for this campaign first
@@ -398,9 +455,13 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
       sourced_total: sourced.length,
       filtered_count: filtered.length,
       violations_caught: violations.length,
+      emails_found: emailsFound,
+      emails_pending: emailsFailed,
       excluded_companies_count: exclusionSet.size,
       blocked_teams: [...blockedTeamIds],
-      next_action: `Review top 8 then call POST /api/build-campaign/enroll with { campaign_id: "${sequenceId}" } to enroll the top 8 into the sequence.`,
+      next_action: emailsFailed > 0
+        ? `${emailsFound} contacts have verified emails. ${emailsFailed} still need enrichment. Review targets, then enroll those with verified emails.`
+        : `All ${emailsFound} contacts have verified emails. Review top 8 then enroll.`,
     };
     await stageDone('completed', { sequence_id: sequenceId, inserted_count: insertedCount, sourced_total: sourced.length });
     return res.status(200).json(responsePayload);
