@@ -28,21 +28,44 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'No sourced targets found for this campaign. Run /api/build-campaign first.' });
     }
 
-    // Insert into kiko_sequence_enrollments — one row per target
-    // PAUSED BY DEFAULT — user must explicitly activate via /api/activate-campaign
-    // after reviewing drafts and sending a test email.
-    // This was the bug Sunny hit: campaigns were going live immediately after build.
+    // ── Email validation — reject fakes, role-based, and malformed addresses ──
+    function isValidEmail(email) {
+      if (!email || typeof email !== 'string') return false;
+      const e = email.trim().toLowerCase();
+      if (!e.includes('@') || !e.includes('.')) return false;
+      if (/^(cmo|ceo|cfo|cro|coo|cto|vp|director|head|manager|info|contact|hello|team|sales|marketing|support|admin|office|general|enquiries|careers|hr|press|media|partnerships)@/i.test(e)) return false;
+      const domain = e.split('@')[1];
+      if (!domain || /[&\s,;!#$%^*()=+\[\]{}|\\<>]/.test(domain)) return false;
+      if (domain.length > 50) return false;
+      const local = e.split('@')[0];
+      if (local.length < 2) return false;
+      return true;
+    }
+
+    // ONLY enroll targets with VERIFIED real emails — never fabricate
+    const validTargets = targets.filter(t => isValidEmail(t.decision_maker_email));
+    const skipped = targets.length - validTargets.length;
+
+    if (validTargets.length === 0) {
+      return res.status(200).json({
+        success: false,
+        enrolled: 0,
+        skipped,
+        error: `${targets.length} targets found but none have verified email addresses. Run email enrichment first (ask Kiko to "enrich emails for this campaign").`,
+      });
+    }
+
     const now = new Date().toISOString();
-    const enrollments = targets.map(t => ({
+    const enrollments = validTargets.map(t => ({
       sequence_id: campaign_id,
-      contact_email: t.decision_maker_email || `${(t.decision_maker_name || 'unknown').toLowerCase().replace(/\s+/g, '.')}@${(t.company_name || 'unknown').toLowerCase().replace(/\s+/g, '')}.com`,
+      contact_email: t.decision_maker_email.trim(),
       contact_name: t.decision_maker_name || t.company_name,
-      title: t.decision_maker_title || null,  // Title from sourcing — surfaces on Campaigns page
+      title: t.decision_maker_title || null,
       company: t.company_name,
       current_step: 0,
-      status: 'paused',  // PAUSED — will flip to 'active' on explicit user activation
+      status: 'paused',
       enrolled_at: now,
-      next_send_at: null,  // No send scheduled until activation
+      next_send_at: null,
     }));
 
     const { data: inserted, error: eErr } = await supabase
@@ -64,11 +87,14 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       enrolled: inserted?.length || 0,
-      sequence_activated: false,  // Paused — user must explicitly activate
+      skipped,
+      sequence_activated: false,
       status: 'paused',
       campaign_id,
-      enrolled_companies: targets.map(t => ({ rank: t.rank, company: t.company_name, dm: t.decision_maker_name })),
-      next_step: 'Review sequence drafts, refine messaging, send test email to yourself, then click Activate to go live.',
+      enrolled_companies: validTargets.map(t => ({ rank: t.rank, company: t.company_name, dm: t.decision_maker_name, email: t.decision_maker_email })),
+      next_step: skipped > 0
+        ? `${skipped} targets skipped (no verified email). Ask Kiko to "enrich emails for this campaign" to find real addresses. Then re-run enrollment.`
+        : 'Review sequence drafts, refine messaging, send test email to yourself, then click Activate to go live.',
     });
   } catch (err) {
     console.error('[build-campaign-enroll] error:', err);

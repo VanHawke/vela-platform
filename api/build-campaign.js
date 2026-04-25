@@ -312,6 +312,9 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
     });
 
     // ─── STEP 10: Build web target rows — one row per (company, decision_maker) ───
+    // CRITICAL: NEVER use emails from Claude/AI responses — they are hallucinated.
+    // Web-sourced contacts get email=null. The email intelligence cascade
+    // (Hunter/Snov/SMTP verification) must find and verify real emails before enrollment.
     const webTargetRows = [];
     for (const c of filtered) {
       const dms = Array.isArray(c.decision_makers) && c.decision_makers.length > 0
@@ -329,10 +332,10 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
           rationale: c.rationale,
           decision_maker_name: dm.name,
           decision_maker_title: dm.title,
-          decision_maker_email: dm.email || null,
-          enrollment_status: 'sourced',
+          decision_maker_email: null, // NEVER use AI-generated emails — always null until verified by email intel cascade
+          enrollment_status: 'needs_email', // Cannot enroll until real email found + verified
           source: 'web_search',
-          verification_status: 'unverified',  // Web-sourced contacts always need verification
+          verification_status: 'unverified',
         });
       }
     }
@@ -441,6 +444,25 @@ const CATEGORY_INDUSTRY_MAP = {
   robotics:       ['Robotics'],
 };
 
+// ─── Email validation — reject obvious fakes, role-based, and malformed addresses ───
+function isValidEmail(email) {
+  if (!email || typeof email !== 'string') return false;
+  const e = email.trim().toLowerCase();
+  if (!e.includes('@') || !e.includes('.')) return false;
+  // Reject role-based (cmo@, ceo@, info@, contact@, etc.)
+  if (/^(cmo|ceo|cfo|cro|coo|cto|vp|director|head|manager|info|contact|hello|team|sales|marketing|support|admin|office|general|enquiries|careers|hr|press|media|partnerships)@/i.test(e)) return false;
+  // Reject if domain has special chars (&, spaces, etc.)
+  const domain = e.split('@')[1];
+  if (!domain || /[&\s,;!#$%^*()=+\[\]{}|\\<>]/.test(domain)) return false;
+  // Reject if local part is just a title
+  const local = e.split('@')[0];
+  if (local.length < 2) return false;
+  // Reject common AI hallucination patterns
+  if (domain.length > 50) return false; // Absurdly long domains
+  if ((domain.match(/\./g) || []).length > 3) return false; // Too many dots
+  return true;
+}
+
 // Sponsorship-relevant title patterns (priority order — highest first)
 const RELEVANT_TITLE_PATTERNS = [
   /chief marketing officer|^cmo$|\bcmo\b/i,
@@ -500,12 +522,13 @@ async function sourceFromCRM(category, exclusionSet, maxCompanies = 30) {
     if (!item) continue;
     const { company, companyName, contacts } = item;
 
-    // Quality filter: must have a real email, first+last name, and relevant title
+    // Quality filter: must have a VALID email (not role-based, not hallucinated),
+    // first+last name, and relevant title.
     // Also EXCLUDES anyone we already verified as moved/left the company.
     const scoredContacts = contacts
       .filter(ct => {
         const d = ct.data || {};
-        if (!d.email || !d.email.includes('@')) return false;  // No email = no contact
+        if (!isValidEmail(d.email)) return false;  // Must pass full email validation
         const firstName = (d.firstName || '').trim();
         const lastName = (d.lastName || '').trim();
         if (!firstName || firstName.toLowerCase() === 'unknown') return false;
