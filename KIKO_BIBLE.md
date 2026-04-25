@@ -134,11 +134,65 @@ Jobs queued to `kiko_background_jobs` table. Processed by `cron-job-processor.js
 
 ### CAMPAIGN SEQUENCE ENGINE
 
-- Multichannel: Email → LinkedIn Connect → Connection check → LinkedIn Message / Email
-- Condition evaluation: connection_accepted, has_linkedin, has_email, no_reply
-- Timezone-aware sending (100+ city/region mappings)
-- Reply detection: hourly cron, auto-stops sequence, creates alert + pipeline deal
-- LinkedIn automation: Playwright + Decodo proxies on Hetzner
+**Canonical 5-Touch Authority-Led Outreach Framework:**
+
+1. Risk → "The board-level risk of NOT having category control in \[category\]"
+2. Revenue → "The revenue opportunity from owning \[category\] on an F1 platform"
+3. Category → "Why \[category\] is the decisive differentiator at this price point"
+4. Scarcity → "This is closing — \[X\] teams, \[Y\] categories remaining"
+5. Close → "Decision time — here's what the next 48 hours look like"
+
+**Sequence Architecture Rules (NEVER generate the same generic sequence):**
+
+- Every sequence MUST be multi-platform: Email → LinkedIn Connect Request → LinkedIn connection check → LinkedIn Message (if connected) OR Email follow-up (if not connected)
+- LinkedIn connection status is a REAL condition — check it before scheduling LinkedIn messages
+- Every email MUST be under 150 words. No exceptions.
+- NEVER use dashes (—) or bullet points in outreach emails. Write in complete sentences, short paragraphs.
+- NEVER produce AI slop: no "I hope this finds you well", no "I wanted to reach out", no "leveraging synergies", no "exciting opportunity", no "I believe", no "I think"
+- Language anchors (USE THESE): "category control", "closed bundle", "scarcity by design", "board-level platform", "intelligent age"
+- Target audience is C-suite (CMO, CFO, CEO, CRO, GC). Write like you're addressing a board member who has 8 seconds to decide if this email is worth reading.
+- Reference the contract value tier in messaging tone: $500K+ = executive, $1M+ = board-level, $2M+ = chairman-level
+- Apply persuasion psychology: authority (F1 platform credibility), scarcity (limited categories), social proof (existing partners), loss aversion (competitor claiming the slot), reciprocity (insight-led opener)
+- Each step must have a DIFFERENT angle and hook. Not variations of the same email.
+- Step 1 never pitches — it establishes authority and creates curiosity
+- Subject lines: short, specific, no questions, no exclamation marks. Format: "\[Team\] x \[Category\]" or "\[Company\] — \[Insight\]"
+
+### EMAIL DRAFT SPEED TIERS
+
+- **Simple emails / follow-ups**: Haiku (fast, \~5-6s). Used for: follow-up drafts, simple replies, acknowledgements
+- **Complex drafts / first-touch outreach**: Sonnet (thorough, \~15-17s). Used for: authority-led sequences, investor comms, board-level messaging
+- Voice alignment: every email passes through Haiku rewrite to match Sunny's writing style from 49 analysed sent emails
+
+### SUPABASE REALTIME ARCHITECTURE
+
+**2 total Realtime channels:**
+
+- **Frontend** (KikoLiveContext): 1 channel subscribing to 5 tables (kiko_alerts, tasks, kiko_follow_ups, kiko_draft_actions, activities)
+- **Hetzner** (monitors/realtime-listener.js): 1 consolidated channel (`kiko-monitor`) subscribing to deals, contacts, campaign_targets
+
+### DYNAMIC PAGE PILLS (useDynamicChips.js)
+
+KikoFloat shows page-specific action pills that change based on which page the user is viewing:
+
+- **Pipeline**: Show stale deals, Pipeline forecast, Move a deal forward, Draft outreach
+- **Campaigns**: Campaign performance, Add prospects, Which categories are open?, Draft sequence emails
+- **Contacts**: Who needs follow-up?, Stale contacts, Enrich new contacts, Search contacts
+- **Command Centre**: Overdue tasks, This week's priorities, Create a task, Check emails
+- **Documents**: Generate a report, Recent documents, Create a deck, Brand guidelines
+- **Calendar**: What's on today?, Schedule a meeting, F1 race calendar, Free time this week
+- **Home** (no page): Brief me, Pipeline update, Check emails, What's on today?
+
+Pills are rendered as `{label, prompt}` objects — KikoFloat extracts `.label` for display, `.prompt` for execution.
+
+### KIKOFLOAT PANEL
+
+Floating Kiko panel available on every page except home. Opens as a slide-out chat panel in the bottom-right. Features:
+
+- Page-aware dynamic pills (see above)
+- Full chat capability with streaming
+- File upload via drag-and-drop
+- Navigates to pages on Kiko's command
+- Shares conversation state with main KikoChat when user navigates to home
 
 ### GMAIL INTEGRATION
 
