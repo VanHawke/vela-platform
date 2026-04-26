@@ -107,13 +107,26 @@ export default function SequenceDetail({ user }) {
 
   useEffect(() => { if (!isNew) load() }, [id])
   useEffect(() => {
-    // Load org members for send-from dropdown — uses user prop directly
-    const userId = user?.id
-    if (!userId) return
-    fetch(`https://api.vanhawke.agency/api/team-list?user_id=${userId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.members) setOrgMembers(d.members) })
-      .catch(() => {})
+    // Load org members for send-from dropdown
+    async function loadMembers() {
+      // Try user prop first, then supabase auth as fallback
+      let userId = user?.id
+      if (!userId) {
+        try {
+          const { data } = await supabase.auth.getSession()
+          userId = data?.session?.user?.id
+        } catch {}
+      }
+      if (!userId) return
+      try {
+        const res = await fetch(`https://api.vanhawke.agency/api/team-list?user_id=${userId}`)
+        if (res.ok) {
+          const d = await res.json()
+          if (d?.members?.length) setOrgMembers(d.members)
+        }
+      } catch {}
+    }
+    loadMembers()
   }, [user])
 
   // Activity tab — load when opened

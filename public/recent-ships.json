@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-26T14:07:07.885Z",
+  "generated_at": "2026-04-26T14:20:54.389Z",
   "commits": [
+    {
+      "hash": "8b16794",
+      "subject": "Fix: delete test Haas campaign + Add prospects button now secondary",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "4b00d74",
       "subject": "Remove Vercel ignoreCommand + force rebuild",
-      "when": "11 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "68648e8",
       "subject": "Force Vercel rebuild: touch src/ to bypass ignoreCommand",
-      "when": "27 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "37cc659",
       "subject": "Sequence enqueue: LinkedIn condition check before queuing",
-      "when": "52 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "4d7d7c1",
@@ -44,12 +49,12 @@
     {
       "hash": "85f783f",
       "subject": "CRITICAL: Contract values corrected to $3M-$40M + askKiko prompt rewritten",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "5bb1e4c",
       "subject": "Fix send-from dropdown + add Regenerate with Kiko button",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "df923f9",
@@ -64,12 +69,12 @@
     {
       "hash": "9ec3865",
       "subject": "Bible: sequence engine v2 — LinkedIn reinforces email model",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "c85a35f",
       "subject": "SEQUENCE ENGINE v2: LinkedIn reinforces email, never replaces it",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "de34f9d",
@@ -89,16 +94,11 @@
     {
       "hash": "e539743",
       "subject": "Campaign targets display + KikoFloat conversation pills + sequence verified",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "2c4048b",
       "subject": "Session 60: Sequence engine rewrite + task panel buttons + all fixes",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "701c5c9",
-      "subject": "Background tasks: Realtime subscription + sourcing quality fix",
       "when": "17 hours ago"
     }
   ]
