@@ -160,10 +160,19 @@ All ${steps} steps should be top-level in the array. No nested branches. The seq
     // Normalize: ensure step numbers are sequential
     generatedSteps = generatedSteps.map((s, i) => ({ ...s, step: i + 1 }));
     
-    // Post-process: strip dashes from ALL content — subjects, templates, LinkedIn messages
+    // Post-process: strip dashes and banned phrases from ALL content
     for (const step of generatedSteps) {
       if (step.subject) step.subject = step.subject.replace(/\s*[—–]\s*/g, ' x ').replace(/\s+/g, ' ').trim();
-      if (step.template) step.template = step.template.replace(/[—–]/g, ',');
+      if (step.template) {
+        step.template = step.template.replace(/[—–]/g, ',');
+        // Kill banned openers that Claude still sneaks in
+        step.template = step.template
+          .replace(/I wanted to ensure/gi, 'This is to ensure')
+          .replace(/I wanted to reach out/gi, 'This note concerns')
+          .replace(/I am reaching out/gi, 'This concerns')
+          .replace(/I wanted to/gi, 'This is to')
+          .replace(/I'm writing to/gi, 'This note concerns');
+      }
     }
 
     // Create the sequence in the database

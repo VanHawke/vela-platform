@@ -1,50 +1,55 @@
 {
-  "generated_at": "2026-04-26T10:06:17.822Z",
+  "generated_at": "2026-04-26T10:10:56.539Z",
   "commits": [
+    {
+      "hash": "6a5ef5d",
+      "subject": "Dash post-processing: strip em/en dashes from all generated content",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "552c9b3",
       "subject": "Sequence quality: ban dashes in LinkedIn, ban reaching out variants, ban threatening withdrawal",
-      "when": "4 minutes ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "2294f67",
       "subject": "Bible: $3M-$40M contract values + no aggressive CTAs rule",
-      "when": "14 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "85f783f",
       "subject": "CRITICAL: Contract values corrected to $3M-$40M + askKiko prompt rewritten",
-      "when": "18 minutes ago"
+      "when": "22 minutes ago"
     },
     {
       "hash": "5bb1e4c",
       "subject": "Fix send-from dropdown + add Regenerate with Kiko button",
-      "when": "25 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "df923f9",
       "subject": "MANDATORY: Kiko knowledge sync after every build",
-      "when": "57 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "7bc87b2",
       "subject": "Sequence sender v2: handles both condition models + LinkedIn parallel",
-      "when": "72 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "9ec3865",
       "subject": "Bible: sequence engine v2 — LinkedIn reinforces email model",
-      "when": "79 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "c85a35f",
       "subject": "SEQUENCE ENGINE v2: LinkedIn reinforces email, never replaces it",
-      "when": "81 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "de34f9d",
       "subject": "Sequence flow: condition branching fix + drag-and-drop reordering",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "1f2f5b0",
@@ -64,7 +69,7 @@
     {
       "hash": "2c4048b",
       "subject": "Session 60: Sequence engine rewrite + task panel buttons + all fixes",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "701c5c9",
@@ -94,11 +99,6 @@
     {
       "hash": "f596d01",
       "subject": "Session 60: build_campaign tool + legal_ai category + alphabetical sorting",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "8c2d8b7",
-      "subject": "Session 59 close: Session 60 priorities logged in KIKO_SESSION_BRIEF.md",
       "when": "14 hours ago"
     }
   ]
