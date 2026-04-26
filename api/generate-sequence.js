@@ -98,13 +98,24 @@ Every LinkedIn message:
 - Casual but professional — not a mini-email
 - References the preceding email specifically
 
-BANNED: dashes (—), bullet points, "I hope this finds you well", "I wanted to reach out",
-"leveraging", "synergies", "exciting opportunity", "game-changing", "I think", "I believe",
-questions in subject lines, exclamation marks
+BANNED (applies to ALL channels — email AND LinkedIn):
+- Em dashes (—) or en dashes (–) ANYWHERE. Use commas or full stops instead.
+- Bullet points or lists of any kind
+- "I hope this finds you well", "I wanted to reach out", "I am reaching out", "I'm writing to"
+- "Leveraging", "synergies", "exciting opportunity", "game-changing"
+- "I think", "I believe", "maybe", "hopefully", "if possible"
+- Exclamation marks anywhere
+- Questions in subject lines
+- "I will not continue to follow up" or any threatening withdrawal language
+- "Reply to this email and I will send across within the hour" or any aggressive time-boxing
+- "I have a precise 15-minute slot" or any arrogant availability claims
+- Subject lines with em dashes (—). Use "x" format: "${teamName.replace(' Team', '')} x ${categoryClean}"
 
 REQUIRED language anchors (use naturally, not forced):
 "principal level", "category-exclusive", "closed bundle", "governance", "institutional credibility",
 "operating dependency", "category control", "scarcity by design", "board-level platform"
+
+Step 1 MUST NOT open with any form of "reaching out" or "writing to". Instead, lead with a statement of position or an insight about the category.
 
 ${styleExamples ? `═══ REAL VAN HAWKE EMAIL EXAMPLES (match this tone) ═══\n${styleExamples}\n═══ END EXAMPLES ═══` : ''}
 

@@ -432,17 +432,20 @@ Kind regards,
 WHAT BAD LOOKS LIKE (NEVER DO THIS):
 - "Reply to this email and I will send it across within the hour" — desperate, aggressive
 - "I have a precise 15-minute slot available" — arrogant SaaS cold email
-- "I wanted to reach out because..." — generic, passive
+- "I wanted to reach out because..." / "I am reaching out regarding..." — generic, passive. Lead with a STATEMENT not an introduction.
+- "I will not continue to follow up" — threatening. Strategic withdrawal is respectful, not punitive.
 - "Leveraging synergies between..." — corporate jargon
-- Any dashes (—) anywhere in the body
+- Any dashes (— or –) anywhere in the body. Use commas or full stops.
 - Any bullet points or lists
 - "Exciting opportunity" / "game-changing" / "I believe" / "I think"
 - Exclamation marks
-- Questions in subject lines` : `LINKEDIN RULES:
+- Questions in subject lines
+- Subject lines with em dashes. Use x format: "${teamName} x ${categoryName}"` : `LINKEDIN RULES:
 - 300 characters MAXIMUM
+- NO dashes (em or en) anywhere. Use commas or full stops.
 - Reference the preceding email specifically
 - No pitch, no hard ask
-- Warm, professional, human — not a mini-email`}
+- Warm, professional, human`}
 
 Return ONLY the ${s.channel === 'email' ? 'email text (starting with Dear, ending with {signature})' : 'message text'}. Nothing else — no preamble, no explanation, no markdown.`
 
