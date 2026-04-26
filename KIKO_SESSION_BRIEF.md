@@ -2,11 +2,30 @@
 
 ## For session handoff — read THIS before writing ANY code
 
-## Last updated: 2026-04-25 21:00 UTC
+## Last updated: 2026-04-26 10:00 UTC
 
-## 59 build sessions spanning April 7-25, 2026
+## 60 build sessions spanning April 7-26, 2026
 
 ## Transcripts: /mnt/transcripts/ (read journal.txt for session index)
+
+---
+
+## ⚠️ MANDATORY BUILD RULES
+
+### KIKO KNOWLEDGE UPDATE — REQUIRED AFTER EVERY BUILD
+
+After EVERY code change, feature addition, or bug fix that affects Kiko's capabilities:
+
+1. **Update `api/kiko-self-knowledge.js`** — this is Kiko's capability map. If you added a tool, changed how something works, or fixed a flow, Kiko must know about it here. She reads this on every request.
+
+2. **Update `KIKO_BIBLE.md`** — this is Kiko's governing document. Architecture changes, sequence logic, channel orchestration, voice rules, hard rules — all go here.
+
+3. **Deploy both to Hetzner** — `scp` both files + `pm2 restart kiko-worker`. If you only deploy code but not knowledge, Kiko doesn't know she has new capabilities and will redirect users to the UI or give outdated advice.
+
+4. **Verify** — after deploying, confirm Kiko knows about the change by checking her self-knowledge or Bible contains the update.
+
+**This is NOT optional.** Kiko is the operating intelligence of the entire platform. If she doesn't know about a feature, it doesn't exist from the user's perspective. Every session must end with a comprehensive Kiko knowledge sync.
+
 ---
 
 ## ⚡ SESSION 60 PRIORITIES (in order)

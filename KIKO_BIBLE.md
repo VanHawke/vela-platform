@@ -153,6 +153,18 @@ LinkedIn steps have condition:"connection_accepted" — automatically skipped if
 
 **Voice:** "Dear {firstName}," / "Kind regards," / 50-125 words / no dashes / no AI slop / senior advisor to board member tone. LinkedIn max 300 chars, reference preceding email.
 
+### SEQUENCE SENDER (cron-sequence-sender.js)
+
+Runs Mon-Fri during send window. Processes queued emails from kiko_outreach_queue.
+
+**Step advancement engine v2** handles three scenarios after sending an email:
+1. **Old model** (condition branches): evaluates condition, routes to YES/NO sub-steps, advances past
+2. **New model** (LinkedIn with condition field): if next step is LinkedIn with condition:"connection_accepted" — connected = queue LinkedIn message; not connected = skip step entirely. Email sequence never interrupted.
+3. **Normal**: simple advancement to next step
+
+LinkedIn messages queued to kiko_linkedin_queue (separate from email queue). Playwright + Decodo proxies on Hetzner execute LinkedIn automation.
+
+
 ### EMAIL DRAFT SPEED TIERS
 
 - **Simple emails / follow-ups**: Haiku (fast, \~5-6s). Used for: follow-up drafts, simple replies, acknowledgements
