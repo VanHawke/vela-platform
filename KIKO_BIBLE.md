@@ -136,46 +136,34 @@ Jobs queued to `kiko_background_jobs` table. Processed by `cron-job-processor.js
 
 ### CAMPAIGN SEQUENCE ENGINE
 
-**Core principle: LinkedIn REINFORCES email — it never replaces it.**
+**Research-backed: 14 touchpoints over 42 days (8 emails + 6 LinkedIn)**
 
-Email is primary: carries substance, operational detail, the proposition. LinkedIn is support: personal touch, relationship signal, urgency. A LinkedIn message 1-2 days AFTER an email creates a "surround sound" effect. The email sequence runs uninterrupted regardless of LinkedIn connection status.
+Based on B2B enterprise outreach research (Tendril, Growleads, DevCommX 2025-2026):
+- Enterprise deals need 12-18 touchpoints. At $3M-$40M, 14 minimum.
+- 80% of sales need 5+ follow-ups. 70% of replies come on LATER touches (steps 5-10).
+- Multi-channel (3+ channels) doubles engagement vs single-channel.
+- Breakup emails consistently get the HIGHEST reply rates.
+- Spacing: 2-3 business days. Total cadence: 42 days.
 
-**7-touchpoint orchestration pattern:**
+**14-step orchestration pattern:**
+Day 0: Email (authority opener)
+Day 1: LinkedIn connection request
+Day 3: Email (operational depth)
+Day 5: LinkedIn engage (view profile, like/comment content)
+Day 7: Email (value-add: industry insight)
+Day 10: LinkedIn message IF connected
+Day 12: Email (social proof: how F1 partnerships work)
+Day 15: LinkedIn message IF connected
+Day 18: Email (scarcity + race calendar)
+Day 21: LinkedIn message IF connected
+Day 25: Email (repositioning: competitive threat angle)
+Day 30: Email (breakup: respectful close)
+Day 35: LinkedIn engage (like/comment)
+Day 42: Email (resurrection: circumstances may have changed)
 
-- Day 0: Email (authority + curiosity)
-- Day 1: LinkedIn connection request (personalised note, no pitch)
-- Day 4: Email (operational depth — how the sector is used inside F1)
-- Day 6: LinkedIn message IF connected (reference Email 2, add warmth)
-- Day 9: Email (scarcity + race calendar — real dates, category closing)
-- Day 11: LinkedIn message IF connected (short urgency)
-- Day 14: Email (strategic withdrawal — respectful final note)
+LinkedIn reinforces email, never replaces it. Emails always run regardless of connection status. LinkedIn messages with condition:"connection_accepted" auto-skip if not connected.
 
-LinkedIn steps have condition:"connection_accepted" — automatically skipped if not connected.
-
-**Sector-specific intelligence:** REASON about why a \[sector\] company wants F1, what operational dependency F1 has on \[sector\], what their CMO/CRO cares about, and how F1 credibility translates to their pipeline.
-
-**Voice:** "Dear {firstName}," / "Kind regards," / 50-125 words / no dashes / no AI slop / senior advisor to board member tone. LinkedIn max 300 chars, reference preceding email.
-
-**Contract values: $3M-$40M annually per category-exclusive partnership.** At this scale, the decision sits with the CEO/Chairman/Board. You are NOT selling marketing or brand exposure. You are structuring an institutional asset — governance rights, category exclusivity, IP adjacency, strategic positioning. Outreach reads like a principal at a tier-1 advisory firm, not a salesperson. No aggressive CTAs ("reply within the hour"), no arrogant time-boxing ("I have 15 minutes"), no SaaS cold email tactics. No dashes. No bullet points. No AI slop.
-
-**Post-processing enforcement (generate-sequence.js + askKiko in SequenceDetail)**:Code-level enforcement that runs AFTER Claude generates content:
-
-- All em/en dashes stripped from subjects (replaced with "x") and bodies (replaced with commas)
-- "I wanted to" → "This is to"
-- "I am reaching out" → "This concerns"
-- "I wanted to reach out" → "This note concerns" These run automatically. Claude is told not to use them AND the code strips them if Claude does anyway.
-
-### SEQUENCE SENDER (cron-sequence-sender.js)
-
-Runs Mon-Fri during send window. Processes queued emails from kiko_outreach_queue.
-
-**Step advancement engine v2** handles three scenarios after sending an email:
-
-1. **Old model** (condition branches): evaluates condition, routes to YES/NO sub-steps, advances past
-2. **New model** (LinkedIn with condition field): if next step is LinkedIn with condition:"connection_accepted" — connected = queue LinkedIn message; not connected = skip step entirely. Email sequence never interrupted.
-3. **Normal**: simple advancement to next step
-
-LinkedIn messages queued to kiko_linkedin_queue (separate from email queue). Playwright + Decodo proxies on Hetzner execute LinkedIn automation.
+**Every enrollment defaults to PAUSED.** Nothing sends until the campaign is explicitly activated.
 
 ### EMAIL DRAFT SPEED TIERS
 
