@@ -699,7 +699,7 @@ export default function Campaigns({ user }) {
                   >Edit sequence</button>
                   <button
                     onClick={() => { setAddProspectsQuery(selectedCampaign?.description || selectedCampaign?.target_persona || ''); setAddProspectsOpen(true) }}
-                    style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                    style={{ padding: '7px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
                   ><UserPlus size={12} /> Add prospects</button>
                   {selectedCampaign.archived ? (
                     <button

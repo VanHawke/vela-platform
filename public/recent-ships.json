@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-26T13:56:26.595Z",
+  "generated_at": "2026-04-26T14:07:07.885Z",
   "commits": [
+    {
+      "hash": "4b00d74",
+      "subject": "Remove Vercel ignoreCommand + force rebuild",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "68648e8",
       "subject": "Force Vercel rebuild: touch src/ to bypass ignoreCommand",
-      "when": "16 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "37cc659",
       "subject": "Sequence enqueue: LinkedIn condition check before queuing",
-      "when": "41 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "4d7d7c1",
@@ -69,7 +74,7 @@
     {
       "hash": "de34f9d",
       "subject": "Sequence flow: condition branching fix + drag-and-drop reordering",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "1f2f5b0",
@@ -94,12 +99,7 @@
     {
       "hash": "701c5c9",
       "subject": "Background tasks: Realtime subscription + sourcing quality fix",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "efb347e",
-      "subject": "Fix: build-campaign now creates enrollments so prospects appear in UI",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     }
   ]
 }
