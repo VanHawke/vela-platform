@@ -10,12 +10,13 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  const { category, team, persona } = req.body;
+  const { category, team, persona, senderName: sn } = req.body;
   if (!category) return res.status(400).json({ error: 'category required' });
 
   const teamName = team || 'Haas F1 Team';
   const targetPersona = persona || `CEO / CMO at ${category} companies`;
   const categoryClean = category.replace(/\//g, ' ').replace(/\s+/g, ' ').trim();
+  const senderName = sn || 'Matt';
 
   try {
     const [races, partnerships, styleArr] = await Promise.all([
@@ -108,7 +109,25 @@ Every email:
 - Complete sentences. Short paragraphs (2-3 sentences each).
 - Reads like correspondence from a senior advisor to a board member.
 
-Every LinkedIn message: 300 characters maximum. NO dashes. Reference a specific preceding email.
+Every LinkedIn message (all messages, NOT connection invites):
+- ALWAYS starts with "Hi {firstName}," — every single one, no exceptions
+- ALWAYS ends with "Best, ${senderName}" — every single one
+- 300 characters maximum INCLUDING greeting and sign-off
+- Written like a REAL person typing a LinkedIn DM. Conversational. Warm. Human.
+- NOT a summary of the preceding email. A different angle, a personal thought, a genuine observation.
+- Each one should feel like ${senderName} personally typed it on his phone
+
+LinkedIn connection invites:
+- 200 characters maximum (LinkedIn platform limit)
+- No greeting needed (LinkedIn shows sender name automatically)
+- Brief, genuine, no pitch
+
+WHAT GOOD LINKEDIN MESSAGES LOOK LIKE:
+"Hi {firstName}, sent you a note on the legal AI category at Alpine. The GC procurement trust angle is the bit I think matters most for where you are right now. Worth 10 mins? Best, ${senderName}"
+
+WHAT BAD LINKEDIN MESSAGES LOOK LIKE (NEVER):
+"The category structure is being finalised. Worth 20 minutes." — no greeting, no sign-off, robotic
+"Sent you a note on the enterprise trust dynamic." — reads like an automated notification
 
 
 ABSOLUTELY BANNED (in ALL channels):
@@ -143,7 +162,7 @@ Return ONLY a valid JSON array of 14 objects. No markdown, no backticks, no expl
 
 Email: {"step":N,"delay_days":D,"channel":"email","approach":"[psychology]","subject":"...","template":"Dear {firstName},\\n\\n[body 50-100 words]\\n\\nKind regards,\\n\\n{signature}"}
 LinkedIn invite: {"step":N,"delay_days":D,"channel":"linkedin","action":"invite","template":"[personalised note, max 300 chars, NO dashes]"}
-LinkedIn message: {"step":N,"delay_days":D,"channel":"linkedin","action":"message","condition":"connection_accepted","template":"[message, max 300 chars, NO dashes]"}
+LinkedIn message: {"step":N,"delay_days":D,"channel":"linkedin","action":"message","condition":"connection_accepted","template":"Hi {firstName}, [conversational message]. Best, ${senderName}"}
 
 
 All 14 steps must be top-level in the array. LinkedIn messages with condition:"connection_accepted" are auto-skipped if not connected.`;
@@ -178,6 +197,17 @@ All 14 steps must be top-level in the array. LinkedIn messages with condition:"c
           .replace(/Just checking in/gi, '')
           .replace(/Following up on my last email/gi, '')
           .replace(/Bumping this/gi, '');
+        
+        // Enforce LinkedIn message format: greeting + sign-off
+        if (step.channel === 'linkedin' && step.action === 'message') {
+          if (!step.template.startsWith('Hi {firstName}')) {
+            step.template = 'Hi {firstName}, ' + step.template.replace(/^(Hi|Hey|Hello)\s+\{?firstName\}?,?\s*/i, '');
+          }
+          const senderTag = `Best, ${senderName}`;
+          if (!step.template.includes('Best,') && !step.template.includes('Regards,')) {
+            step.template = step.template.replace(/\.?\s*$/, '. ' + senderTag);
+          }
+        }
       }
     }
 

@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-26T20:16:34.480Z",
+  "generated_at": "2026-04-26T20:22:10.109Z",
   "commits": [
+    {
+      "hash": "b0f7e19",
+      "subject": "LinkedIn Connect: email/password login replaces li_at paste",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "03f1e73",
       "subject": "Fix: remove engage steps + LinkedIn test error handling",
@@ -84,21 +89,16 @@
     {
       "hash": "2294f67",
       "subject": "Bible: $3M-$40M contract values + no aggressive CTAs rule",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "85f783f",
       "subject": "CRITICAL: Contract values corrected to $3M-$40M + askKiko prompt rewritten",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "5bb1e4c",
       "subject": "Fix send-from dropdown + add Regenerate with Kiko button",
-      "when": "11 hours ago"
-    },
-    {
-      "hash": "df923f9",
-      "subject": "MANDATORY: Kiko knowledge sync after every build",
       "when": "11 hours ago"
     }
   ]
