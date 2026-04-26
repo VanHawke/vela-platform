@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-26T13:30:35.314Z",
+  "generated_at": "2026-04-26T13:56:26.595Z",
   "commits": [
+    {
+      "hash": "68648e8",
+      "subject": "Force Vercel rebuild: touch src/ to bypass ignoreCommand",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "37cc659",
       "subject": "Sequence enqueue: LinkedIn condition check before queuing",
-      "when": "16 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "4d7d7c1",
       "subject": "Session 60 final: Bible post-processing docs + session brief updated",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "54e75df",
       "subject": "Post-process banned phrases: I wanted to, I am reaching out, etc",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "6a5ef5d",
       "subject": "Dash post-processing: strip em/en dashes from all generated content",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "552c9b3",
       "subject": "Sequence quality: ban dashes in LinkedIn, ban reaching out variants, ban threatening withdrawal",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "2294f67",
@@ -44,7 +49,7 @@
     {
       "hash": "df923f9",
       "subject": "MANDATORY: Kiko knowledge sync after every build",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "7bc87b2",
@@ -94,11 +99,6 @@
     {
       "hash": "efb347e",
       "subject": "Fix: build-campaign now creates enrollments so prospects appear in UI",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "172c2f4",
-      "subject": "KIKO_BIBLE comprehensive update: sequence quality + all knowledge gaps",
       "when": "16 hours ago"
     }
   ]
