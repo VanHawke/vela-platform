@@ -301,21 +301,36 @@ export default async function handler(req, res) {
         }
 
         // Skip LinkedIn steps — those go to linkedin_queue separately
+        // NEW MODEL: if step has condition:"connection_accepted", check first
         if (actualStep.channel === 'linkedin') {
-          await sbFetch('kiko_linkedin_queue', { method: 'POST', body: JSON.stringify({
-            enrollment_id: enrollment.id, contact_name: enrollment.contact_name || '', company: enrollment.company || '',
-            linkedin_url: enrollment.linkedin_url || null,
-            message_type: actualStep.action || 'connection', message: actualStep.template || '', context: `Sequence: ${sequence.name}, Step ${actualStep.step || enrollment.current_step}`,
-            priority: 8, status: 'pending'
-          }) });
-          // Alert for LinkedIn action
-          await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
-            type: 'linkedin_action', severity: 'medium', entity_name: enrollment.company,
-            title: `LinkedIn: ${actualStep.action || 'Connect'} with ${enrollment.contact_name || enrollment.contact_email}`,
-            detail: `Campaign "${sequence.name}" requires a LinkedIn ${actualStep.action || 'connection request'} to ${enrollment.contact_name} at ${enrollment.company}. Message: "${(actualStep.template || '').slice(0, 150)}"`,
-            dismissed: false, expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
-          }) }).catch(() => {});
-          // Advance to next step
+          let shouldQueue = true;
+          
+          if (actualStep.condition === 'connection_accepted') {
+            // Check if prospect is connected on LinkedIn
+            const accepted = await sbFetch(`kiko_linkedin_queue?enrollment_id=eq.${enrollment.id}&action=eq.invite&result=eq.accepted&limit=1`).catch(() => []);
+            const alreadyConn = await sbFetch(`kiko_linkedin_queue?enrollment_id=eq.${enrollment.id}&result=eq.already_connected&limit=1`).catch(() => []);
+            const isConnected = (accepted?.length > 0) || (alreadyConn?.length > 0);
+            if (!isConnected) {
+              shouldQueue = false;
+              console.log(`[seq-enqueue] Skipping LinkedIn step ${actualStep.step || enrollment.current_step} — not connected (${enrollment.contact_name})`);
+            }
+          }
+          
+          if (shouldQueue) {
+            await sbFetch('kiko_linkedin_queue', { method: 'POST', body: JSON.stringify({
+              enrollment_id: enrollment.id, contact_name: enrollment.contact_name || '', company: enrollment.company || '',
+              linkedin_url: enrollment.linkedin_url || null,
+              message_type: actualStep.action || 'connection', message: actualStep.template || '', context: `Sequence: ${sequence.name}, Step ${actualStep.step || enrollment.current_step}`,
+              priority: 8, status: 'pending'
+            }) });
+            await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+              type: 'linkedin_action', severity: 'medium', entity_name: enrollment.company,
+              title: `LinkedIn: ${actualStep.action || 'Connect'} with ${enrollment.contact_name || enrollment.contact_email}`,
+              detail: `Campaign "${sequence.name}" requires a LinkedIn ${actualStep.action || 'connection request'} to ${enrollment.contact_name} at ${enrollment.company}. Message: "${(actualStep.template || '').slice(0, 150)}"`,
+              dismissed: false, expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            }) }).catch(() => {});
+          }
+          // Always advance past LinkedIn steps (they don't block email progression)
           const nextStep = steps.find(s => s.step === enrollment.current_step + 1);
           await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
             current_step: enrollment.current_step + 1,

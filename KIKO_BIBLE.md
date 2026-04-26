@@ -158,13 +158,12 @@ LinkedIn steps have condition:"connection_accepted" — automatically skipped if
 
 **Contract values: $3M-$40M annually per category-exclusive partnership.** At this scale, the decision sits with the CEO/Chairman/Board. You are NOT selling marketing or brand exposure. You are structuring an institutional asset — governance rights, category exclusivity, IP adjacency, strategic positioning. Outreach reads like a principal at a tier-1 advisory firm, not a salesperson. No aggressive CTAs ("reply within the hour"), no arrogant time-boxing ("I have 15 minutes"), no SaaS cold email tactics. No dashes. No bullet points. No AI slop.
 
-**Post-processing enforcement (generate-sequence.js + askKiko in SequenceDetail):**
-Code-level enforcement that runs AFTER Claude generates content:
+**Post-processing enforcement (generate-sequence.js + askKiko in SequenceDetail)**:Code-level enforcement that runs AFTER Claude generates content:
+
 - All em/en dashes stripped from subjects (replaced with "x") and bodies (replaced with commas)
 - "I wanted to" → "This is to"
-- "I am reaching out" → "This concerns"  
-- "I wanted to reach out" → "This note concerns"
-These run automatically. Claude is told not to use them AND the code strips them if Claude does anyway.
+- "I am reaching out" → "This concerns"
+- "I wanted to reach out" → "This note concerns" These run automatically. Claude is told not to use them AND the code strips them if Claude does anyway.
 
 ### SEQUENCE SENDER (cron-sequence-sender.js)
 

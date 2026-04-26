@@ -31,6 +31,7 @@ After EVERY code change, feature addition, or bug fix that affects Kiko's capabi
 ## ⚡ SESSION 60 — COMPLETED
 
 ### Campaign Pipeline (all done)
+
 - ✅ build_campaign tool — Kiko executes end-to-end campaign builds via chat
 - ✅ legal_ai category added (22 total categories, 11 teams, all alphabetical)
 - ✅ Sequence engine v2 — LinkedIn reinforces email, never replaces it
@@ -51,6 +52,7 @@ After EVERY code change, feature addition, or bug fix that affects Kiko's capabi
 - ✅ KIKO_BIBLE + self-knowledge comprehensive update
 
 ### Session 61 Priorities
+
 1. End-to-end send test: build → enroll → activate → email lands in inbox
 2. Kiko calling build_campaign live test in chat
 3. Sequence quality review with Sunny on a real campaign

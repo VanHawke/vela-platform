@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-26T10:10:56.539Z",
+  "generated_at": "2026-04-26T13:14:58.196Z",
   "commits": [
+    {
+      "hash": "4d7d7c1",
+      "subject": "Session 60 final: Bible post-processing docs + session brief updated",
+      "when": "3 hours ago"
+    },
+    {
+      "hash": "54e75df",
+      "subject": "Post-process banned phrases: I wanted to, I am reaching out, etc",
+      "when": "3 hours ago"
+    },
     {
       "hash": "6a5ef5d",
       "subject": "Dash post-processing: strip em/en dashes from all generated content",
-      "when": "5 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "552c9b3",
       "subject": "Sequence quality: ban dashes in LinkedIn, ban reaching out variants, ban threatening withdrawal",
-      "when": "9 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2294f67",
       "subject": "Bible: $3M-$40M contract values + no aggressive CTAs rule",
-      "when": "19 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "85f783f",
       "subject": "CRITICAL: Contract values corrected to $3M-$40M + askKiko prompt rewritten",
-      "when": "22 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "5bb1e4c",
       "subject": "Fix send-from dropdown + add Regenerate with Kiko button",
-      "when": "30 minutes ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "df923f9",
       "subject": "MANDATORY: Kiko knowledge sync after every build",
-      "when": "61 minutes ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "7bc87b2",
       "subject": "Sequence sender v2: handles both condition models + LinkedIn parallel",
-      "when": "76 minutes ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "9ec3865",
       "subject": "Bible: sequence engine v2 — LinkedIn reinforces email model",
-      "when": "84 minutes ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "c85a35f",
       "subject": "SEQUENCE ENGINE v2: LinkedIn reinforces email, never replaces it",
-      "when": "85 minutes ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "de34f9d",
       "subject": "Sequence flow: condition branching fix + drag-and-drop reordering",
-      "when": "2 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "1f2f5b0",
       "subject": "Consolidate: one 'Source prospects' button, background job only",
-      "when": "12 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "474ffee",
       "subject": "KIKO_BIBLE final: KikoFloat conversation pills + Campaign UI sections added",
-      "when": "12 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "e539743",
       "subject": "Campaign targets display + KikoFloat conversation pills + sequence verified",
-      "when": "12 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "2c4048b",
       "subject": "Session 60: Sequence engine rewrite + task panel buttons + all fixes",
-      "when": "13 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "701c5c9",
       "subject": "Background tasks: Realtime subscription + sourcing quality fix",
-      "when": "13 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "efb347e",
       "subject": "Fix: build-campaign now creates enrollments so prospects appear in UI",
-      "when": "13 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "172c2f4",
       "subject": "KIKO_BIBLE comprehensive update: sequence quality + all knowledge gaps",
-      "when": "13 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "33a4ab4",
       "subject": "Fix: source_companies_bg now populates campaign_targets + async job processor",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "13f0091",
-      "subject": "KIKO_BIBLE + self-knowledge: full Session 59-60 update",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "f596d01",
-      "subject": "Session 60: build_campaign tool + legal_ai category + alphabetical sorting",
-      "when": "14 hours ago"
+      "when": "16 hours ago"
     }
   ]
 }
