@@ -11,12 +11,12 @@ const T = {
 
 const PAGES = [
   { id: 'pipeline', label: 'Pipeline', path: '/pipeline', icon: GitBranch, section: 'pages' },
+  { id: 'campaigns', label: 'Campaigns', path: '/campaigns', icon: Send, section: 'pages' },
   { id: 'calendar', label: 'Race Calendar', path: '/calendar', icon: Calendar, section: 'pages' },
   { id: 'contacts', label: 'Contacts', path: '/contacts', icon: Users, section: 'pages' },
   { id: 'command-centre', label: 'Command Centre', path: '/command-centre', icon: Target, section: 'pages' },
   { id: 'matrix', label: 'Partnership Matrix', path: '/partnership-matrix', icon: Grid3X3, section: 'pages' },
   { id: 'organisations', label: 'Organisations', path: '/organisations', icon: Building2, section: 'pages' },
-  { id: 'lemlist', label: 'Lemlist', path: '/lemlist', icon: Send, section: 'pages' },
 ]
 
 const ACTIONS = [

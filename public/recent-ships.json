@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-26T20:30:54.494Z",
+  "generated_at": "2026-04-26T20:37:26.570Z",
   "commits": [
+    {
+      "hash": "63a9197",
+      "subject": "Fix Settings: match user by user_id for role, handle agency/com alias for LinkedIn status",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "f9fed09",
       "subject": "LinkedIn messages: enforce greeting + sign-off + conversational tone",
-      "when": "9 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "b0f7e19",
       "subject": "LinkedIn Connect: email/password login replaces li_at paste",
-      "when": "14 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "03f1e73",
@@ -54,7 +59,7 @@
     {
       "hash": "8b16794",
       "subject": "Fix: delete test Haas campaign + Add prospects button now secondary",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "4b00d74",
@@ -84,21 +89,16 @@
     {
       "hash": "6a5ef5d",
       "subject": "Dash post-processing: strip em/en dashes from all generated content",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "552c9b3",
       "subject": "Sequence quality: ban dashes in LinkedIn, ban reaching out variants, ban threatening withdrawal",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "2294f67",
       "subject": "Bible: $3M-$40M contract values + no aggressive CTAs rule",
-      "when": "11 hours ago"
-    },
-    {
-      "hash": "85f783f",
-      "subject": "CRITICAL: Contract values corrected to $3M-$40M + askKiko prompt rewritten",
       "when": "11 hours ago"
     }
   ]
