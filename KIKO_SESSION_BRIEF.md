@@ -28,44 +28,32 @@ After EVERY code change, feature addition, or bug fix that affects Kiko's capabi
 
 ---
 
-## ⚡ SESSION 60 PRIORITIES (in order)
+## ⚡ SESSION 60 — COMPLETED
 
-### 1. CAMPAIGN BUILDER — Kiko executes builds directly via tools
+### Campaign Pipeline (all done)
+- ✅ build_campaign tool — Kiko executes end-to-end campaign builds via chat
+- ✅ legal_ai category added (22 total categories, 11 teams, all alphabetical)
+- ✅ Sequence engine v2 — LinkedIn reinforces email, never replaces it
+- ✅ 7-touchpoint pattern: Email→LinkedIn→Email→LinkedIn IF→Email→LinkedIn IF→Email
+- ✅ Contract values corrected: $3M-$40M (NOT $500K-$2M)
+- ✅ Post-processing: dashes stripped, banned phrases auto-replaced at code level
+- ✅ askKiko prompt rewritten with good/bad examples and $3M-$40M positioning
+- ✅ Sequence sender v2: handles LinkedIn condition field (skip if not connected)
+- ✅ Send-from dropdown fixed (uses user prop, not supabase.auth timing)
+- ✅ "Regenerate with Kiko" button on sequence tab
+- ✅ Background job processor: async processing, no timeout kills
+- ✅ Source prospects consolidated to one button (background job only)
+- ✅ Campaign targets with "Needs Email" purple badge
+- ✅ Background task Realtime (Supabase subscription, instant updates)
+- ✅ Task panel: Retry/Remove buttons, real progress bar
+- ✅ KikoFloat conversation-aware follow-up pills
+- ✅ Drag-and-drop step reordering in sequence flow view
+- ✅ KIKO_BIBLE + self-knowledge comprehensive update
 
-Kiko must be able to build campaigns when the user says "do it" — no redirecting to the UI. She should call `build-campaign` endpoint directly with the team + category as params. This is the #1 revenue-critical feature.
-
-### 2. CAMPAIGN BUILDER — Dynamic categories
-
-Categories are hardcoded in `build-campaign.js` (CATEGORY_CRITERIA object). Need: `campaign_categories` Supabase table, Kiko can create new categories (e.g. "Legal AI Technology"), categories + team names alphabetically sorted in the UI dropdown.
-
-### 3. CAMPAIGN BUILDER — "Add Prospects" sourcing quality
-
-When user types "legal AI companies" in the Add Prospects modal, the sourcing prompt must use that description, not just the generic category name. Currently sources generic law firms instead of legal AI tech companies like Harvey AI, Luminance, Ironclad etc.
-
-### 4. BACKGROUND TASK SYSTEM — Realtime updates
-
-Task icon in top nav polls every 15s. Needs Supabase Realtime subscription on `kiko_background_jobs`so status changes appear instantly. Cancel/retry/remove buttons needed on each task. "Clear finished" button needs to properly update UI state after deletion. Progress bar should show real percentage from `progress_pct` column.
-
-### 5. CAMPAIGN BUILDER — End-to-end test
-
-Full flow: Build → Enroll → Activate → First email sends via sequence sender. Test with the Alpine F1 Legal AI Technology campaign. Verify: no fabricated emails, real verified addresses, correct sequence steps.
-
-### 6. SESSION 59 COMPLETED (reference)
-
-- [Apollo.io](http://Apollo.io) integrated (75 credits/month, positioned after free methods in cascade)
-- Email cascade: pattern+SMTP → Google → Apollo → paid APIs
-- Gateway cache: domains blocking SMTP cached, subsequent contacts instant
-- Campaign builder: background email enrichment via job processor
-- 60/62 emails found for legal campaign (96.7%, zero credits)
-- KikoFloat white screen crash fixed (chip objects → .label)
-- 11 dormant crons activated (32 total + 7 monitors)
-- Vercel cache headers fixed (s-maxage=0)
-- PermissionGate no-flash fix
-- Kiko hard rule: never ask user for data you can look up
-
----
-
----
+### Session 61 Priorities
+1. End-to-end send test: build → enroll → activate → email lands in inbox
+2. Kiko calling build_campaign live test in chat
+3. Sequence quality review with Sunny on a real campaign
 
 ## IDENTITY
 
