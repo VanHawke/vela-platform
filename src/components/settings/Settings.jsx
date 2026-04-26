@@ -323,7 +323,8 @@ export default function Settings({ user }) {
 
   const checkLinkedinStatus = async () => {
     try {
-      const { data } = await supabase.from('user_tokens').select('access_token, updated_at').eq('user_email', email).eq('provider', 'linkedin').single()
+      // Check both @vanhawke.com and @vanhawke.agency
+      const { data } = await supabase.from('user_tokens').select('access_token, updated_at').eq('provider', 'linkedin').or(`user_email.eq.${email},user_email.eq.${email.replace(/@vanhawke\.com$/,'@vanhawke.agency')}`).limit(1).maybeSingle()
       setLinkedinStatus(data ? { connected: true, last_updated: data.updated_at } : { connected: false })
     } catch { setLinkedinStatus({ connected: false }) }
   }
@@ -366,7 +367,7 @@ export default function Settings({ user }) {
       const { data: members } = await supabase.from('kiko_user_config').select('id, user_id, email, display_name, role, job_title, location, active, created_at').order('created_at', { ascending: true })
       setTeamMembers(members || [])
       // Find current user's role
-      const me = (members || []).find(m => m.email === email)
+      const me = (members || []).find(m => m.user_id === user?.id || m.email === email)
       if (me) setCurrentUserRole(me.role)
     } catch {}
   }
