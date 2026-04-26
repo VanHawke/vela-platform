@@ -76,7 +76,10 @@ export default function Settings({ user }) {
   const [googleStatus, setGoogleStatus] = useState(null)
   const [linkedinStatus, setLinkedinStatus] = useState(null)
   const [linkedinInput, setLinkedinInput] = useState('')
+  const [linkedinPassword, setLinkedinPassword] = useState('')
   const [showLinkedinGuide, setShowLinkedinGuide] = useState(false)
+  const [linkedinConnecting, setLinkedinConnecting] = useState(false)
+  const [linkedinError, setLinkedinError] = useState('')
   const [teamMembers, setTeamMembers] = useState([])
   const [invitations, setInvitations] = useState([])
   const [inviteEmail, setInviteEmail] = useState('')
@@ -326,18 +329,27 @@ export default function Settings({ user }) {
   }
 
   const connectLinkedin = async () => {
-    if (!linkedinInput.trim()) return
+    if (!linkedinInput.trim() || !linkedinPassword.trim()) return
+    setLinkedinConnecting(true)
+    setLinkedinError('')
     try {
-      await supabase.from('user_tokens').upsert({
-        user_email: email,
-        provider: 'linkedin',
-        access_token: linkedinInput.trim(),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_email,provider' })
-      setLinkedinStatus({ connected: true, last_updated: new Date().toISOString() })
-      setLinkedinInput('')
-      setShowLinkedinGuide(false)
-    } catch (e) { console.error('LinkedIn connect error:', e) }
+      const identity = email.replace(/@vanhawke\.(com|agency)$/i, '').toLowerCase()
+      const res = await fetch('https://api.vanhawke.agency/linkedin-connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer kiko-hetzner-2026-vanhawke' },
+        body: JSON.stringify({ email: linkedinInput.trim(), password: linkedinPassword.trim(), identity }),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        setLinkedinStatus({ connected: true, last_updated: new Date().toISOString(), cookies: data.cookies })
+        setLinkedinInput('')
+        setLinkedinPassword('')
+        setShowLinkedinGuide(false)
+      } else {
+        setLinkedinError(data.message || 'Connection failed')
+      }
+    } catch (e) { setLinkedinError('Connection error: ' + e.message) }
+    setLinkedinConnecting(false)
   }
 
   const disconnectLinkedin = async () => {
@@ -1128,27 +1140,18 @@ export default function Settings({ user }) {
               )}
               {showLinkedinGuide && (
                 <div style={{ marginTop: 16, padding: 20, border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, background: '#FAFAF7' }}>
-                  <h4 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Connect LinkedIn in 3 steps</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13, color: T.text, fontFamily: T.font }}>
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#0077B5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>1</span>
-                      <span>Open <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" style={{ color: '#0077B5', textDecoration: 'none', fontWeight: 500 }}>linkedin.com</a> in a new tab and make sure you're logged in</span>
+                  <h4 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Connect your LinkedIn account</h4>
+                  <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 16px', fontFamily: T.font }}>Enter your LinkedIn login credentials. Kiko will securely connect to your account and maintain the session automatically.</p>
+                  {linkedinError && <div style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', color: '#dc2626', fontSize: 12, marginBottom: 12, fontFamily: T.font }}>{linkedinError}</div>}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <input value={linkedinInput} onChange={e => setLinkedinInput(e.target.value)} placeholder="LinkedIn email address" type="email" style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.12)', fontSize: 13, fontFamily: T.font, outline: 'none' }} />
+                    <input value={linkedinPassword} onChange={e => setLinkedinPassword(e.target.value)} placeholder="LinkedIn password" type="password" style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.12)', fontSize: 13, fontFamily: T.font, outline: 'none' }} onKeyDown={e => e.key === 'Enter' && connectLinkedin()} />
+                    <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                      <button onClick={connectLinkedin} disabled={linkedinConnecting || !linkedinInput || !linkedinPassword} style={{ padding: '10px 20px', borderRadius: 8, border: 'none', background: linkedinConnecting ? '#ccc' : '#0077B5', color: '#fff', fontSize: 13, fontWeight: 500, cursor: linkedinConnecting ? 'wait' : 'pointer', fontFamily: T.font }}>{linkedinConnecting ? 'Connecting...' : 'Connect LinkedIn'}</button>
+                      <button onClick={() => { setShowLinkedinGuide(false); setLinkedinError('') }} style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.12)', background: 'transparent', color: T.textTertiary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
                     </div>
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#0077B5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>2</span>
-                      <span>Right-click anywhere on LinkedIn → <strong>Inspect</strong> (or <strong>Cmd+Option+I</strong> on Mac, <strong>F12</strong> on Windows) → <strong>Application</strong> tab → <strong>Cookies</strong> → <strong>linkedin.com</strong> → find <strong>li_at</strong> → copy its value</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#0077B5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>3</span>
-                      <span>Paste the value below and click Connect</span>
-                    </div>
+                    <p style={{ fontSize: 11, color: T.textTertiary, margin: '4px 0 0', fontFamily: T.font }}>Your credentials are used once to establish a session. LinkedIn may ask for a verification code on first connection — complete it in your browser first, then try again here.</p>
                   </div>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-                    <input value={linkedinInput} onChange={e => setLinkedinInput(e.target.value)} placeholder="Paste li_at cookie value..." style={{ flex: 1, padding: '8px 12px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.12)', fontSize: 13, fontFamily: T.font }} onKeyDown={e => e.key === 'Enter' && connectLinkedin()} />
-                    <button onClick={connectLinkedin} disabled={!linkedinInput.trim()} style={{ padding: '8px 18px', borderRadius: 6, background: linkedinInput.trim() ? '#0077B5' : 'rgba(0,0,0,0.08)', color: linkedinInput.trim() ? '#fff' : '#A0A0A0', border: 'none', fontSize: 13, fontWeight: 500, cursor: linkedinInput.trim() ? 'pointer' : 'default', fontFamily: T.font }}>Connect</button>
-                    <button onClick={() => setShowLinkedinGuide(false)} style={{ padding: '8px 12px', borderRadius: 6, background: 'none', border: '1px solid rgba(0,0,0,0.08)', color: T.textTertiary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-                  </div>
-                  <p style={{ fontSize: 11, color: '#A0A0A0', marginTop: 10, fontFamily: T.font }}>Your LinkedIn session is stored securely. It expires after ~12 months. Kiko uses residential proxies to send connections and messages on your behalf.</p>
                 </div>
               )}
             </div>
