@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-26T18:18:18.560Z",
+  "generated_at": "2026-04-26T18:28:05.346Z",
   "commits": [
+    {
+      "hash": "ec5dec9",
+      "subject": "Fix enqueue: correct firstName + dash stripping + banned phrases",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "5bcae8e",
       "subject": "CRITICAL: Fix bulk Pause button + database default",
-      "when": "82 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e2f64d7",
@@ -14,7 +19,7 @@
     {
       "hash": "2841faf",
       "subject": "SEQUENCE ENGINE v3: Research-backed 14 touchpoints over 42 days",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "dcd6d2a",
@@ -34,7 +39,7 @@
     {
       "hash": "4b00d74",
       "subject": "Remove Vercel ignoreCommand + force rebuild",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "68648e8",
@@ -69,7 +74,7 @@
     {
       "hash": "2294f67",
       "subject": "Bible: $3M-$40M contract values + no aggressive CTAs rule",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "85f783f",
@@ -89,16 +94,11 @@
     {
       "hash": "7bc87b2",
       "subject": "Sequence sender v2: handles both condition models + LinkedIn parallel",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "9ec3865",
       "subject": "Bible: sequence engine v2 — LinkedIn reinforces email model",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "c85a35f",
-      "subject": "SEQUENCE ENGINE v2: LinkedIn reinforces email, never replaces it",
       "when": "10 hours ago"
     }
   ]

@@ -19,10 +19,14 @@ const supabase = createClient(
 export async function getGoogleToken(userEmail) {
   if (!userEmail) throw new Error('userEmail required');
 
+  // Resolve alias: @vanhawke.agency → @vanhawke.com for OAuth token lookup
+  // Emails SEND from @vanhawke.agency (via Gmail sendAs) but OAuth tokens are stored under @vanhawke.com
+  const tokenEmail = userEmail.replace(/@vanhawke\.agency$/i, '@vanhawke.com');
+
   const { data, error } = await supabase
     .from('user_tokens')
     .select('access_token, refresh_token, expires_at')
-    .eq('user_email', userEmail)
+    .eq('user_email', tokenEmail)
     .eq('provider', 'google')
     .single();
 
@@ -75,7 +79,7 @@ export async function getGoogleToken(userEmail) {
       expires_at: newExpiresAt,
       updated_at: new Date().toISOString(),
     })
-    .eq('user_email', userEmail)
+    .eq('user_email', tokenEmail)
     .eq('provider', 'google');
 
   if (updateError) {
@@ -93,11 +97,14 @@ export default async function handler(req, res) {
   const email = req.query?.email;
   if (!email) return res.status(400).json({ error: 'email query param required' });
 
+  // Resolve alias for token lookup
+  const tokenEmail = email.replace(/@vanhawke\.agency$/i, '@vanhawke.com');
+
   try {
     const { data } = await supabase
       .from('user_tokens')
       .select('provider, expires_at, scope, updated_at')
-      .eq('user_email', email)
+      .eq('user_email', tokenEmail)
       .eq('provider', 'google')
       .single();
 
