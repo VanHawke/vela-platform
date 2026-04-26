@@ -1,10 +1,20 @@
 {
-  "generated_at": "2026-04-26T08:45:41.600Z",
+  "generated_at": "2026-04-26T08:54:38.581Z",
   "commits": [
+    {
+      "hash": "9ec3865",
+      "subject": "Bible: sequence engine v2 — LinkedIn reinforces email model",
+      "when": "8 minutes ago"
+    },
+    {
+      "hash": "c85a35f",
+      "subject": "SEQUENCE ENGINE v2: LinkedIn reinforces email, never replaces it",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "de34f9d",
       "subject": "Sequence flow: condition branching fix + drag-and-drop reordering",
-      "when": "8 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "1f2f5b0",
@@ -39,12 +49,12 @@
     {
       "hash": "172c2f4",
       "subject": "KIKO_BIBLE comprehensive update: sequence quality + all knowledge gaps",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "33a4ab4",
       "subject": "Fix: source_companies_bg now populates campaign_targets + async job processor",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "13f0091",
@@ -90,16 +100,6 @@
       "hash": "fc8d272",
       "subject": "Fix navigation issues: campaigns refetch + PermissionGate no-flash",
       "when": "14 hours ago"
-    },
-    {
-      "hash": "90d1e70",
-      "subject": "Fix background task display: show emails_found instead of prospects_found",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "fe96144",
-      "subject": "Fix job processor: order by queued_at not created_at (column didn't exist)",
-      "when": "15 hours ago"
     }
   ]
 }
