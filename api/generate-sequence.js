@@ -1,21 +1,20 @@
-// api/generate-sequence.js — Strategic sequence generation engine
-// Kiko acts as the expert: she reasons about sector, company type, team positioning,
-// buyer psychology, and channel orchestration to create the optimal outreach sequence.
-// LinkedIn and email run in PARALLEL — LinkedIn reinforces email, never replaces it.
+// api/generate-sequence.js — Research-backed sequence generation engine
+// Enterprise partnerships ($3M-$40M): 12-16 touchpoints over 30-45 days
+// Based on B2B research: 80% of sales need 5+ follow-ups, 70% of replies come on later touches
+// Enterprise cadences need 12-18 touchpoints (Tendril, DevCommX, Growleads 2025-2026 research)
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from './kiko-tools.js';
 
-export const config = { maxDuration: 60 };
+export const config = { maxDuration: 90 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  const { category, team, persona, numSteps } = req.body;
+  const { category, team, persona } = req.body;
   if (!category) return res.status(400).json({ error: 'category required' });
 
   const teamName = team || 'Haas F1 Team';
-  const targetPersona = persona || `C-suite at $500M-$5B ${category} companies`;
-  const steps = numSteps || 7;
+  const targetPersona = persona || `CEO / CMO at ${category} companies`;
   const categoryClean = category.replace(/\//g, ' ').replace(/\s+/g, ' ').trim();
 
   try {
@@ -28,124 +27,129 @@ export default async function handler(req, res) {
     const partArr = Array.isArray(partnerships) ? partnerships : [];
     const styles = Array.isArray(styleArr) ? styleArr : [];
     const nextRace = raceArr[0];
+    const race2 = raceArr[1];
     const existingSponsors = partArr.map(p => p.company || p.partner_name).filter(Boolean).slice(0, 5);
     const styleExamples = styles.slice(0, 3).map(e => `[${e.category} Step ${e.step_number}]\nSubject: ${e.subject}\n${e.body}`).join('\n---\n');
 
-    const prompt = `You are the world's leading B2B sponsorship sales strategist. You have deep expertise in:
-- C-suite psychology and decision-making patterns
-- Multi-channel outreach orchestration (email + LinkedIn working together)
-- Formula One partnership structuring and category exclusivity
-- Authority-led positioning (you represent the platform, not a vendor)
-- Persuasion science: authority, scarcity, social proof, loss aversion, commitment/consistency
+    const prompt = `You are the world's leading B2B enterprise partnership strategist. You have deep expertise in multi-channel outreach orchestration, C-suite psychology, and Formula One commercial structuring.
 
-Your task: Design a ${steps}-touchpoint outreach sequence for the "${categoryClean}" sector targeting ${targetPersona} for ${teamName}.
+Your task: Design a 14-touchpoint outreach sequence for "${categoryClean}" targeting ${targetPersona} for ${teamName}.
 
-═══ STRATEGIC CONTEXT ═══
+═══ RESEARCH-BACKED CADENCE STRUCTURE ═══
 
-Team: ${teamName}
-Category: ${categoryClean}
-Target: ${targetPersona}
-Next race: ${nextRace ? `${nextRace.name} on ${nextRace.date}` : 'TBC'}
-Existing sponsors in category: ${existingSponsors.length ? existingSponsors.join(', ') : 'Category is currently OPEN — this is a key selling point'}
-Contract value range: $3M — $40M annually (category-exclusive institutional partnerships)
+This is based on real B2B outreach research (Tendril, Growleads, DevCommX, Sendspark, Kondo 2025-2026):
 
-This is NOT a marketing conversation. At $3M-$40M, the decision sits with the CEO, the board, or the chairman. You are writing as a principal at a tier-1 advisory firm structuring a strategic asset allocation. The prospect isn't buying media impressions — they're securing governance rights, category exclusivity, and institutional positioning within the most watched sport on earth.
+PROVEN DATA:
+- Enterprise deals (>$50K) need 12-18 touchpoints over 6-12 weeks
+- At $3M-$40M per partnership, this is ultra-enterprise. 14 minimum touchpoints.
+- 80% of sales need 5+ follow-ups. 70% of replies come on LATER touches (steps 5-10).
+- Multi-channel (3+ channels) doubles engagement vs single-channel
+- Email: 60-70% of touchpoints. LinkedIn: 20-30%. These run IN PARALLEL.
+- Spacing: 2-3 business days between touches. Total cadence: 30-45 days.
+- Breakup emails consistently get the HIGHEST reply rates in any sequence
+- Tuesday-Thursday are optimal send days. 9-11am local time.
+- Reps who use LinkedIn are 51% more likely to hit quota
 
-═══ CHANNEL ORCHESTRATION RULES ═══
-
-EMAIL is the primary channel. Every sequence is email-first and email-led.
-LINKEDIN is a supporting channel that REINFORCES email — it never replaces it.
-
-How they work together:
-- Email carries the substance: the strategic argument, the operational detail, the proposition
-- LinkedIn carries the relationship signal: the personal touch, the human connection, the urgency
-- A LinkedIn message 1-2 days AFTER an email creates a "surround sound" effect — the prospect sees you in their inbox AND their LinkedIn
-- A LinkedIn message should REFERENCE the email: "Sent you a note on [topic] — worth a look"
-- Timing gaps between channels: LinkedIn 1-2 days after the preceding email, next email 2-3 days after LinkedIn
-
-Example orchestration pattern:
+OPTIMAL TIMING PATTERN (research-backed):
 Day 0: Email 1 (authority opener)
-Day 1: LinkedIn connection request (with personalised note referencing Email 1)
-Day 4: Email 2 (different angle, deeper)
-Day 6: LinkedIn message IF connected (reference Email 2, add personal layer)
-Day 9: Email 3 (scarcity, calendar-driven)
-Day 11: LinkedIn message IF connected (short, urgent, "category closing")
-Day 14: Email 4 (strategic withdrawal — final note)
+Day 1: LinkedIn connection request
+Day 3: Email 2 (operational depth)
+Day 5: LinkedIn profile engagement (view profile, engage with their content)
+Day 7: Email 3 (value-add: industry insight or data point)
+Day 10: LinkedIn message IF connected (reference emails)
+Day 12: Email 4 (case study / social proof from F1)
+Day 15: LinkedIn message IF connected (short, direct)
+Day 18: Email 5 (scarcity + race calendar urgency)
+Day 21: LinkedIn message IF connected (final LinkedIn touch)
+Day 25: Email 6 (strategic repositioning: different angle entirely)
+Day 30: Email 7 (breakup email: respectful close, protect their option)
+Day 35: LinkedIn: engage with their content (like/comment on a post)
+Day 42: Email 8 (resurrection: "circumstances may have changed")
 
-Note: LinkedIn messages are conditional on connection being accepted. If not connected, the email sequence continues uninterrupted. The emails do NOT change based on LinkedIn status — they stand alone as a complete sequence.
+═══ WHAT EACH TOUCHPOINT MUST ACHIEVE ═══
 
-═══ SECTOR-SPECIFIC STRATEGY ═══
+Every single touch must ADD VALUE. Never "just checking in." Never "following up on my last email."
 
-Think about WHY a ${categoryClean} company would want an F1 partnership:
-- What operational dependency does F1 have on ${categoryClean}? (data, logistics, engineering, compliance, communications?)
-- What does ${teamName} specifically need from this sector?
-- What business outcome does the CMO/CRO of a ${categoryClean} company care about?
-- How does F1 credibility translate to their sales pipeline?
+Touch 1 (Email): AUTHORITY. Establish who you are. State the category is open. Explain WHY this category matters operationally for F1. End with a strategic question, not a pitch.
+Touch 2 (LinkedIn invite): SOCIAL SIGNAL. Personalised note. Reference the email. No pitch. Human connection.
+Touch 3 (Email): OPERATIONAL DEPTH. How does ${categoryClean} actually operate inside an F1 team? Contract management, compliance, data pipelines, simulation, logistics. Make them see the real dependency.
+Touch 4 (LinkedIn engage): VISIBILITY. View their profile. Like or comment on one of their posts. No direct message. Just be visible.
+Touch 5 (Email): VALUE-ADD. Share a genuine insight. A data point about F1 commercial growth, or a trend in their sector. Position yourself as someone who THINKS about their market, not just sells to it.
+Touch 6 (LinkedIn message IF connected): RELATIONSHIP. Short, warm. Reference a specific email. "Sent you a note on [topic]. The [specific angle] is worth a look."
+Touch 7 (Email): SOCIAL PROOF. What have comparable partnerships looked like? Reference other F1 partnerships (without naming competitors for THIS category). Show the institutional credibility framework.
+Touch 8 (LinkedIn message IF connected): DIRECT. "The category structure is being finalised. Worth 20 minutes before it closes."
+Touch 9 (Email): SCARCITY + CALENDAR. ${nextRace ? `${nextRace.name} is coming up on ${nextRace.date}.` : 'Next race is approaching.'} Activation windows are structured around the race calendar. Category closes.
+Touch 10 (LinkedIn message IF connected): URGENCY. Short. "Category decision moving. Wanted to flag it directly."
+Touch 11 (Email): REPOSITIONING. Come at it from a COMPLETELY different angle. If previous emails focused on credibility, this one focuses on competitive threat. If a competitor takes this slot, what does that mean for them?
+Touch 12 (Email): BREAKUP. This is NOT aggressive or threatening. It IS respectful and final. "This will be my last note. The position remains open. If circumstances change, the conversation is available." This email consistently gets the HIGHEST reply rate.
+Touch 13 (LinkedIn): CONTENT ENGAGEMENT. Like or comment on their latest post. Stay visible without messaging.
+Touch 14 (Email): RESURRECTION (35-42 days later). Brief. "Circumstances may have changed since we last corresponded. The category position has evolved. If this is now relevant, I can outline the current structure."
 
-Use these insights to craft messaging that speaks to THEIR strategic priorities, not ours.
+═══ CONTRACT SCALE ═══
 
-═══ VOICE & LANGUAGE (NON-NEGOTIABLE) ═══
+$3M-$40M annually per category-exclusive partnership. This is institutional strategic positioning, NOT marketing spend. The decision sits with the CEO, the board, or the chairman. Write like a principal at a tier-1 advisory firm structuring a strategic asset allocation.
+
+═══ SECTOR-SPECIFIC INTELLIGENCE ═══
+
+Before writing, THINK about:
+- Why would a ${categoryClean} company want an F1 partnership? What is their strategic motivation beyond brand awareness?
+- What operational dependency does ${teamName} have on ${categoryClean}? (Every F1 team has real operational needs: data, logistics, legal, engineering, communications, compliance, cybersecurity)
+- What business outcome does the CEO/CMO of a ${categoryClean} company care about? Enterprise trust? Market credibility? Displacement of competitors?
+- How does F1 credibility specifically translate into their sales pipeline or board-level positioning?
+
+USE THESE INSIGHTS to make every email sector-specific. Do NOT write generic sponsorship emails.
+
+═══ VOICE RULES (NON-NEGOTIABLE) ═══
 
 Every email:
-- Opens with "Dear {firstName}," — nothing else
-- Closes with "Kind regards,\\n\\n{signature}"
-- 50-125 words maximum
-- Complete sentences, short paragraphs (2-3 sentences each)
-- Reads like a senior advisor writing to a board member
+- Opens with "Dear {firstName}," ONLY
+- Closes with "Kind regards,\\n\\n{signature}" ONLY
+- 50-100 words MAXIMUM. Every word earns its place.
+- Complete sentences. Short paragraphs (2-3 sentences each).
+- Reads like correspondence from a senior advisor to a board member.
 
-Every LinkedIn message:
-- Maximum 300 characters
-- Casual but professional — not a mini-email
-- References the preceding email specifically
+Every LinkedIn message: 300 characters maximum. NO dashes. Reference a specific preceding email.
+LinkedIn engage steps: {"channel":"linkedin","action":"engage","template":"[instruction for what to engage with]"}
 
-BANNED (applies to ALL channels — email AND LinkedIn):
-- Em dashes (—) or en dashes (–) ANYWHERE. Use commas or full stops instead.
+ABSOLUTELY BANNED (in ALL channels):
+- Em dashes or en dashes. Use commas or full stops.
 - Bullet points or lists of any kind
-- "I hope this finds you well", "I wanted to reach out", "I am reaching out", "I'm writing to"
-- "Leveraging", "synergies", "exciting opportunity", "game-changing"
-- "I think", "I believe", "maybe", "hopefully", "if possible"
-- Exclamation marks anywhere
-- Questions in subject lines
-- "I will not continue to follow up" or any threatening withdrawal language
-- "Reply to this email and I will send across within the hour" or any aggressive time-boxing
-- "I have a precise 15-minute slot" or any arrogant availability claims
-- Subject lines with em dashes (—). Use "x" format: "${teamName.replace(' Team', '')} x ${categoryClean}"
+- "I hope this finds you well" / "I wanted to reach out" / "I am reaching out" / "I'm writing to"
+- "Leveraging" / "synergies" / "exciting opportunity" / "game-changing"
+- "I think" / "I believe" / "maybe" / "hopefully"
+- "I will not continue to follow up" or any threatening language
+- "Reply within the hour" or any aggressive time-boxing
+- "I have 15 minutes" or any arrogant availability claims
+- "Just checking in" / "Following up on my last email" / "Bumping this"
+- Exclamation marks. Questions in subject lines. Subject lines with em dashes.
+- Subject line format: "${teamName.replace(' Team', '')} x ${categoryClean}" or "${teamName.replace(' Team', '')} x ${categoryClean}: [angle]"
 
-REQUIRED language anchors (use naturally, not forced):
+REQUIRED language anchors (use naturally across the sequence, not all in one email):
 "principal level", "category-exclusive", "closed bundle", "governance", "institutional credibility",
 "operating dependency", "category control", "scarcity by design", "board-level platform"
 
-Step 1 MUST NOT open with any form of "reaching out" or "writing to". Instead, lead with a statement of position or an insight about the category.
+═══ CONTEXT ═══
+Team: ${teamName}
+Target: ${targetPersona}
+Next race: ${nextRace ? `${nextRace.name} (${nextRace.date})` : 'TBC'}
+Second race: ${race2 ? `${race2.name} (${race2.date})` : 'TBC'}
+Existing sponsors: ${existingSponsors.length ? existingSponsors.join(', ') : 'Category is currently OPEN'}
 
-${styleExamples ? `═══ REAL VAN HAWKE EMAIL EXAMPLES (match this tone) ═══\n${styleExamples}\n═══ END EXAMPLES ═══` : ''}
-
-═══ PSYCHOLOGY PER TOUCHPOINT ═══
-
-Each touchpoint MUST use a distinct psychological lever. Not variations of the same email.
-
-1. AUTHORITY + CURIOSITY: Establish position, explain operational relevance, strategic question
-2. SOCIAL SIGNAL: LinkedIn connection — shows you're a real person at a real firm
-3. OPERATIONAL DEPTH: How ${categoryClean} is actually used inside an F1 team (engineering, simulation, compliance, logistics). Make them see the genuine dependency.
-4. RELATIONSHIP LAYER: LinkedIn message referencing the email — adds warmth to authority
-5. SCARCITY + CALENDAR: Real race dates, category closing, limited slots
-6. URGENCY REINFORCEMENT: LinkedIn short message — "worth a conversation before [race]"
-7. STRATEGIC WITHDRAWAL: Respectful final note, protect their option, leave door open
+${styleExamples ? `═══ REAL VAN HAWKE EMAIL EXAMPLES (match this tone) ═══\\n${styleExamples}\\n═══ END EXAMPLES ═══` : ''}
 
 ═══ OUTPUT FORMAT ═══
 
-Return ONLY a valid JSON array. No markdown, no backticks, no explanation.
+Return ONLY a valid JSON array of 14 objects. No markdown, no backticks, no explanation.
 
-Each step is one of:
-- Email: {"step":N,"delay_days":D,"channel":"email","approach":"[psychology]","subject":"...","template":"Dear {firstName},\\n\\n[body max 125 words]\\n\\nKind regards,\\n\\n{signature}"}
-- LinkedIn invite: {"step":N,"delay_days":D,"channel":"linkedin","action":"invite","template":"[personalised note, max 300 chars]"}
-- LinkedIn message: {"step":N,"delay_days":D,"channel":"linkedin","action":"message","condition":"connection_accepted","template":"[message, max 300 chars]"}
+Email: {"step":N,"delay_days":D,"channel":"email","approach":"[psychology]","subject":"...","template":"Dear {firstName},\\n\\n[body 50-100 words]\\n\\nKind regards,\\n\\n{signature}"}
+LinkedIn invite: {"step":N,"delay_days":D,"channel":"linkedin","action":"invite","template":"[personalised note, max 300 chars, NO dashes]"}
+LinkedIn message: {"step":N,"delay_days":D,"channel":"linkedin","action":"message","condition":"connection_accepted","template":"[message, max 300 chars, NO dashes]"}
+LinkedIn engage: {"step":N,"delay_days":D,"channel":"linkedin","action":"engage","template":"[engagement instruction]"}
 
-LinkedIn messages with "condition":"connection_accepted" are automatically skipped if the prospect hasn't accepted. The email sequence continues regardless.
-
-All ${steps} steps should be top-level in the array. No nested branches. The sequence sender handles conditions automatically.`;
+All 14 steps must be top-level in the array. LinkedIn messages with condition:"connection_accepted" are auto-skipped if not connected.`;
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6', max_tokens: 6000,
+      model: 'claude-sonnet-4-6', max_tokens: 8000,
       messages: [{ role: 'user', content: prompt }]
     });
     const text = response.content[0]?.text?.trim();
@@ -157,21 +161,23 @@ All ${steps} steps should be top-level in the array. No nested branches. The seq
       return res.status(500).json({ error: 'Failed to parse sequence', raw: text?.slice(0, 500) });
     }
 
-    // Normalize: ensure step numbers are sequential
+    // Normalize step numbers
     generatedSteps = generatedSteps.map((s, i) => ({ ...s, step: i + 1 }));
     
     // Post-process: strip dashes and banned phrases from ALL content
     for (const step of generatedSteps) {
-      if (step.subject) step.subject = step.subject.replace(/\s*[—–]\s*/g, ' x ').replace(/\s+/g, ' ').trim();
+      if (step.subject) step.subject = step.subject.replace(/\s*[\u2014\u2013]\s*/g, ' x ').replace(/\s+/g, ' ').trim();
       if (step.template) {
-        step.template = step.template.replace(/[—–]/g, ',');
-        // Kill banned openers that Claude still sneaks in
+        step.template = step.template.replace(/[\u2014\u2013]/g, ',');
         step.template = step.template
           .replace(/I wanted to ensure/gi, 'This is to ensure')
           .replace(/I wanted to reach out/gi, 'This note concerns')
           .replace(/I am reaching out/gi, 'This concerns')
           .replace(/I wanted to/gi, 'This is to')
-          .replace(/I'm writing to/gi, 'This note concerns');
+          .replace(/I'm writing to/gi, 'This note concerns')
+          .replace(/Just checking in/gi, '')
+          .replace(/Following up on my last email/gi, '')
+          .replace(/Bumping this/gi, '');
       }
     }
 
@@ -181,7 +187,7 @@ All ${steps} steps should be top-level in the array. No nested branches. The seq
       method: 'POST', headers: { Prefer: 'return=representation' },
       body: JSON.stringify({
         name: seqName,
-        description: `${steps}-touchpoint ${categoryClean} outreach for ${teamName}. Email-led, LinkedIn-reinforced. Authority → Operational depth → Scarcity → Withdrawal.`,
+        description: `14-touchpoint ${categoryClean} outreach for ${teamName}. Research-backed: 8 emails + 6 LinkedIn over 42 days. $3M-$40M institutional partnerships.`,
         target_persona: targetPersona,
         steps: generatedSteps,
         is_active: false,

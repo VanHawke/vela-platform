@@ -411,7 +411,7 @@ export default function Campaigns({ user }) {
         const { error } = await supabase.from('kiko_sequence_enrollments').insert({
           sequence_id: selectedId, contact_id: contactId,
           contact_name: c.name, contact_email: c.email, company: c.company,
-          linkedin_url: c.linkedin, status: 'active', current_step: 1,
+          linkedin_url: c.linkedin, status: 'paused', current_step: 1,
           enrolled_at: new Date().toISOString(),
         })
         if (error) { skipped++; continue }
@@ -1226,7 +1226,7 @@ export default function Campaigns({ user }) {
                   const { error } = await supabase.from('kiko_sequence_enrollments').insert({
                     sequence_id: moveTargetId, contact_id: p.contact_id || null,
                     contact_name: p.contact_name, contact_email: p.contact_email, company: p.company,
-                    linkedin_url: p.linkedin_url, status: 'active', current_step: 1,
+                    linkedin_url: p.linkedin_url, status: 'paused', current_step: 1,
                     enrolled_at: new Date().toISOString(),
                   })
                   if (!error) copied++

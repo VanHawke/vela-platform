@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-26T15:37:12.432Z",
+  "generated_at": "2026-04-26T15:55:08.142Z",
   "commits": [
+    {
+      "hash": "dcd6d2a",
+      "subject": "Fix send-from CORS: duplicate Access-Control-Allow-Origin headers",
+      "when": "18 minutes ago"
+    },
     {
       "hash": "65dcb0d",
       "subject": "Fix send-from: fallback to supabase.auth.getSession when user prop is null",
-      "when": "76 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8b16794",
@@ -24,17 +29,17 @@
     {
       "hash": "37cc659",
       "subject": "Sequence enqueue: LinkedIn condition check before queuing",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4d7d7c1",
       "subject": "Session 60 final: Bible post-processing docs + session brief updated",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "54e75df",
       "subject": "Post-process banned phrases: I wanted to, I am reaching out, etc",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "6a5ef5d",
@@ -64,7 +69,7 @@
     {
       "hash": "df923f9",
       "subject": "MANDATORY: Kiko knowledge sync after every build",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "7bc87b2",
@@ -94,11 +99,6 @@
     {
       "hash": "474ffee",
       "subject": "KIKO_BIBLE final: KikoFloat conversation pills + Campaign UI sections added",
-      "when": "18 hours ago"
-    },
-    {
-      "hash": "e539743",
-      "subject": "Campaign targets display + KikoFloat conversation pills + sequence verified",
       "when": "18 hours ago"
     }
   ]
