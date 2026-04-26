@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-26T14:20:54.389Z",
+  "generated_at": "2026-04-26T15:37:12.432Z",
   "commits": [
+    {
+      "hash": "65dcb0d",
+      "subject": "Fix send-from: fallback to supabase.auth.getSession when user prop is null",
+      "when": "76 minutes ago"
+    },
     {
       "hash": "8b16794",
       "subject": "Fix: delete test Haas campaign + Add prospects button now secondary",
-      "when": "14 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "4b00d74",
       "subject": "Remove Vercel ignoreCommand + force rebuild",
-      "when": "24 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "68648e8",
       "subject": "Force Vercel rebuild: touch src/ to bypass ignoreCommand",
-      "when": "41 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "37cc659",
       "subject": "Sequence enqueue: LinkedIn condition check before queuing",
-      "when": "66 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "4d7d7c1",
       "subject": "Session 60 final: Bible post-processing docs + session brief updated",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "54e75df",
       "subject": "Post-process banned phrases: I wanted to, I am reaching out, etc",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "6a5ef5d",
       "subject": "Dash post-processing: strip em/en dashes from all generated content",
-      "when": "4 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "552c9b3",
       "subject": "Sequence quality: ban dashes in LinkedIn, ban reaching out variants, ban threatening withdrawal",
-      "when": "4 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "2294f67",
       "subject": "Bible: $3M-$40M contract values + no aggressive CTAs rule",
-      "when": "4 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "85f783f",
       "subject": "CRITICAL: Contract values corrected to $3M-$40M + askKiko prompt rewritten",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "5bb1e4c",
       "subject": "Fix send-from dropdown + add Regenerate with Kiko button",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "df923f9",
       "subject": "MANDATORY: Kiko knowledge sync after every build",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "7bc87b2",
       "subject": "Sequence sender v2: handles both condition models + LinkedIn parallel",
-      "when": "5 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "9ec3865",
       "subject": "Bible: sequence engine v2 — LinkedIn reinforces email model",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "c85a35f",
       "subject": "SEQUENCE ENGINE v2: LinkedIn reinforces email, never replaces it",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "de34f9d",
       "subject": "Sequence flow: condition branching fix + drag-and-drop reordering",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "1f2f5b0",
       "subject": "Consolidate: one 'Source prospects' button, background job only",
-      "when": "16 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "474ffee",
       "subject": "KIKO_BIBLE final: KikoFloat conversation pills + Campaign UI sections added",
-      "when": "16 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "e539743",
       "subject": "Campaign targets display + KikoFloat conversation pills + sequence verified",
-      "when": "17 hours ago"
-    },
-    {
-      "hash": "2c4048b",
-      "subject": "Session 60: Sequence engine rewrite + task panel buttons + all fixes",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     }
   ]
 }

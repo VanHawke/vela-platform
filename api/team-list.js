@@ -7,7 +7,7 @@ export const config = { maxDuration: 10 };
 function isUuid(s) { return typeof s === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s); }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS handled by nginx — do NOT set Access-Control-Allow-Origin here
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const userId = req.query?.user_id;
