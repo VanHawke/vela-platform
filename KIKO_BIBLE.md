@@ -134,28 +134,24 @@ Jobs queued to `kiko_background_jobs` table. Processed by `cron-job-processor.js
 
 ### CAMPAIGN SEQUENCE ENGINE
 
-**Canonical 5-Touch Authority-Led Outreach Framework:**
+**Core principle: LinkedIn REINFORCES email — it never replaces it.**
 
-1. Risk → "The board-level risk of NOT having category control in \[category\]"
-2. Revenue → "The revenue opportunity from owning \[category\] on an F1 platform"
-3. Category → "Why \[category\] is the decisive differentiator at this price point"
-4. Scarcity → "This is closing — \[X\] teams, \[Y\] categories remaining"
-5. Close → "Decision time — here's what the next 48 hours look like"
+Email is primary: carries substance, operational detail, the proposition. LinkedIn is support: personal touch, relationship signal, urgency. A LinkedIn message 1-2 days AFTER an email creates a "surround sound" effect. The email sequence runs uninterrupted regardless of LinkedIn connection status.
 
-**Sequence Architecture Rules (NEVER generate the same generic sequence):**
+**7-touchpoint orchestration pattern:**
+- Day 0: Email (authority + curiosity)
+- Day 1: LinkedIn connection request (personalised note, no pitch)
+- Day 4: Email (operational depth — how the sector is used inside F1)
+- Day 6: LinkedIn message IF connected (reference Email 2, add warmth)
+- Day 9: Email (scarcity + race calendar — real dates, category closing)
+- Day 11: LinkedIn message IF connected (short urgency)
+- Day 14: Email (strategic withdrawal — respectful final note)
 
-- Every sequence MUST be multi-platform: Email → LinkedIn Connect Request → LinkedIn connection check → LinkedIn Message (if connected) OR Email follow-up (if not connected)
-- LinkedIn connection status is a REAL condition — check it before scheduling LinkedIn messages
-- Every email MUST be under 150 words. No exceptions.
-- NEVER use dashes (—) or bullet points in outreach emails. Write in complete sentences, short paragraphs.
-- NEVER produce AI slop: no "I hope this finds you well", no "I wanted to reach out", no "leveraging synergies", no "exciting opportunity", no "I believe", no "I think"
-- Language anchors (USE THESE): "category control", "closed bundle", "scarcity by design", "board-level platform", "intelligent age"
-- Target audience is C-suite (CMO, CFO, CEO, CRO, GC). Write like you're addressing a board member who has 8 seconds to decide if this email is worth reading.
-- Reference the contract value tier in messaging tone: $500K+ = executive, $1M+ = board-level, $2M+ = chairman-level
-- Apply persuasion psychology: authority (F1 platform credibility), scarcity (limited categories), social proof (existing partners), loss aversion (competitor claiming the slot), reciprocity (insight-led opener)
-- Each step must have a DIFFERENT angle and hook. Not variations of the same email.
-- Step 1 never pitches — it establishes authority and creates curiosity
-- Subject lines: short, specific, no questions, no exclamation marks. Format: "\[Team\] x \[Category\]" or "\[Company\] — \[Insight\]"
+LinkedIn steps have condition:"connection_accepted" — automatically skipped if not connected.
+
+**Sector-specific intelligence:** REASON about why a [sector] company wants F1, what operational dependency F1 has on [sector], what their CMO/CRO cares about, and how F1 credibility translates to their pipeline.
+
+**Voice:** "Dear {firstName}," / "Kind regards," / 50-125 words / no dashes / no AI slop / senior advisor to board member tone. LinkedIn max 300 chars, reference preceding email.
 
 ### EMAIL DRAFT SPEED TIERS
 
