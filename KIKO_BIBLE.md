@@ -153,6 +153,9 @@ LinkedIn steps have condition:"connection_accepted" — automatically skipped if
 
 **Voice:** "Dear {firstName}," / "Kind regards," / 50-125 words / no dashes / no AI slop / senior advisor to board member tone. LinkedIn max 300 chars, reference preceding email.
 
+**Contract values: $3M-$40M annually per category-exclusive partnership.** At this scale, the decision sits with the CEO/Chairman/Board. You are NOT selling marketing or brand exposure. You are structuring an institutional asset — governance rights, category exclusivity, IP adjacency, strategic positioning. Outreach reads like a principal at a tier-1 advisory firm, not a salesperson. No aggressive CTAs ("reply within the hour"), no arrogant time-boxing ("I have 15 minutes"), no SaaS cold email tactics. No dashes. No bullet points. No AI slop.
+
+
 ### SEQUENCE SENDER (cron-sequence-sender.js)
 
 Runs Mon-Fri during send window. Processes queued emails from kiko_outreach_queue.
