@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-26T10:02:10.825Z",
+  "generated_at": "2026-04-26T10:06:17.822Z",
   "commits": [
+    {
+      "hash": "552c9b3",
+      "subject": "Sequence quality: ban dashes in LinkedIn, ban reaching out variants, ban threatening withdrawal",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "2294f67",
       "subject": "Bible: $3M-$40M contract values + no aggressive CTAs rule",
-      "when": "10 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "85f783f",
       "subject": "CRITICAL: Contract values corrected to $3M-$40M + askKiko prompt rewritten",
-      "when": "14 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "5bb1e4c",
       "subject": "Fix send-from dropdown + add Regenerate with Kiko button",
-      "when": "21 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "df923f9",
       "subject": "MANDATORY: Kiko knowledge sync after every build",
-      "when": "52 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "7bc87b2",
       "subject": "Sequence sender v2: handles both condition models + LinkedIn parallel",
-      "when": "67 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "9ec3865",
       "subject": "Bible: sequence engine v2 — LinkedIn reinforces email model",
-      "when": "75 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "c85a35f",
       "subject": "SEQUENCE ENGINE v2: LinkedIn reinforces email, never replaces it",
-      "when": "76 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "de34f9d",
       "subject": "Sequence flow: condition branching fix + drag-and-drop reordering",
-      "when": "85 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "1f2f5b0",
@@ -89,16 +94,11 @@
     {
       "hash": "f596d01",
       "subject": "Session 60: build_campaign tool + legal_ai category + alphabetical sorting",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "8c2d8b7",
       "subject": "Session 59 close: Session 60 priorities logged in KIKO_SESSION_BRIEF.md",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "ad6dcf0",
-      "subject": "KikoFloat dynamic pills: page-aware chips + campaigns/documents pages",
       "when": "14 hours ago"
     }
   ]

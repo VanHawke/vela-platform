@@ -499,6 +499,8 @@ Return ONLY the ${s.channel === 'email' ? 'email text (starting with Dear, endin
         // sometimes writes despite being told not to. wrapEmailBody handles this on
         // send too but we want the preview to match what gets sent.
         cleaned = cleaned.replace(/\n\s*(Sunny\s*Sidhu|Founder\s*&\s*Principal|CEO\s*[,.]?\s*Van\s*Hawke).*$/gis, '').trim()
+        // Strip any remaining dashes — em dash and en dash
+        cleaned = cleaned.replace(/[—–]/g, ',')
         upd(i, 'template', cleaned)
       }
     } catch (err) {

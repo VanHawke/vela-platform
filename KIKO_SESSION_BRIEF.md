@@ -16,9 +16,9 @@
 
 After EVERY code change, feature addition, or bug fix that affects Kiko's capabilities:
 
-1. **Update `api/kiko-self-knowledge.js`** — this is Kiko's capability map. If you added a tool, changed how something works, or fixed a flow, Kiko must know about it here. She reads this on every request.
+1. **Update** `api/kiko-self-knowledge.js` — this is Kiko's capability map. If you added a tool, changed how something works, or fixed a flow, Kiko must know about it here. She reads this on every request.
 
-2. **Update `KIKO_BIBLE.md`** — this is Kiko's governing document. Architecture changes, sequence logic, channel orchestration, voice rules, hard rules — all go here.
+2. **Update** `KIKO_BIBLE.md` — this is Kiko's governing document. Architecture changes, sequence logic, channel orchestration, voice rules, hard rules — all go here.
 
 3. **Deploy both to Hetzner** — `scp` both files + `pm2 restart kiko-worker`. If you only deploy code but not knowledge, Kiko doesn't know she has new capabilities and will redirect users to the UI or give outdated advice.
 
@@ -31,33 +31,28 @@ After EVERY code change, feature addition, or bug fix that affects Kiko's capabi
 ## ⚡ SESSION 60 PRIORITIES (in order)
 
 ### 1. CAMPAIGN BUILDER — Kiko executes builds directly via tools
-Kiko must be able to build campaigns when the user says "do it" — no redirecting to the UI.
-She should call `build-campaign` endpoint directly with the team + category as params.
-This is the #1 revenue-critical feature.
+
+Kiko must be able to build campaigns when the user says "do it" — no redirecting to the UI. She should call `build-campaign` endpoint directly with the team + category as params. This is the #1 revenue-critical feature.
 
 ### 2. CAMPAIGN BUILDER — Dynamic categories
-Categories are hardcoded in `build-campaign.js` (CATEGORY_CRITERIA object).
-Need: `campaign_categories` Supabase table, Kiko can create new categories (e.g. "Legal AI Technology"),
-categories + team names alphabetically sorted in the UI dropdown.
+
+Categories are hardcoded in `build-campaign.js` (CATEGORY_CRITERIA object). Need: `campaign_categories` Supabase table, Kiko can create new categories (e.g. "Legal AI Technology"), categories + team names alphabetically sorted in the UI dropdown.
 
 ### 3. CAMPAIGN BUILDER — "Add Prospects" sourcing quality
-When user types "legal AI companies" in the Add Prospects modal, the sourcing prompt must use that
-description, not just the generic category name. Currently sources generic law firms instead of
-legal AI tech companies like Harvey AI, Luminance, Ironclad etc.
+
+When user types "legal AI companies" in the Add Prospects modal, the sourcing prompt must use that description, not just the generic category name. Currently sources generic law firms instead of legal AI tech companies like Harvey AI, Luminance, Ironclad etc.
 
 ### 4. BACKGROUND TASK SYSTEM — Realtime updates
-Task icon in top nav polls every 15s. Needs Supabase Realtime subscription on `kiko_background_jobs`
-so status changes appear instantly. Cancel/retry/remove buttons needed on each task.
-"Clear finished" button needs to properly update UI state after deletion.
-Progress bar should show real percentage from `progress_pct` column.
+
+Task icon in top nav polls every 15s. Needs Supabase Realtime subscription on `kiko_background_jobs`so status changes appear instantly. Cancel/retry/remove buttons needed on each task. "Clear finished" button needs to properly update UI state after deletion. Progress bar should show real percentage from `progress_pct` column.
 
 ### 5. CAMPAIGN BUILDER — End-to-end test
-Full flow: Build → Enroll → Activate → First email sends via sequence sender.
-Test with the Alpine F1 Legal AI Technology campaign.
-Verify: no fabricated emails, real verified addresses, correct sequence steps.
+
+Full flow: Build → Enroll → Activate → First email sends via sequence sender. Test with the Alpine F1 Legal AI Technology campaign. Verify: no fabricated emails, real verified addresses, correct sequence steps.
 
 ### 6. SESSION 59 COMPLETED (reference)
-- Apollo.io integrated (75 credits/month, positioned after free methods in cascade)
+
+- [Apollo.io](http://Apollo.io) integrated (75 credits/month, positioned after free methods in cascade)
 - Email cascade: pattern+SMTP → Google → Apollo → paid APIs
 - Gateway cache: domains blocking SMTP cached, subsequent contacts instant
 - Campaign builder: background email enrichment via job processor
@@ -79,6 +74,7 @@ Verify: no fabricated emails, real verified addresses, correct sequence steps.
 ---
 
 ## ENVIRONMENT
+
 ComponentLocationDetailsRepo`/Users/sunny/Desktop/vela-platform/`Git → auto-deploys to VercelFrontend`https://kiko.vanhawke.agency`Vercel (static only, free tier)API`https://api.vanhawke.agency`Hetzner 178.104.73.22, Express port 3000, nginx SSLSupabaseproject_id `dwiywqeleyckzcxbwrlb`62 kiko\_\* tables, 4,500+ entriesLinkedInHetznerPlaywright + Decodo proxy ([isp.decodo.com:10001](http://isp.decodo.com:10001))VoiceOpenAI GPT-4o Realtime APIWebRTC, api/realtime-token.js
 
 ### Deploy Rules (NEVER BREAK)
@@ -311,6 +307,7 @@ VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning, 
 3. **Email drafts still \~22s** for complex (Sonnet). Simple use Haiku (\~12s)
 
 ### Should Build
+
 4. **ChatGPT re-import** — User has extensive ChatGPT conversations to import
 5. **Supabase pg_cron audit** — 11 crons run via pg_cron, some may overlap with the newly activated cron-scheduler. Verify no double execution
 6. **Proactive synthesis feedback** — Predictions should feed into morning brief and greeting. Verify alert → brief pipeline works
@@ -345,5 +342,4 @@ VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning, 
 - Strategic advisor: brutally honest, start with hard truth
 - Before API work: search current official docs first
 - Every Kiko session: read KIKO_SESSION_BRIEF.md + KIKO_EVOLUTION_PLAN.md
-- Update KIKO_BIBLE.md after every ship
-BIBLE.md after every ship
+- Update KIKO_BIBLE.md after every ship [BIBLE.md](http://BIBLE.md) after every ship [BIBLE.md](http://BIBLE.md) after every ship

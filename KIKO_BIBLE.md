@@ -62,6 +62,7 @@ Single source of truth for all intelligence surfaces. Supabase Realtime subscrip
 - kiko_alerts, tasks, kiko_follow_ups, kiko_draft_actions, activities
 - When ANY table changes, ALL components update instantly (homepage pills, alert panel, Command Centre)
 - Every user action (dismiss, complete, clear, approve) logged to activities table — Kiko reads this in her system prompt
+
 ### HETZNER INFRASTRUCTURE (178.104.73.22)
 
 **7 Real-time Monitors** (monitors/scheduler.js):
@@ -81,6 +82,7 @@ Single source of truth for all intelligence surfaces. Supabase Realtime subscrip
 **Deploy:** `scripts/deploy-hetzner.sh` — rsync api/ + monitors/ + worker/ → chown → PM2 restart → health check
 
 ### PLATFORM PAGES
+
 PagePathFunctionToday/Homepage, greeting, dynamic pills, Kiko chatCommand Centre/command-centreReplies, tasks, follow-ups, stale deals, campaigns, signalsCampaigns/campaignsCampaign management, prospect lists, bulk actionsCampaign Editor/campaigns/:idSequence builder: visual flow + editorContacts/contactsCRM contacts: search, filter, enrichmentCompanies/companiesCRM companies: industry, revenue, sponsorship historyPipeline/pipelineDeal stages: Kanban board, drag-and-dropCalendar/calendarCommercial calendar with F1/FE race scheduleInbox/inboxEmail triage and managementDocuments/documentsDocument libraryInsights/insightsAnalytics and reportingSettings/settingsPlatform settings, user management
 
 ### EMAIL INTELLIGENCE ENGINE (kiko-worker/lib/emailIntel.js)
@@ -139,6 +141,7 @@ Jobs queued to `kiko_background_jobs` table. Processed by `cron-job-processor.js
 Email is primary: carries substance, operational detail, the proposition. LinkedIn is support: personal touch, relationship signal, urgency. A LinkedIn message 1-2 days AFTER an email creates a "surround sound" effect. The email sequence runs uninterrupted regardless of LinkedIn connection status.
 
 **7-touchpoint orchestration pattern:**
+
 - Day 0: Email (authority + curiosity)
 - Day 1: LinkedIn connection request (personalised note, no pitch)
 - Day 4: Email (operational depth — how the sector is used inside F1)
@@ -149,24 +152,23 @@ Email is primary: carries substance, operational detail, the proposition. Linked
 
 LinkedIn steps have condition:"connection_accepted" — automatically skipped if not connected.
 
-**Sector-specific intelligence:** REASON about why a [sector] company wants F1, what operational dependency F1 has on [sector], what their CMO/CRO cares about, and how F1 credibility translates to their pipeline.
+**Sector-specific intelligence:** REASON about why a \[sector\] company wants F1, what operational dependency F1 has on \[sector\], what their CMO/CRO cares about, and how F1 credibility translates to their pipeline.
 
 **Voice:** "Dear {firstName}," / "Kind regards," / 50-125 words / no dashes / no AI slop / senior advisor to board member tone. LinkedIn max 300 chars, reference preceding email.
 
 **Contract values: $3M-$40M annually per category-exclusive partnership.** At this scale, the decision sits with the CEO/Chairman/Board. You are NOT selling marketing or brand exposure. You are structuring an institutional asset — governance rights, category exclusivity, IP adjacency, strategic positioning. Outreach reads like a principal at a tier-1 advisory firm, not a salesperson. No aggressive CTAs ("reply within the hour"), no arrogant time-boxing ("I have 15 minutes"), no SaaS cold email tactics. No dashes. No bullet points. No AI slop.
-
 
 ### SEQUENCE SENDER (cron-sequence-sender.js)
 
 Runs Mon-Fri during send window. Processes queued emails from kiko_outreach_queue.
 
 **Step advancement engine v2** handles three scenarios after sending an email:
+
 1. **Old model** (condition branches): evaluates condition, routes to YES/NO sub-steps, advances past
 2. **New model** (LinkedIn with condition field): if next step is LinkedIn with condition:"connection_accepted" — connected = queue LinkedIn message; not connected = skip step entirely. Email sequence never interrupted.
 3. **Normal**: simple advancement to next step
 
 LinkedIn messages queued to kiko_linkedin_queue (separate from email queue). Playwright + Decodo proxies on Hetzner execute LinkedIn automation.
-
 
 ### EMAIL DRAFT SPEED TIERS
 
@@ -198,6 +200,7 @@ Pills are rendered as `{label, prompt}` objects — KikoFloat extracts `.label` 
 ### KIKOFLOAT PANEL
 
 Floating Kiko panel on every page except home. Features:
+
 - Page-aware dynamic pills when no conversation active
 - Conversation-aware follow-up pills during active chat (campaign actions, deal moves, research, drafts)
 - Full chat with streaming, file upload, voice

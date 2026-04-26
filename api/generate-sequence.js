@@ -159,6 +159,12 @@ All ${steps} steps should be top-level in the array. No nested branches. The seq
 
     // Normalize: ensure step numbers are sequential
     generatedSteps = generatedSteps.map((s, i) => ({ ...s, step: i + 1 }));
+    
+    // Post-process: strip dashes from ALL content — subjects, templates, LinkedIn messages
+    for (const step of generatedSteps) {
+      if (step.subject) step.subject = step.subject.replace(/\s*[—–]\s*/g, ' x ').replace(/\s+/g, ' ').trim();
+      if (step.template) step.template = step.template.replace(/[—–]/g, ',');
+    }
 
     // Create the sequence in the database
     const seqName = `${teamName.replace(' Team', '')} - ${categoryClean}`;
