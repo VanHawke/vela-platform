@@ -123,11 +123,24 @@ Step 7 (Email): STRATEGIC WITHDRAWAL
 ═══ OUTPUT FORMAT ═══
 Return ONLY a valid JSON array. No markdown, no backticks, no explanation.
 
+IMPORTANT: For condition steps, the yes_steps and no_steps must contain FULL step objects (not step numbers).
+The condition step acts as a container — the branched steps live INSIDE it.
+
 For email steps: {"step":N,"delay_days":D,"channel":"email","approach":"...","psychology":"...","subject":"...","template":"Dear {firstName},\\n\\n[body]\\n\\nKind regards,\\n\\n{signature}"}
 For LinkedIn invite: {"step":N,"delay_days":D,"channel":"linkedin","action":"invite","template":"Hi {firstName}, [300 char max note]"}
 For LinkedIn message: {"step":N,"delay_days":D,"channel":"linkedin","action":"message","template":"Hi {firstName}, [300 char max message]"}
-For condition: {"step":N,"delay_days":D,"type":"condition","condition_type":"connection_accepted","yes_steps":[5],"no_steps":[4]}`;
+For condition: {"step":N,"delay_days":D,"type":"condition","condition_type":"connection_accepted","yes_steps":[{"channel":"linkedin","action":"message","template":"Hi {firstName}, [message]","approach":"..."}],"no_steps":[{"channel":"email","subject":"...","template":"Dear {firstName},\\n\\n[body]\\n\\nKind regards,\\n\\n{signature}","approach":"..."}]}
 
+The sequence should be 7 top-level steps. Steps 4 and 5 should be EMBEDDED inside Step 3's yes_steps and no_steps — NOT as separate top-level steps.
+
+Example structure:
+Step 1: Email (authority)
+Step 2: LinkedIn invite
+Step 3: Condition (connection_accepted) with yes_steps=[LinkedIn message] and no_steps=[Email follow-up]
+Step 4: Email (scarcity)
+Step 5: Email (withdrawal)
+
+This gives 5 top-level steps with 2 branched sub-steps inside the condition = 7 total touchpoints.`;
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6', max_tokens: 6000,
       messages: [{ role: 'user', content: prompt }]
@@ -140,6 +153,36 @@ For condition: {"step":N,"delay_days":D,"type":"condition","condition_type":"con
     } catch {
       return res.status(500).json({ error: 'Failed to parse generated sequence', raw: text?.slice(0, 500) });
     }
+
+    // Post-process: if condition steps have step NUMBER references instead of embedded objects,
+    // pull the referenced steps into yes_steps/no_steps and remove them from top-level
+    const stepsToRemove = new Set();
+    for (const step of generatedSteps) {
+      if (step.type === 'condition') {
+        // Fix yes_steps
+        if (Array.isArray(step.yes_steps) && step.yes_steps.length > 0 && typeof step.yes_steps[0] === 'number') {
+          step.yes_steps = step.yes_steps.map(ref => {
+            const target = generatedSteps.find(s => s.step === ref);
+            if (target) { stepsToRemove.add(ref); return { ...target }; }
+            return { channel: 'email', template: 'Dear {firstName},\n\n\n\nKind regards,\n\n{signature}', approach: 'follow-up' };
+          });
+        }
+        // Fix no_steps
+        if (Array.isArray(step.no_steps) && step.no_steps.length > 0 && typeof step.no_steps[0] === 'number') {
+          step.no_steps = step.no_steps.map(ref => {
+            const target = generatedSteps.find(s => s.step === ref);
+            if (target) { stepsToRemove.add(ref); return { ...target }; }
+            return { channel: 'email', template: 'Dear {firstName},\n\n\n\nKind regards,\n\n{signature}', approach: 'follow-up' };
+          });
+        }
+      }
+    }
+    // Remove steps that were absorbed into condition branches
+    if (stepsToRemove.size > 0) {
+      generatedSteps = generatedSteps.filter(s => !stepsToRemove.has(s.step));
+    }
+    // Re-number steps
+    generatedSteps = generatedSteps.map((s, i) => ({ ...s, step: i + 1 }));
 
     // Create the sequence in the database
     const seqName = `${teamName.replace(' Team', '')} - ${categoryClean}`;

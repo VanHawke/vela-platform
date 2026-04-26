@@ -182,6 +182,24 @@ function ConditionBranch({ step, stepIndex, selectedStep, onSelectStep, onAddSub
 }
 
 export default function SequenceFlowView({ steps, selectedStep, onSelectStep, onAddStep, onDeleteStep, onUpdateDelay, onUpdateStep }) {
+  const [dragIdx, setDragIdx] = useState(null)
+  const [dragOver, setDragOver] = useState(null)
+
+  function handleDragStart(e, i) { setDragIdx(i); e.dataTransfer.effectAllowed = 'move' }
+  function handleDragOver(e, i) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOver(i) }
+  function handleDragLeave() { setDragOver(null) }
+  function handleDrop(e, i) {
+    e.preventDefault()
+    if (dragIdx === null || dragIdx === i) { setDragIdx(null); setDragOver(null); return }
+    const updated = [...steps]
+    const [moved] = updated.splice(dragIdx, 1)
+    updated.splice(i > dragIdx ? i - 1 : i, 0, moved)
+    const renumbered = updated.map((s, j) => ({ ...s, step: j + 1 }))
+    if (onUpdateStep) onUpdateStep(renumbered)
+    onSelectStep(i > dragIdx ? i - 1 : i)
+    setDragIdx(null); setDragOver(null)
+  }
+  function handleDragEnd() { setDragIdx(null); setDragOver(null) }
 
   function handleAddSubStep(stepIndex, branch, type) {
     const templates = { email: 'Dear {firstName},\n\n\n\nKind regards,\n\n{signature}', linkedin: 'Hi {firstName}, ' }
@@ -210,8 +228,14 @@ export default function SequenceFlowView({ steps, selectedStep, onSelectStep, on
 
       {steps.map((step, i) => {
         const isCondition = step.type === 'condition'
+        const isDragging = dragIdx === i
+        const isDragTarget = dragOver === i && dragIdx !== i
         return (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', opacity: isDragging ? 0.4 : 1, transition: 'opacity 0.15s' }}
+            draggable onDragStart={e => handleDragStart(e, i)} onDragOver={e => handleDragOver(e, i)} onDragLeave={handleDragLeave} onDrop={e => handleDrop(e, i)} onDragEnd={handleDragEnd}
+          >
+            {/* Drop indicator */}
+            {isDragTarget && <div style={{ width: '80%', height: 3, background: '#7C5CFC', borderRadius: 2, marginBottom: 4 }} />}
             {/* Delay chip */}
             {i > 0 && (
               <>
