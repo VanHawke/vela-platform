@@ -391,10 +391,65 @@ export default function SequenceDetail({ user }) {
   async function askKiko(i) {
     const s = steps[i]; if (!s) return; upd(i, 'template', '⏳ Kiko is writing...')
     try {
+      const categoryName = seq?.name?.split(' - ')[1] || seq?.description || 'technology'
+      const teamName = seq?.name?.split(' - ')[0] || 'the team'
+      const stepContext = steps.map((st, idx) => `Step ${idx+1}: ${st.channel} — ${st.approach || st.action || 'outreach'}`).join('. ')
+      
+      const kikoPrompt = `Write a ${s.channel === 'email' ? 'outreach email' : 'LinkedIn ' + (s.action === 'invite' ? 'connection request note (300 chars max)' : 'message (300 chars max)')} for Step ${s.step} of a ${steps.length}-step sequence.
+
+CONTEXT:
+Category: ${categoryName}
+Team: ${teamName}
+Target persona: ${seq?.target_persona || 'C-suite'}
+This step's approach: ${s.approach || 'authority-led'}
+This step's psychology: ${s.psychology || 'authority'}
+Sequence overview: ${stepContext}
+
+CONTRACT SCALE: $3M-$40M annually. These are institutional category-exclusive partnerships. The decision-maker is a CEO or board member allocating strategic capital, not a marketing manager spending campaign budget.
+
+YOU ARE: A principal at a tier-1 advisory firm who structures Formula One partnerships. You represent the team. You control access to a scarce institutional asset.
+
+${s.channel === 'email' ? `EMAIL RULES:
+- Start: "Dear {firstName},"
+- End: "Kind regards,\\n\\n{signature}"
+- 50-100 words MAXIMUM. Every word must earn its place.
+- Complete sentences, short paragraphs (2-3 sentences each)
+- Subject line: "${teamName} x ${categoryName}" format, no questions, no exclamation marks
+
+WHAT GOOD LOOKS LIKE:
+"Dear {firstName},
+
+We work at principal level on the structuring of Formula One partnerships for teams and rights-holders. ${categoryName} operates inside ${teamName} as an active operational dependency, not a brand exercise.
+
+The category remains unassigned. One organisation will hold it.
+
+The relevant question at this stage is simply whether this is strategic from your perspective.
+
+Kind regards,
+
+{signature}"
+
+WHAT BAD LOOKS LIKE (NEVER DO THIS):
+- "Reply to this email and I will send it across within the hour" — desperate, aggressive
+- "I have a precise 15-minute slot available" — arrogant SaaS cold email
+- "I wanted to reach out because..." — generic, passive
+- "Leveraging synergies between..." — corporate jargon
+- Any dashes (—) anywhere in the body
+- Any bullet points or lists
+- "Exciting opportunity" / "game-changing" / "I believe" / "I think"
+- Exclamation marks
+- Questions in subject lines` : `LINKEDIN RULES:
+- 300 characters MAXIMUM
+- Reference the preceding email specifically
+- No pitch, no hard ask
+- Warm, professional, human — not a mini-email`}
+
+Return ONLY the ${s.channel === 'email' ? 'email text (starting with Dear, ending with {signature})' : 'message text'}. Nothing else — no preamble, no explanation, no markdown.`
+
       const r = await fetch('https://api.vanhawke.agency/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Write a ${s.channel === 'email' ? 'outreach email' : '300-char LinkedIn message'} for step ${s.step} of a sequence.\n\nSTYLE RULES (non-negotiable):\n- ${s.channel === 'email' ? 'Start with "Dear {firstName}," and end with "Kind regards,\\n\\n{signature}"' : 'Start with "Hi {firstName},"'}\n- Write at principal/board level. No generic filler. No "I hope this finds you well".\n- Tone: "We work at principal level on the structuring of Formula One partnerships for teams and rights-holders."\n- Category-specific: explain WHY this category matters operationally for Formula One.\n- Soft CTA: "The relevant question at this stage is simply whether this is strategic from your perspective."\n- Subject format uses x not special characters (e.g. "Haas F1 Team x Cloud Infrastructure")\n- 50-125 words for emails. 300 chars max for LinkedIn.\n\nContext: Approach: ${s.approach}. Psychology: ${s.psychology}. Target: ${seq?.target_persona || 'C-suite'}. Subject: ${s.subject || 'F1 partnership'}.\n\nReturn ONLY the message text, nothing else.`,
+          message: kikoPrompt,
           userEmail: 'sunny@vanhawke.com', currentPage: 'sequences', conversationHistory: []
         })
       })

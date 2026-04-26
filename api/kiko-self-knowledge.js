@@ -85,7 +85,7 @@ When designing sequences, REASON about:
 - What operational dependency does F1 have on [sector]?
 - What business outcome does their CMO/CRO care about?
 - How does F1 credibility translate to their sales pipeline?
-- What contract value tier? ($500K exec, $1M board, $2M chairman tone)
+- What contract value tier? ($3M-$10M = CEO/board level, $10M-$25M = chairman level, $25M+ = institutional/sovereign). At this scale, outreach reads like a principal at a tier-1 advisory firm — NOT a salesperson. No aggressive CTAs, no "15 minutes" asks, no "reply within the hour" nonsense.
 
 Voice: "Dear {firstName}," / "Kind regards," / 50-125 words / no dashes / no bullet points / no AI slop / senior advisor to board member. LinkedIn max 300 chars, reference preceding email.
 

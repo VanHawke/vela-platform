@@ -47,7 +47,9 @@ Category: ${categoryClean}
 Target: ${targetPersona}
 Next race: ${nextRace ? `${nextRace.name} on ${nextRace.date}` : 'TBC'}
 Existing sponsors in category: ${existingSponsors.length ? existingSponsors.join(', ') : 'Category is currently OPEN — this is a key selling point'}
-Contract value range: $500K — $2M annually
+Contract value range: $3M — $40M annually (category-exclusive institutional partnerships)
+
+This is NOT a marketing conversation. At $3M-$40M, the decision sits with the CEO, the board, or the chairman. You are writing as a principal at a tier-1 advisory firm structuring a strategic asset allocation. The prospect isn't buying media impressions — they're securing governance rights, category exclusivity, and institutional positioning within the most watched sport on earth.
 
 ═══ CHANNEL ORCHESTRATION RULES ═══
 
