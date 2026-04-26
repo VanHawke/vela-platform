@@ -41,13 +41,14 @@ function StepCard({ step, index, isSelected, onClick, onDelete, compact }) {
   const config = STEP_TYPES[type] || STEP_TYPES.email
   const Icon = config.icon
   const preview = step.template ? step.template.slice(0, 60) + (step.template.length > 60 ? '...' : '') : step.subject || ''
+  const hasCondition = step.condition === 'connection_accepted'
 
   return (
     <div onClick={onClick} style={{
       width: '100%', maxWidth: compact ? 150 : 320, padding: compact ? '8px 10px' : '12px 14px', borderRadius: 10,
       background: isSelected ? config.bg : C.card,
       border: `1.5px solid ${isSelected ? config.color : config.border}`,
-      cursor: 'pointer', transition: 'all 0.15s ease',
+      cursor: 'grab', transition: 'all 0.15s ease',
       boxShadow: isSelected ? `0 2px 12px ${config.color}15` : '0 1px 3px rgba(0,0,0,0.04)',
       position: 'relative',
     }}>
@@ -56,9 +57,13 @@ function StepCard({ step, index, isSelected, onClick, onDelete, compact }) {
           <Icon size={compact ? 12 : 14} style={{ color: config.color }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: compact ? 10 : 12, fontWeight: 600, color: C.text, fontFamily: C.font }}>{config.label}</div>
-          {!compact && preview && <div style={{ fontSize: 11, color: C.textSec, fontFamily: C.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>{preview}</div>}
-          {!compact && !preview && type !== 'condition' && type !== 'condition_accepted' && <div style={{ fontSize: 10, color: C.textTer, fontFamily: C.font, fontStyle: 'italic', marginTop: 1 }}>Click to edit</div>}
+          <div style={{ fontSize: compact ? 10 : 12, fontWeight: 600, color: C.text, fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}>
+            {config.label}
+            {hasCondition && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(212,168,67,0.12)', color: '#D4A843', fontWeight: 600 }}>IF CONNECTED</span>}
+          </div>
+          {!compact && step.approach && <div style={{ fontSize: 10, color: C.textTer, fontFamily: C.font, marginTop: 1 }}>{step.approach}</div>}
+          {!compact && preview && !step.approach && <div style={{ fontSize: 11, color: C.textSec, fontFamily: C.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>{preview}</div>}
+          {!compact && !preview && !step.approach && type !== 'condition' && type !== 'condition_accepted' && <div style={{ fontSize: 10, color: C.textTer, fontFamily: C.font, fontStyle: 'italic', marginTop: 1 }}>Click to edit</div>}
         </div>
         {!compact && <span style={{ fontSize: 9, color: C.textTer, fontFamily: C.font, fontWeight: 500 }}>#{index + 1}</span>}
       </div>

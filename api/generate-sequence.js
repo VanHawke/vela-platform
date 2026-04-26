@@ -1,6 +1,7 @@
-// api/generate-sequence.js — AI-powered sequence generation
-// Takes category + team + persona → returns fully formed 7-step multichannel sequence
-// Uses real Van Hawke email style references, race calendar, partnership context
+// api/generate-sequence.js — Strategic sequence generation engine
+// Kiko acts as the expert: she reasons about sector, company type, team positioning,
+// buyer psychology, and channel orchestration to create the optimal outreach sequence.
+// LinkedIn and email run in PARALLEL — LinkedIn reinforces email, never replaces it.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from './kiko-tools.js';
 
@@ -15,132 +16,121 @@ export default async function handler(req, res) {
   const teamName = team || 'Haas F1 Team';
   const targetPersona = persona || `C-suite at $500M-$5B ${category} companies`;
   const steps = numSteps || 7;
+  const categoryClean = category.replace(/\//g, ' ').replace(/\s+/g, ' ').trim();
 
   try {
-    // Pull real context: race calendar, partnerships, identity, STYLE REFERENCE
-    const categoryClean = category.replace(/\//g, ' ').replace(/\s+/g, ' ').trim();
-    const [races, partnerships, identity, categoryStyle, fallbackStyle] = await Promise.all([
+    const [races, partnerships, styleArr] = await Promise.all([
       sbFetch('race_calendar?date=gte.' + new Date().toISOString().split('T')[0] + '&series=eq.F1&order=date&limit=6').catch(() => []),
       sbFetch(`partnerships?team=ilike.*${encodeURIComponent(teamName.split(' ')[0])}*&limit=20`).catch(() => []),
-      sbFetch('kiko_identity?category=in.(communication_style,strategic_position)&limit=10').catch(() => []),
-      // Load style examples for THIS category first
-      sbFetch(`kiko_email_style_reference?category=ilike.*${encodeURIComponent(categoryClean.split(' ')[0])}*&order=step_number&limit=4`).catch(() => []),
-      // Fallback: load best-performing style examples
-      sbFetch('kiko_email_style_reference?category=in.(Cloud Computing,Cybersecurity)&order=step_number&limit=4').catch(() => []),
+      sbFetch(`kiko_email_style_reference?order=step_number&limit=6`).catch(() => []),
     ]);
-
     const raceArr = Array.isArray(races) ? races : [];
     const partArr = Array.isArray(partnerships) ? partnerships : [];
-    const styleArr = (Array.isArray(categoryStyle) && categoryStyle.length > 0) ? categoryStyle : (Array.isArray(fallbackStyle) ? fallbackStyle : []);
+    const styles = Array.isArray(styleArr) ? styleArr : [];
     const nextRace = raceArr[0];
     const existingSponsors = partArr.map(p => p.company || p.partner_name).filter(Boolean).slice(0, 5);
+    const styleExamples = styles.slice(0, 3).map(e => `[${e.category} Step ${e.step_number}]\nSubject: ${e.subject}\n${e.body}`).join('\n---\n');
 
-    // Build style examples section
-    const styleExamples = styleArr.slice(0, 4).map(e => 
-      `[${e.category} Step ${e.step_number}]\nSubject: ${e.subject}\n${e.body}`
-    ).join('\n\n---\n\n');
+    const prompt = `You are the world's leading B2B sponsorship sales strategist. You have deep expertise in:
+- C-suite psychology and decision-making patterns
+- Multi-channel outreach orchestration (email + LinkedIn working together)
+- Formula One partnership structuring and category exclusivity
+- Authority-led positioning (you represent the platform, not a vendor)
+- Persuasion science: authority, scarcity, social proof, loss aversion, commitment/consistency
 
-    const prompt = `Generate a ${steps}-step B2B outreach sequence for the "${categoryClean}" category with ${teamName}.
+Your task: Design a ${steps}-touchpoint outreach sequence for the "${categoryClean}" sector targeting ${targetPersona} for ${teamName}.
 
-═══ REAL VAN HAWKE EMAIL EXAMPLES — MATCH THIS EXACT TONE ═══
+═══ STRATEGIC CONTEXT ═══
 
-${styleExamples || 'No category-specific examples available.'}
+Team: ${teamName}
+Category: ${categoryClean}
+Target: ${targetPersona}
+Next race: ${nextRace ? `${nextRace.name} on ${nextRace.date}` : 'TBC'}
+Existing sponsors in category: ${existingSponsors.length ? existingSponsors.join(', ') : 'Category is currently OPEN — this is a key selling point'}
+Contract value range: $500K — $2M annually
 
-═══ END EXAMPLES ═══
+═══ CHANNEL ORCHESTRATION RULES ═══
 
-═══ VOICE & LANGUAGE RULES (NON-NEGOTIABLE) ═══
+EMAIL is the primary channel. Every sequence is email-first and email-led.
+LINKEDIN is a supporting channel that REINFORCES email — it never replaces it.
 
-Every email MUST:
-- Start with "Dear {firstName}," — no other greeting ever
-- End with "Kind regards,\n\n{signature}"
-- Be 50-125 words (not one word more)
-- Use complete sentences, short paragraphs (2-3 sentences per paragraph)
-- Sound like a senior advisor writing to a board member, not a salesperson pitching
+How they work together:
+- Email carries the substance: the strategic argument, the operational detail, the proposition
+- LinkedIn carries the relationship signal: the personal touch, the human connection, the urgency
+- A LinkedIn message 1-2 days AFTER an email creates a "surround sound" effect — the prospect sees you in their inbox AND their LinkedIn
+- A LinkedIn message should REFERENCE the email: "Sent you a note on [topic] — worth a look"
+- Timing gaps between channels: LinkedIn 1-2 days after the preceding email, next email 2-3 days after LinkedIn
 
-NEVER use:
-- Dashes (—) or bullet points in email body
-- "I hope this finds you well", "I wanted to reach out", "I'm writing to"
-- "leveraging", "synergies", "exciting opportunity", "game-changing"
-- "I think", "I believe", "maybe", "hopefully", "if possible"
-- Questions in subject lines or exclamation marks anywhere
+Example orchestration pattern:
+Day 0: Email 1 (authority opener)
+Day 1: LinkedIn connection request (with personalised note referencing Email 1)
+Day 4: Email 2 (different angle, deeper)
+Day 6: LinkedIn message IF connected (reference Email 2, add personal layer)
+Day 9: Email 3 (scarcity, calendar-driven)
+Day 11: LinkedIn message IF connected (short, urgent, "category closing")
+Day 14: Email 4 (strategic withdrawal — final note)
 
-ALWAYS use these language anchors naturally:
-- "principal level", "category-exclusive", "closed bundle"
-- "governance, access, institutional credibility"
-- "operating dependency", "category control", "scarcity by design"
-- "board-level platform", "intelligent age"
+Note: LinkedIn messages are conditional on connection being accepted. If not connected, the email sequence continues uninterrupted. The emails do NOT change based on LinkedIn status — they stand alone as a complete sequence.
 
-═══ 5-TOUCH PSYCHOLOGY FRAMEWORK ═══
+═══ SECTOR-SPECIFIC STRATEGY ═══
 
-Each step MUST use a DIFFERENT psychological angle. Not variations of the same email.
+Think about WHY a ${categoryClean} company would want an F1 partnership:
+- What operational dependency does F1 have on ${categoryClean}? (data, logistics, engineering, compliance, communications?)
+- What does ${teamName} specifically need from this sector?
+- What business outcome does the CMO/CRO of a ${categoryClean} company care about?
+- How does F1 credibility translate to their sales pipeline?
 
-Step 1 (Email): AUTHORITY + RECIPROCITY
-- Establish Van Hawke's position ("We work at principal level on the structuring of Formula One partnerships")
-- Explain why ${categoryClean} matters OPERATIONALLY for F1 (not brand exposure — how the team actually uses this technology in simulation, telemetry, data pipelines, factory-to-track workflows)
-- Close with an open strategic question, not a pitch
-- Subject: "${teamName.replace(' Team', '')} x ${categoryClean}"
+Use these insights to craft messaging that speaks to THEIR strategic priorities, not ours.
 
-Step 2 (LinkedIn): CONNECTION REQUEST
-- LinkedIn connection request with personalised note (MAX 300 characters)
-- Reference something specific about the prospect's company or role
-- No pitch, no ask — just a reason to connect
-- Format: "Hi {firstName}, [reason]. [one-line context]. Worth connecting."
+═══ VOICE & LANGUAGE (NON-NEGOTIABLE) ═══
 
-Step 3 (Condition): CONNECTION CHECK
-- System checks if LinkedIn connection was accepted
-- YES branch → Step 5 (LinkedIn message)
-- NO branch → Step 4 (email follow-up)
+Every email:
+- Opens with "Dear {firstName}," — nothing else
+- Closes with "Kind regards,\\n\\n{signature}"
+- 50-125 words maximum
+- Complete sentences, short paragraphs (2-3 sentences each)
+- Reads like a senior advisor writing to a board member
 
-Step 4 (Email — NO branch): REVENUE + SOCIAL PROOF
-- Deeper operational detail about how ${categoryClean} impacts the team's competitive position
-- Reference what similar companies have done in F1 (if any: ${existingSponsors.length ? existingSponsors.join(', ') : 'category is currently open'})
-- Mention contract value tier implicitly: "partnerships at this level typically reflect a $500K-$2M annual commitment"
-- Subject: "${teamName.replace(' Team', '')} — ${categoryClean} Operating Model"
+Every LinkedIn message:
+- Maximum 300 characters
+- Casual but professional — not a mini-email
+- References the preceding email specifically
 
-Step 5 (LinkedIn — YES branch): COMMITMENT + EXCLUSIVITY
-- Short LinkedIn message (max 300 chars) referencing the email sent
-- Create urgency: "Category is being formalised this quarter"
-- Ask for a specific next step: "Worth a 15-minute call this week?"
+BANNED: dashes (—), bullet points, "I hope this finds you well", "I wanted to reach out",
+"leveraging", "synergies", "exciting opportunity", "game-changing", "I think", "I believe",
+questions in subject lines, exclamation marks
 
-Step 6 (Email): SCARCITY + RACE CALENDAR
-- Reference upcoming race: ${nextRace ? `${nextRace.name} in ${Math.ceil((new Date(nextRace.date) - new Date()) / 86400000)} days` : 'next race TBC'}
-- Create urgency through calendar: "Activation windows are structured around the race calendar"
-- Mention remaining category availability
-- Subject: "${teamName.replace(' Team', '')} — Category Availability Update"
+REQUIRED language anchors (use naturally, not forced):
+"principal level", "category-exclusive", "closed bundle", "governance", "institutional credibility",
+"operating dependency", "category control", "scarcity by design", "board-level platform"
 
-Step 7 (Email): STRATEGIC WITHDRAWAL
-- Final touch — respectful close, not desperate
-- Frame it as protecting their option: "I wanted to ensure you had the opportunity to consider this before the category is committed"
-- Leave the door open without begging
-- Subject: "${teamName.replace(' Team', '')} x ${categoryClean} — Final Note"
+${styleExamples ? `═══ REAL VAN HAWKE EMAIL EXAMPLES (match this tone) ═══\n${styleExamples}\n═══ END EXAMPLES ═══` : ''}
 
-═══ CONTEXT ═══
-- Target persona: ${targetPersona}
-- Team: ${teamName}
-- Next race: ${nextRace ? `${nextRace.name} (${nextRace.date})` : 'TBC'}
-- Existing ${categoryClean} sponsors in F1: ${existingSponsors.length ? existingSponsors.join(', ') : 'Limited — category is open'}
+═══ PSYCHOLOGY PER TOUCHPOINT ═══
+
+Each touchpoint MUST use a distinct psychological lever. Not variations of the same email.
+
+1. AUTHORITY + CURIOSITY: Establish position, explain operational relevance, strategic question
+2. SOCIAL SIGNAL: LinkedIn connection — shows you're a real person at a real firm
+3. OPERATIONAL DEPTH: How ${categoryClean} is actually used inside an F1 team (engineering, simulation, compliance, logistics). Make them see the genuine dependency.
+4. RELATIONSHIP LAYER: LinkedIn message referencing the email — adds warmth to authority
+5. SCARCITY + CALENDAR: Real race dates, category closing, limited slots
+6. URGENCY REINFORCEMENT: LinkedIn short message — "worth a conversation before [race]"
+7. STRATEGIC WITHDRAWAL: Respectful final note, protect their option, leave door open
 
 ═══ OUTPUT FORMAT ═══
+
 Return ONLY a valid JSON array. No markdown, no backticks, no explanation.
 
-IMPORTANT: For condition steps, the yes_steps and no_steps must contain FULL step objects (not step numbers).
-The condition step acts as a container — the branched steps live INSIDE it.
+Each step is one of:
+- Email: {"step":N,"delay_days":D,"channel":"email","approach":"[psychology]","subject":"...","template":"Dear {firstName},\\n\\n[body max 125 words]\\n\\nKind regards,\\n\\n{signature}"}
+- LinkedIn invite: {"step":N,"delay_days":D,"channel":"linkedin","action":"invite","template":"[personalised note, max 300 chars]"}
+- LinkedIn message: {"step":N,"delay_days":D,"channel":"linkedin","action":"message","condition":"connection_accepted","template":"[message, max 300 chars]"}
 
-For email steps: {"step":N,"delay_days":D,"channel":"email","approach":"...","psychology":"...","subject":"...","template":"Dear {firstName},\\n\\n[body]\\n\\nKind regards,\\n\\n{signature}"}
-For LinkedIn invite: {"step":N,"delay_days":D,"channel":"linkedin","action":"invite","template":"Hi {firstName}, [300 char max note]"}
-For LinkedIn message: {"step":N,"delay_days":D,"channel":"linkedin","action":"message","template":"Hi {firstName}, [300 char max message]"}
-For condition: {"step":N,"delay_days":D,"type":"condition","condition_type":"connection_accepted","yes_steps":[{"channel":"linkedin","action":"message","template":"Hi {firstName}, [message]","approach":"..."}],"no_steps":[{"channel":"email","subject":"...","template":"Dear {firstName},\\n\\n[body]\\n\\nKind regards,\\n\\n{signature}","approach":"..."}]}
+LinkedIn messages with "condition":"connection_accepted" are automatically skipped if the prospect hasn't accepted. The email sequence continues regardless.
 
-The sequence should be 7 top-level steps. Steps 4 and 5 should be EMBEDDED inside Step 3's yes_steps and no_steps — NOT as separate top-level steps.
+All ${steps} steps should be top-level in the array. No nested branches. The sequence sender handles conditions automatically.`;
 
-Example structure:
-Step 1: Email (authority)
-Step 2: LinkedIn invite
-Step 3: Condition (connection_accepted) with yes_steps=[LinkedIn message] and no_steps=[Email follow-up]
-Step 4: Email (scarcity)
-Step 5: Email (withdrawal)
-
-This gives 5 top-level steps with 2 branched sub-steps inside the condition = 7 total touchpoints.`;
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6', max_tokens: 6000,
       messages: [{ role: 'user', content: prompt }]
@@ -151,37 +141,10 @@ This gives 5 top-level steps with 2 branched sub-steps inside the condition = 7 
       const cleaned = text.replace(/```json|```/g, '').trim();
       generatedSteps = JSON.parse(cleaned);
     } catch {
-      return res.status(500).json({ error: 'Failed to parse generated sequence', raw: text?.slice(0, 500) });
+      return res.status(500).json({ error: 'Failed to parse sequence', raw: text?.slice(0, 500) });
     }
 
-    // Post-process: if condition steps have step NUMBER references instead of embedded objects,
-    // pull the referenced steps into yes_steps/no_steps and remove them from top-level
-    const stepsToRemove = new Set();
-    for (const step of generatedSteps) {
-      if (step.type === 'condition') {
-        // Fix yes_steps
-        if (Array.isArray(step.yes_steps) && step.yes_steps.length > 0 && typeof step.yes_steps[0] === 'number') {
-          step.yes_steps = step.yes_steps.map(ref => {
-            const target = generatedSteps.find(s => s.step === ref);
-            if (target) { stepsToRemove.add(ref); return { ...target }; }
-            return { channel: 'email', template: 'Dear {firstName},\n\n\n\nKind regards,\n\n{signature}', approach: 'follow-up' };
-          });
-        }
-        // Fix no_steps
-        if (Array.isArray(step.no_steps) && step.no_steps.length > 0 && typeof step.no_steps[0] === 'number') {
-          step.no_steps = step.no_steps.map(ref => {
-            const target = generatedSteps.find(s => s.step === ref);
-            if (target) { stepsToRemove.add(ref); return { ...target }; }
-            return { channel: 'email', template: 'Dear {firstName},\n\n\n\nKind regards,\n\n{signature}', approach: 'follow-up' };
-          });
-        }
-      }
-    }
-    // Remove steps that were absorbed into condition branches
-    if (stepsToRemove.size > 0) {
-      generatedSteps = generatedSteps.filter(s => !stepsToRemove.has(s.step));
-    }
-    // Re-number steps
+    // Normalize: ensure step numbers are sequential
     generatedSteps = generatedSteps.map((s, i) => ({ ...s, step: i + 1 }));
 
     // Create the sequence in the database
@@ -190,7 +153,7 @@ This gives 5 top-level steps with 2 branched sub-steps inside the condition = 7 
       method: 'POST', headers: { Prefer: 'return=representation' },
       body: JSON.stringify({
         name: seqName,
-        description: `${steps}-step authority-led ${categoryClean} outreach for ${teamName}. 5-touch psychology: authority, social proof, scarcity, commitment, strategic withdrawal.`,
+        description: `${steps}-touchpoint ${categoryClean} outreach for ${teamName}. Email-led, LinkedIn-reinforced. Authority → Operational depth → Scarcity → Withdrawal.`,
         target_persona: targetPersona,
         steps: generatedSteps,
         is_active: false,
@@ -198,9 +161,9 @@ This gives 5 top-level steps with 2 branched sub-steps inside the condition = 7 
     });
     const seqId = Array.isArray(created) ? created[0]?.id : created?.id;
 
-    return res.status(200).json({ ok: true, sequence: { name: seqName, target_persona: targetPersona, steps: generatedSteps }, id: seqId });
+    return res.json({ ok: true, sequence: { name: seqName, target_persona: targetPersona, steps: generatedSteps }, id: seqId });
   } catch (err) {
-    console.error('[GenerateSequence]', err.message, err.stack);
-    return res.status(200).json({ ok: false, error: err.message });
+    console.error('[GenerateSequence]', err.message);
+    return res.json({ ok: false, error: err.message });
   }
 }

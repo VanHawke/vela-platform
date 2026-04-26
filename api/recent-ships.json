@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-26T08:37:21.640Z",
+  "generated_at": "2026-04-26T08:45:41.600Z",
   "commits": [
+    {
+      "hash": "de34f9d",
+      "subject": "Sequence flow: condition branching fix + drag-and-drop reordering",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "1f2f5b0",
       "subject": "Consolidate: one 'Source prospects' button, background job only",
@@ -94,11 +99,6 @@
     {
       "hash": "fe96144",
       "subject": "Fix job processor: order by queued_at not created_at (column didn't exist)",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "354021c",
-      "subject": "Campaign builder: background email enrichment + end-to-end fix",
       "when": "15 hours ago"
     }
   ]
