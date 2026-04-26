@@ -351,7 +351,12 @@ export default async function handler(req, res) {
         const prevSubject = prevQueue?.[0]?.subject;
 
         // Build personalisation context
+        const nameParts = (enrollment.contact_name || '').trim().split(/\s+/);
+        const firstName = nameParts[0] || 'there';
+        const lastName = nameParts.slice(1).join(' ') || '';
         const vars = {
+          firstName,
+          lastName,
           name: enrollment.contact_name || 'there',
           company: enrollment.company || '',
           category: ci.industry || ci.sub_sector || 'technology',
@@ -364,6 +369,7 @@ export default async function handler(req, res) {
           competitor_team: 'Mercedes',
           recent_news: '', recent_news_hook: '', competitive_intel: '',
           prev_subject: prevSubject || '',
+          signature: '', // signature appended separately by wrapEmailBody
         };
 
         // Personalise template with Haiku
@@ -392,12 +398,25 @@ export default async function handler(req, res) {
         try {
           const refine = await anthropic.messages.create({
             model: 'claude-haiku-4-5-20251001', max_tokens: 600,
-            system: 'You refine outreach email drafts. Keep the structure and approach intact but make it feel natural and specific. Replace any remaining {placeholder} tokens with intelligent defaults. Keep to 2 paragraphs max. No sign-off or name (signature is appended separately). Return ONLY the refined email body, nothing else.\n\n' + voicePromptInjection + patternGuidance,
+            system: `You refine outreach email drafts. Keep the structure and approach intact but make it feel natural and specific. The recipient's first name is "${firstName}" — use EXACTLY this name after "Dear", never make up a different name. Keep to 2 paragraphs max. No sign-off or name (signature is appended separately). No dashes (em or en). No bullet points. Return ONLY the refined email body starting with "Dear ${firstName}," — nothing else.\n\n` + voicePromptInjection + patternGuidance,
             messages: [{ role: 'user', content: `Refine this email for ${vars.name} at ${vars.company} (${vars.category}):\n\n${bodyPlain}\n\nCompany intel: Revenue ${vars.revenue_estimate}, ${vars.employee_count} employees, CEO ${vars.ceo}, funding ${vars.funding_round}\n\nThis step uses approach=${actualStep.approach || 'authority-led'}, psychology=${actualStep.psychology || 'reciprocity'}.` }]
           });
           const refined = refine.content[0]?.text?.trim();
           if (refined && refined.length > 50) bodyPlain = refined;
         } catch {}
+
+        // Post-process: strip dashes and banned phrases from generated content
+        bodyPlain = bodyPlain.replace(/[\u2014\u2013]/g, ',');
+        bodyPlain = bodyPlain
+          .replace(/I wanted to ensure/gi, 'This is to ensure')
+          .replace(/I wanted to reach out/gi, 'This note concerns')
+          .replace(/I am reaching out/gi, 'This concerns')
+          .replace(/I wanted to/gi, 'This is to')
+          .replace(/I'm writing to/gi, 'This note concerns')
+          .replace(/Just checking in/gi, '')
+          .replace(/Following up on my last email/gi, '')
+          .replace(/Bumping this/gi, '');
+        subject = subject.replace(/[\u2014\u2013]/g, ' x ').replace(/\s+/g, ' ').trim();
 
         // Wrap with Helvetica 12 / line-height 1.5 / black, inject correct signature
         // contactStatus: 'cold' for steps 1-2 (text-only sig), 'warm' for steps 3+ (full sig)
