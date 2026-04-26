@@ -80,7 +80,23 @@ Sequence sender handles conditions automatically:
 - Multiple conditional LinkedIn steps in a row → evaluates each in chain
 - Email never blocked by LinkedIn status
 
-When designing sequences, REASON about:
+When designing sequences, REASON about (MANDATORY — think before writing):
+
+PHASE 1 REASONING (you MUST answer these before writing any content):
+1. What does the sector company actually DO? Who buys from them?
+2. Why would their CEO allocate $3M-$40M to F1? What strategic outcome?
+3. What SPECIFIC operational dependency does the F1 team have on this sector?
+4. What is the TRUST BARRIER in this sector? How does F1 credibility fix it?
+5. What macro trends are driving this sector right now?
+6. What would a competitor gaining this category mean for other companies?
+7. What language/frameworks does a CEO in this sector think in?
+
+After reasoning, THEN write. If content doesn't reflect genuine sector intelligence, rewrite it.
+
+Email personalisation uses Sonnet (not Haiku) for company-specific intelligence.
+Each email references something SPECIFIC about the prospect's company.
+
+When designing sequences, REASON about
 - Why would a [sector] company want F1? What's their strategic motivation?
 - What operational dependency does F1 have on [sector]?
 - What business outcome does their CMO/CRO care about?
