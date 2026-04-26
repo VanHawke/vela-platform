@@ -27,7 +27,7 @@ const C = {
   r: 10,
 }
 const glass = { background: C.card, border: `1px solid ${C.border}`, borderRadius: C.r, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', transition: 'all 0.15s ease' }
-import { Mail, Linkedin, Plus, Clock, Trash2, Save, Sparkles, ArrowLeft, Search, UserPlus, X, ChevronRight, Eye, Reply, AlertTriangle, Send, GitBranch, Copy, MoreHorizontal, LayoutList, Workflow } from 'lucide-react'
+import { Mail, Linkedin, Plus, Clock, Trash2, Save, Sparkles, ArrowLeft, Search, UserPlus, X, ChevronRight, Eye, Reply, AlertTriangle, Send, GitBranch, Copy, MoreHorizontal, LayoutList, Workflow, RefreshCw } from 'lucide-react'
 import SequenceFlowView from '@/components/campaigns/SequenceFlowView'
 
 const APPROACHES = ['authority-led','scarcity-led','social-proof','reciprocity','data-led','intelligence-led','competitive-led','relationship-led']
@@ -51,7 +51,7 @@ function timeAgo(d) {
   return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
-export default function SequenceDetail() {
+export default function SequenceDetail({ user }) {
   const { id } = useParams()
   const nav = useNavigate()
   const isNew = id === 'new'
@@ -107,17 +107,14 @@ export default function SequenceDetail() {
 
   useEffect(() => { if (!isNew) load() }, [id])
   useEffect(() => {
-    // Load org members for send-from dropdown
-    const u = supabase.auth.getUser?.() || supabase.auth.getSession?.()
-    Promise.resolve(u).then(async (r) => {
-      const userId = r?.data?.user?.id || r?.data?.session?.user?.id
-      if (!userId) return
-      try {
-        const res = await fetch(`https://api.vanhawke.agency/api/team-list?user_id=${userId}`)
-        if (res.ok) { const d = await res.json(); setOrgMembers(d.members || []) }
-      } catch {}
-    })
-  }, [])
+    // Load org members for send-from dropdown — uses user prop directly
+    const userId = user?.id
+    if (!userId) return
+    fetch(`https://api.vanhawke.agency/api/team-list?user_id=${userId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.members) setOrgMembers(d.members) })
+      .catch(() => {})
+  }, [user])
 
   // Activity tab — load when opened
   useEffect(() => {
@@ -857,8 +854,27 @@ RULES:
       {tab === 'sequence' && (
         <>
         {/* View mode toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, justifyContent: 'space-between' }}>
           <div style={{ fontSize: 11, color: C.textSec, fontFamily: C.font }}>{steps.length} steps · {steps.reduce((s, st) => s + (st.delay_days || 0), 0)} day sequence</div>
+          <button onClick={async () => {
+            if (!confirm('Regenerate all sequence steps with Kiko? This replaces the current steps with a fresh authority-led sequence.')) return
+            const category = seq?.description || seq?.name || 'technology'
+            const team = seq?.name?.split(' - ')[0] || 'Haas F1'
+            const persona = seq?.target_persona || 'C-suite'
+            try {
+              const r = await fetch('https://api.vanhawke.agency/api/generate-sequence', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category, team, persona }),
+              })
+              const d = await r.json()
+              if (d.ok && d.sequence?.steps) {
+                setSteps(d.sequence.steps)
+                setDirty(true)
+              } else { alert('Generation failed: ' + (d.error || 'unknown')) }
+            } catch (e) { alert('Error: ' + e.message) }
+          }} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid rgba(124,92,252,0.2)`, background: 'rgba(124,92,252,0.05)', color: '#7C5CFC', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <RefreshCw size={10} /> Regenerate with Kiko
+          </button>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 14, minHeight: 0 }}>
