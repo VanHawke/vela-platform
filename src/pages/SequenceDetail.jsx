@@ -1508,24 +1508,30 @@ RULES:
                   try {
                     const cur = steps[selStep] || {}
                     const senderMember = seq?.send_from_user_id ? orgMembers.find(m => m.user_id === seq.send_from_user_id) : orgMembers[0]
-                    // Extract recipient name from LinkedIn URL slug
                     const slug = liTestUrl.trim().split('/in/')[1]?.replace(/\/$/, '') || ''
                     const nameParts = slug.split('-').filter(Boolean).slice(0, 3)
                     const recipientFirst = nameParts[0] ? nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1) : 'Test'
                     const recipientLast = nameParts[1] ? nameParts[1].charAt(0).toUpperCase() + nameParts[1].slice(1) : ''
                     const recipientFull = [recipientFirst, recipientLast].filter(Boolean).join(' ')
-                    const msg = (cur.template || '').replace(/\{firstName\}/g, recipientFirst).replace(/\{lastName\}/g, recipientLast).replace(/\{companyName\}/g, seq?.name?.split(' - ')[0]?.replace('Haas F1', 'Haas F1 Team') || 'Company').replace(/\{category\}/g, seq?.name?.split(' - ')[1] || 'Category').replace(/\{revenue\}/g, '$1B').replace(/\{ceo\}/g, 'CEO').replace(/\{raceWindow\}/g, 'Miami Grand Prix').replace(/\{recentNews\}/g, 'recent development').slice(0, 280)
-                    const { error } = await supabase.from('kiko_linkedin_queue').insert({
-                      contact_name: recipientFull || 'Test Recipient', company: seq?.name?.split(' - ')[0] || 'Test', linkedin_url: liTestUrl.trim(),
+                    const msg = (cur.template || '').replace(/\{firstName\}/g, recipientFirst).replace(/\{lastName\}/g, recipientLast).replace(/\{companyName\}/g, seq?.name?.split(' - ')[0] || 'Company').replace(/\{category\}/g, seq?.name?.split(' - ')[1] || 'Category').slice(0, 280)
+                    
+                    const payload = {
+                      contact_name: recipientFull || 'Test Recipient',
+                      company: seq?.name?.split(' - ')[0] || 'Test',
+                      linkedin_url: liTestUrl.trim(),
                       message_type: cur.action === 'invite' ? 'invite' : 'message',
                       message: '[TEST] ' + (msg || 'Test LinkedIn message'),
-                      context: JSON.stringify({ test: true, sender: senderMember?.email || 'sunny@vanhawke.com', step: selStep }),
-                      status: 'pending', priority: 10,
-                    })
-                    if (error) { alert('Insert failed: ' + error.message); return }
+                      context: JSON.stringify({ test: true, sender: senderMember?.email || 'sunny@vanhawke.agency', step: selStep }),
+                      status: 'pending',
+                      priority: 10,
+                    }
+                    console.log('[LinkedIn Test] Inserting:', payload)
+                    const { data, error } = await supabase.from('kiko_linkedin_queue').insert(payload).select()
+                    if (error) { console.error('[LinkedIn Test] Error:', error); alert('Insert failed: ' + error.message); return }
+                    console.log('[LinkedIn Test] Success:', data)
                     fetch('https://api.vanhawke.agency/api/linkedin-trigger', { method: 'POST' }).catch(() => {})
                     setLiTestSent(true)
-                  } catch (err) { alert('Error: ' + err.message) }
+                  } catch (err) { console.error('[LinkedIn Test] Exception:', err); alert('Error: ' + err.message) }
                 }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0077B5', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Send test</button>
               )}
             </div>

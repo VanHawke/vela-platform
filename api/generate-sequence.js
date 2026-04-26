@@ -54,7 +54,7 @@ OPTIMAL TIMING PATTERN (research-backed):
 Day 0: Email 1 (authority opener)
 Day 1: LinkedIn connection request
 Day 3: Email 2 (operational depth)
-Day 5: LinkedIn profile engagement (view profile, engage with their content)
+Day 5: LinkedIn message IF connected (different angle from emails, add value)
 Day 7: Email 3 (value-add: industry insight or data point)
 Day 10: LinkedIn message IF connected (reference emails)
 Day 12: Email 4 (case study / social proof from F1)
@@ -63,7 +63,7 @@ Day 18: Email 5 (scarcity + race calendar urgency)
 Day 21: LinkedIn message IF connected (final LinkedIn touch)
 Day 25: Email 6 (strategic repositioning: different angle entirely)
 Day 30: Email 7 (breakup email: respectful close, protect their option)
-Day 35: LinkedIn: engage with their content (like/comment on a post)
+Day 35: LinkedIn message IF connected (soft re-engagement, reference time passed)
 Day 42: Email 8 (resurrection: "circumstances may have changed")
 
 ═══ WHAT EACH TOUCHPOINT MUST ACHIEVE ═══
@@ -73,7 +73,7 @@ Every single touch must ADD VALUE. Never "just checking in." Never "following up
 Touch 1 (Email): AUTHORITY. Establish who you are. State the category is open. Explain WHY this category matters operationally for F1. End with a strategic question, not a pitch.
 Touch 2 (LinkedIn invite): SOCIAL SIGNAL. Personalised note. Reference the email. No pitch. Human connection.
 Touch 3 (Email): OPERATIONAL DEPTH. How does ${categoryClean} actually operate inside an F1 team? Contract management, compliance, data pipelines, simulation, logistics. Make them see the real dependency.
-Touch 4 (LinkedIn engage): VISIBILITY. View their profile. Like or comment on one of their posts. No direct message. Just be visible.
+Touch 4 (LinkedIn message IF connected): VALUE-ADD. Share a brief relevant insight. "Saw [specific thing]. The category structure might interest you." Short, warm, adds value.
 Touch 5 (Email): VALUE-ADD. Share a genuine insight. A data point about F1 commercial growth, or a trend in their sector. Position yourself as someone who THINKS about their market, not just sells to it.
 Touch 6 (LinkedIn message IF connected): RELATIONSHIP. Short, warm. Reference a specific email. "Sent you a note on [topic]. The [specific angle] is worth a look."
 Touch 7 (Email): SOCIAL PROOF. What have comparable partnerships looked like? Reference other F1 partnerships (without naming competitors for THIS category). Show the institutional credibility framework.
@@ -82,7 +82,7 @@ Touch 9 (Email): SCARCITY + CALENDAR. ${nextRace ? `${nextRace.name} is coming u
 Touch 10 (LinkedIn message IF connected): URGENCY. Short. "Category decision moving. Wanted to flag it directly."
 Touch 11 (Email): REPOSITIONING. Come at it from a COMPLETELY different angle. If previous emails focused on credibility, this one focuses on competitive threat. If a competitor takes this slot, what does that mean for them?
 Touch 12 (Email): BREAKUP. This is NOT aggressive or threatening. It IS respectful and final. "This will be my last note. The position remains open. If circumstances change, the conversation is available." This email consistently gets the HIGHEST reply rate.
-Touch 13 (LinkedIn): CONTENT ENGAGEMENT. Like or comment on their latest post. Stay visible without messaging.
+Touch 13 (LinkedIn message IF connected): RE-ENGAGEMENT. Soft, brief. "Some time has passed. The category has evolved. Worth a quick look if relevant." No pressure.
 Touch 14 (Email): RESURRECTION (35-42 days later). Brief. "Circumstances may have changed since we last corresponded. The category position has evolved. If this is now relevant, I can outline the current structure."
 
 ═══ CONTRACT SCALE ═══
@@ -109,7 +109,7 @@ Every email:
 - Reads like correspondence from a senior advisor to a board member.
 
 Every LinkedIn message: 300 characters maximum. NO dashes. Reference a specific preceding email.
-LinkedIn engage steps: {"channel":"linkedin","action":"engage","template":"[instruction for what to engage with]"}
+
 
 ABSOLUTELY BANNED (in ALL channels):
 - Em dashes or en dashes. Use commas or full stops.
@@ -144,7 +144,7 @@ Return ONLY a valid JSON array of 14 objects. No markdown, no backticks, no expl
 Email: {"step":N,"delay_days":D,"channel":"email","approach":"[psychology]","subject":"...","template":"Dear {firstName},\\n\\n[body 50-100 words]\\n\\nKind regards,\\n\\n{signature}"}
 LinkedIn invite: {"step":N,"delay_days":D,"channel":"linkedin","action":"invite","template":"[personalised note, max 300 chars, NO dashes]"}
 LinkedIn message: {"step":N,"delay_days":D,"channel":"linkedin","action":"message","condition":"connection_accepted","template":"[message, max 300 chars, NO dashes]"}
-LinkedIn engage: {"step":N,"delay_days":D,"channel":"linkedin","action":"engage","template":"[engagement instruction]"}
+
 
 All 14 steps must be top-level in the array. LinkedIn messages with condition:"connection_accepted" are auto-skipped if not connected.`;
 

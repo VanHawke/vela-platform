@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-26T18:28:05.346Z",
+  "generated_at": "2026-04-26T18:37:53.448Z",
   "commits": [
+    {
+      "hash": "5cf2a20",
+      "subject": "Fix: @vanhawke.agency alias resolves to @vanhawke.com for OAuth tokens",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "ec5dec9",
       "subject": "Fix enqueue: correct firstName + dash stripping + banned phrases",
-      "when": "10 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "5bcae8e",
@@ -34,7 +39,7 @@
     {
       "hash": "8b16794",
       "subject": "Fix: delete test Haas campaign + Add prospects button now secondary",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "4b00d74",
@@ -64,12 +69,12 @@
     {
       "hash": "6a5ef5d",
       "subject": "Dash post-processing: strip em/en dashes from all generated content",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "552c9b3",
       "subject": "Sequence quality: ban dashes in LinkedIn, ban reaching out variants, ban threatening withdrawal",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "2294f67",
@@ -94,11 +99,6 @@
     {
       "hash": "7bc87b2",
       "subject": "Sequence sender v2: handles both condition models + LinkedIn parallel",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "9ec3865",
-      "subject": "Bible: sequence engine v2 — LinkedIn reinforces email model",
       "when": "10 hours ago"
     }
   ]
