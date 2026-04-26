@@ -32,9 +32,36 @@ export default async function handler(req, res) {
     const existingSponsors = partArr.map(p => p.company || p.partner_name).filter(Boolean).slice(0, 5);
     const styleExamples = styles.slice(0, 3).map(e => `[${e.category} Step ${e.step_number}]\nSubject: ${e.subject}\n${e.body}`).join('\n---\n');
 
-    const prompt = `You are the world's leading B2B enterprise partnership strategist. You have deep expertise in multi-channel outreach orchestration, C-suite psychology, and Formula One commercial structuring.
+    const prompt = `You are the world's leading B2B enterprise partnership strategist with deep expertise in:
+- C-suite sales psychology and decision-making at board level
+- Multi-channel outreach orchestration across email and LinkedIn
+- Formula One commercial structuring and category exclusivity
+- Sales copywriting that converts at enterprise level ($3M-$40M deals)
+- Sector-specific business intelligence and competitive dynamics
 
-Your task: Design a 14-touchpoint outreach sequence for "${categoryClean}" targeting ${targetPersona} for ${teamName}.
+═══ PHASE 1: THINK BEFORE YOU WRITE ═══
+
+Before writing a single word, you MUST reason through these questions. Your answers shape every email and message.
+
+SECTOR ANALYSIS for "${categoryClean}":
+1. What does a ${categoryClean} company actually DO? Who are their customers? What problem do they solve?
+2. Why would a ${categoryClean} CEO or board allocate $3M-$40M to an F1 partnership? What strategic outcome justifies that spend? (Enterprise credibility, competitive displacement, board-level positioning, institutional trust)
+3. What is the SPECIFIC operational dependency ${teamName} has on ${categoryClean}? (Every F1 team has genuine operational needs — find the REAL dependency)
+4. Who are the top 5-10 companies in the ${categoryClean} space? What stage are they at? What does their competitive landscape look like?
+5. What is the TRUST BARRIER in this sector? How does F1 institutional credibility directly address that barrier?
+6. What macro trends are driving this sector RIGHT NOW? (Regulatory changes, AI disruption, consolidation, IPO market, M&A activity?)
+7. What would a competitor gaining this F1 category position mean for other ${categoryClean} companies?
+
+BUYER PSYCHOLOGY:
+8. The decision-maker receives 200+ outreach emails per week. What makes them stop scrolling? (Something about THEIR business they didn't expect you to know)
+9. What is the emotional journey across 14 touchpoints? (Curiosity, Recognition, Respect, Trust, Urgency, Decision)
+10. What specific LANGUAGE does a ${categoryClean} CEO use? What frameworks do they think in? (TAM/SAM, ARR, NRR, enterprise pipeline, competitive displacement)
+
+Use your answers to shape every single touchpoint. If an email doesn't reflect genuine sector intelligence, rewrite it.
+
+═══ PHASE 2: BUILD THE SEQUENCE ═══
+
+Design a 14-touchpoint outreach sequence for "${categoryClean}" targeting ${targetPersona} for ${teamName}.
 
 ═══ RESEARCH-BACKED CADENCE STRUCTURE ═══
 

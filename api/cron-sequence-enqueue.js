@@ -394,11 +394,23 @@ export default async function handler(req, res) {
         let subject = stepSubject.replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
         let bodyPlain = stepTemplate.replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
         
-        // Use Haiku to refine the email with real context + performance learning + Sunny's voice
+        // Use Sonnet to refine the email with company intelligence + voice profile
         try {
           const refine = await anthropic.messages.create({
-            model: 'claude-haiku-4-5-20251001', max_tokens: 600,
-            system: `You refine outreach email drafts. Keep the structure and approach intact but make it feel natural and specific. The recipient's first name is "${firstName}" — use EXACTLY this name after "Dear", never make up a different name. Keep to 2 paragraphs max. No sign-off or name (signature is appended separately). No dashes (em or en). No bullet points. Return ONLY the refined email body starting with "Dear ${firstName}," — nothing else.\n\n` + voicePromptInjection + patternGuidance,
+            model: 'claude-sonnet-4-6', max_tokens: 800,
+            system: `You are an elite sales copywriter who personalises outreach for $3M-$40M F1 sponsorship partnerships. The recipient is "${firstName}" at ${vars.company} in the ${vars.category} sector.
+
+RULES:
+- Start with "Dear ${firstName}," — use EXACTLY this name
+- Keep to 50-100 words. Every word must earn its place.
+- Write like a senior advisor addressing a board member
+- Reference something SPECIFIC about ${vars.company} or their sector position
+- No sign-off (signature appended separately)
+- No dashes (em or en). No bullet points. No "I wanted to reach out." No "I hope this finds you well."
+- If you know their revenue is ${vars.revenue_estimate}, their CEO is ${vars.ceo}, their funding is ${vars.funding_round} — USE that intelligence naturally
+
+Return ONLY the refined email body starting with "Dear ${firstName}," — nothing else.
+` + voicePromptInjection + patternGuidance,
             messages: [{ role: 'user', content: `Refine this email for ${vars.name} at ${vars.company} (${vars.category}):\n\n${bodyPlain}\n\nCompany intel: Revenue ${vars.revenue_estimate}, ${vars.employee_count} employees, CEO ${vars.ceo}, funding ${vars.funding_round}\n\nThis step uses approach=${actualStep.approach || 'authority-led'}, psychology=${actualStep.psychology || 'reciprocity'}.` }]
           });
           const refined = refine.content[0]?.text?.trim();
