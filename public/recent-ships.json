@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-27T20:52:31.870Z",
+  "generated_at": "2026-04-27T21:15:19.692Z",
   "commits": [
+    {
+      "hash": "c080fbe",
+      "subject": "Campaign intelligence v2: narrative arc + JSON-only output",
+      "when": "23 minutes ago"
+    },
     {
       "hash": "0451201",
       "subject": "iPad responsive: 100dvh + safe-area padding + tablet nav sizing",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "b758910",
@@ -29,7 +34,7 @@
     {
       "hash": "ca3b96a",
       "subject": "Kiko self-knowledge: full Session 61 capability update",
-      "when": "23 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "1f1ceb1",
@@ -44,12 +49,12 @@
     {
       "hash": "7180831",
       "subject": "Fix: search menu remove Lemlist (stale), add Campaigns",
-      "when": "24 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "63a9197",
       "subject": "Fix Settings: match user by user_id for role, handle agency/com alias for LinkedIn status",
-      "when": "24 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "f9fed09",
@@ -64,12 +69,12 @@
     {
       "hash": "03f1e73",
       "subject": "Fix: remove engage steps + LinkedIn test error handling",
-      "when": "26 hours ago"
+      "when": "27 hours ago"
     },
     {
       "hash": "5cf2a20",
       "subject": "Fix: @vanhawke.agency alias resolves to @vanhawke.com for OAuth tokens",
-      "when": "26 hours ago"
+      "when": "27 hours ago"
     },
     {
       "hash": "ec5dec9",
@@ -94,12 +99,7 @@
     {
       "hash": "dcd6d2a",
       "subject": "Fix send-from CORS: duplicate Access-Control-Allow-Origin headers",
-      "when": "29 hours ago"
-    },
-    {
-      "hash": "65dcb0d",
-      "subject": "Fix send-from: fallback to supabase.auth.getSession when user prop is null",
-      "when": "31 hours ago"
+      "when": "30 hours ago"
     }
   ]
 }
