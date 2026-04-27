@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-27T21:25:46.142Z",
+  "generated_at": "2026-04-27T21:33:07.564Z",
   "commits": [
+    {
+      "hash": "47886b1",
+      "subject": "Campaign v4: race calendar timing + language clarity fixes",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "0462a71",
       "subject": "Campaign arc v3: learned from Lemlist + added paddock & assets themes",
-      "when": "10 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "c080fbe",
       "subject": "Campaign intelligence v2: narrative arc + JSON-only output",
-      "when": "33 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "0451201",
@@ -95,11 +100,6 @@
       "hash": "e2f64d7",
       "subject": "Bible: 14-touchpoint research-backed cadence + enrollment always paused",
       "when": "29 hours ago"
-    },
-    {
-      "hash": "2841faf",
-      "subject": "SEQUENCE ENGINE v3: Research-backed 14 touchpoints over 42 days",
-      "when": "30 hours ago"
     }
   ]
 }

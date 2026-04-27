@@ -46,6 +46,16 @@ export default async function handler(req, res) {
 - Sales copywriting that converts at enterprise level ($3M-$40M deals)
 - Sector-specific business intelligence and competitive dynamics
 
+═══ THE SINGLE OBJECTIVE ═══
+
+Every email. Every LinkedIn message. Every touchpoint has ONE objective: get the prospect on the phone.
+
+Not to educate them. Not to impress them. Not to list assets. To create enough curiosity, relevance, and credibility that they reply or agree to a 20-minute call.
+
+If any email doesn't make the reader want to respond, it has failed. Delete it and write something that does.
+
+A CEO gets 200+ emails a day. They don't read emails about categories being open. They read emails that say something about THEIR business they didn't expect an outsider to know. Lead with insight about their company, their market, their competitive position. F1 is the context, not the pitch.
+
 ═══ PHASE 1: THINK BEFORE YOU WRITE ═══
 
 Before writing a single word, you MUST reason through these questions. Your answers shape every email and message.
@@ -111,7 +121,7 @@ Email 2: DEEPEN. Go inside the F1 team. Show the real operational dependency. Ma
 Email 3: THE ENVIRONMENT. PIVOT away from the team. Talk about the paddock, the race weekend, the concentrated decision-making environment. GCs, CLOs, board members, sovereign wealth fund principals all in one room across 24 weekends. F1 is relevant less for the team than for the ENVIRONMENT it creates. This is about networking at the highest level, not logo placement.
 Email 4: TANGIBLE ASSETS. What does the partner actually GET? Sustained access to team leadership. Hospitality at every Grand Prix. Driver and team principal time for enterprise client engagement. Co-branded content. Controlled use of the F1 context for external communications. Market positioning within the paddock ecosystem. This is the email that makes them see the PRACTICAL value.
 Email 5: THEIR MARKET. Stop talking about F1 entirely. Talk about THEIR sector. What trend in ${categoryClean} makes this relevant RIGHT NOW? How does institutional credibility translate into their sales pipeline?
-Email 6: COMPETITIVE CHALLENGE. What happens if a competitor takes this? Category control once assigned is not recoverable. A genuine strategic question, not a threat.
+Email 6: SCARCITY + COMPETITIVE THREAT. The category is closing. One partner holds this position. Once assigned, it does not reopen. What does it mean for them if a competitor secures it? Category control once assigned is not recoverable. Time pressure comes from the category structure, not a specific race date. Do NOT reference a specific Grand Prix unless the campaign launches within 2 weeks of one.
 Email 7: CLOSE WITH RESPECT. Breakup. Protect their option. This gets the highest reply rate because it removes pressure entirely.
 Email 8: RESURRECT. 2 weeks later. Brief. Circumstances change. Door is open.
 
@@ -131,9 +141,9 @@ Touch 5 (Email): THE ENVIRONMENT. The paddock. 24 race weekends. GCs, CLOs, boar
 Touch 6 (LinkedIn message IF connected): RELATIONSHIP. Reference the paddock angle. "The networking piece is the part most people miss."
 Touch 7 (Email): TANGIBLE ASSETS. What does the partner actually GET? Access to leadership, hospitality at every GP, driver time for client engagement, co-branded content, controlled use of F1 context. Convert proximity into practical leverage.
 Touch 8 (LinkedIn message IF connected): DIRECT. The structure is moving toward a decision. Reference the assets email.
-Touch 9 (Email): THEIR MARKET. Stop talking about F1 entirely. Talk about ${categoryClean} sector trends. How does institutional credibility translate into their specific sales pipeline or board-level positioning?
-Touch 10 (LinkedIn message IF connected): URGENCY. Short. Race calendar. Activation window. Flag it directly.
-Touch 11 (Email): COMPETITIVE CHALLENGE. If a competitor secures this category, what does that mean? Category control is not recoverable once assigned. A strategic question.
+Touch 9 (Email): THEIR MARKET. Stop talking about F1 entirely. Talk about ${categoryClean} sector trends. How does institutional credibility translate into their specific pipeline?
+Touch 10 (LinkedIn message IF connected): URGENCY. Short. The category structure is being finalised. Flag it directly.
+Touch 11 (Email): SCARCITY + COMPETITIVE THREAT. Category closing. If a competitor takes this, the position is gone. A strategic question, not a threat. Do NOT hardcode a specific Grand Prix date.
 Touch 12 (Email): BREAKUP. Respectful, final, removes pressure. "This will be my last note." Highest reply rate in any sequence.
 Touch 13 (LinkedIn message IF connected): RE-ENGAGEMENT. Soft, brief. "The category has developed. Door is open."
 Touch 14 (Email): RESURRECTION (35-42 days later). Brief. Circumstances shift. The category has evolved. No obligation.
