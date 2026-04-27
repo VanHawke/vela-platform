@@ -410,6 +410,7 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
         contact_name: t.decision_maker_name,
         contact_email: t.decision_maker_email,
         company: t.company_name,
+        linkedin_url: t.decision_maker_linkedin || null,
         status: 'paused',
         current_step: 1,
         enrolled_at: new Date().toISOString(),
@@ -418,6 +419,17 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
         await supabase.from('kiko_sequence_enrollments').insert(enrollRows.slice(i, i + 50));
       }
       console.log(`[build-campaign] Created ${targetsWithEmail.length} enrollments (paused)`);
+      
+      // ─── STEP 11.6: Auto-enrich LinkedIn URLs for new enrollments ───
+      // Triggers background enrichment using LinkedIn search via Playwright
+      // This ensures both email AND LinkedIn channels are operational
+      try {
+        fetch('https://api.vanhawke.agency/api/enrich-linkedin-urls', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer kiko-hetzner-2026-vanhawke' }
+        }).catch(() => {});
+        console.log('[build-campaign] LinkedIn enrichment triggered (runs in background)');
+      } catch {} 
     }
     
     const top50 = allTargetRows;  // for the response shape below
