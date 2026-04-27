@@ -1530,20 +1530,14 @@ RULES:
                     const { data, error } = await supabase.from('kiko_linkedin_queue').insert(payload).select()
                     if (error) { console.error('[LinkedIn Test] Error:', error); alert('Insert failed: ' + error.message); return }
                     console.log('[LinkedIn Test] Success:', data)
-                    setLiTestSending(true)
-                    try {
-                      const triggerRes = await fetch('https://api.vanhawke.agency/api/linkedin-trigger', { method: 'POST' })
-                      const triggerData = await triggerRes.json()
-                      console.log('[LinkedIn Test] Trigger result:', triggerData)
-                      if (triggerData.sent > 0) {
-                        setLiTestSent(true)
-                      } else {
-                        alert('Message queued but send failed: ' + (triggerData.results?.[0]?.error || 'Unknown error'))
-                      }
-                    } catch (triggerErr) { console.error('[LinkedIn Test] Trigger error:', triggerErr); setLiTestSent(true) }
-                    setLiTestSending(false)
+                    // Fire trigger in background — don't await (takes 30-40s, times out)
+                    fetch('https://api.vanhawke.agency/api/linkedin-trigger', { method: 'POST' })
+                      .then(r => r.json())
+                      .then(d => console.log('[LinkedIn Test] Trigger result:', d))
+                      .catch(e => console.log('[LinkedIn Test] Trigger fire-and-forget:', e.message))
+                    setLiTestSent(true)
                   } catch (err) { console.error('[LinkedIn Test] Exception:', err); alert('Error: ' + err.message) }
-                }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: liTestSending ? '#666' : '#0077B5', color: '#fff', fontSize: 12, fontWeight: 500, cursor: liTestSending ? 'wait' : 'pointer', fontFamily: C.font }}>{liTestSending ? 'Sending...' : 'Send test'}</button>
+                }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0077B5', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>{liTestSent ? '✓ Queued — sending in ~30s' : 'Send test'}</button>
               )}
             </div>
           </div>
