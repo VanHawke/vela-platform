@@ -139,27 +139,14 @@ Jobs queued to `kiko_background_jobs` table. Processed by `cron-job-processor.js
 **Research-backed: 14 touchpoints over 42 days (8 emails + 6 LinkedIn)**
 
 Based on B2B enterprise outreach research (Tendril, Growleads, DevCommX 2025-2026):
+
 - Enterprise deals need 12-18 touchpoints. At $3M-$40M, 14 minimum.
 - 80% of sales need 5+ follow-ups. 70% of replies come on LATER touches (steps 5-10).
 - Multi-channel (3+ channels) doubles engagement vs single-channel.
 - Breakup emails consistently get the HIGHEST reply rates.
 - Spacing: 2-3 business days. Total cadence: 42 days.
 
-**14-step orchestration pattern:**
-Day 0: Email (authority opener)
-Day 1: LinkedIn connection request
-Day 3: Email (operational depth)
-Day 5: LinkedIn engage (view profile, like/comment content)
-Day 7: Email (value-add: industry insight)
-Day 10: LinkedIn message IF connected
-Day 12: Email (social proof: how F1 partnerships work)
-Day 15: LinkedIn message IF connected
-Day 18: Email (scarcity + race calendar)
-Day 21: LinkedIn message IF connected
-Day 25: Email (repositioning: competitive threat angle)
-Day 30: Email (breakup: respectful close)
-Day 35: LinkedIn engage (like/comment)
-Day 42: Email (resurrection: circumstances may have changed)
+**14-step orchestration pattern**:Day 0: Email (authority opener) Day 1: LinkedIn connection request Day 3: Email (operational depth) Day 5: LinkedIn engage (view profile, like/comment content) Day 7: Email (value-add: industry insight) Day 10: LinkedIn message IF connected Day 12: Email (social proof: how F1 partnerships work) Day 15: LinkedIn message IF connected Day 18: Email (scarcity + race calendar) Day 21: LinkedIn message IF connected Day 25: Email (repositioning: competitive threat angle) Day 30: Email (breakup: respectful close) Day 35: LinkedIn engage (like/comment) Day 42: Email (resurrection: circumstances may have changed)
 
 LinkedIn reinforces email, never replaces it. Emails always run regardless of connection status. LinkedIn messages with condition:"connection_accepted" auto-skip if not connected.
 

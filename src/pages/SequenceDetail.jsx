@@ -99,6 +99,7 @@ export default function SequenceDetail({ user }) {
   const [liTestOpen, setLiTestOpen] = useState(false)
   const [liTestUrl, setLiTestUrl] = useState('')
   const [liTestSent, setLiTestSent] = useState(false)
+  const [liTestSending, setLiTestSending] = useState(false)
   const [orgMembers, setOrgMembers] = useState([])
   const [launching, setLaunching] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -1529,10 +1530,20 @@ RULES:
                     const { data, error } = await supabase.from('kiko_linkedin_queue').insert(payload).select()
                     if (error) { console.error('[LinkedIn Test] Error:', error); alert('Insert failed: ' + error.message); return }
                     console.log('[LinkedIn Test] Success:', data)
-                    fetch('https://api.vanhawke.agency/api/linkedin-trigger', { method: 'POST' }).catch(() => {})
-                    setLiTestSent(true)
+                    setLiTestSending(true)
+                    try {
+                      const triggerRes = await fetch('https://api.vanhawke.agency/api/linkedin-trigger', { method: 'POST' })
+                      const triggerData = await triggerRes.json()
+                      console.log('[LinkedIn Test] Trigger result:', triggerData)
+                      if (triggerData.sent > 0) {
+                        setLiTestSent(true)
+                      } else {
+                        alert('Message queued but send failed: ' + (triggerData.results?.[0]?.error || 'Unknown error'))
+                      }
+                    } catch (triggerErr) { console.error('[LinkedIn Test] Trigger error:', triggerErr); setLiTestSent(true) }
+                    setLiTestSending(false)
                   } catch (err) { console.error('[LinkedIn Test] Exception:', err); alert('Error: ' + err.message) }
-                }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0077B5', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Send test</button>
+                }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: liTestSending ? '#666' : '#0077B5', color: '#fff', fontSize: 12, fontWeight: 500, cursor: liTestSending ? 'wait' : 'pointer', fontFamily: C.font }}>{liTestSending ? 'Sending...' : 'Send test'}</button>
               )}
             </div>
           </div>
