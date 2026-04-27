@@ -27,9 +27,16 @@ export default async function handler(req, res) {
     const raceArr = Array.isArray(races) ? races : [];
     const partArr = Array.isArray(partnerships) ? partnerships : [];
     const styles = Array.isArray(styleArr) ? styleArr : [];
-    const nextRace = raceArr[0];
-    const race2 = raceArr[1];
     const existingSponsors = partArr.map(p => p.company || p.partner_name).filter(Boolean).slice(0, 5);
+
+    // Build race calendar with send-date awareness
+    // Each step sends on a specific day — race references must match THAT day, not today
+    const today = new Date();
+    const raceCalendarForPrompt = raceArr.slice(0, 6).map(r => {
+      const raceDate = new Date(r.date);
+      const daysFromNow = Math.round((raceDate - today) / (1000 * 60 * 60 * 24));
+      return `${r.name} (${r.date}) — ${daysFromNow} days from now`;
+    }).join('\n');
     const styleExamples = styles.slice(0, 3).map(e => `[${e.category} Step ${e.step_number}]\nSubject: ${e.subject}\n${e.body}`).join('\n---\n');
 
     const prompt = `You are the world's leading B2B enterprise partnership strategist with deep expertise in:
@@ -195,9 +202,25 @@ REQUIRED language anchors (use naturally across the sequence, not all in one ema
 ═══ CONTEXT ═══
 Team: ${teamName}
 Target: ${targetPersona}
-Next race: ${nextRace ? `${nextRace.name} (${nextRace.date})` : 'TBC'}
-Second race: ${race2 ? `${race2.name} (${race2.date})` : 'TBC'}
+Today's date: ${today.toISOString().split('T')[0]}
+Upcoming F1 races:
+${raceCalendarForPrompt || 'No race calendar data available'}
 Existing sponsors: ${existingSponsors.length ? existingSponsors.join(', ') : 'Category is currently OPEN'}
+
+═══ CRITICAL: RACE CALENDAR TIMING ═══
+Today is ${today.toISOString().split('T')[0]}. Each email sends on a SPECIFIC day in the future (delay_days from today).
+- Email 5 (scarcity/urgency) sends on approximately Day 18 = ${new Date(today.getTime() + 18*86400000).toISOString().split('T')[0]}
+- Email 6 (competitive challenge) sends on Day 25 = ${new Date(today.getTime() + 25*86400000).toISOString().split('T')[0]}
+
+DO NOT reference a race that will have ALREADY HAPPENED by the time the email sends.
+If a race is 5 days away but the email sends on Day 18, that race is 13 days in the PAST when the recipient reads it. Use a LATER race.
+Calculate: if race is X days from now and step sends on Day Y, only reference the race if X > Y.
+
+═══ CRITICAL: LANGUAGE CLARITY ═══
+The category position is OPEN and AVAILABLE. It has NOT been assigned yet.
+NEVER say "One partner occupies this position" — that implies it's taken.
+SAY: "One partner will hold this position exclusively" or "This position is available to a single partner" or "The category is open and being structured."
+The reader must understand the position is AVAILABLE TO THEM, not already gone.
 
 ${styleExamples ? `═══ REAL VAN HAWKE EMAIL EXAMPLES (match this tone) ═══\\n${styleExamples}\\n═══ END EXAMPLES ═══` : ''}
 

@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-27T21:15:19.692Z",
+  "generated_at": "2026-04-27T21:25:46.142Z",
   "commits": [
+    {
+      "hash": "0462a71",
+      "subject": "Campaign arc v3: learned from Lemlist + added paddock & assets themes",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "c080fbe",
       "subject": "Campaign intelligence v2: narrative arc + JSON-only output",
-      "when": "23 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "0451201",
@@ -39,12 +44,12 @@
     {
       "hash": "1f1ceb1",
       "subject": "Kiko knowledge: campaign intelligence reasoning framework",
-      "when": "24 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "bc72412",
       "subject": "SESSION 61: Campaign intelligence skill + Sonnet personalisation",
-      "when": "24 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "7180831",
@@ -84,7 +89,7 @@
     {
       "hash": "5bcae8e",
       "subject": "CRITICAL: Fix bulk Pause button + database default",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "e2f64d7",
@@ -94,11 +99,6 @@
     {
       "hash": "2841faf",
       "subject": "SEQUENCE ENGINE v3: Research-backed 14 touchpoints over 42 days",
-      "when": "29 hours ago"
-    },
-    {
-      "hash": "dcd6d2a",
-      "subject": "Fix send-from CORS: duplicate Access-Control-Allow-Origin headers",
       "when": "30 hours ago"
     }
   ]
