@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-27T15:33:15.414Z",
+  "generated_at": "2026-04-27T20:52:31.870Z",
   "commits": [
+    {
+      "hash": "0451201",
+      "subject": "iPad responsive: 100dvh + safe-area padding + tablet nav sizing",
+      "when": "5 hours ago"
+    },
     {
       "hash": "b758910",
       "subject": "Fix: LinkedIn test button no longer hangs",
-      "when": "24 minutes ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "7a3dcd4",
       "subject": "Kiko tool: find_linkedin_url — sources LinkedIn URLs for prospects",
-      "when": "75 minutes ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "42082f4",
       "subject": "LinkedIn URL enrichment: automated pipeline + 87.7% coverage",
-      "when": "84 minutes ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "ed1ba5f",
       "subject": "LinkedIn test: instant send + sending state",
-      "when": "2 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "ca3b96a",
       "subject": "Kiko self-knowledge: full Session 61 capability update",
-      "when": "18 hours ago"
+      "when": "23 hours ago"
     },
     {
       "hash": "1f1ceb1",
       "subject": "Kiko knowledge: campaign intelligence reasoning framework",
-      "when": "19 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "bc72412",
       "subject": "SESSION 61: Campaign intelligence skill + Sonnet personalisation",
-      "when": "19 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "7180831",
       "subject": "Fix: search menu remove Lemlist (stale), add Campaigns",
-      "when": "19 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "63a9197",
       "subject": "Fix Settings: match user by user_id for role, handle agency/com alias for LinkedIn status",
-      "when": "19 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "f9fed09",
       "subject": "LinkedIn messages: enforce greeting + sign-off + conversational tone",
-      "when": "19 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "b0f7e19",
       "subject": "LinkedIn Connect: email/password login replaces li_at paste",
-      "when": "19 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "03f1e73",
       "subject": "Fix: remove engage steps + LinkedIn test error handling",
-      "when": "21 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "5cf2a20",
       "subject": "Fix: @vanhawke.agency alias resolves to @vanhawke.com for OAuth tokens",
-      "when": "21 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "ec5dec9",
       "subject": "Fix enqueue: correct firstName + dash stripping + banned phrases",
-      "when": "21 hours ago"
+      "when": "27 hours ago"
     },
     {
       "hash": "5bcae8e",
       "subject": "CRITICAL: Fix bulk Pause button + database default",
-      "when": "23 hours ago"
+      "when": "28 hours ago"
     },
     {
       "hash": "e2f64d7",
       "subject": "Bible: 14-touchpoint research-backed cadence + enrollment always paused",
-      "when": "23 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "2841faf",
       "subject": "SEQUENCE ENGINE v3: Research-backed 14 touchpoints over 42 days",
-      "when": "24 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "dcd6d2a",
       "subject": "Fix send-from CORS: duplicate Access-Control-Allow-Origin headers",
-      "when": "24 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "65dcb0d",
       "subject": "Fix send-from: fallback to supabase.auth.getSession when user prop is null",
-      "when": "25 hours ago"
-    },
-    {
-      "hash": "8b16794",
-      "subject": "Fix: delete test Haas campaign + Add prospects button now secondary",
-      "when": "25 hours ago"
+      "when": "31 hours ago"
     }
   ]
 }

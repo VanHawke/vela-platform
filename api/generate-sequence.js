@@ -94,6 +94,24 @@ Day 30: Email 7 (breakup email: respectful close, protect their option)
 Day 35: LinkedIn message IF connected (soft re-engagement, reference time passed)
 Day 42: Email 8 (resurrection: "circumstances may have changed")
 
+═══ NARRATIVE ARC (THE MOST IMPORTANT SECTION) ═══
+
+This is a STORY told across 14 touchpoints. Each touch ADVANCES the narrative. NEVER repeat a point already made.
+
+THE ARC:
+Email 1: OPEN THE DOOR. State one compelling fact they didn't know. The category exists, it's operational, it's exclusive. ONE idea only.
+Email 2: DEEPEN. Go inside the F1 team. Show the real operational dependency. Make them think "I didn't realise F1 needed ${categoryClean} that deeply."
+Email 3: PIVOT TO THEM. Stop talking about F1. Talk about THEIR market. What trend in ${categoryClean} makes this relevant RIGHT NOW? GC procurement trust? Enterprise pipeline credibility? IPO narrative?
+Email 4: PROVE IT. Reference how comparable partnerships work. Not vague. Specific structure: what the partner gets, how it translates to pipeline.
+Email 5: CREATE URGENCY. Race calendar. Activation windows. Time-bound, factual, not aggressive.
+Email 6: CHALLENGE. What happens if a competitor takes this? Not a threat. A genuine strategic question.
+Email 7: CLOSE WITH RESPECT. Breakup. Protect their option. This gets the highest reply rate because it removes pressure.
+Email 8: RESURRECT. 2 weeks later. Brief. Circumstances change. Door is open.
+
+LinkedIn messages must ADD something the emails don't. A personal observation, a question, a different angle. They are NOT summaries of the email.
+
+CRITICAL: If email 3 makes the same point as email 1, you have failed. Each touch must give the reader a NEW reason to engage. Read all 14 back-to-back before finalising. If any two say the same thing, rewrite one.
+
 ═══ WHAT EACH TOUCHPOINT MUST ACHIEVE ═══
 
 Every single touch must ADD VALUE. Never "just checking in." Never "following up on my last email."
@@ -196,6 +214,7 @@ All 14 steps must be top-level in the array. LinkedIn messages with condition:"c
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6', max_tokens: 8000,
+      system: 'You are a JSON API. You MUST respond with ONLY a valid JSON array. No explanation, no thinking, no markdown, no backticks, no preamble. Just the raw JSON array starting with [ and ending with ]. Do your reasoning internally but output ONLY JSON.',
       messages: [{ role: 'user', content: prompt }]
     });
     const text = response.content[0]?.text?.trim();
@@ -204,26 +223,23 @@ All 14 steps must be top-level in the array. LinkedIn messages with condition:"c
       const cleaned = text.replace(/```json|```/g, '').trim();
       generatedSteps = JSON.parse(cleaned);
     } catch {
-      return res.status(500).json({ error: 'Failed to parse sequence', raw: text?.slice(0, 500) });
+      // Fallback: extract JSON array from response if Claude added preamble
+      const match = text.match(/\[[\s\S]*\]/);
+      if (match) {
+        try { generatedSteps = JSON.parse(match[0]); } catch {}
+      }
+      if (!generatedSteps) return res.status(500).json({ error: 'Failed to parse sequence', raw: text?.slice(0, 500) });
     }
 
     // Normalize step numbers
     generatedSteps = generatedSteps.map((s, i) => ({ ...s, step: i + 1 }));
     
-    // Post-process: strip dashes and banned phrases from ALL content
+    // Post-process: strip dashes and enforce LinkedIn format
     for (const step of generatedSteps) {
-      if (step.subject) step.subject = step.subject.replace(/\s*[\u2014\u2013]\s*/g, ' x ').replace(/\s+/g, ' ').trim();
+      if (step.subject) step.subject = step.subject.replace(/\s*[\u2014\u2013]\s*/g, ': ').replace(/\s+/g, ' ').trim();
       if (step.template) {
+        // Replace em/en dashes with commas
         step.template = step.template.replace(/[\u2014\u2013]/g, ',');
-        step.template = step.template
-          .replace(/I wanted to ensure/gi, 'This is to ensure')
-          .replace(/I wanted to reach out/gi, 'This note concerns')
-          .replace(/I am reaching out/gi, 'This concerns')
-          .replace(/I wanted to/gi, 'This is to')
-          .replace(/I'm writing to/gi, 'This note concerns')
-          .replace(/Just checking in/gi, '')
-          .replace(/Following up on my last email/gi, '')
-          .replace(/Bumping this/gi, '');
         
         // Enforce LinkedIn message format: greeting + sign-off
         if (step.channel === 'linkedin' && step.action === 'message') {
