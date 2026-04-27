@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-27T21:33:07.564Z",
+  "generated_at": "2026-04-27T21:40:07.227Z",
   "commits": [
+    {
+      "hash": "5eec980",
+      "subject": "Campaign intelligence v4: objective-first + no hardcoded GP dates",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "47886b1",
       "subject": "Campaign v4: race calendar timing + language clarity fixes",
-      "when": "7 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "0462a71",
       "subject": "Campaign arc v3: learned from Lemlist + added paddock & assets themes",
-      "when": "18 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "c080fbe",
       "subject": "Campaign intelligence v2: narrative arc + JSON-only output",
-      "when": "41 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "0451201",
@@ -24,7 +29,7 @@
     {
       "hash": "b758910",
       "subject": "Fix: LinkedIn test button no longer hangs",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "7a3dcd4",
@@ -34,12 +39,12 @@
     {
       "hash": "42082f4",
       "subject": "LinkedIn URL enrichment: automated pipeline + 87.7% coverage",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "ed1ba5f",
       "subject": "LinkedIn test: instant send + sending state",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "ca3b96a",
@@ -94,11 +99,6 @@
     {
       "hash": "5bcae8e",
       "subject": "CRITICAL: Fix bulk Pause button + database default",
-      "when": "29 hours ago"
-    },
-    {
-      "hash": "e2f64d7",
-      "subject": "Bible: 14-touchpoint research-backed cadence + enrollment always paused",
       "when": "29 hours ago"
     }
   ]
