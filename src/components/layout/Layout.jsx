@@ -429,7 +429,7 @@ export default function Layout({ user }) {
 
   return (
     <KikoLiveProvider user={user}>
-    <div className={isMobile ? 'kiko-mobile-root' : ''} style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', background: C.bg }}>
+    <div className={isMobile ? 'kiko-mobile-root' : ''} style={{ display: 'flex', flexDirection: 'column', height: '100dvh', width: '100vw', overflow: 'hidden', background: C.bg, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       {/* Aurora gradient orbs */}
       {!isMobile && <AuroraCanvas extraOrb={loc.pathname === '/pipeline' ? 'amber' : null} />}
 

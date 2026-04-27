@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-27T15:09:21.249Z",
+  "generated_at": "2026-04-27T15:33:15.414Z",
   "commits": [
+    {
+      "hash": "b758910",
+      "subject": "Fix: LinkedIn test button no longer hangs",
+      "when": "24 minutes ago"
+    },
     {
       "hash": "7a3dcd4",
       "subject": "Kiko tool: find_linkedin_url — sources LinkedIn URLs for prospects",
-      "when": "51 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "42082f4",
       "subject": "LinkedIn URL enrichment: automated pipeline + 87.7% coverage",
-      "when": "60 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "ed1ba5f",
@@ -19,17 +24,17 @@
     {
       "hash": "ca3b96a",
       "subject": "Kiko self-knowledge: full Session 61 capability update",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "1f1ceb1",
       "subject": "Kiko knowledge: campaign intelligence reasoning framework",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "bc72412",
       "subject": "SESSION 61: Campaign intelligence skill + Sonnet personalisation",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "7180831",
@@ -69,7 +74,7 @@
     {
       "hash": "5bcae8e",
       "subject": "CRITICAL: Fix bulk Pause button + database default",
-      "when": "22 hours ago"
+      "when": "23 hours ago"
     },
     {
       "hash": "e2f64d7",
@@ -79,7 +84,7 @@
     {
       "hash": "2841faf",
       "subject": "SEQUENCE ENGINE v3: Research-backed 14 touchpoints over 42 days",
-      "when": "23 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "dcd6d2a",
@@ -94,11 +99,6 @@
     {
       "hash": "8b16794",
       "subject": "Fix: delete test Haas campaign + Add prospects button now secondary",
-      "when": "25 hours ago"
-    },
-    {
-      "hash": "4b00d74",
-      "subject": "Remove Vercel ignoreCommand + force rebuild",
       "when": "25 hours ago"
     }
   ]

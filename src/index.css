@@ -436,3 +436,20 @@ dialog, [role="dialog"] {
   box-shadow: var(--shadow-md) !important;
   transform: translateY(-1px);
 }
+
+/* Tablet responsiveness (iPad, etc.) */
+@media (min-width: 769px) and (max-width: 1180px) {
+  .legora-topnav {
+    padding: 0 16px !important;
+    height: 52px !important;
+  }
+  .ltn-links { gap: 2px !important; }
+  .ltn-link { padding: 6px 10px !important; font-size: 12px !important; }
+}
+
+/* Safe area support for all devices */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .kiko-root-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
