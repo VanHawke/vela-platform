@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-27T14:09:11.054Z",
+  "generated_at": "2026-04-27T14:18:30.032Z",
   "commits": [
+    {
+      "hash": "42082f4",
+      "subject": "LinkedIn URL enrichment: automated pipeline + 87.7% coverage",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "ed1ba5f",
       "subject": "LinkedIn test: instant send + sending state",
-      "when": "61 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "ca3b96a",
       "subject": "Kiko self-knowledge: full Session 61 capability update",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "1f1ceb1",
@@ -19,7 +24,7 @@
     {
       "hash": "bc72412",
       "subject": "SESSION 61: Campaign intelligence skill + Sonnet personalisation",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "7180831",
@@ -94,11 +99,6 @@
     {
       "hash": "68648e8",
       "subject": "Force Vercel rebuild: touch src/ to bypass ignoreCommand",
-      "when": "24 hours ago"
-    },
-    {
-      "hash": "37cc659",
-      "subject": "Sequence enqueue: LinkedIn condition check before queuing",
       "when": "25 hours ago"
     }
   ]

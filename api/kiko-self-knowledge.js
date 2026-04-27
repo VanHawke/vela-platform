@@ -180,7 +180,8 @@ trigger_triage → Refresh inbox triage on demand
 navigate_page, log_activity
 linkedin_search_prospects → Search LinkedIn for prospects
 linkedin_send_invite → Send LinkedIn connection request
-linkedin_send_message → Send LinkedIn message
+linkedin_send_message → Send LinkedIn message (queued via Hetzner Playwright, sent within 60 seconds)
+find_linkedin_url → Find LinkedIn profile URLs for prospects by searching LinkedIn. Use this EVERY TIME you source prospects — email AND LinkedIn URL are BOTH mandatory. Accepts array of {name, company}. Returns URLs found via LinkedIn people search.
 create_email_draft → Create email draft in ANY team member's Gmail with correct @vanhawke.agency signature.
   - Select SENDER (who the email is from) — determines From address + Gmail signature
   - Select DRAFT RECIPIENT (whose Gmail receives it) — can differ from sender
@@ -214,6 +215,11 @@ Running on Hetzner (no timeout limits):
 ═══ EMAIL INTELLIGENCE ENGINE ═══
 
 When sourcing prospects, Kiko uses a 6-API cascade to find and verify real email addresses:
+
+CRITICAL: When sourcing prospects, BOTH email AND LinkedIn URL are MANDATORY.
+After finding emails, ALWAYS call find_linkedin_url with the prospect list to get their LinkedIn profile URLs.
+A prospect without a LinkedIn URL cannot receive LinkedIn messages — this breaks the 14-touchpoint sequence.
+Never consider a prospect fully sourced until both email and LinkedIn URL are populated.
 1. Hunter.io (25/month) → sub-second, 98-99% confidence, returns LinkedIn URLs + job titles
 2. Snov.io (50/month) → fallback email finder
 3. Voila Norbert (50/month) → fallback email finder

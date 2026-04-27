@@ -289,6 +289,13 @@ export const TOOL_DEFINITIONS = [
     }, required: ['query'] },
   },
   {
+    name: 'find_linkedin_url',
+    description: 'Find a person\'s LinkedIn profile URL by searching LinkedIn with their name and company. Use this when sourcing prospects, enriching contacts, or when asked to find someone\'s LinkedIn. Returns the LinkedIn profile URL or null if not found. Can process single or multiple prospects.',
+    input_schema: { type: 'object', properties: {
+      prospects: { type: 'array', description: 'Array of prospects to find. Each item: { name: "Full Name", company: "Company Name" }', items: { type: 'object', properties: { name: { type: 'string' }, company: { type: 'string' } }, required: ['name', 'company'] } },
+    }, required: ['prospects'] },
+  },
+  {
     name: 'linkedin_send_invite',
     description: 'Send a LinkedIn connection invitation to a prospect. Requires their LinkedIn profile URL and an optional personalised note (max 200 characters). Use when the user explicitly asks to send a LinkedIn invite. Will fail if already connected or already invited.',
     input_schema: { type: 'object', properties: {
@@ -1409,15 +1416,64 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
   }
 
   // ── LinkedIn Tools ──
-  // GUARDED v0.0.70: LinkedIn voyager from Vercel is CONFIRMED IMPOSSIBLE — Cloudflare/LinkedIn
-  // bot detection kills sessions within seconds. These tools are parked behind LINKEDIN_BACKEND_ENABLED
-  // until a working LinkedIn backend is selected (see KIKO_MASTER_LOG 14 Apr 2026 + OUTSTANDING_ITEMS.md).
-  // When called without the flag set, they return an explanation rather than firing voyager calls.
-  if (name === 'linkedin_search_prospects' || name === 'linkedin_send_invite' || name === 'linkedin_send_message') {
-    if (process.env.LINKEDIN_BACKEND_ENABLED !== 'true') {
-      return { error: 'LinkedIn backend not configured. Voyager API from Vercel is confirmed blocked by LinkedIn/Cloudflare bot detection. A new backend (Unipile / HeyReach / proxy / etc) needs to be selected and integrated. See OUTSTANDING_ITEMS.md and KIKO_MASTER_LOG 14 Apr 2026 for the full diagnostic.' };
-    }
+  // find_linkedin_url uses Hetzner Playwright backend (proven working) — NOT voyager
+  if (name === 'find_linkedin_url') {
+    try {
+      const prospects = input.prospects || [];
+      if (!prospects.length) return { error: 'No prospects provided' };
+      
+      // For small batches (1-5), do inline search via Hetzner
+      const HETZNER = 'https://api.vanhawke.agency';
+      const SECRET = process.env.KIKO_WORKER_SECRET || 'kiko-hetzner-2026-vanhawke';
+      
+      // Insert prospects as temporary enrollments to trigger enrichment, or call endpoint directly
+      const results = [];
+      const batchSize = Math.min(prospects.length, 20);
+      
+      // Call the enrichment endpoint which searches LinkedIn via Playwright
+      const enrichRes = await fetch(HETZNER + '/api/enrich-linkedin-urls', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SECRET },
+        body: JSON.stringify({ prospects: prospects.slice(0, batchSize) }),
+      }).catch(() => null);
+      
+      if (enrichRes?.ok) {
+        const data = await enrichRes.json();
+        return { found: data.enriched || 0, failed: data.failed || 0, results: data.results || [] };
+      }
+      
+      // Fallback: construct likely URLs from names (less reliable but instant)
+      for (const p of prospects) {
+        const slug = p.name.toLowerCase().replace(/[^a-z\s]/g, '').trim().replace(/\s+/g, '-');
+        results.push({ name: p.name, company: p.company, url: 'https://www.linkedin.com/in/' + slug, confidence: 'low — needs verification' });
+      }
+      return { found: results.length, results, note: 'Hetzner enrichment unavailable — URLs are best-guesses and need verification' };
+    } catch (err) { return { error: err.message }; }
   }
+
+  // linkedin_send_invite and linkedin_send_message now route through Hetzner Playwright backend
+  if (name === 'linkedin_send_invite' || name === 'linkedin_send_message') {
+    try {
+      const HETZNER = 'https://api.vanhawke.agency';
+      const SECRET = process.env.KIKO_WORKER_SECRET || 'kiko-hetzner-2026-vanhawke';
+      const queueItem = {
+        contact_name: input.contact_name || 'Unknown',
+        company: input.company || '',
+        linkedin_url: name === 'linkedin_send_invite' ? input.profile_url : input.profile_url_or_conversation_urn,
+        message_type: name === 'linkedin_send_invite' ? 'invite' : 'message',
+        message: name === 'linkedin_send_invite' ? (input.message || '') : input.message,
+        context: JSON.stringify({ source: 'kiko_tool', sender: 'matt.smith@vanhawke.agency' }),
+        status: 'pending',
+        priority: 5,
+      };
+      const { error } = await supabase.from('kiko_linkedin_queue').insert(queueItem);
+      if (error) return { error: error.message };
+      // Trigger immediate processing
+      fetch(HETZNER + '/api/linkedin-trigger', { method: 'POST', headers: { 'Authorization': 'Bearer ' + SECRET } }).catch(() => {});
+      return { ok: true, status: 'queued', message: `LinkedIn ${name === 'linkedin_send_invite' ? 'invite' : 'message'} queued and will be sent within 60 seconds` };
+    } catch (err) { return { error: err.message }; }
+  }
+
   if (name === 'linkedin_search_prospects') {
     try {
       const { linkedinSearch } = await import('./linkedin-client.js');
