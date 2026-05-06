@@ -185,6 +185,21 @@ async function enrichSelectedForBrief(sel) {
 // ─── Build the /api/kiko prompt from a selected item ───
 // Kiko's command-centre page-role prompt handles the rest — this just wraps
 // the selected entity so she knows what to brief on.
+// Van Hawke email voice — learned from 115 real sent emails. MUST be included in every draft.
+const VH_EMAIL_VOICE = `
+EMAIL VOICE RULES (MANDATORY — learned from 115 real sent emails, match EXACTLY):
+- Opening: "Dear [First name]," for formal/cold. "Hi [Name]," for warm contacts only.
+- Tone: Authoritative and formal for prospects. Semi-formal and collegial for warm contacts.
+- Replies: SHORT. 2-4 paragraphs max. Each paragraph often a single sentence. Standalone one-line paragraphs for emphasis.
+- Closing: "Kind regards," for formal. "Best," for warm. ALWAYS followed by signature block.
+- Em-dashes used to append qualifications mid-sentence. Minimal exclamation marks.
+- Short declarative statements → then a longer explanatory clause.
+- NEVER use: "hope this finds you well", "just wanted to reach out", "circle back", "touch base", "synergy", "I think", "maybe", "hopefully", "excited to", "please don't hesitate", "don't hesitate to reach out", "I'd love to", "thrilled", "delighted"
+- PREFERRED phrases: "at this level", "in practice", "while the category remains open", "long-term positioning", "happy to work around whatever is easiest", "much appreciated"
+- NO AI FILLER. No corporate pleasantries. No "genuinely helpful" or "appreciate the candour". Every word earns its place.
+- Write like a senior dealmaker who respects the reader's time, not a chatbot being polite.
+`
+
 function buildBriefPrompt(sel) {
   if (!sel) return 'Brief me.'
   const p = sel.payload || {}
@@ -204,7 +219,9 @@ Respond with these sections only:
 1. WHAT THEY SAID — key points of their reply and sentiment
 2. WHERE WE STAND — our relationship history and deal status with them
 3. RECOMMENDED NEXT MOVE — the single best action right now
-4. DRAFT REPLY — Subject: line, then Dear [Name], body, Kind regards`
+4. DRAFT REPLY — Subject: line, then Dear [Name], body, Kind regards
+
+${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'task') {
     const d = p.data || {}
@@ -214,10 +231,10 @@ Respond with these sections only:
     if (d.contact) bits.push(`Contact: ${d.contact}`)
     if (d.dueDate) bits.push(`Due: ${d.dueDate}`)
     if (d.notes) bits.push(`Notes: ${d.notes}`)
-    return `I need a focused brief on ONE SPECIFIC PERSON: ${d.contact || titleSuffix || 'the contact'} at ${d.company || 'their company'}.\n\n${bits.join('\n')}\n\nRESPOND WITH ONLY THESE 4 SECTIONS:\n1. WHO — ${d.contact || titleSuffix || 'This person'}: their role, their company, what the company does, our relationship history\n2. DEAL STATUS — current deal stage with ${d.company || 'this company'}, value, last touchpoint date\n3. RECOMMENDED ACTION — what specifically to do for this re-engagement task and why\n4. DRAFT EMAIL — Subject: line, then Dear ${d.contact ? d.contact.split(' ')[0] : '[Name]'}, body, Kind regards\n\nDO NOT mention any other deals, companies, tasks, or pipeline metrics. This is about ${d.contact || d.company || sel.title} ONLY.`
+    return `I need a focused brief on ONE SPECIFIC PERSON: ${d.contact || titleSuffix || 'the contact'} at ${d.company || 'their company'}.\n\n${bits.join('\n')}\n\nRESPOND WITH ONLY THESE 4 SECTIONS:\n1. WHO — ${d.contact || titleSuffix || 'This person'}: their role, their company, what the company does, our relationship history\n2. DEAL STATUS — current deal stage with ${d.company || 'this company'}, value, last touchpoint date\n3. RECOMMENDED ACTION — what specifically to do for this re-engagement task and why\n4. DRAFT EMAIL — Subject: line, then Dear ${d.contact ? d.contact.split(' ')[0] : '[Name]'}, body, Kind regards\n\nDO NOT mention any other deals, companies, tasks, or pipeline metrics. This is about ${d.contact || d.company || sel.title} ONLY.\n\n${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'deal') {
-    return `FOCUS: Brief me ONLY on this specific deal. Do NOT give a general pipeline review.\n\nDeal: ${p.company || p.title}\nStage: ${p.stage}\nValue: ${p.value ? '$' + p.value : 'n/a'}\nDays since activity: ${p.daysSince}\n\nRespond with ONLY:\n1. ACCOUNT STATUS — where we are with ${p.company || p.title} specifically, what's happened, key contacts\n2. NEXT MOVE — the single best action to progress this deal\n3. MARKET SIGNALS — any recent news or signals on this company\n4. DRAFT EMAIL — format with Subject: on its own line, then Dear [Name], body, Kind regards\n\nStay focused on ${p.company || p.title} ONLY. Senior sales voice, specific names and dates.`
+    return `FOCUS: Brief me ONLY on this specific deal. Do NOT give a general pipeline review.\n\nDeal: ${p.company || p.title}\nStage: ${p.stage}\nValue: ${p.value ? '$' + p.value : 'n/a'}\nDays since activity: ${p.daysSince}\n\nRespond with ONLY:\n1. ACCOUNT STATUS — where we are with ${p.company || p.title} specifically, what's happened, key contacts\n2. NEXT MOVE — the single best action to progress this deal\n3. MARKET SIGNALS — any recent news or signals on this company\n4. DRAFT EMAIL — format with Subject: on its own line, then Dear [Name], body, Kind regards\n\nStay focused on ${p.company || p.title} ONLY. Senior sales voice, specific names and dates.\n\n${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'signal') {
     return `SPONSORSHIP NEWS ANALYSIS — "${sel.title}"
@@ -234,7 +251,7 @@ Give me:
 4. DRAFT OUTREACH — if there's an opportunity, a draft email to the relevant contact`
   }
   if (sel.kind === 'followup') {
-    return `I need a re-engagement brief for ${p.recipient_name || p.recipient_email} at ${p.company || 'their company'}.\n\nOriginal email subject: "${p.subject || ''}"\nSent: ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : 'unknown'}\nFollow-up due: ${p.follow_up_due_at ? new Date(p.follow_up_due_at).toLocaleDateString('en-GB') : 'unknown'}\nStatus: ${p.status}\n\nGive me: (1) where we stand — check CRM for deal context, (2) why they haven't replied — psychological analysis, (3) recommended approach for the follow-up, (4) a DRAFT follow-up email — Subject: line, Dear [Name], body, Kind regards. Use a different angle from the original — don't just "check in."`
+    return `I need a re-engagement brief for ${p.recipient_name || p.recipient_email} at ${p.company || 'their company'}.\n\nOriginal email subject: "${p.subject || ''}"\nSent: ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : 'unknown'}\nFollow-up due: ${p.follow_up_due_at ? new Date(p.follow_up_due_at).toLocaleDateString('en-GB') : 'unknown'}\nStatus: ${p.status}\n\nGive me: (1) where we stand — check CRM for deal context, (2) why they haven't replied — psychological analysis, (3) recommended approach for the follow-up, (4) a DRAFT follow-up email — Subject: line, Dear [Name], body, Kind regards. Use a different angle from the original — don't just "check in."\n\n${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'campaign') {
     return `Brief me on campaign prospect: ${p.contact_name || 'Unknown'} at ${p.company || 'their company'}.\n\nCurrent step: ${p.current_step}\nNext send scheduled: ${p.next_send_at ? new Date(p.next_send_at).toLocaleDateString('en-GB') : 'pending'}\n\nGive me: (1) company background, (2) where they are in the sequence, (3) whether we should continue, pause, or escalate this prospect.`

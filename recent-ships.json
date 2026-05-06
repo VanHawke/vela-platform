@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-06T18:12:33.432Z",
+  "generated_at": "2026-05-06T18:18:03.735Z",
   "commits": [
+    {
+      "hash": "935eba9",
+      "subject": "Kiko now alerts on bounced emails + bounce visual in Command Centre",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "7a8b9f3",
       "subject": "Fix tab underline + auto-complete tasks on reply",
-      "when": "61 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "6f6d87b",
       "subject": "Fix: remove stray )} rendering on page + auto-dismiss follow-ups on reply",
-      "when": "63 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "3afd5cb",
       "subject": "Alert dismiss + auto-clear + Gmail draft endpoint + signal briefs",
-      "when": "75 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "0fdf885",
@@ -74,7 +79,7 @@
     {
       "hash": "70fd2e7",
       "subject": "UI: Rename sections + 50/50 panel split",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "b307fc5",
@@ -94,11 +99,6 @@
     {
       "hash": "dd492f9",
       "subject": "Fix Campaign Activity: only show real engagement (replies, OOO, LinkedIn)",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "f4ccdf9",
-      "subject": "Command Centre redesign: tabbed layout matching approved mockup",
       "when": "5 hours ago"
     }
   ]
