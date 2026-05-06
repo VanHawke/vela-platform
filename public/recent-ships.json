@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-27T21:40:07.227Z",
+  "generated_at": "2026-05-06T06:33:37.038Z",
   "commits": [
+    {
+      "hash": "137c058",
+      "subject": "Kiko self-knowledge: add multi-step generation docs",
+      "when": "8 days ago"
+    },
+    {
+      "hash": "192e270",
+      "subject": "MULTI-STEP CAMPAIGN ENGINE: Research → Plan → Write → Review",
+      "when": "8 days ago"
+    },
     {
       "hash": "5eec980",
       "subject": "Campaign intelligence v4: objective-first + no hardcoded GP dates",
-      "when": "7 minutes ago"
+      "when": "8 days ago"
     },
     {
       "hash": "47886b1",
       "subject": "Campaign v4: race calendar timing + language clarity fixes",
-      "when": "14 minutes ago"
+      "when": "8 days ago"
     },
     {
       "hash": "0462a71",
       "subject": "Campaign arc v3: learned from Lemlist + added paddock & assets themes",
-      "when": "25 minutes ago"
+      "when": "8 days ago"
     },
     {
       "hash": "c080fbe",
       "subject": "Campaign intelligence v2: narrative arc + JSON-only output",
-      "when": "48 minutes ago"
+      "when": "8 days ago"
     },
     {
       "hash": "0451201",
       "subject": "iPad responsive: 100dvh + safe-area padding + tablet nav sizing",
-      "when": "6 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "b758910",
       "subject": "Fix: LinkedIn test button no longer hangs",
-      "when": "7 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "7a3dcd4",
       "subject": "Kiko tool: find_linkedin_url — sources LinkedIn URLs for prospects",
-      "when": "7 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "42082f4",
       "subject": "LinkedIn URL enrichment: automated pipeline + 87.7% coverage",
-      "when": "8 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "ed1ba5f",
       "subject": "LinkedIn test: instant send + sending state",
-      "when": "9 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "ca3b96a",
       "subject": "Kiko self-knowledge: full Session 61 capability update",
-      "when": "24 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "1f1ceb1",
       "subject": "Kiko knowledge: campaign intelligence reasoning framework",
-      "when": "25 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "bc72412",
       "subject": "SESSION 61: Campaign intelligence skill + Sonnet personalisation",
-      "when": "25 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "7180831",
       "subject": "Fix: search menu remove Lemlist (stale), add Campaigns",
-      "when": "25 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "63a9197",
       "subject": "Fix Settings: match user by user_id for role, handle agency/com alias for LinkedIn status",
-      "when": "25 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "f9fed09",
       "subject": "LinkedIn messages: enforce greeting + sign-off + conversational tone",
-      "when": "25 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "b0f7e19",
       "subject": "LinkedIn Connect: email/password login replaces li_at paste",
-      "when": "25 hours ago"
+      "when": "9 days ago"
     },
     {
       "hash": "03f1e73",
       "subject": "Fix: remove engage steps + LinkedIn test error handling",
-      "when": "27 hours ago"
+      "when": "10 days ago"
     },
     {
       "hash": "5cf2a20",
       "subject": "Fix: @vanhawke.agency alias resolves to @vanhawke.com for OAuth tokens",
-      "when": "27 hours ago"
-    },
-    {
-      "hash": "ec5dec9",
-      "subject": "Fix enqueue: correct firstName + dash stripping + banned phrases",
-      "when": "27 hours ago"
-    },
-    {
-      "hash": "5bcae8e",
-      "subject": "CRITICAL: Fix bulk Pause button + database default",
-      "when": "29 hours ago"
+      "when": "10 days ago"
     }
   ]
 }
