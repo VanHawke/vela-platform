@@ -5,7 +5,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 
-export const config = { maxDuration: 120 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 export default async function handler(req, res) {

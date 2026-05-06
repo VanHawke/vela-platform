@@ -4,7 +4,6 @@
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
-export const config = { maxDuration: 45 };
 
 
 async function scanGmailContacts(token) {

@@ -4,7 +4,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from './kiko-tools.js';
 
-export const config = { maxDuration: 120 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-6';
 

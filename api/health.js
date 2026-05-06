@@ -6,7 +6,6 @@ import { sbFetch, logError } from './kiko-tools.js';
 import { classifyIntent } from './agents/intent-classifier.js';
 import { generateSelfKnowledge } from './kiko-self-knowledge.js';
 
-export const config = { maxDuration: 30 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 export default async function handler(req, res) {

@@ -4,7 +4,6 @@
 // Closes when task status transitions to done/error/cancelled or after 5 min timeout.
 import { sbFetch } from './kiko-tools.js';
 
-export const config = { maxDuration: 300, supportsResponseStreaming: true };
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

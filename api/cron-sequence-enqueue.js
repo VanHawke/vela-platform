@@ -6,7 +6,6 @@ import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { wrapEmailBody, loadUserSignatures, loadVoiceProfile, voiceProfileToPrompt } from './lib/email-format.js';
 
-export const config = { maxDuration: 60 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 // ═══ TIMEZONE HELPERS — prospect location → UTC offset ═══

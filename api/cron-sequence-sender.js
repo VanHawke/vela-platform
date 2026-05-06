@@ -6,7 +6,6 @@ import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 import { loadUserSignatures, buildMimeWithInlineImages } from './lib/email-format.js';
 
-export const config = { maxDuration: 30 };
 
 const TRACK_BASE = 'https://api.vanhawke.agency/api/track';
 

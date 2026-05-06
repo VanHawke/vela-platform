@@ -14,7 +14,6 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-export const config = { maxDuration: 15 };
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,

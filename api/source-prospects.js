@@ -2,7 +2,6 @@
 // Streams progress updates via SSE. Returns structured prospect data for frontend review.
 import Anthropic from '@anthropic-ai/sdk';
 
-export const config = { maxDuration: 300 };
 
 const MODEL = 'claude-sonnet-4-6';
 

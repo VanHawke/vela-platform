@@ -7,7 +7,6 @@
 // null category check, auto-pause trigger existence, active alert ceiling.
 import { sbFetch } from './kiko-tools.js';
 
-export const config = { maxDuration: 30 };
 
 export default async function handler(req, res) {
   const checks = [];

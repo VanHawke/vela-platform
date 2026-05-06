@@ -13,7 +13,6 @@ import Anthropic from '@anthropic-ai/sdk';
 
 // CRITICAL: Pro plan default is 60s. Build does CRM queries + auto-draft Claude
 // + web_search Claude — easily exceeds 60s. Set to 300s (Pro max).
-export const config = { maxDuration: 300 };
 
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });

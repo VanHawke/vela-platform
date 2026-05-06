@@ -5,7 +5,6 @@ import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
 
-export const config = { maxDuration: 60 };
 
 async function getEmbedding(text) {
   const r = await fetch('https://api.openai.com/v1/embeddings', {

@@ -133,4 +133,3 @@ Be direct, dense, and actionable. No fluff. Board-level communication.`;
   }
 }
 
-export const config = { maxDuration: 120 }; // 2 minutes for parallel research

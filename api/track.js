@@ -7,7 +7,6 @@
 
 import { sbFetch } from './kiko-tools.js';
 
-export const config = { maxDuration: 10 };
 
 // 1x1 transparent GIF (43 bytes)
 const TRANSPARENT_GIF = Buffer.from(

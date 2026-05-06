@@ -10,7 +10,6 @@ const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABAS
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
 
-export const config = { maxDuration: 120 };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });

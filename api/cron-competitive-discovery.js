@@ -6,7 +6,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 
-export const config = { maxDuration: 120 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 // Discovery domains — each one asks Kiko to find entities she doesn't know about yet

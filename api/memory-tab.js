@@ -15,7 +15,6 @@
 
 import { sbFetch } from './kiko-tools.js';
 
-export const config = { maxDuration: 15 };
 
 function isUuid(str) {
   return typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);

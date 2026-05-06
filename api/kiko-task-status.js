@@ -4,7 +4,6 @@
 // No result_text (use kiko-task-result.js for that)
 import { sbFetch } from './kiko-tools.js';
 
-export const config = { maxDuration: 10 };
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

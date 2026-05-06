@@ -4,7 +4,6 @@ import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat, logError } from './kiko-tools.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
-export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 export default async function handler(req, res) {

@@ -4,7 +4,6 @@
 // RLS handles user_id check — only the task owner can delete their own tasks.
 import { sbFetch } from './kiko-tools.js';
 
-export const config = { maxDuration: 10 };
 
 function isUuid(str) {
   return typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);

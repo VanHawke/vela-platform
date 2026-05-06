@@ -4,7 +4,6 @@
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import crypto from 'crypto';
 
-export const config = { maxDuration: 300 };
 
 export default async function handler(req, res) {
   const __hbStart = Date.now();

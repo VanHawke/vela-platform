@@ -1,6 +1,5 @@
 // api/documents.js — Document Intelligence: extract, analyse, embed, link to CRM
 
-export const config = { api: { bodyParser: { sizeLimit: '4mb' } } }
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
 

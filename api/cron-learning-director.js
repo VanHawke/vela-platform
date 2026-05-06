@@ -6,7 +6,6 @@ import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, logError, cronHeartbeat } from './kiko-tools.js';
 import { getActiveUsers } from './cron-utils.js';
 
-export const config = { maxDuration: 120 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 const CURRICULUM = {

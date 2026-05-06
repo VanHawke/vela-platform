@@ -5,7 +5,6 @@
 import { waitUntil } from '@vercel/functions';
 import { sbFetch } from './kiko-tools.js';
 
-export const config = { maxDuration: 300 };
 
 // Reuse kiko-async's in-process call pattern — same tools, same memory, same KIKO_BIBLE
 async function callKikoInProcess({ message, userEmail, currentPage, conversationHistory }) {

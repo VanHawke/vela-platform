@@ -39,7 +39,6 @@ async function sendAlertEmail(alerts, userEmail) {
   } catch (err) { console.error('[Proactive] Email notification failed:', err.message); }
 }
 
-export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 export default async function handler(req, res) {

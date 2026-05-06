@@ -8,7 +8,6 @@ import { scoreCompanyById } from './score.js';
 
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-export const config = { maxDuration: 60 };
 
 export default async function handler(req, res) {
   const __hbStart = Date.now();

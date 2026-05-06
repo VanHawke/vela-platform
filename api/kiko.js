@@ -10,7 +10,6 @@ import { preProcess } from './reasoning-engine.js';
 import { lookupCompany } from './company-lookup.js';
 import { callEAAgent } from './agents/ea.js';
 
-export const config = { supportsResponseStreaming: true, maxDuration: 120, api: { bodyParser: { sizeLimit: '12mb' } } };
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-6';

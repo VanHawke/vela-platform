@@ -11,7 +11,6 @@
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
-export const config = { maxDuration: 60 };
 
 export default async function handler(req, res) {
   const __hbStart = Date.now();

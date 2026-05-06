@@ -4,7 +4,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, logError } from './kiko-tools.js';
 
-export const config = { maxDuration: 120 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
 

@@ -1,7 +1,6 @@
 // api/create-gmail-draft.js — Create a draft in any team member's Gmail
 // Fetches user's Gmail signature and appends it to the draft body
 
-export const config = { maxDuration: 15, api: { bodyParser: { sizeLimit: '4mb' } } };
 
 const SB_URL = () => process.env.VITE_SUPABASE_URL;
 const SB_KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY;

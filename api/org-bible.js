@@ -3,7 +3,6 @@
 // PATCH body: { org_id, content } — updates org Bible (super_admin only)
 import { sbFetch } from './kiko-tools.js';
 
-export const config = { maxDuration: 10 };
 
 function isUuid(s) { return typeof s === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s); }
 

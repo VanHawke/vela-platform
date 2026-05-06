@@ -4,7 +4,6 @@
 // This is what closes the loop on the "Cloudflare 160 times" problem.
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 
-export const config = { maxDuration: 60 };
 
 // Normalize a question into a signature for fuzzy matching
 function signatureOf(content) {

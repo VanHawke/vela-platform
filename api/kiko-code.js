@@ -1,7 +1,6 @@
 // api/kiko-code.js — Code editor backend: file tree, file content, AI code chat, deploy
 import Anthropic from '@anthropic-ai/sdk';
 
-export const config = { supportsResponseStreaming: true };
 
 const GH_REPO = 'VanHawke/vela-platform';
 const GH_API = `https://api.github.com/repos/${GH_REPO}`;
