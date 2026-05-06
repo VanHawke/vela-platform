@@ -600,7 +600,7 @@ export default function OutreachIntelligence({ user }) {
               padding: '10px 18px', fontSize: 13, fontWeight: mainTab === t.id ? 600 : 400,
               color: mainTab === t.id ? '#0A0A0A' : '#6B6B6B',
               borderBottom: mainTab === t.id ? '2px solid #0A0A0A' : '2px solid transparent',
-              background: 'none', border: 'none', borderBottomStyle: 'solid',
+              background: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none',
               cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
             }}>{t.label}</button>
           ))}
@@ -622,7 +622,7 @@ export default function OutreachIntelligence({ user }) {
                   padding: '8px 14px', fontSize: 12, fontWeight: taskFilter === tab.id ? 600 : 400,
                   color: taskFilter === tab.id ? '#0A0A0A' : '#6B6B6B',
                   borderBottom: taskFilter === tab.id ? '2px solid #0A0A0A' : '2px solid transparent',
-                  background: 'none', border: 'none', borderBottomStyle: 'solid',
+                  background: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none',
                   cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
                 }}>
                   {tab.label} <span style={{ color: '#A0A0A0', marginLeft: 4 }}>{tab.count}</span>
@@ -820,7 +820,7 @@ export default function OutreachIntelligence({ user }) {
                       padding: '8px 14px', fontSize: 12, fontWeight: intelTab === tab.id ? 600 : 400,
                       color: intelTab === tab.id ? '#0A0A0A' : '#6B6B6B',
                       borderBottom: intelTab === tab.id ? '2px solid #0A0A0A' : '2px solid transparent',
-                      background: 'none', border: 'none', borderBottomStyle: 'solid',
+                      background: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none',
                       cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
                     }}>
                       {tab.label} <span style={{ color: '#A0A0A0', marginLeft: 3 }}>{count}</span>
