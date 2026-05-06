@@ -192,19 +192,16 @@ function buildBriefPrompt(sel) {
   const titleSuffix = titleParts.length > 1 ? titleParts[titleParts.length - 1].trim() : null
   if (sel.kind === 'reply') {
     const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
-    return `Brief me on this reply from ${p.entity_name || 'prospect'}.
+    return `Tell me everything about ${p.entity_name || 'this prospect'} and our relationship with them. They just replied to our email.
 
-THEIR REPLY: "${snippet}"
+THEIR EXACT REPLY: "${snippet}"
 
-Subject: "${sel.title}". Arrived ${relativeTime(p.created_at)}.
+Subject thread: "${sel.title}". Arrived ${relativeTime(p.created_at)}.
 
-Give me:
-1. WHAT THEY SAID — summarise the key points of their reply, what their position is
-2. WHERE WE STAND — context on this account relationship based on CRM data
-3. RECOMMENDED NEXT MOVE — specific, actionable next step
-4. DRAFT REPLY — format with Subject: on its own line, then Dear [Name], body, Kind regards
-
-Senior sales leader voice. Be specific with names and dates.`
+After the relationship summary, give me:
+1. WHAT THEY SAID — summarise the key points of their reply and sentiment
+2. RECOMMENDED NEXT MOVE — the single best action to take now
+3. DRAFT REPLY — format with Subject: on its own line, then Dear [Name], body, Kind regards`
   }
   if (sel.kind === 'task') {
     const d = p.data || {}
