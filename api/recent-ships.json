@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-06T12:26:13.814Z",
+  "generated_at": "2026-05-06T12:42:02.171Z",
   "commits": [
+    {
+      "hash": "dd35d1b",
+      "subject": "Command Centre phase 2: Market Intelligence with F1/FE/WEC/MotoGP tabs",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "00a27bb",
       "subject": "Command Centre redesign phase 1: Campaign Activity + Follow-ups prioritised",
-      "when": "3 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "cca8b7d",
       "subject": "OOO detection: Kiko now distinguishes auto-replies from genuine responses",
-      "when": "30 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "e130952",
       "subject": "FIX: Reply alerts now captured + error logged instead of silently swallowed",
-      "when": "41 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "8793b85",
       "subject": "Gmail send tracking + follow-up alerts for all CRM contacts",
-      "when": "47 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "00449d4",
@@ -34,7 +39,7 @@
     {
       "hash": "eaecf1d",
       "subject": "CLEANUP: Remove all Vercel remnants + dead syncCookies endpoint",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "906cb34",
@@ -94,11 +99,6 @@
     {
       "hash": "7a3dcd4",
       "subject": "Kiko tool: find_linkedin_url — sources LinkedIn URLs for prospects",
-      "when": "9 days ago"
-    },
-    {
-      "hash": "42082f4",
-      "subject": "LinkedIn URL enrichment: automated pipeline + 87.7% coverage",
       "when": "9 days ago"
     }
   ]
