@@ -225,9 +225,6 @@ export default function OutreachIntelligence({ user }) {
   const [hotReplies, setHotReplies] = useState([])
   const [signals, setSignals] = useState([])
   const [campaignActivity, setCampaignActivity] = useState([])
-  const [campaignEvents, setCampaignEvents] = useState([]) // opens, clicks, OOO
-  const [intelTab, setIntelTab] = useState('f1')
-  const [activityFilter, setActivityFilter] = useState('all')
   const [taskFilter, setTaskFilter] = useState('overdue')
   const [showNewTask, setShowNewTask] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
@@ -255,7 +252,7 @@ export default function OutreachIntelligence({ user }) {
       const signalTypes = isSuperAdmin
         ? ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'promotion', 'prediction', 'self_discovery', 'proactive_intel', 'company_signal']
         : ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'prediction', 'company_signal']
-      const [dealsRes, hotRes, signalRes, campaignRes, eventsRes] = await Promise.all([
+      const [dealsRes, hotRes, signalRes, campaignRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at')
           .not('data->>status', 'in', '("won","lost")')
           .order('updated_at', { ascending: false }),
@@ -277,25 +274,11 @@ export default function OutreachIntelligence({ user }) {
           .eq('status', 'active')
           .order('next_send_at', { ascending: true })
           .limit(15),
-        // Campaign email events — opens, clicks, OOO from last 48h
-        supabase.from('kiko_outreach_queue')
-          .select('id, to_name, to_email, company, subject, status, opened_at, clicked_at, reply_snippet, sent_at')
-          .eq('status', 'sent')
-          .gte('sent_at', new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString())
-          .order('sent_at', { ascending: false })
-          .limit(30),
       ])
       setDeals(dealsRes.data || [])
       setHotReplies(hotRes.data || [])
       setSignals(signalRes.data || [])
       setCampaignActivity(campaignRes.data || [])
-      // Process campaign events — classify opens, clicks, OOO
-      const events = (eventsRes.data || []).map(e => ({
-        ...e,
-        eventType: e.reply_snippet?.toLowerCase()?.match(/out of office|on leave|auto.?reply|will be back|currently (out|away)|in my absence/) ? 'ooo'
-          : e.clicked_at ? 'clicked' : e.opened_at ? 'opened' : 'sent',
-      })).filter(e => e.eventType !== 'sent') // Only show opens/clicks/OOO
-      setCampaignEvents(events)
     } catch (err) {
       console.error('[CommandCentre] load', err)
     }
@@ -506,61 +489,6 @@ export default function OutreachIntelligence({ user }) {
       />
 
       <div className="cc-body">
-        {/* ═══ CAMPAIGN EVENTS — opens, clicks, OOO ═══ */}
-        {campaignEvents.length > 0 && (
-          <div className="cc-hot-band">
-            <div className="cc-hot-h">
-              <h3><Mail size={13} /> Campaign Activity</h3>
-              <span className="cc-hot-h-count">{campaignEvents.length} events</span>
-              <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
-                {[['all', 'All'], ['clicked', 'Clicked'], ['opened', 'Opened'], ['ooo', 'OOO']].map(([v, l]) => (
-                  <button key={v} onClick={() => setActivityFilter(v)} style={{
-                    padding: '3px 10px', borderRadius: 12, fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif',
-                    border: activityFilter === v ? '1px solid #0A0A0A' : '1px solid rgba(0,0,0,0.08)',
-                    background: activityFilter === v ? '#0A0A0A' : 'transparent',
-                    color: activityFilter === v ? '#fff' : '#6B6B6B', cursor: 'pointer',
-                  }}>{l}</button>
-                ))}
-              </div>
-            </div>
-            <div className="cc-hot-scroll">
-              {campaignEvents
-                .filter(e => activityFilter === 'all' || e.eventType === activityFilter)
-                .map(e => (
-                <div
-                  key={e.id}
-                  className={`cc-hot-card ${isSelected('campaign_event', e.id) ? 'selected' : ''}`}
-                  onClick={() => setSelected({
-                    kind: 'campaign', id: e.id,
-                    title: `${e.to_name || 'Unknown'} — ${e.company || ''}`,
-                    meta: `${e.subject || ''} · ${e.eventType === 'clicked' ? 'Opened + Clicked' : e.eventType === 'opened' ? 'Opened' : 'OOO'} · ${relativeTime(e.opened_at || e.sent_at)}`,
-                    payload: { ...e, contact_name: e.to_name },
-                  })}
-                >
-                  <div className="cc-hot-card-row1">
-                    <div className={`cc-hot-card-channel ${e.eventType === 'ooo' ? 'linkedin' : 'email'}`}>
-                      {e.eventType === 'clicked' ? '🟢' : e.eventType === 'opened' ? '🟡' : '🟠'}
-                    </div>
-                    <div className="cc-hot-card-from">{e.to_name || 'Unknown'}</div>
-                    <div className="cc-hot-card-when">{relativeTime(e.opened_at || e.sent_at)}</div>
-                  </div>
-                  <div className="cc-hot-card-title">
-                    <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: 4,
-                      background: e.eventType === 'clicked' ? 'rgba(16,185,129,0.12)' : e.eventType === 'opened' ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.18)',
-                      color: e.eventType === 'clicked' ? '#059669' : '#d97706',
-                      fontSize: 10, fontWeight: 600, marginRight: 6, verticalAlign: 'middle', textTransform: 'uppercase',
-                    }}>{e.eventType === 'clicked' ? 'CLICKED' : e.eventType === 'opened' ? 'OPENED' : 'OOO'}</span>
-                    {e.company}
-                  </div>
-                  {e.eventType === 'ooo' && e.reply_snippet && (
-                    <div style={{ fontSize: 11, color: '#9a8c7e', marginTop: 4, fontStyle: 'italic' }}>"{e.reply_snippet.slice(0, 60)}…"</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* HOT REPLIES BAND */}
         <div className="cc-hot-band">
           <div className="cc-hot-h">
@@ -602,39 +530,6 @@ export default function OutreachIntelligence({ user }) {
         <div className="cc-grid">
           {/* LEFT: Grouped priority list */}
           <div className="cc-list">
-            {/* FOLLOW-UP TRACKER */}
-            {followUps.length > 0 && (
-              <div className="cc-group">
-                <div className="cc-group-h">
-                  <h3><Send size={10} />Awaiting replies</h3>
-                  <span className="cc-group-count">{followUps.length}</span>
-                </div>
-                {followUps.map(fu => {
-                  const isOverdue = fu.follow_up_due_at && new Date(fu.follow_up_due_at) < new Date()
-                  return (
-                    <div
-                      key={fu.id}
-                      className={`cc-row ${isSelected('followup', fu.id) ? 'selected' : ''}`}
-                      onClick={() => selectFollowUp(fu)}
-                    >
-                      <button className="cc-row-icon sage" onClick={e => markFollowUpDone(fu, e)} title="Mark done">
-                        <CheckSquare size={10} />
-                      </button>
-                      <div className="cc-row-body">
-                        <div className="cc-row-title">{fu.recipient_name || fu.recipient_email}</div>
-                        <div className="cc-row-meta">
-                          {fu.company && <>{fu.company} · </>}
-                          {fu.subject && <>{fu.subject.slice(0, 40)} · </>}
-                          {dueLabel(fu.follow_up_due_at)}
-                          {isOverdue && <span className="cc-row-tag overdue">OVERDUE</span>}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
             {/* TASK FILTER TABS */}
             <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', marginBottom: 8, alignItems: 'center' }}>
               {[
@@ -726,6 +621,39 @@ export default function OutreachIntelligence({ user }) {
                 </div>
               ))}
             </div>
+
+            {/* FOLLOW-UP TRACKER */}
+            {followUps.length > 0 && (
+              <div className="cc-group">
+                <div className="cc-group-h">
+                  <h3><Send size={10} />Awaiting replies</h3>
+                  <span className="cc-group-count">{followUps.length}</span>
+                </div>
+                {followUps.map(fu => {
+                  const isOverdue = fu.follow_up_due_at && new Date(fu.follow_up_due_at) < new Date()
+                  return (
+                    <div
+                      key={fu.id}
+                      className={`cc-row ${isSelected('followup', fu.id) ? 'selected' : ''}`}
+                      onClick={() => selectFollowUp(fu)}
+                    >
+                      <button className="cc-row-icon sage" onClick={e => markFollowUpDone(fu, e)} title="Mark done">
+                        <CheckSquare size={10} />
+                      </button>
+                      <div className="cc-row-body">
+                        <div className="cc-row-title">{fu.recipient_name || fu.recipient_email}</div>
+                        <div className="cc-row-meta">
+                          {fu.company && <>{fu.company} · </>}
+                          {fu.subject && <>{fu.subject.slice(0, 40)} · </>}
+                          {dueLabel(fu.follow_up_due_at)}
+                          {isOverdue && <span className="cc-row-tag overdue">OVERDUE</span>}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
 
             {/* CAMPAIGN ACTIVITY */}
             {campaignActivity.length > 0 && (

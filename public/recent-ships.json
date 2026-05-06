@@ -1,20 +1,50 @@
 {
-  "generated_at": "2026-05-06T10:03:10.638Z",
+  "generated_at": "2026-05-06T12:19:53.856Z",
   "commits": [
+    {
+      "hash": "cca8b7d",
+      "subject": "OOO detection: Kiko now distinguishes auto-replies from genuine responses",
+      "when": "24 minutes ago"
+    },
+    {
+      "hash": "e130952",
+      "subject": "FIX: Reply alerts now captured + error logged instead of silently swallowed",
+      "when": "35 minutes ago"
+    },
+    {
+      "hash": "8793b85",
+      "subject": "Gmail send tracking + follow-up alerts for all CRM contacts",
+      "when": "40 minutes ago"
+    },
+    {
+      "hash": "00449d4",
+      "subject": "FIX: Worker crash + email enrichment pipeline verified end-to-end",
+      "when": "87 minutes ago"
+    },
+    {
+      "hash": "512d2a8",
+      "subject": "CRITICAL FIX: Block fake placeholder emails from campaign sends",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "eaecf1d",
+      "subject": "CLEANUP: Remove all Vercel remnants + dead syncCookies endpoint",
+      "when": "2 hours ago"
+    },
     {
       "hash": "906cb34",
       "subject": "FIX: Intent classifier company lookup false positives + email alias recursion",
-      "when": "24 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "c3bea4a",
       "subject": "Full system audit + cleanup",
-      "when": "2 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "2385538",
       "subject": "VERCEL → HETZNER MIGRATION COMPLETE",
-      "when": "3 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "137c058",
@@ -70,36 +100,6 @@
       "hash": "ed1ba5f",
       "subject": "LinkedIn test: instant send + sending state",
       "when": "9 days ago"
-    },
-    {
-      "hash": "ca3b96a",
-      "subject": "Kiko self-knowledge: full Session 61 capability update",
-      "when": "10 days ago"
-    },
-    {
-      "hash": "1f1ceb1",
-      "subject": "Kiko knowledge: campaign intelligence reasoning framework",
-      "when": "10 days ago"
-    },
-    {
-      "hash": "bc72412",
-      "subject": "SESSION 61: Campaign intelligence skill + Sonnet personalisation",
-      "when": "10 days ago"
-    },
-    {
-      "hash": "7180831",
-      "subject": "Fix: search menu remove Lemlist (stale), add Campaigns",
-      "when": "10 days ago"
-    },
-    {
-      "hash": "63a9197",
-      "subject": "Fix Settings: match user by user_id for role, handle agency/com alias for LinkedIn status",
-      "when": "10 days ago"
-    },
-    {
-      "hash": "f9fed09",
-      "subject": "LinkedIn messages: enforce greeting + sign-off + conversational tone",
-      "when": "10 days ago"
     }
   ]
 }
