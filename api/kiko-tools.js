@@ -296,6 +296,13 @@ export const TOOL_DEFINITIONS = [
     }, required: ['prospects'] },
   },
   {
+    name: 'find_email',
+    description: 'Find business email addresses for prospects using company domain pattern matching and DNS verification. Use this EVERY TIME you source prospects — email AND LinkedIn URL are BOTH mandatory. Accepts array of {name, company}. Returns verified email addresses based on company domain patterns. Zero API cost.',
+    input_schema: { type: 'object', properties: {
+      prospects: { type: 'array', description: 'Array of prospects to find emails for. Each item: { name: "Full Name", company: "Company Name" }', items: { type: 'object', properties: { name: { type: 'string' }, company: { type: 'string' } }, required: ['name', 'company'] } },
+    }, required: ['prospects'] },
+  },
+  {
     name: 'linkedin_send_invite',
     description: 'Send a LinkedIn connection invitation to a prospect. Requires their LinkedIn profile URL and an optional personalised note (max 200 characters). Use when the user explicitly asks to send a LinkedIn invite. Will fail if already connected or already invited.',
     input_schema: { type: 'object', properties: {
@@ -1449,6 +1456,21 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
       }
       return { found: results.length, results, note: 'Hetzner enrichment unavailable — URLs are best-guesses and need verification' };
     } catch (err) { return { error: err.message }; }
+  }
+
+  // find_email uses Hetzner email enrichment endpoint
+  if (name === 'find_email') {
+    try {
+      const resp = await fetch('http://127.0.0.1:3000/api/enrich-emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer kiko-hetzner-2026-vanhawke' },
+        body: JSON.stringify({ prospects: args.prospects }),
+      });
+      const data = await resp.json();
+      if (!data.ok) return `Email enrichment failed: ${data.error}`;
+      const lines = data.results.map(r => r.email ? `${r.name} (${r.company}): ${r.email}` : `${r.name} (${r.company}): NOT FOUND — domain ${r.domain || 'unknown'}`);
+      return `Found ${data.found}/${data.total} emails:\n${lines.join('\n')}`;
+    } catch (err) { return `Email enrichment error: ${err.message}`; }
   }
 
   // linkedin_send_invite and linkedin_send_message now route through Hetzner Playwright backend
