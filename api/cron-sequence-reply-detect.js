@@ -4,6 +4,7 @@
 // STANDALONE — if this fails, sequences just keep running (safe default).
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
+import { apolloFindEmail } from '../lib/emailIntel.js';
 
 export const config = { maxDuration: 30 };
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
@@ -199,15 +200,31 @@ export default async function handler(req, res) {
             status: 'bounced', bounce_detected_at: new Date().toISOString()
           }) });
           await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.queued`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
-          // Create alert so bounce shows in Command Centre
-          await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
-            type: 'email_bounced',
-            severity: 'high',
-            title: `⚠️ Email bounced — ${enrollment.contact_name} (${enrollment.company})`,
-            detail: `Email to ${email} bounced (mailer-daemon). Campaign paused for this contact. Re-source a valid email address.`,
-            entity_name: enrollment.contact_name,
-            dismissed: false,
-          }) });
+          // Auto-re-enrich: try to find a new email automatically instead of alerting user
+          try {
+            const nameParts = (enrollment.contact_name || '').trim().split(/\s+/);
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            const domain = email.split('@')[1] || '';
+            if (firstName && domain) {
+              console.log(`[ReplyDetect] 🔄 Auto-re-enriching ${enrollment.contact_name} @ ${domain}...`);
+              const newEmail = await apolloFindEmail(firstName, lastName, domain, enrollment.company);
+              if (newEmail && newEmail !== email) {
+                console.log(`[ReplyDetect] ✅ Found new email: ${newEmail} (was: ${email})`);
+                await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
+                  status: 'active', contact_email: newEmail, bounce_detected_at: new Date().toISOString(),
+                }) });
+                // Re-queue outreach with new email
+                const pendingSteps = await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.cancelled&select=id&limit=5`);
+                for (const step of (pendingSteps || [])) {
+                  await sbFetch(`kiko_outreach_queue?id=eq.${step.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'queued', to_email: newEmail }) });
+                }
+                console.log(`[ReplyDetect] ♻️ Re-queued ${(pendingSteps || []).length} steps for ${enrollment.contact_name}`);
+              } else {
+                console.log(`[ReplyDetect] ❌ No alternative email found for ${enrollment.contact_name}`);
+              }
+            }
+          } catch (enrichErr) { console.error(`[ReplyDetect] Re-enrich failed:`, enrichErr.message); }
           bounces++;
         }
       } catch (err) { console.error(`[ReplyDetect] ❌ ${enrollment.company}:`, err.message); }

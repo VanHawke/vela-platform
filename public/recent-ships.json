@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-06T18:18:03.735Z",
+  "generated_at": "2026-05-06T18:25:56.197Z",
   "commits": [
+    {
+      "hash": "3df989e",
+      "subject": "CRITICAL: Inject Van Hawke email voice into ALL Command Centre drafts",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "935eba9",
       "subject": "Kiko now alerts on bounced emails + bounce visual in Command Centre",
-      "when": "5 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "7a8b9f3",
       "subject": "Fix tab underline + auto-complete tasks on reply",
-      "when": "66 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "6f6d87b",
       "subject": "Fix: remove stray )} rendering on page + auto-dismiss follow-ups on reply",
-      "when": "68 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "3afd5cb",
       "subject": "Alert dismiss + auto-clear + Gmail draft endpoint + signal briefs",
-      "when": "80 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "0fdf885",
@@ -49,7 +54,7 @@
     {
       "hash": "3d1f8ef",
       "subject": "Fix reply brief: avoid 'brief' intent classification",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "d896aad",
@@ -94,11 +99,6 @@
     {
       "hash": "826fda2",
       "subject": "ROLLBACK: Restored original Command Centre",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "dd492f9",
-      "subject": "Fix Campaign Activity: only show real engagement (replies, OOO, LinkedIn)",
       "when": "5 hours ago"
     }
   ]

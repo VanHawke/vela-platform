@@ -303,7 +303,7 @@ export default function OutreachIntelligence({ user }) {
           .order('updated_at', { ascending: false }),
         supabase.from('kiko_alerts')
           .select('id, type, title, detail, entity_name, entity_id, metadata, created_at')
-          .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply,type.eq.email_reply_manual,type.eq.linkedin_connection_accepted,type.like.linkedin_connection%,type.eq.email_bounced')
+          .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply,type.eq.email_reply_manual,type.eq.linkedin_connection_accepted,type.like.linkedin_connection%')
           .gte('created_at', dayAgo)
           .order('created_at', { ascending: false })
           .limit(10),
