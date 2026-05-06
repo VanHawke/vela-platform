@@ -570,6 +570,7 @@ export default function OutreachIntelligence({ user }) {
                       <div className={`cc-hot-card-channel ${ch}`}>{channelIcon(ch)}</div>
                       <div className="cc-hot-card-from">{r.entity_name || 'Unknown'}</div>
                       <div className="cc-hot-card-when">{relativeTime(r.created_at)}</div>
+                      <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_alerts').update({ dismissed: true }).eq('id', r.id); setHotReplies(prev => prev.filter(x => x.id !== r.id)); showToast('Alert cleared', 'success') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 13, padding: '0 2px', marginLeft: 4, lineHeight: 1 }} title="Dismiss">×</button>
                     </div>
                     <div className="cc-hot-card-title">
                       {r.type?.includes('connection') && <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: 4, background: 'rgba(6,214,160,0.12)', color: '#06a87d', fontSize: 10, fontWeight: 600, marginRight: 6, verticalAlign: 'middle' }}>CONNECTED</span>}
@@ -984,11 +985,20 @@ export default function OutreachIntelligence({ user }) {
                       }} />
 
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 10 }}>
-                        <button onClick={() => showToast('Draft saved (coming soon)', 'info')} style={{
+                        <button onClick={async () => {
+                          try {
+                            const res = await fetch('https://api.vanhawke.agency/api/create-gmail-draft', {
+                              method: 'POST', headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ to: selected?.title?.split('—')[0]?.trim(), subject: draftSubject, body: draftBody, sender: 'matt.smith' })
+                            })
+                            if (res.ok) showToast('Gmail draft saved', 'success')
+                            else showToast('Failed to save draft', 'error')
+                          } catch { showToast('Failed to save draft', 'error') }
+                        }} style={{
                           padding: '7px 16px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)',
                           background: '#fff', color: '#0A0A0A', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
                         }}>Save as Gmail Draft</button>
-                        <button onClick={() => showToast('Schedule send (coming soon)', 'info')} style={{
+                        <button onClick={() => showToast('Schedule send coming soon', 'info')} style={{
                           padding: '7px 16px', borderRadius: 6, border: 'none',
                           background: '#0A0A0A', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
                         }}>Schedule Send</button>

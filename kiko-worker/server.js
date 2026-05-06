@@ -21,6 +21,7 @@ import orgBible from "./api/org-bible.js";
 import emailIntelRoutes from "./routes/email-intel.js";
 import kikoChatRoutes from "./routes/kiko-chat.js";
 import webhookRoutes from "./routes/webhooks.js";
+import gmailDraft from "./api/gmail-draft.js";
 import { startMonitors } from "./monitors/scheduler.js";
 import { startScheduler } from "./src/cron-scheduler.js";
 
@@ -67,6 +68,7 @@ app.use("/docs", express.static("/home/kiko/kiko-worker/public/docs"));
 app.use("/api/webhooks", webhookRoutes);
 app.all("/api/user-bible", userBible);
 app.all("/api/org-bible", orgBible);
+app.post("/api/create-gmail-draft", gmailDraft);
 app.use("/api", kikoChatRoutes);
 
 // Routes — existing
