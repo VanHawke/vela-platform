@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-06T21:01:00.924Z",
+  "generated_at": "2026-05-06T21:17:31.947Z",
   "commits": [
+    {
+      "hash": "31ce2b3",
+      "subject": "KikoFloat EmailDraft + cron activity logging + UI action logging",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "f8fd504",
       "subject": "Timezone-optimised sending + PersonaMail correction capture",
-      "when": "19 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "fdba396",
       "subject": "Fix: oooCount variable not declared in reply-detect cron",
-      "when": "30 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "953683a",
       "subject": "Complete session 63-65: OOO reschedule + auto-deal creation + direct send + knowledge sync",
-      "when": "33 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "174534b",
       "subject": "Bounce auto-fix: Hunter fallback + replace contacts at same company",
-      "when": "45 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "cce28ca",
       "subject": "Fix 22 false bounces: tighten detection + clear false positives",
-      "when": "59 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "362b5e0",
       "subject": "Fix alerts, homepage pills, sponsorship news, HTML entities",
-      "when": "76 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "c7e2c05",
@@ -39,12 +44,12 @@
     {
       "hash": "d202eec",
       "subject": "Use EXISTING EmailDraft component in Command Centre — same as main chat",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6343e7d",
       "subject": "Proper email composer component (Gmail-style) + bounce alerts removed from CC",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "56fc2fe",
@@ -79,12 +84,12 @@
     {
       "hash": "0fdf885",
       "subject": "Fix Sponsorship News filter: include proactive_intel + F1/series keywords",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "9454f85",
       "subject": "Tighten Sponsorship News filter: remove proactive_intel + broad 'deal' keyword",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "a60ecb4",
@@ -94,11 +99,6 @@
     {
       "hash": "4472861",
       "subject": "Fix: Sponsorship News inside grid + clicking shows brief",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "6b074c6",
-      "subject": "Fix alerts, homepage pills, sponsorship news, HTML entities",
       "when": "5 hours ago"
     }
   ]

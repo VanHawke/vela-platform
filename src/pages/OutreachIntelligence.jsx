@@ -16,6 +16,13 @@ import './OutreachIntelligence.css'
 import EmailDraft, { isEmailDraft } from '@/components/kiko/EmailDraft'
 
 // Simple markdown → HTML for Kiko brief responses
+// Strip draft email section from brief (to avoid showing it twice when EmailDraft renders)
+function stripDraftFromBrief(text) {
+  if (!text) return text
+  // Remove everything from "4. DRAFT" or "DRAFT REPLY" or "DRAFT EMAIL" or "DRAFT OUTREACH" to end
+  return text.replace(/\n*(?:#{1,4}\s*)?(?:\d+\.\s*)?(?:DRAFT\s*(?:REPLY|EMAIL|OUTREACH|FOLLOW.?UP))[:\s—\-]*[\s\S]*/i, '\n').trim()
+}
+
 function parseBriefMarkdown(text) {
   if (!text) return ''
   return text
@@ -896,7 +903,7 @@ export default function OutreachIntelligence({ user }) {
                 </div>
                 <div className="cc-detail-body">
                   {brief ? (
-                    <div className="cc-detail-section-body" style={{ lineHeight: 1.65, fontSize: 13.5, color: '#2A2A2A', fontFamily: 'Inter, system-ui, sans-serif' }} dangerouslySetInnerHTML={{ __html: parseBriefMarkdown(brief) }} />
+                    <div className="cc-detail-section-body" style={{ lineHeight: 1.65, fontSize: 13.5, color: '#2A2A2A', fontFamily: 'Inter, system-ui, sans-serif' }} dangerouslySetInnerHTML={{ __html: parseBriefMarkdown(isEmailDraft(brief) ? stripDraftFromBrief(brief) : brief) }} />
                   ) : briefLoading ? (
                     <div className="cc-detail-loading">
                       <span className="dot" /><span className="dot" /><span className="dot" />

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import T from '@/lib/theme'
@@ -127,7 +127,47 @@ export default function Settings({ user }) {
   const [topNavItems, setTopNavItems] = useState(DEFAULT_TOP_NAV)
   const [moreOrder, setMoreOrder] = useState(() => { try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null } })
 
+  // Helper: save nav settings to BOTH localStorage AND Supabase (persists across resets)
+  const persistNavSetting = useCallback(async (key, value) => {
+    localStorage.setItem(key, JSON.stringify(value))
+    if (user?.id) {
+      try {
+        const navSettings = {}
+        navSettings[key] = value
+        await supabase.from('kiko_user_config').update({ nav_settings: { 
+          ...JSON.parse(localStorage.getItem('kiko_nav_settings_cache') || '{}'),
+          [key]: value 
+        }}).eq('user_id', user.id)
+        // Update local cache
+        const cache = JSON.parse(localStorage.getItem('kiko_nav_settings_cache') || '{}')
+        cache[key] = value
+        localStorage.setItem('kiko_nav_settings_cache', JSON.stringify(cache))
+      } catch {}
+    }
+  }, [user?.id])
+
   useEffect(() => {
+    // Load nav settings from Supabase first, then fall back to localStorage
+    const loadNavSettings = async () => {
+      if (user?.id) {
+        try {
+          const { data } = await supabase.from('kiko_user_config').select('nav_settings').eq('user_id', user.id).single()
+          if (data?.nav_settings) {
+            const ns = data.nav_settings
+            if (ns.kiko_top_nav_v2) { setTopNavItems(ns.kiko_top_nav_v2); localStorage.setItem('kiko_top_nav_v2', JSON.stringify(ns.kiko_top_nav_v2)) }
+            if (ns.kiko_nav_order) { setNavOrder(ns.kiko_nav_order); localStorage.setItem('kiko_nav_order', JSON.stringify(ns.kiko_nav_order)) }
+            if (ns.kiko_more_order) { setMoreOrder(ns.kiko_more_order); localStorage.setItem('kiko_more_order', JSON.stringify(ns.kiko_more_order)) }
+            localStorage.setItem('kiko_nav_settings_cache', JSON.stringify(ns))
+            return // loaded from Supabase, skip localStorage
+          }
+        } catch {}
+      }
+      // Fall back to localStorage
+      const stored = localStorage.getItem('kiko_nav_order')
+      if (stored) try { setNavOrder(JSON.parse(stored)) } catch {}
+      const storedTop = localStorage.getItem('kiko_top_nav_v2')
+      if (storedTop) try { setTopNavItems(JSON.parse(storedTop)) } catch {}
+    }
     // Force-clean stale 'linkedin' from saved nav
     try {
       ['kiko_top_nav_v2', 'kiko_nav_order', 'kiko_more_order'].forEach(key => {
@@ -138,11 +178,8 @@ export default function Settings({ user }) {
         }
       })
     } catch {}
-    const stored = localStorage.getItem('kiko_nav_order')
-    if (stored) try { setNavOrder(JSON.parse(stored)) } catch {}
-    const storedTop = localStorage.getItem('kiko_top_nav_v2')
-    if (storedTop) try { setTopNavItems(JSON.parse(storedTop)) } catch {}
-  }, [])
+    loadNavSettings()
+  }, [user?.id])
 
   const email = user?.email || ''
 
@@ -777,7 +814,7 @@ export default function Settings({ user }) {
                     if (to < 0 || to >= arr.length) return
                     ;[arr[from], arr[to]] = [arr[to], arr[from]]
                     setTopNavItems(arr)
-                    localStorage.setItem('kiko_top_nav_v2', JSON.stringify(arr))
+                    persistNavSetting('kiko_top_nav_v2', arr)
                     window.dispatchEvent(new Event('kiko_top_nav_updated'))
                   }
                   return (
@@ -796,7 +833,7 @@ export default function Settings({ user }) {
                         <button onClick={() => {
                           const next = isOn ? topNavItems.filter(id => id !== item.id) : [...topNavItems, item.id]
                           setTopNavItems(next)
-                          localStorage.setItem('kiko_top_nav_v2', JSON.stringify(next))
+                          persistNavSetting('kiko_top_nav_v2', next)
                           window.dispatchEvent(new Event('kiko_top_nav_updated'))
                         }} style={{
                           width: 38, height: 20, borderRadius: 50, border: 'none', cursor: 'pointer',
@@ -814,7 +851,7 @@ export default function Settings({ user }) {
                   )
                 })}
               </div>
-              <button onClick={() => { setTopNavItems(DEFAULT_TOP_NAV); localStorage.setItem('kiko_top_nav_v2', JSON.stringify(DEFAULT_TOP_NAV)); window.dispatchEvent(new Event('kiko_top_nav_updated')) }}
+              <button onClick={() => { setTopNavItems(DEFAULT_TOP_NAV); persistNavSetting('kiko_top_nav_v2', DEFAULT_TOP_NAV); window.dispatchEvent(new Event('kiko_top_nav_updated')) }}
                 style={{ marginTop: 12, fontSize: 12, padding: '6px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Reset to Default</button>
             </div>
 
@@ -837,7 +874,7 @@ export default function Settings({ user }) {
                       if (to < 0 || to >= ids.length) return
                       ;[ids[from], ids[to]] = [ids[to], ids[from]]
                       setMoreOrder(ids)
-                      localStorage.setItem('kiko_more_order', JSON.stringify(ids))
+                      persistNavSetting('kiko_more_order', ids)
                       window.dispatchEvent(new Event('kiko_more_order_updated'))
                     }
                     return (
