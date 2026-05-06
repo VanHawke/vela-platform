@@ -188,17 +188,32 @@ export default async function handler(req, res) {
           replies++;
         }
 
-        // Check for bounces
-        const bounceQ = `from:mailer-daemon ${email} newer_than:7d`;
+        // Check for bounces — STRICT: only match if the bounce is specifically TO this email
+        const bounceQ = `from:mailer-daemon to:${email} newer_than:7d`;
         const bounceRes = await fetch(
           `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(bounceQ)}&maxResults=1`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const bounceData = await bounceRes.json();
         if (bounceData.messages?.length) {
-          await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
-            status: 'bounced', bounce_detected_at: new Date().toISOString()
-          }) });
+          // Verify: read the bounce message snippet to confirm it's really for this email
+          let confirmedBounce = false;
+          try {
+            const msgRes = await fetch(
+              `https://gmail.googleapis.com/gmail/v1/users/me/messages/${bounceData.messages[0].id}?format=metadata&metadataHeaders=To&metadataHeaders=Subject`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            const msgDetail = await msgRes.json();
+            const snippet = (msgDetail.snippet || '').toLowerCase();
+            const subject = (msgDetail.payload?.headers?.find(h => h.name === 'Subject')?.value || '').toLowerCase();
+            // Confirm the bounce mentions this specific email
+            confirmedBounce = snippet.includes(email.toLowerCase()) || subject.includes(email.toLowerCase());
+          } catch { confirmedBounce = true; } // If we can't verify, assume it's real
+
+          if (confirmedBounce) {
+            await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
+              status: 'bounced', bounce_detected_at: new Date().toISOString()
+            }) });
           await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.queued`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
           // Auto-re-enrich: try to find a new email automatically instead of alerting user
           try {
@@ -212,7 +227,7 @@ export default async function handler(req, res) {
               if (newEmail && newEmail !== email) {
                 console.log(`[ReplyDetect] ✅ Found new email: ${newEmail} (was: ${email})`);
                 await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
-                  status: 'active', contact_email: newEmail, bounce_detected_at: new Date().toISOString(),
+                  status: 'active', contact_email: newEmail, bounce_detected_at: null,
                 }) });
                 // Re-queue outreach with new email
                 const pendingSteps = await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.cancelled&select=id&limit=5`);
@@ -226,6 +241,7 @@ export default async function handler(req, res) {
             }
           } catch (enrichErr) { console.error(`[ReplyDetect] Re-enrich failed:`, enrichErr.message); }
           bounces++;
+          } // end confirmedBounce
         }
       } catch (err) { console.error(`[ReplyDetect] ❌ ${enrollment.company}:`, err.message); }
     }
