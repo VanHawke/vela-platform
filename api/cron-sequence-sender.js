@@ -234,6 +234,23 @@ export default async function handler(req, res) {
           status: 'sent', gmail_message_id: result.id, gmail_thread_id: result.threadId, sent_at: now.toISOString()
         }) });
 
+        // Track in kiko_email_tracking for follow-up detection
+        try {
+          await sbFetch('kiko_email_tracking', { method: 'POST', body: JSON.stringify({
+            sender_email: fromEmail,
+            recipient_email: email.to_email,
+            recipient_name: email.to_name || '',
+            company: email.company || '',
+            subject: email.subject || '',
+            gmail_message_id: result.id,
+            gmail_thread_id: result.threadId,
+            source: 'campaign',
+            sent_at: now.toISOString(),
+            follow_up_due: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+            enrollment_id: email.enrollment_id,
+          }) });
+        } catch (trackErr) { console.error('[Sender] tracking insert failed:', trackErr.message); }
+
         // Update enrollment current_step
         if (email.enrollment_id) {
           const enrollment = await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}&limit=1`);

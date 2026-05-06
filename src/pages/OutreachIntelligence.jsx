@@ -304,6 +304,7 @@ export default function OutreachIntelligence({ user }) {
           .order('updated_at', { ascending: false }),
         supabase.from('kiko_alerts')
           .select('id, type, title, detail, entity_name, entity_id, metadata, created_at')
+          .eq('dismissed', false)
           .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply,type.eq.email_reply_manual,type.eq.linkedin_connection_accepted,type.like.linkedin_connection%')
           .gte('created_at', dayAgo)
           .order('created_at', { ascending: false })
@@ -311,6 +312,7 @@ export default function OutreachIntelligence({ user }) {
         supabase.from('kiko_alerts')
           .select('id, type, severity, title, detail, entity_name, created_at')
           .in('type', signalTypes)
+          .eq('dismissed', false)
           .in('severity', ['high', 'critical', 'medium'])
           .gte('created_at', weekAgo)
           .order('created_at', { ascending: false })
@@ -337,6 +339,8 @@ export default function OutreachIntelligence({ user }) {
       })())
       setSignals((signalRes.data || []).filter(s => {
         const text = `${s.title} ${s.detail} ${s.entity_name}`.toLowerCase()
+        // Permanently exclude eyewear/fashion content — not F1 sponsorship
+        if (/eyewear|gentle.?monster|kering|luxottica|essilor|sunglass|optical|lens.?craft|safilo|marchon|maui.?jim/i.test(text)) return false
         // Only show partnership/sponsorship relevant content
         return /partner|sponsor|renew|naming.?rights|category.?exclusive|title.?sponsor|agency/i.test(text)
           || /\bf1\b|formula.?1|formula.?e|motogp|wec|le mans/i.test(text)
