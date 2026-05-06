@@ -220,7 +220,18 @@ Respond with these sections only:
     return `FOCUS: Brief me ONLY on this specific deal. Do NOT give a general pipeline review.\n\nDeal: ${p.company || p.title}\nStage: ${p.stage}\nValue: ${p.value ? '$' + p.value : 'n/a'}\nDays since activity: ${p.daysSince}\n\nRespond with ONLY:\n1. ACCOUNT STATUS — where we are with ${p.company || p.title} specifically, what's happened, key contacts\n2. NEXT MOVE — the single best action to progress this deal\n3. MARKET SIGNALS — any recent news or signals on this company\n4. DRAFT EMAIL — format with Subject: on its own line, then Dear [Name], body, Kind regards\n\nStay focused on ${p.company || p.title} ONLY. Senior sales voice, specific names and dates.`
   }
   if (sel.kind === 'signal') {
-    return `Brief me on this market signal: "${sel.title}". Entity: ${p.entity_name || 'unknown'}. Detail: "${p.detail || ''}". Give me: (1) what this actually means commercially, (2) whether we should act on it and how, (3) a draft outreach if there's an opening.`
+    return `SPONSORSHIP NEWS ANALYSIS — "${sel.title}"
+
+Entity: ${p.entity_name || 'unknown'}
+Detail: "${p.detail || ''}"
+
+Look up ${p.entity_name || 'this entity'} in our CRM and partnership matrix.
+
+Give me:
+1. WHAT HAPPENED — full breakdown of this announcement/deal
+2. COMMERCIAL IMPACT — what this means for Van Hawke's pipeline and competitive position
+3. ACTION REQUIRED — should we act on this, and if so, specific next step
+4. DRAFT OUTREACH — if there's an opportunity, a draft email to the relevant contact`
   }
   if (sel.kind === 'followup') {
     return `I need a re-engagement brief for ${p.recipient_name || p.recipient_email} at ${p.company || 'their company'}.\n\nOriginal email subject: "${p.subject || ''}"\nSent: ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : 'unknown'}\nFollow-up due: ${p.follow_up_due_at ? new Date(p.follow_up_due_at).toLocaleDateString('en-GB') : 'unknown'}\nStatus: ${p.status}\n\nGive me: (1) where we stand — check CRM for deal context, (2) why they haven't replied — psychological analysis, (3) recommended approach for the follow-up, (4) a DRAFT follow-up email — Subject: line, Dear [Name], body, Kind regards. Use a different angle from the original — don't just "check in."`
@@ -583,7 +594,6 @@ export default function OutreachIntelligence({ user }) {
         </div>
 
         {/* MASTER-DETAIL GRID — hidden when intel tab active */}
-        {mainTab !== 'intel' && (
         <div className="cc-grid">
           {/* LEFT: Grouped priority list */}
           <div className="cc-list">
@@ -776,31 +786,53 @@ export default function OutreachIntelligence({ user }) {
             </div>
 
             </>)}
-            {mainTab === '__hidden__' && (<>
-            {/* SIGNALS */}
+            {mainTab === 'intel' && (<>
+            {/* SPONSORSHIP NEWS with series sub-tabs */}
             <div className="cc-group">
               <div className="cc-group-h">
                 <h3><Zap size={10} />Sponsorship News</h3>
                 <span className="cc-group-count">{signals.length}</span>
               </div>
-              {signals.length === 0 ? (
-                <div className="cc-empty-row">No active signals</div>
-              ) : signals.slice(0, 8).map(s => (
-                <div
-                  key={s.id}
-                  className={`cc-row ${isSelected('signal', s.id) ? 'selected' : ''}`}
-                  onClick={() => selectSignal(s)}
-                >
-                  <div className="cc-row-icon purple"><Zap size={10} /></div>
-                  <div className="cc-row-body">
-                    <div className="cc-row-title">{cleanTitle(s.title)}</div>
-                    <div className="cc-row-meta">
-                      {s.entity_name && <>{s.entity_name} · </>}
-                      {relativeTime(s.created_at)}
+              <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', padding: '0 16px' }}>
+                {[
+                  { id: 'f1', label: 'F1', match: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bwilliams\b|\baston martin\b|\bkick sauber\b|\bracing bulls\b|\bcadillac\b/i },
+                  { id: 'fe', label: 'Formula E', match: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b|\bmahindra\b/i },
+                  { id: 'wec', label: 'WEC', match: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b/i },
+                  { id: 'motogp', label: 'MotoGP', match: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b/i },
+                  { id: 'all', label: 'All' },
+                ].map(tab => {
+                  const count = tab.id === 'all' ? signals.length : signals.filter(s => tab.match?.test(`${s.title} ${s.detail} ${s.entity_name}`)).length
+                  return (
+                    <button key={tab.id} onClick={() => setIntelTab(tab.id)} style={{
+                      padding: '8px 14px', fontSize: 12, fontWeight: intelTab === tab.id ? 600 : 400,
+                      color: intelTab === tab.id ? '#0A0A0A' : '#6B6B6B',
+                      borderBottom: intelTab === tab.id ? '2px solid #0A0A0A' : '2px solid transparent',
+                      background: 'none', border: 'none', borderBottomStyle: 'solid',
+                      cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
+                    }}>
+                      {tab.label} <span style={{ color: '#A0A0A0', marginLeft: 3 }}>{count}</span>
+                    </button>
+                  )
+                })}
+              </div>
+              {(() => {
+                const tabs = { f1: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bcadillac\b|\baston martin\b|\bwilliams\b/i, fe: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b|\bmahindra\b/i, wec: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b/i, motogp: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b/i }
+                const filtered = intelTab === 'all' ? signals : signals.filter(s => tabs[intelTab]?.test(`${s.title} ${s.detail} ${s.entity_name}`))
+                return filtered.length === 0 ? (
+                  <div className="cc-empty-row">No sponsorship news{intelTab !== 'all' ? ` for ${intelTab.toUpperCase()}` : ''} this week</div>
+                ) : filtered.slice(0, 15).map(s => (
+                  <div key={s.id} className={`cc-row ${isSelected('signal', s.id) ? 'selected' : ''}`} onClick={() => selectSignal(s)} style={{ cursor: 'pointer' }}>
+                    <div className="cc-row-icon purple"><Zap size={10} /></div>
+                    <div className="cc-row-body">
+                      <div className="cc-row-title">{cleanTitle(s.title)}</div>
+                      <div className="cc-row-meta">
+                        {s.entity_name && <>{s.entity_name} · </>}
+                        {relativeTime(s.created_at)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              })()}
             </div>
             </>)}
           </div>
@@ -956,58 +988,7 @@ export default function OutreachIntelligence({ user }) {
             )}
           </aside>
         </div>
-        )}
 
-        {/* SPONSORSHIP NEWS — full width, sub-tabs by series */}
-        {mainTab === 'intel' && (
-          <div className="cc-list" style={{ maxWidth: '100%', width: '100%' }}>
-            <div className="cc-group">
-              <div className="cc-group-h">
-                <h3><Zap size={10} />Sponsorship News</h3>
-                <span className="cc-group-count">{signals.length}</span>
-              </div>
-              <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', padding: '0 16px' }}>
-                {[
-                  { id: 'f1', label: 'Formula 1', match: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bwilliams\b|\baston martin\b|\bkick sauber\b|\bracing bulls\b|\bcadillac\b/i },
-                  { id: 'fe', label: 'Formula E', match: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b|\bmahindra\b|\bporsche fe\b|\bnissan\b|\benvision\b/i },
-                  { id: 'wec', label: 'WEC', match: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b|\bporsche penske\b|\btoyota gazoo\b/i },
-                  { id: 'motogp', label: 'MotoGP', match: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b|\byamaha\b|\bhonda hrc\b|\bktm\b/i },
-                  { id: 'all', label: 'All' },
-                ].map(tab => {
-                  const count = tab.id === 'all' ? signals.length : signals.filter(s => tab.match?.test(`${s.title} ${s.detail} ${s.entity_name}`)).length
-                  return (
-                    <button key={tab.id} onClick={() => setIntelTab(tab.id)} style={{
-                      padding: '8px 14px', fontSize: 12, fontWeight: intelTab === tab.id ? 600 : 400,
-                      color: intelTab === tab.id ? '#0A0A0A' : '#6B6B6B',
-                      borderBottom: intelTab === tab.id ? '2px solid #0A0A0A' : '2px solid transparent',
-                      background: 'none', border: 'none', borderBottomStyle: 'solid',
-                      cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
-                    }}>
-                      {tab.label} <span style={{ color: '#A0A0A0', marginLeft: 3 }}>{count}</span>
-                    </button>
-                  )
-                })}
-              </div>
-              {(() => {
-                const tabs = { f1: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bcadillac\b|\baston martin\b|\bwilliams\b/i, fe: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b|\bmahindra\b/i, wec: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b/i, motogp: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b/i }
-                const filtered = intelTab === 'all' ? signals : signals.filter(s => tabs[intelTab]?.test(`${s.title} ${s.detail} ${s.entity_name}`))
-                return filtered.length === 0 ? (
-                  <div className="cc-empty-row">No {intelTab === 'all' ? '' : intelTab.toUpperCase() + ' '}sponsorship news this week</div>
-                ) : filtered.slice(0, 15).map(s => (
-                  <div key={s.id} className="cc-row" onClick={() => selectSignal(s)} style={{ cursor: 'pointer' }}>
-                    <div className="cc-row-icon purple"><Zap size={10} /></div>
-                    <div className="cc-row-body">
-                      <div className="cc-row-title">{cleanTitle(s.title)}</div>
-                      <div className="cc-row-meta">
-                        {s.entity_name && <>{s.entity_name} · </>}
-                        {relativeTime(s.created_at)}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              })()}
-            </div>
-          </div>
         )}
       </div>
     </div>

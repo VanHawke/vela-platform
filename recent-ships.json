@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-06T16:15:10.081Z",
+  "generated_at": "2026-05-06T16:27:45.826Z",
   "commits": [
+    {
+      "hash": "6b074c6",
+      "subject": "Fix alerts, homepage pills, sponsorship news, HTML entities",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "3d1f8ef",
       "subject": "Fix reply brief: avoid 'brief' intent classification",
-      "when": "19 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "d896aad",
       "subject": "Fix reply brief: route through memory engine, not EA agent",
-      "when": "36 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "2977200",
       "subject": "Fix reply briefs: show actual reply content, not morning brief",
-      "when": "39 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "4e0767c",
       "subject": "Fix: detail panel body scrollable (flex:1 min-height:0)",
-      "when": "75 minutes ago"
+      "when": "87 minutes ago"
     },
     {
       "hash": "15d056d",
@@ -34,7 +39,7 @@
     {
       "hash": "70fd2e7",
       "subject": "UI: Rename sections + 50/50 panel split",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "b307fc5",
@@ -59,7 +64,7 @@
     {
       "hash": "f4ccdf9",
       "subject": "Command Centre redesign: tabbed layout matching approved mockup",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "72d4e46",
@@ -79,7 +84,7 @@
     {
       "hash": "cca8b7d",
       "subject": "OOO detection: Kiko now distinguishes auto-replies from genuine responses",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "e130952",
@@ -94,11 +99,6 @@
     {
       "hash": "00449d4",
       "subject": "FIX: Worker crash + email enrichment pipeline verified end-to-end",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "512d2a8",
-      "subject": "CRITICAL FIX: Block fake placeholder emails from campaign sends",
       "when": "6 hours ago"
     }
   ]
