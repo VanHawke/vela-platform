@@ -86,6 +86,7 @@
 }
 .cc-hot-card-channel.email { background: #EA4335; color: white; }
 .cc-hot-card-channel.linkedin { background: #0A66C2; color: white; }
+.cc-hot-card-channel.bounce { background: #DC2626; color: white; }
 .cc-hot-card-channel.reply { background: rgba(125,138,100,0.18); color: var(--sage); }
 .cc-hot-card-from {
   flex: 1; min-width: 0;

@@ -199,6 +199,15 @@ export default async function handler(req, res) {
             status: 'bounced', bounce_detected_at: new Date().toISOString()
           }) });
           await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.queued`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
+          // Create alert so bounce shows in Command Centre
+          await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+            type: 'email_bounced',
+            severity: 'high',
+            title: `⚠️ Email bounced — ${enrollment.contact_name} (${enrollment.company})`,
+            detail: `Email to ${email} bounced (mailer-daemon). Campaign paused for this contact. Re-source a valid email address.`,
+            entity_name: enrollment.contact_name,
+            dismissed: false,
+          }) });
           bounces++;
         }
       } catch (err) { console.error(`[ReplyDetect] ❌ ${enrollment.company}:`, err.message); }

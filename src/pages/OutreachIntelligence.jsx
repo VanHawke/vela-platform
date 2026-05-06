@@ -286,7 +286,7 @@ export default function OutreachIntelligence({ user }) {
           .order('updated_at', { ascending: false }),
         supabase.from('kiko_alerts')
           .select('id, type, title, detail, entity_name, entity_id, metadata, created_at')
-          .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply,type.eq.email_reply_manual,type.eq.linkedin_connection_accepted,type.like.linkedin_connection%')
+          .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply,type.eq.email_reply_manual,type.eq.linkedin_connection_accepted,type.like.linkedin_connection%,type.eq.email_bounced')
           .gte('created_at', dayAgo)
           .order('created_at', { ascending: false })
           .limit(10),
@@ -492,8 +492,8 @@ export default function OutreachIntelligence({ user }) {
   }, [selected, user?.email])
 
   // Channel helpers for Hot Reply cards
-  const channelOf = (r) => r.type?.includes('linkedin') ? 'linkedin' : r.type?.includes('email') ? 'email' : 'reply'
-  const channelIcon = (ch) => ch === 'linkedin' ? <Linkedin size={11} /> : ch === 'email' ? <Mail size={11} /> : <MessageSquare size={11} />
+  const channelOf = (r) => r.type === 'email_bounced' ? 'bounce' : r.type?.includes('linkedin') ? 'linkedin' : r.type?.includes('email') ? 'email' : 'reply'
+  const channelIcon = (ch) => ch === 'linkedin' ? <Linkedin size={11} /> : ch === 'bounce' ? <AlertTriangle size={11} /> : ch === 'email' ? <Mail size={11} /> : <MessageSquare size={11} />
 
   // Select helpers — translate each row into a common 'selected' shape
   const selectReply = (r) => setSelected({
