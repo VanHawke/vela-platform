@@ -8,6 +8,30 @@ import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 export const config = { maxDuration: 30 };
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
 
+
+// === Out-of-Office Detection ===
+function isOutOfOffice(snippet) {
+  if (!snippet) return { isOOO: false };
+  const lower = snippet.toLowerCase();
+  const patterns = [
+    'out of office', 'out of the office', 'on leave', 'on vacation', 'on holiday',
+    'away from the office', 'away from my desk', 'currently out', 'currently away',
+    'auto-reply', 'auto reply', 'automatic reply', 'autoreply', 'automated response',
+    'will be back', 'will return', 'returning on', 'return to the office',
+    'limited access to email', 'with limited access', 'no access to email',
+    'i am out', 'i will be out', "i'm out", "i'm away", 'i am away',
+    'please contact', 'in my absence', 'until further notice',
+    'maternity leave', 'paternity leave', 'sabbatical',
+  ];
+  const isOOO = patterns.some(p => lower.includes(p));
+  if (!isOOO) return { isOOO: false };
+  // Try to extract return date
+  let returnDate = null;
+  const m = snippet.match(/(?:back|return|until|through)\s+(?:on\s+)?(\d{1,2}\s*(?:st|nd|rd|th)?\s*(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*(?:\s+\d{2,4})?)/i);
+  if (m) returnDate = m[1].trim();
+  return { isOOO: true, returnDate };
+}
+
 export default async function handler(req, res) {
   const __hbStart = Date.now();
   const __hbId = await cronHeartbeat('cron-sequence-reply-detect', 'started');
@@ -87,6 +111,31 @@ export default async function handler(req, res) {
           }).catch(() => {});
 
           // Reply detected — stop the sequence
+          // === Check if this is an out-of-office auto-reply ===
+          const ooo = isOutOfOffice(snippet);
+          if (ooo.isOOO) {
+            console.log(`[reply-detect] OOO detected for ${enrollment.contact_name}: ${snippet?.slice(0, 100)}`);
+            if (ooo.returnDate) {
+              try {
+                const returnMs = Date.parse(ooo.returnDate);
+                if (!isNaN(returnMs) && returnMs > Date.now()) {
+                  await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
+                    next_send_at: new Date(returnMs + 24 * 60 * 60 * 1000).toISOString()
+                  }) });
+                }
+              } catch {}
+            }
+            await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+              type: 'ooo_detected', severity: 'low',
+              title: `OOO: ${enrollment.contact_name} (${enrollment.company})`,
+              detail: `${enrollment.contact_name} is out of office. ${ooo.returnDate ? 'Returns: ' + ooo.returnDate + '.' : ''} Sequence continues. Snippet: ${(snippet || '').slice(0, 200)}`,
+              entity_type: 'contact', entity_name: enrollment.contact_name || email,
+              user_id: tokenUserId, created_at: new Date().toISOString()
+            }) });
+            oooCount++;
+            continue;
+          }
+
           await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
             status: 'replied', reply_detected_at: new Date().toISOString()
           }) });
