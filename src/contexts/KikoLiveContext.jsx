@@ -26,7 +26,8 @@ export function KikoLiveProvider({ children, user }) {
           .order('created_at', { ascending: false }).limit(50),
         supabase.from('kiko_alerts')
           .select('id', { count: 'exact', head: true })
-          .eq('dismissed', false),
+          .eq('dismissed', false)
+          .in('type', ['email_reply', 'email_reply_manual', 'linkedin_reply', 'linkedin_connection_accepted', 'reply_from_prospect', 'follow_up_overdue', 'ooo_detected']),
         supabase.from('tasks')
           .select('*')
           .order('updated_at', { ascending: false }).limit(80),

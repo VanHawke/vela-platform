@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-06T15:55:52.633Z",
+  "generated_at": "2026-05-06T16:15:10.081Z",
   "commits": [
+    {
+      "hash": "3d1f8ef",
+      "subject": "Fix reply brief: avoid 'brief' intent classification",
+      "when": "19 minutes ago"
+    },
     {
       "hash": "d896aad",
       "subject": "Fix reply brief: route through memory engine, not EA agent",
-      "when": "16 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "2977200",
       "subject": "Fix reply briefs: show actual reply content, not morning brief",
-      "when": "20 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "4e0767c",
       "subject": "Fix: detail panel body scrollable (flex:1 min-height:0)",
-      "when": "55 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "15d056d",
       "subject": "Interactive email drafter + scrollable detail panel",
-      "when": "78 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2453aef",
@@ -34,7 +39,7 @@
     {
       "hash": "b307fc5",
       "subject": "Command Centre: tabs above grid, matching approved render",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "51e7328",
@@ -59,12 +64,12 @@
     {
       "hash": "72d4e46",
       "subject": "ROLLBACK: Reverted Command Centre to pre-redesign state",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "dd35d1b",
       "subject": "Command Centre phase 2: Market Intelligence with F1/FE/WEC/MotoGP tabs",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "00a27bb",
@@ -79,12 +84,12 @@
     {
       "hash": "e130952",
       "subject": "FIX: Reply alerts now captured + error logged instead of silently swallowed",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "8793b85",
       "subject": "Gmail send tracking + follow-up alerts for all CRM contacts",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "00449d4",
@@ -94,11 +99,6 @@
     {
       "hash": "512d2a8",
       "subject": "CRITICAL FIX: Block fake placeholder emails from campaign sends",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "eaecf1d",
-      "subject": "CLEANUP: Remove all Vercel remnants + dead syncCookies endpoint",
       "when": "6 hours ago"
     }
   ]

@@ -1672,30 +1672,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; if (alertCount > 0) e.currentTarget.style.background = '#E8700A' }}
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-                  {alertCount || 0} alerts
+                  {alertCount || 0} {alertCount === 1 ? 'action needed' : 'actions needed'}
                 </button>}
-                {/* Dynamic chips — live data, up to 4 */}
-                {dynamicChips.slice(0, alertCount > 0 ? 3 : 4).map((c, i) => {
-                  const label = typeof c === 'string' ? c : c.label
-                  const prompt = typeof c === 'string' ? c : c.prompt
-                  const navTo = typeof c === 'string' ? null : c.navigate
-                  const truncLabel = label.length > 28 ? label.slice(0, 26) + '…' : label
-                  return (
-                  <button key={label + i} onClick={() => { if (navTo) navigate(navTo); handleSubmit(prompt) }} style={{
-                    padding: '6px 14px', borderRadius: 50,
-                    background: '#FFFFFF',
-                    border: '1px solid rgba(0,0,0,0.08)',
-                    color: '#0A0A0A',
-                    fontSize: 12, cursor: 'pointer', fontFamily: C.font, fontWeight: 450,
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)', whiteSpace: 'nowrap',
-                    overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, flexShrink: 1, minWidth: 0,
-                    transition: 'all 250ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  }}
-                    onMouseOver={e => { e.currentTarget.style.background = '#0A0A0A'; e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = '#0A0A0A'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-                    onMouseOut={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#0A0A0A'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
-                  >{truncLabel}</button>
-                  )
-                })}
+                {/* Dynamic chips removed — only alert pill shown */}
               </div>}
 
           {/* Bottom spacer — desktop only, mobile has prompt bar at bottom */}

@@ -268,9 +268,7 @@ export default function OutreachIntelligence({ user }) {
     try {
       const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      const signalTypes = isSuperAdmin
-        ? ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'promotion', 'prediction', 'self_discovery', 'proactive_intel', 'company_signal']
-        : ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'prediction', 'company_signal']
+      const signalTypes = ['partnership_detected', 'new_partnership', 'competitive_change', 'proactive_intel', 'company_signal']
       const [dealsRes, hotRes, signalRes, campaignRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at')
           .not('data->>status', 'in', '("won","lost")')
@@ -308,7 +306,11 @@ export default function OutreachIntelligence({ user }) {
         }
         return [...seen.values()].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       })())
-      setSignals(signalRes.data || [])
+      setSignals((signalRes.data || []).filter(s => {
+        const text = `${s.title} ${s.detail} ${s.entity_name}`.toLowerCase()
+        return /partner|sponsor|renew|deal|title.?partner|naming.?rights|category.?exclusive/i.test(text)
+          || s.type === 'partnership_detected' || s.type === 'new_partnership'
+      }))
       setCampaignActivity(campaignRes.data || [])
     } catch (err) {
       console.error('[CommandCentre] load', err)
@@ -552,7 +554,7 @@ export default function OutreachIntelligence({ user }) {
                     </div>
                     {r.detail && r.detail.includes('Snippet:') && (
                       <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 3, fontStyle: 'italic', lineHeight: 1.4 }}>
-                        "{r.detail.split('Snippet:')[1]?.trim().slice(0, 120)}…"
+                        "{(() => { const el = document.createElement('div'); el.innerHTML = r.detail.split('Snippet:')[1]?.trim().slice(0, 120); return el.textContent })()}…"
                       </div>
                     )}
                   </div>
