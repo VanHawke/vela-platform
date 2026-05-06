@@ -191,7 +191,20 @@ function buildBriefPrompt(sel) {
   const titleParts = (sel?.title || '').split(/\s*[—–-]\s*/)
   const titleSuffix = titleParts.length > 1 ? titleParts[titleParts.length - 1].trim() : null
   if (sel.kind === 'reply') {
-    return `Brief me on this reply from ${p.entity_name || 'prospect'}. Subject/title: "${sel.title}". Detail: "${p.detail || ''}". Arrived ${relativeTime(p.created_at)}. Give me: (1) where we stand with this account, (2) what needs to happen next, (3) a drafted reply — format with Subject: on its own line, then Dear [Name], body, Kind regards. Keep it tight — senior sales leader voice.`
+    const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
+    return `Brief me on this reply from ${p.entity_name || 'prospect'}.
+
+THEIR REPLY: "${snippet}"
+
+Subject: "${sel.title}". Arrived ${relativeTime(p.created_at)}.
+
+Give me:
+1. WHAT THEY SAID — summarise the key points of their reply, what their position is
+2. WHERE WE STAND — context on this account relationship based on CRM data
+3. RECOMMENDED NEXT MOVE — specific, actionable next step
+4. DRAFT REPLY — format with Subject: on its own line, then Dear [Name], body, Kind regards
+
+Senior sales leader voice. Be specific with names and dates.`
   }
   if (sel.kind === 'task') {
     const d = p.data || {}
@@ -264,7 +277,7 @@ export default function OutreachIntelligence({ user }) {
           .order('updated_at', { ascending: false }),
         supabase.from('kiko_alerts')
           .select('id, type, title, detail, entity_name, entity_id, metadata, created_at')
-          .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply,type.eq.linkedin_connection_accepted,type.like.linkedin_connection%')
+          .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply,type.eq.email_reply_manual,type.eq.linkedin_connection_accepted,type.like.linkedin_connection%')
           .gte('created_at', dayAgo)
           .order('created_at', { ascending: false })
           .limit(10),
@@ -282,7 +295,19 @@ export default function OutreachIntelligence({ user }) {
           .limit(15),
       ])
       setDeals(dealsRes.data || [])
-      setHotReplies(hotRes.data || [])
+      setHotReplies((() => {
+        const raw = hotRes.data || []
+        // Deduplicate: prefer email_reply_manual (has snippet) over email_reply (no snippet) for same entity
+        const seen = new Map()
+        for (const r of raw) {
+          const key = (r.entity_name || '').toLowerCase()
+          const existing = seen.get(key)
+          if (!existing || (r.type === 'email_reply_manual' && existing.type !== 'email_reply_manual')) {
+            seen.set(key, r)
+          }
+        }
+        return [...seen.values()].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      })())
       setSignals(signalRes.data || [])
       setCampaignActivity(campaignRes.data || [])
     } catch (err) {
@@ -404,7 +429,7 @@ export default function OutreachIntelligence({ user }) {
           body: JSON.stringify({
             message: enriched,
             userEmail: user?.email || 'sunny@vanhawke.com',
-            currentPage: 'home',
+            currentPage: 'command-centre',
             pageContext: { selectedItem: selected },
           }),
           signal: controller.signal,
@@ -525,6 +550,11 @@ export default function OutreachIntelligence({ user }) {
                       {r.type?.includes('connection') && <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: 4, background: 'rgba(6,214,160,0.12)', color: '#06a87d', fontSize: 10, fontWeight: 600, marginRight: 6, verticalAlign: 'middle' }}>CONNECTED</span>}
                       {r.title || '(no subject)'}
                     </div>
+                    {r.detail && r.detail.includes('Snippet:') && (
+                      <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 3, fontStyle: 'italic', lineHeight: 1.4 }}>
+                        "{r.detail.split('Snippet:')[1]?.trim().slice(0, 120)}…"
+                      </div>
+                    )}
                   </div>
                 )
               })}

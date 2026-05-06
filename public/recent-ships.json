@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-06T14:53:32.306Z",
+  "generated_at": "2026-05-06T15:21:43.851Z",
   "commits": [
+    {
+      "hash": "4e0767c",
+      "subject": "Fix: detail panel body scrollable (flex:1 min-height:0)",
+      "when": "21 minutes ago"
+    },
     {
       "hash": "15d056d",
       "subject": "Interactive email drafter + scrollable detail panel",
-      "when": "15 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "2453aef",
       "subject": "Alert pill links to CC + KikoInsights sidebar removed + Sponsorship News sub-tabs",
-      "when": "38 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "70fd2e7",
       "subject": "UI: Rename sections + 50/50 panel split",
-      "when": "65 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b307fc5",
       "subject": "Command Centre: tabs above grid, matching approved render",
-      "when": "77 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "51e7328",
       "subject": "Command Centre: simple tabbed layout using existing styles",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "826fda2",
@@ -44,12 +49,12 @@
     {
       "hash": "72d4e46",
       "subject": "ROLLBACK: Reverted Command Centre to pre-redesign state",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "dd35d1b",
       "subject": "Command Centre phase 2: Market Intelligence with F1/FE/WEC/MotoGP tabs",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "00a27bb",
@@ -64,12 +69,12 @@
     {
       "hash": "e130952",
       "subject": "FIX: Reply alerts now captured + error logged instead of silently swallowed",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "8793b85",
       "subject": "Gmail send tracking + follow-up alerts for all CRM contacts",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "00449d4",
@@ -79,7 +84,7 @@
     {
       "hash": "512d2a8",
       "subject": "CRITICAL FIX: Block fake placeholder emails from campaign sends",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "eaecf1d",
@@ -89,16 +94,11 @@
     {
       "hash": "906cb34",
       "subject": "FIX: Intent classifier company lookup false positives + email alias recursion",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "c3bea4a",
       "subject": "Full system audit + cleanup",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "2385538",
-      "subject": "VERCEL → HETZNER MIGRATION COMPLETE",
       "when": "7 hours ago"
     }
   ]
