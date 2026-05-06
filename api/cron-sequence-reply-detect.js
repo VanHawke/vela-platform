@@ -4,7 +4,35 @@
 // STANDALONE — if this fails, sequences just keep running (safe default).
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
-import { apolloFindEmail } from '../lib/emailIntel.js';
+import { apolloFindEmail, apolloSearchPeople } from '../lib/emailIntel.js';
+
+// Hunter domain search fallback — finds alternative contacts when Apollo fails
+const HUNTER_KEY = '404535bb1e247b82992209e153cd2b2fe3eacde6';
+async function hunterFallback(domain) {
+  try {
+    const res = await fetch(`https://api.hunter.io/v2/domain-search?domain=${encodeURIComponent(domain)}&limit=5&api_key=${HUNTER_KEY}`);
+    const data = await res.json();
+    const emails = data?.data?.emails || [];
+    const ranked = emails.sort((a, b) => {
+      const score = (e) => {
+        const t = ((e.position || '') + ' ' + (e.department || '')).toLowerCase();
+        if (/cmo|chief market/i.test(t)) return 10;
+        if (/vp.*market|vice.*president.*market/i.test(t)) return 9;
+        if (/head.*market|director.*market/i.test(t)) return 8;
+        if (/vp.*sale|vp.*revenue|vp.*growth/i.test(t)) return 7;
+        if (/director.*sale|director.*revenue/i.test(t)) return 6;
+        if (/vp|vice president/i.test(t)) return 5;
+        if (/director/i.test(t)) return 4;
+        return 1;
+      };
+      return score(b) - score(a);
+    });
+    if (ranked[0]?.value && ranked[0]?.first_name) {
+      return { email: ranked[0].value, name: `${ranked[0].first_name} ${ranked[0].last_name || ''}`.trim(), title: ranked[0].position || '' };
+    }
+  } catch (e) { console.error('[ReplyDetect] Hunter fallback error:', e.message); }
+  return null;
+}
 
 export const config = { maxDuration: 30 };
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
@@ -236,7 +264,51 @@ export default async function handler(req, res) {
                 }
                 console.log(`[ReplyDetect] ♻️ Re-queued ${(pendingSteps || []).length} steps for ${enrollment.contact_name}`);
               } else {
-                console.log(`[ReplyDetect] ❌ No alternative email found for ${enrollment.contact_name}`);
+                // No replacement email found — Kiko decides next action autonomously
+                console.log(`[ReplyDetect] ❌ No alternative email for ${enrollment.contact_name}. Deciding next action...`);
+                
+                // Decision 1: Has LinkedIn? Switch to LinkedIn-only outreach (free)
+                if (enrollment.linkedin_url) {
+                  console.log(`[ReplyDetect] 🔗 Switching ${enrollment.contact_name} to LinkedIn-only`);
+                  // Convert remaining queued email steps to LinkedIn messages
+                  const emailSteps = await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.cancelled&channel=eq.email&select=id,step_number&limit=5`);
+                  for (const step of (emailSteps || [])) {
+                    await sbFetch(`kiko_outreach_queue?id=eq.${step.id}`, { method: 'PATCH', body: JSON.stringify({ 
+                      status: 'queued', channel: 'linkedin', action: 'message',
+                    }) });
+                  }
+                  await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
+                    status: 'active', bounce_detected_at: null,
+                  }) });
+                  console.log(`[ReplyDetect] ✅ ${enrollment.contact_name} reactivated via LinkedIn (${(emailSteps || []).length} steps converted)`);
+                } else {
+                  // Decision 2: No LinkedIn, no email — find alternative contact at same company
+                  console.log(`[ReplyDetect] 🔍 No LinkedIn for ${enrollment.contact_name}. Searching for alternative contact at ${enrollment.company}...`);
+                  try {
+                    // Try Apollo first, then fall back to Hunter (which has a working API key)
+                    let altPeople = await apolloSearchPeople(enrollment.company);
+                    let alt = altPeople?.[0];
+                    if (!alt?.email) {
+                      console.log(`[ReplyDetect] Apollo search failed. Trying Hunter domain search...`);
+                      const hunterResult = await hunterFallback(domain);
+                      if (hunterResult) alt = { name: hunterResult.name, email: hunterResult.email, title: hunterResult.title };
+                    }
+                    if (alt?.email) {
+                      console.log(`[ReplyDetect] 👤 Found alternative: ${alt.name} (${alt.title || '?'}) — ${alt.email}`);
+                      await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
+                        status: 'active', contact_name: alt.name, contact_email: alt.email,
+                        linkedin_url: alt.linkedin_url || null, bounce_detected_at: null,
+                      }) });
+                      const cancelledSteps = await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.cancelled&select=id&limit=5`);
+                      for (const step of (cancelledSteps || [])) {
+                        await sbFetch(`kiko_outreach_queue?id=eq.${step.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'queued', to_email: alt.email, to_name: alt.name }) });
+                      }
+                      console.log(`[ReplyDetect] ✅ Replaced ${enrollment.contact_name} → ${alt.name} at ${enrollment.company}`);
+                    } else {
+                      console.log(`[ReplyDetect] 💀 No alternatives found at ${enrollment.company}. Stays bounced.`);
+                    }
+                  } catch (altErr) { console.error(`[ReplyDetect] Alt search failed:`, altErr.message); }
+                }
               }
             }
           } catch (enrichErr) { console.error(`[ReplyDetect] Re-enrich failed:`, enrichErr.message); }
