@@ -208,9 +208,13 @@ export async function classifyIntent(message, currentPage = 'home', conversation
     const captured = (m[2] || m[1] || '').trim();
     // Reject self-referential or meta-CRM queries
     if (!captured) continue;
-    if (/^(yourself|me|us|kiko|my|the )/i.test(captured)) continue;
+    if (/^(yourself|your |you |me|us|our |kiko|my |the |a |an |this |that |it |how |why |when |where |what )/i.test(captured)) continue;
     if (/^(pipeline|deals|contacts|inbox|calendar|tasks|sequences|campaigns|partnerships|alerts)\b/i.test(captured)) continue;
     if (captured.length < 2 || captured.length > 80) continue;
+    // Reject if captured text contains question words (not a company name)
+    if (/\b(when|where|why|how|should|would|could|do you|does|about|mandatory|objective|process|format|rule|approach|strategy|best|which|necessary|required|important)\b/i.test(captured)) continue;
+    // Reject if too many words (company names are typically 1-5 words)
+    if (captured.split(/\s+/).length > 6) continue;
     return { intent: 'company_lookup', target: captured };
   }
 
