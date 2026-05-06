@@ -226,6 +226,7 @@ export default function OutreachIntelligence({ user }) {
   const [signals, setSignals] = useState([])
   const [campaignActivity, setCampaignActivity] = useState([])
   const [mainTab, setMainTab] = useState('followups')
+  const [intelTab, setIntelTab] = useState('f1')
   const [taskFilter, setTaskFilter] = useState('overdue')
   const [showNewTask, setShowNewTask] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
@@ -858,7 +859,7 @@ export default function OutreachIntelligence({ user }) {
         </div>
         )}
 
-        {/* MARKET INTELLIGENCE — full width, no split panel */}
+        {/* SPONSORSHIP NEWS — full width, sub-tabs by series */}
         {mainTab === 'intel' && (
           <div className="cc-list" style={{ maxWidth: '100%', width: '100%' }}>
             <div className="cc-group">
@@ -866,20 +867,46 @@ export default function OutreachIntelligence({ user }) {
                 <h3><Zap size={10} />Sponsorship News</h3>
                 <span className="cc-group-count">{signals.length}</span>
               </div>
-              {signals.length === 0 ? (
-                <div className="cc-empty-row">No active signals</div>
-              ) : signals.slice(0, 12).map(s => (
-                <div key={s.id} className="cc-row" onClick={() => selectSignal(s)} style={{ cursor: 'pointer' }}>
-                  <div className="cc-row-icon purple"><Zap size={10} /></div>
-                  <div className="cc-row-body">
-                    <div className="cc-row-title">{cleanTitle(s.title)}</div>
-                    <div className="cc-row-meta">
-                      {s.entity_name && <>{s.entity_name} · </>}
-                      {relativeTime(s.created_at)}
+              <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', padding: '0 16px' }}>
+                {[
+                  { id: 'f1', label: 'Formula 1', match: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bwilliams\b|\baston martin\b|\bkick sauber\b|\bracing bulls\b|\bcadillac\b/i },
+                  { id: 'fe', label: 'Formula E', match: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b|\bmahindra\b|\bporsche fe\b|\bnissan\b|\benvision\b/i },
+                  { id: 'wec', label: 'WEC', match: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b|\bporsche penske\b|\btoyota gazoo\b/i },
+                  { id: 'motogp', label: 'MotoGP', match: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b|\byamaha\b|\bhonda hrc\b|\bktm\b/i },
+                  { id: 'all', label: 'All' },
+                ].map(tab => {
+                  const count = tab.id === 'all' ? signals.length : signals.filter(s => tab.match?.test(`${s.title} ${s.detail} ${s.entity_name}`)).length
+                  return (
+                    <button key={tab.id} onClick={() => setIntelTab(tab.id)} style={{
+                      padding: '8px 14px', fontSize: 12, fontWeight: intelTab === tab.id ? 600 : 400,
+                      color: intelTab === tab.id ? '#0A0A0A' : '#6B6B6B',
+                      borderBottom: intelTab === tab.id ? '2px solid #0A0A0A' : '2px solid transparent',
+                      background: 'none', border: 'none', borderBottomStyle: 'solid',
+                      cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
+                    }}>
+                      {tab.label} <span style={{ color: '#A0A0A0', marginLeft: 3 }}>{count}</span>
+                    </button>
+                  )
+                })}
+              </div>
+              {(() => {
+                const tabs = { f1: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bcadillac\b|\baston martin\b|\bwilliams\b/i, fe: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b|\bmahindra\b/i, wec: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b/i, motogp: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b/i }
+                const filtered = intelTab === 'all' ? signals : signals.filter(s => tabs[intelTab]?.test(`${s.title} ${s.detail} ${s.entity_name}`))
+                return filtered.length === 0 ? (
+                  <div className="cc-empty-row">No {intelTab === 'all' ? '' : intelTab.toUpperCase() + ' '}sponsorship news this week</div>
+                ) : filtered.slice(0, 15).map(s => (
+                  <div key={s.id} className="cc-row" onClick={() => selectSignal(s)} style={{ cursor: 'pointer' }}>
+                    <div className="cc-row-icon purple"><Zap size={10} /></div>
+                    <div className="cc-row-body">
+                      <div className="cc-row-title">{cleanTitle(s.title)}</div>
+                      <div className="cc-row-meta">
+                        {s.entity_name && <>{s.entity_name} · </>}
+                        {relativeTime(s.created_at)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              })()}
             </div>
           </div>
         )}

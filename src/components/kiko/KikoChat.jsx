@@ -1656,7 +1656,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 flexWrap: 'nowrap',
               }}>
                 {/* Alerts pill — only visible when there are alerts */}
-                {alertCount > 0 && <button onClick={() => setInsightsOpen(true)} style={{
+                {alertCount > 0 && <button onClick={() => window.location.href = '/command-centre'} style={{
                   padding: '6px 14px', borderRadius: 50,
                   background: alertCount > 0 ? '#E8700A' : 'rgba(184,100,62,0.10)',
                   border: alertCount > 0 ? '1px solid #E8700A' : '1px solid rgba(184,100,62,0.20)',
@@ -1706,7 +1706,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} onMessage={handleVoiceMessage} micStream={voiceMicStream} />}
 
         {/* Notifications panel — slides from right */}
-        <KikoInsights open={insightsOpen} onClose={() => setInsightsOpen(false)} onAction={(text) => { setInsightsOpen(false); handleSubmit(text) }} />
+        {/* KikoInsights sidebar removed — alerts now link to Command Centre */}
 
         {/* Mobile prompt bar — pinned to bottom, outside centered content */}
         {isMobile && !voiceActive && (

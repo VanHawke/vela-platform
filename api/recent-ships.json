@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-05-06T13:48:03.164Z",
+  "generated_at": "2026-05-06T14:13:36.745Z",
   "commits": [
+    {
+      "hash": "70fd2e7",
+      "subject": "UI: Rename sections + 50/50 panel split",
+      "when": "25 minutes ago"
+    },
     {
       "hash": "b307fc5",
       "subject": "Command Centre: tabs above grid, matching approved render",
-      "when": "11 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "51e7328",
       "subject": "Command Centre: simple tabbed layout using existing styles",
-      "when": "24 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "826fda2",
       "subject": "ROLLBACK: Restored original Command Centre",
-      "when": "37 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "dd492f9",
       "subject": "Fix Campaign Activity: only show real engagement (replies, OOO, LinkedIn)",
-      "when": "42 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "f4ccdf9",
       "subject": "Command Centre redesign: tabbed layout matching approved mockup",
-      "when": "53 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "72d4e46",
       "subject": "ROLLBACK: Reverted Command Centre to pre-redesign state",
-      "when": "65 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "dd35d1b",
       "subject": "Command Centre phase 2: Market Intelligence with F1/FE/WEC/MotoGP tabs",
-      "when": "76 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "00a27bb",
       "subject": "Command Centre redesign phase 1: Campaign Activity + Follow-ups prioritised",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "cca8b7d",
@@ -54,7 +59,7 @@
     {
       "hash": "8793b85",
       "subject": "Gmail send tracking + follow-up alerts for all CRM contacts",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "00449d4",
@@ -64,7 +69,7 @@
     {
       "hash": "512d2a8",
       "subject": "CRITICAL FIX: Block fake placeholder emails from campaign sends",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "eaecf1d",
@@ -74,17 +79,17 @@
     {
       "hash": "906cb34",
       "subject": "FIX: Intent classifier company lookup false positives + email alias recursion",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "c3bea4a",
       "subject": "Full system audit + cleanup",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "2385538",
       "subject": "VERCEL → HETZNER MIGRATION COMPLETE",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "137c058",
@@ -94,11 +99,6 @@
     {
       "hash": "192e270",
       "subject": "MULTI-STEP CAMPAIGN ENGINE: Research → Plan → Write → Review",
-      "when": "9 days ago"
-    },
-    {
-      "hash": "5eec980",
-      "subject": "Campaign intelligence v4: objective-first + no hardcoded GP dates",
       "when": "9 days ago"
     }
   ]
