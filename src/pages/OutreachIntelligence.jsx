@@ -493,7 +493,7 @@ export default function OutreachIntelligence({ user }) {
         {/* HOT REPLIES BAND */}
         <div className="cc-hot-band">
           <div className="cc-hot-h">
-            <h3><MessageSquare size={13} /> Replies & connections</h3>
+            <h3><MessageSquare size={13} /> Alerts — Immediate Action</h3>
             {hotReplies.length > 0 && <span className="cc-hot-h-count">{hotReplies.length} new</span>}
             <span className="cc-hot-h-meta">last 24h</span>
           </div>
@@ -533,7 +533,7 @@ export default function OutreachIntelligence({ user }) {
             { id: 'followups', label: 'Follow-ups' },
             { id: 'campaign', label: 'Campaign Activity' },
             { id: 'stale', label: 'Stale Deals' },
-            { id: 'intel', label: 'Market Intelligence' },
+            { id: 'intel', label: 'Sponsorship News' },
           ].map(t => (
             <button key={t.id} onClick={() => { setMainTab(t.id); setSelected(null) }} style={{
               padding: '10px 18px', fontSize: 13, fontWeight: mainTab === t.id ? 600 : 400,
@@ -743,7 +743,7 @@ export default function OutreachIntelligence({ user }) {
             {/* SIGNALS */}
             <div className="cc-group">
               <div className="cc-group-h">
-                <h3><Zap size={10} />Market signals</h3>
+                <h3><Zap size={10} />Sponsorship News</h3>
                 <span className="cc-group-count">{signals.length}</span>
               </div>
               {signals.length === 0 ? (
@@ -863,7 +863,7 @@ export default function OutreachIntelligence({ user }) {
           <div className="cc-list" style={{ maxWidth: '100%', width: '100%' }}>
             <div className="cc-group">
               <div className="cc-group-h">
-                <h3><Zap size={10} />Market Intelligence</h3>
+                <h3><Zap size={10} />Sponsorship News</h3>
                 <span className="cc-group-count">{signals.length}</span>
               </div>
               {signals.length === 0 ? (

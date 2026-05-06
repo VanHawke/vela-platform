@@ -103,7 +103,7 @@
 /* ── MASTER-DETAIL GRID ── */
 .cc-grid {
   display: grid;
-  grid-template-columns: 440px 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 14px;
   align-items: flex-start;
 }

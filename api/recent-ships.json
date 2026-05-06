@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-05-06T13:34:54.787Z",
+  "generated_at": "2026-05-06T13:48:03.164Z",
   "commits": [
+    {
+      "hash": "b307fc5",
+      "subject": "Command Centre: tabs above grid, matching approved render",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "51e7328",
       "subject": "Command Centre: simple tabbed layout using existing styles",
-      "when": "10 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "826fda2",
       "subject": "ROLLBACK: Restored original Command Centre",
-      "when": "24 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "dd492f9",
       "subject": "Fix Campaign Activity: only show real engagement (replies, OOO, LinkedIn)",
-      "when": "29 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "f4ccdf9",
       "subject": "Command Centre redesign: tabbed layout matching approved mockup",
-      "when": "39 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "72d4e46",
       "subject": "ROLLBACK: Reverted Command Centre to pre-redesign state",
-      "when": "52 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "dd35d1b",
       "subject": "Command Centre phase 2: Market Intelligence with F1/FE/WEC/MotoGP tabs",
-      "when": "63 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "00a27bb",
       "subject": "Command Centre redesign phase 1: Campaign Activity + Follow-ups prioritised",
-      "when": "72 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "cca8b7d",
@@ -94,11 +99,6 @@
     {
       "hash": "5eec980",
       "subject": "Campaign intelligence v4: objective-first + no hardcoded GP dates",
-      "when": "9 days ago"
-    },
-    {
-      "hash": "47886b1",
-      "subject": "Campaign v4: race calendar timing + language clarity fixes",
       "when": "9 days ago"
     }
   ]
