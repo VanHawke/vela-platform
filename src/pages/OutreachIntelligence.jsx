@@ -225,9 +225,6 @@ export default function OutreachIntelligence({ user }) {
   const [hotReplies, setHotReplies] = useState([])
   const [signals, setSignals] = useState([])
   const [campaignActivity, setCampaignActivity] = useState([])
-  const [campaignEvents, setCampaignEvents] = useState([])
-  const [mainTab, setMainTab] = useState('followups')
-  const [intelTab, setIntelTab] = useState('f1')
   const [taskFilter, setTaskFilter] = useState('overdue')
   const [showNewTask, setShowNewTask] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
@@ -255,7 +252,7 @@ export default function OutreachIntelligence({ user }) {
       const signalTypes = isSuperAdmin
         ? ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'promotion', 'prediction', 'self_discovery', 'proactive_intel', 'company_signal']
         : ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'prediction', 'company_signal']
-      const [dealsRes, hotRes, signalRes, campaignRes, eventsRes, engagementRes] = await Promise.all([
+      const [dealsRes, hotRes, signalRes, campaignRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at')
           .not('data->>status', 'in', '("won","lost")')
           .order('updated_at', { ascending: false }),
@@ -277,36 +274,11 @@ export default function OutreachIntelligence({ user }) {
           .eq('status', 'active')
           .order('next_send_at', { ascending: true })
           .limit(15),
-        supabase.from('kiko_outreach_queue')
-          .select('id, to_name, to_email, company, subject, status, opened_at, clicked_at, reply_snippet, sent_at')
-          .eq('status', 'sent')
-          .gte('sent_at', new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString())
-          .order('sent_at', { ascending: false })
-          .limit(30),
-        // Also fetch campaign replies and LinkedIn responses (wider window for real engagement)
-        supabase.from('kiko_alerts')
-          .select('id, type, title, detail, entity_name, entity_id, metadata, created_at')
-          .or('type.eq.reply_from_prospect,type.eq.ooo_detected,type.eq.linkedin_connection_accepted,type.eq.email_reply_manual')
-          .gte('created_at', weekAgo)
-          .order('created_at', { ascending: false })
-          .limit(20),
       ])
       setDeals(dealsRes.data || [])
       setHotReplies(hotRes.data || [])
       setSignals(signalRes.data || [])
       setCampaignActivity(campaignRes.data || [])
-      // Campaign events = real engagement only: replies, OOO, LinkedIn responses
-      const oooFromQueue = (eventsRes.data || []).filter(e => {
-        const lower = (e.reply_snippet || '').toLowerCase()
-        return lower.match(/out of office|on leave|auto.?reply|will be back|currently (out|away)/)
-      }).map(e => ({ ...e, eventType: 'ooo', name: e.to_name, company: e.company }))
-      const repliesFromQueue = (eventsRes.data || []).filter(e => e.reply_snippet && !oooFromQueue.find(o => o.id === e.id))
-        .map(e => ({ ...e, eventType: 'reply', name: e.to_name, company: e.company }))
-      const engagementAlerts = (engagementRes.data || []).map(a => ({
-        id: a.id, eventType: a.type === 'ooo_detected' ? 'ooo' : a.type === 'linkedin_connection_accepted' ? 'linkedin' : 'reply',
-        name: a.entity_name, company: '', title: a.title, detail: a.detail, created_at: a.created_at,
-      }))
-      setCampaignEvents([...repliesFromQueue, ...oooFromQueue, ...engagementAlerts])
     } catch (err) {
       console.error('[CommandCentre] load', err)
     }
@@ -558,62 +530,6 @@ export default function OutreachIntelligence({ user }) {
         <div className="cc-grid">
           {/* LEFT: Grouped priority list */}
           <div className="cc-list">
-            {/* MAIN SECTION TABS */}
-            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.08)', marginBottom: 10 }}>
-              {[
-                { id: 'followups', label: 'Follow-ups', count: followUps.length + overdueTasks.length },
-                { id: 'campaign', label: 'Campaign Activity', count: campaignEvents.length + campaignActivity.length },
-                { id: 'stale', label: 'Stale Deals', count: staleDeals.length },
-                { id: 'intel', label: 'Market Intelligence', count: signals.length },
-              ].map(t => (
-                <button key={t.id} onClick={() => { setMainTab(t.id); setSelected(null) }} style={{
-                  padding: '8px 14px', fontSize: 12, fontWeight: mainTab === t.id ? 600 : 400,
-                  color: mainTab === t.id ? '#0A0A0A' : '#6B6B6B',
-                  borderBottom: mainTab === t.id ? '2px solid #0A0A0A' : '2px solid transparent',
-                  background: 'none', border: 'none', borderBottomStyle: 'solid',
-                  cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
-                }}>
-                  {t.label} <span style={{ color: '#A0A0A0', marginLeft: 3 }}>{t.count}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* ═══ FOLLOW-UPS TAB ═══ */}
-            {mainTab === 'followups' && (<>
-
-            {/* FOLLOW-UP TRACKER */}
-            {followUps.length > 0 && (
-              <div className="cc-group">
-                <div className="cc-group-h">
-                  <h3><Send size={10} />Awaiting replies</h3>
-                  <span className="cc-group-count">{followUps.length}</span>
-                </div>
-                {followUps.map(fu => {
-                  const isOverdue = fu.follow_up_due_at && new Date(fu.follow_up_due_at) < new Date()
-                  return (
-                    <div
-                      key={fu.id}
-                      className={`cc-row ${isSelected('followup', fu.id) ? 'selected' : ''}`}
-                      onClick={() => selectFollowUp(fu)}
-                    >
-                      <button className="cc-row-icon sage" onClick={e => markFollowUpDone(fu, e)} title="Mark done">
-                        <CheckSquare size={10} />
-                      </button>
-                      <div className="cc-row-body">
-                        <div className="cc-row-title">{fu.recipient_name || fu.recipient_email}</div>
-                        <div className="cc-row-meta">
-                          {fu.company && <>{fu.company} · </>}
-                          {fu.subject && <>{fu.subject.slice(0, 40)} · </>}
-                          {dueLabel(fu.follow_up_due_at)}
-                          {isOverdue && <span className="cc-row-tag overdue">OVERDUE</span>}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
             {/* TASK FILTER TABS */}
             <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', marginBottom: 8, alignItems: 'center' }}>
               {[
@@ -681,10 +597,6 @@ export default function OutreachIntelligence({ user }) {
               })()}
             </div>
 
-            </>)}
-
-            {/* ═══ STALE DEALS TAB ═══ */}
-            {mainTab === 'stale' && (<>
             {/* STALE DEALS */}
             <div className="cc-group">
               <div className="cc-group-h">
@@ -710,33 +622,32 @@ export default function OutreachIntelligence({ user }) {
               ))}
             </div>
 
-            </>)}
-
-            {/* ═══ CAMPAIGN TAB ═══ */}
-            {mainTab === 'campaign' && (<>
-            {/* CAMPAIGN EVENTS — opens, clicks, OOO */}
-            {campaignEvents.length > 0 && (
+            {/* FOLLOW-UP TRACKER */}
+            {followUps.length > 0 && (
               <div className="cc-group">
                 <div className="cc-group-h">
-                  <h3><Mail size={10} />Recent Engagement</h3>
-                  <span className="cc-group-count">{campaignEvents.length}</span>
+                  <h3><Send size={10} />Awaiting replies</h3>
+                  <span className="cc-group-count">{followUps.length}</span>
                 </div>
-                {campaignEvents.map(e => {
-                  const badge = e.eventType === 'clicked' ? { bg: 'rgba(16,185,129,0.08)', color: '#059669', label: 'CLICKED' }
-                    : e.eventType === 'reply' ? { bg: 'rgba(16,185,129,0.08)', color: '#059669', label: 'REPLIED' }
-                    : e.eventType === 'linkedin' ? { bg: 'rgba(99,102,241,0.08)', color: '#6366f1', label: 'LINKEDIN' }
-                    : e.eventType === 'opened' ? { bg: 'rgba(245,158,11,0.08)', color: '#d97706', label: 'OPENED' }
-                    : { bg: 'rgba(245,158,11,0.12)', color: '#b45309', label: 'OOO' }
+                {followUps.map(fu => {
+                  const isOverdue = fu.follow_up_due_at && new Date(fu.follow_up_due_at) < new Date()
                   return (
-                    <div key={e.id} className={`cc-row ${isSelected('campaign_event', e.id) ? 'selected' : ''}`}
-                      onClick={() => setSelected({ kind: 'campaign', id: e.id, title: `${e.name || e.to_name || e.entity_name || 'Unknown'} — ${e.company || ''}`, meta: `${e.title || e.subject || ''} · ${badge.label} · ${relativeTime(e.created_at || e.opened_at || e.sent_at)}`, payload: { ...e, contact_name: e.name || e.to_name || e.entity_name } })}>
-                      <div className="cc-row-icon purple"><Mail size={10} /></div>
+                    <div
+                      key={fu.id}
+                      className={`cc-row ${isSelected('followup', fu.id) ? 'selected' : ''}`}
+                      onClick={() => selectFollowUp(fu)}
+                    >
+                      <button className="cc-row-icon sage" onClick={e => markFollowUpDone(fu, e)} title="Mark done">
+                        <CheckSquare size={10} />
+                      </button>
                       <div className="cc-row-body">
-                        <div className="cc-row-title">
-                          <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: 4, background: badge.bg, color: badge.color, fontSize: 9, fontWeight: 600, marginRight: 6, verticalAlign: 'middle' }}>{badge.label}</span>
-                          {e.name || e.to_name || e.entity_name || 'Unknown'}
+                        <div className="cc-row-title">{fu.recipient_name || fu.recipient_email}</div>
+                        <div className="cc-row-meta">
+                          {fu.company && <>{fu.company} · </>}
+                          {fu.subject && <>{fu.subject.slice(0, 40)} · </>}
+                          {dueLabel(fu.follow_up_due_at)}
+                          {isOverdue && <span className="cc-row-tag overdue">OVERDUE</span>}
                         </div>
-                        <div className="cc-row-meta">{e.company && <>{e.company} · </>}{(e.title || e.subject || '').slice(0, 45)} · {relativeTime(e.created_at || e.opened_at || e.sent_at)}</div>
                       </div>
                     </div>
                   )
@@ -770,62 +681,59 @@ export default function OutreachIntelligence({ user }) {
               </div>
             )}
 
-            </>)}
-
-            {/* ═══ MARKET INTELLIGENCE TAB ═══ */}
-            {mainTab === 'intel' && (<>
-            {/* INTEL SUB-TABS */}
-            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', marginBottom: 6 }}>
-              {[
-                { id: 'f1', label: 'F1', match: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bwilliams\b|\baston martin\b|\bkick sauber\b|\bracing bulls\b|\bcadillac\b/i },
-                { id: 'fe', label: 'Formula E', match: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b|\bmahindra\b/i },
-                { id: 'wec', label: 'WEC', match: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b/i },
-                { id: 'motogp', label: 'MotoGP', match: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b/i },
-                { id: 'all', label: 'All' },
-              ].map(tab => {
-                const count = tab.id === 'all' ? signals.length : signals.filter(s => tab.match?.test(`${s.title} ${s.detail} ${s.entity_name}`)).length
-                return (
-                  <button key={tab.id} onClick={() => setIntelTab(tab.id)} style={{
-                    padding: '6px 12px', fontSize: 11, fontWeight: intelTab === tab.id ? 600 : 400,
-                    color: intelTab === tab.id ? '#0A0A0A' : '#6B6B6B',
-                    borderBottom: intelTab === tab.id ? '2px solid #0A0A0A' : '2px solid transparent',
-                    background: 'none', border: 'none', borderBottomStyle: 'solid',
-                    cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
-                  }}>
-                    {tab.label} {count > 0 && <span style={{ color: '#A0A0A0', marginLeft: 2 }}>{count}</span>}
+            {/* THIS WEEK TASKS */}
+            <div className="cc-group">
+              <div className="cc-group-h">
+                <h3><Calendar size={10} />Due this week</h3>
+                <span className="cc-group-count">{thisWeekTasks.length}</span>
+              </div>
+              {thisWeekTasks.length === 0 ? (
+                <div className="cc-empty-row">Nothing due this week</div>
+              ) : thisWeekTasks.slice(0, 8).map(t => (
+                <div
+                  key={t.id}
+                  className={`cc-row ${isSelected('task', t.id) ? 'selected' : ''}`}
+                  onClick={() => selectTask(t)}
+                >
+                  <button className="cc-row-icon sage" onClick={e => completeTask(t, e)} title="Mark done">
+                    <Square size={10} />
                   </button>
-                )
-              })}
-            </div>
-            {(() => {
-              const tabs = { f1: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bcadillac\b/i, fe: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b/i, wec: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b/i, motogp: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b/i }
-              const filtered = intelTab === 'all' ? signals : signals.filter(s => tabs[intelTab]?.test(`${s.title} ${s.detail} ${s.entity_name}`))
-              return filtered.length === 0 ? (
-                <div className="cc-empty-row">No {intelTab === 'all' ? '' : intelTab.toUpperCase() + ' '}intelligence this week</div>
-              ) : filtered.slice(0, 12).map(s => {
-                const isPartnership = /partner|sponsor|renew/i.test(s.type + ' ' + s.title)
-                const tagColor = isPartnership ? { bg: 'rgba(16,185,129,0.08)', color: '#059669' } : { bg: 'rgba(99,102,241,0.08)', color: '#6366f1' }
-                const tagLabel = /renew/i.test(s.title) ? 'RENEWAL' : /new.*partner|new.*sponsor/i.test(s.type) ? 'NEW PARTNER' : 'SIGNAL'
-                return (
-                  <div key={s.id} className={`cc-row ${isSelected('signal', s.id) ? 'selected' : ''}`} onClick={() => selectSignal(s)}>
-                    <div className="cc-row-icon purple"><Zap size={10} /></div>
-                    <div className="cc-row-body">
-                      <div className="cc-row-title">
-                        <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: 4, background: tagColor.bg, color: tagColor.color, fontSize: 9, fontWeight: 600, marginRight: 6, verticalAlign: 'middle', textTransform: 'uppercase' }}>{tagLabel}</span>
-                        {cleanTitle(s.title)}
-                      </div>
-                      <div className="cc-row-meta">{s.entity_name && <>{s.entity_name} · </>}{relativeTime(s.created_at)}</div>
+                  <div className="cc-row-body">
+                    <div className="cc-row-title">{taskLabel(t)}</div>
+                    <div className="cc-row-meta">
+                      {taskSub(t) && <>{taskSub(t)} · </>}
+                      {dueLabel(t.data?.dueDate)}
                     </div>
                   </div>
-                )
-              })
-            })()}
-            </>)}
-            
+                </div>
               ))}
             </div>
 
-
+            {/* SIGNALS */}
+            <div className="cc-group">
+              <div className="cc-group-h">
+                <h3><Zap size={10} />Market signals</h3>
+                <span className="cc-group-count">{signals.length}</span>
+              </div>
+              {signals.length === 0 ? (
+                <div className="cc-empty-row">No active signals</div>
+              ) : signals.slice(0, 8).map(s => (
+                <div
+                  key={s.id}
+                  className={`cc-row ${isSelected('signal', s.id) ? 'selected' : ''}`}
+                  onClick={() => selectSignal(s)}
+                >
+                  <div className="cc-row-icon purple"><Zap size={10} /></div>
+                  <div className="cc-row-body">
+                    <div className="cc-row-title">{cleanTitle(s.title)}</div>
+                    <div className="cc-row-meta">
+                      {s.entity_name && <>{s.entity_name} · </>}
+                      {relativeTime(s.created_at)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* RIGHT: Detail pane with Kiko brief */}

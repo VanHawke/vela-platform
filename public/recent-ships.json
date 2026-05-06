@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-05-06T13:06:02.025Z",
+  "generated_at": "2026-05-06T13:10:23.455Z",
   "commits": [
+    {
+      "hash": "dd492f9",
+      "subject": "Fix Campaign Activity: only show real engagement (replies, OOO, LinkedIn)",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "f4ccdf9",
       "subject": "Command Centre redesign: tabbed layout matching approved mockup",
-      "when": "11 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "72d4e46",
       "subject": "ROLLBACK: Reverted Command Centre to pre-redesign state",
-      "when": "23 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "dd35d1b",
       "subject": "Command Centre phase 2: Market Intelligence with F1/FE/WEC/MotoGP tabs",
-      "when": "34 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "00a27bb",
       "subject": "Command Centre redesign phase 1: Campaign Activity + Follow-ups prioritised",
-      "when": "43 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "cca8b7d",
       "subject": "OOO detection: Kiko now distinguishes auto-replies from genuine responses",
-      "when": "70 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "e130952",
       "subject": "FIX: Reply alerts now captured + error logged instead of silently swallowed",
-      "when": "81 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "8793b85",
       "subject": "Gmail send tracking + follow-up alerts for all CRM contacts",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "00449d4",
@@ -54,7 +59,7 @@
     {
       "hash": "906cb34",
       "subject": "FIX: Intent classifier company lookup false positives + email alias recursion",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "c3bea4a",
@@ -94,11 +99,6 @@
     {
       "hash": "c080fbe",
       "subject": "Campaign intelligence v2: narrative arc + JSON-only output",
-      "when": "9 days ago"
-    },
-    {
-      "hash": "0451201",
-      "subject": "iPad responsive: 100dvh + safe-area padding + tablet nav sizing",
       "when": "9 days ago"
     }
   ]
