@@ -84,7 +84,7 @@ export default async function handler(req, res) {
     const safe = Array.isArray(enrollments) ? enrollments : [];
     // Pre-fetch send_from_user_id for each sequence (cached)
     const seqSenderCache = {};
-    let replies = 0, bounces = 0;
+    let replies = 0, bounces = 0, oooCount = 0;
 
     for (const enrollment of safe) {
       try {
