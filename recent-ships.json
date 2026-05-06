@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-06T14:13:36.745Z",
+  "generated_at": "2026-05-06T14:37:51.462Z",
   "commits": [
+    {
+      "hash": "2453aef",
+      "subject": "Alert pill links to CC + KikoInsights sidebar removed + Sponsorship News sub-tabs",
+      "when": "22 minutes ago"
+    },
     {
       "hash": "70fd2e7",
       "subject": "UI: Rename sections + 50/50 panel split",
-      "when": "25 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "b307fc5",
       "subject": "Command Centre: tabs above grid, matching approved render",
-      "when": "37 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "51e7328",
       "subject": "Command Centre: simple tabbed layout using existing styles",
-      "when": "49 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "826fda2",
       "subject": "ROLLBACK: Restored original Command Centre",
-      "when": "63 minutes ago"
+      "when": "87 minutes ago"
     },
     {
       "hash": "dd492f9",
       "subject": "Fix Campaign Activity: only show real engagement (replies, OOO, LinkedIn)",
-      "when": "67 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f4ccdf9",
       "subject": "Command Centre redesign: tabbed layout matching approved mockup",
-      "when": "78 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "72d4e46",
@@ -49,12 +54,12 @@
     {
       "hash": "cca8b7d",
       "subject": "OOO detection: Kiko now distinguishes auto-replies from genuine responses",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e130952",
       "subject": "FIX: Reply alerts now captured + error logged instead of silently swallowed",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "8793b85",
@@ -64,7 +69,7 @@
     {
       "hash": "00449d4",
       "subject": "FIX: Worker crash + email enrichment pipeline verified end-to-end",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "512d2a8",
@@ -74,7 +79,7 @@
     {
       "hash": "eaecf1d",
       "subject": "CLEANUP: Remove all Vercel remnants + dead syncCookies endpoint",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "906cb34",
@@ -94,11 +99,6 @@
     {
       "hash": "137c058",
       "subject": "Kiko self-knowledge: add multi-step generation docs",
-      "when": "9 days ago"
-    },
-    {
-      "hash": "192e270",
-      "subject": "MULTI-STEP CAMPAIGN ENGINE: Research → Plan → Write → Review",
       "when": "9 days ago"
     }
   ]

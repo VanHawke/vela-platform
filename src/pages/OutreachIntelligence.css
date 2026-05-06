@@ -187,7 +187,7 @@
   min-height: 500px;
   max-height: calc(100vh - 140px);
   display: flex; flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
 }
 .cc-detail-empty {
   flex: 1;

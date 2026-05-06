@@ -243,6 +243,10 @@ export default function OutreachIntelligence({ user }) {
   const [brief, setBrief] = useState('')
   const [briefLoading, setBriefLoading] = useState(false)
   const briefAbortRef = useRef(null)
+  const [showDraft, setShowDraft] = useState(false)
+  const [draftSubject, setDraftSubject] = useState('')
+  const [draftBody, setDraftBody] = useState('')
+  const [draftTone, setDraftTone] = useState('advisory')
 
   const isSuperAdmin = user?.app_metadata?.role === 'super_admin'
 
@@ -850,6 +854,69 @@ export default function OutreachIntelligence({ user }) {
                         </>
                       )}
                       <button className="cc-detail-btn secondary" onClick={() => setSelected(null)}>Close</button>
+                      <button className="cc-detail-btn primary" onClick={() => {
+                        // Extract draft from Kiko brief if present
+                        const subjectMatch = brief.match(/Subject:\s*(.+?)(?:\n|<br|$)/i)
+                        const dearMatch = brief.match(/Dear\s+\w+[\s\S]*?(?:Kind regards|Best regards|Regards|Warm regards|Best wishes)[\s\S]*?{?signature}?/i)
+                        setDraftSubject(subjectMatch ? subjectMatch[1].replace(/\*\*/g, '').trim() : `Re: ${selected.title}`)
+                        setDraftBody(dearMatch ? dearMatch[0].replace(/\*\*/g, '').replace(/<[^>]+>/g, '').trim() : '')
+                        setShowDraft(!showDraft)
+                      }}>
+                        {showDraft ? 'Hide Draft' : 'Draft Email'} <Mail size={11} />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* INTERACTIVE EMAIL DRAFTER */}
+                  {showDraft && (
+                    <div style={{ marginTop: 14, border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, padding: 16, background: '#fff' }}>
+                      <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 1.5, color: '#C4723A', fontWeight: 600, marginBottom: 10 }}>Email Draft</div>
+
+                      <div style={{ marginBottom: 8 }}>
+                        <div style={{ fontSize: 11, color: '#9A9A9A', marginBottom: 3 }}>To</div>
+                        <div style={{ fontSize: 13, color: '#0A0A0A', fontFamily: 'Inter, system-ui, sans-serif' }}>{selected.title}</div>
+                      </div>
+
+                      <div style={{ marginBottom: 8 }}>
+                        <div style={{ fontSize: 11, color: '#9A9A9A', marginBottom: 3 }}>Subject</div>
+                        <input value={draftSubject} onChange={e => setDraftSubject(e.target.value)} style={{
+                          width: '100%', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 6, padding: '7px 10px',
+                          fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#FAFAF7',
+                          fontFamily: 'Inter, system-ui, sans-serif',
+                        }} />
+                      </div>
+
+                      <div style={{ marginBottom: 8 }}>
+                        <div style={{ fontSize: 11, color: '#9A9A9A', marginBottom: 4 }}>Tone</div>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          {['advisory', 'direct', 'warm', 'urgent'].map(t => (
+                            <button key={t} onClick={() => setDraftTone(t)} style={{
+                              padding: '3px 12px', borderRadius: 14, fontSize: 11,
+                              border: draftTone === t ? '1px solid #0A0A0A' : '1px solid rgba(0,0,0,0.08)',
+                              background: draftTone === t ? '#0A0A0A' : '#fff',
+                              color: draftTone === t ? '#fff' : '#6B6B6B',
+                              cursor: 'pointer', textTransform: 'capitalize', fontFamily: 'Inter, system-ui, sans-serif',
+                            }}>{t}</button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <textarea value={draftBody} onChange={e => setDraftBody(e.target.value)} rows={8} placeholder="Kiko's draft will appear here. You can edit freely..." style={{
+                        width: '100%', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 6, padding: 10,
+                        fontSize: 13, lineHeight: 1.6, resize: 'vertical', outline: 'none', boxSizing: 'border-box',
+                        background: '#FAFAF7', fontFamily: 'Inter, system-ui, sans-serif',
+                      }} />
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 10 }}>
+                        <button onClick={() => showToast('Draft saved (coming soon)', 'info')} style={{
+                          padding: '7px 16px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)',
+                          background: '#fff', color: '#0A0A0A', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
+                        }}>Save as Gmail Draft</button>
+                        <button onClick={() => showToast('Schedule send (coming soon)', 'info')} style={{
+                          padding: '7px 16px', borderRadius: 6, border: 'none',
+                          background: '#0A0A0A', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
+                        }}>Schedule Send</button>
+                      </div>
                     </div>
                   )}
                 </div>
