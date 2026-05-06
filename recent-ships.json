@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-05-06T16:49:34.386Z",
+  "generated_at": "2026-05-06T17:09:30.540Z",
   "commits": [
+    {
+      "hash": "3afd5cb",
+      "subject": "Alert dismiss + auto-clear + Gmail draft endpoint + signal briefs",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "0fdf885",
       "subject": "Fix Sponsorship News filter: include proactive_intel + F1/series keywords",
-      "when": "10 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "9454f85",
       "subject": "Tighten Sponsorship News filter: remove proactive_intel + broad 'deal' keyword",
-      "when": "14 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "a60ecb4",
       "subject": "Fix: graceful error handling for overloaded API + all prompt fixes",
-      "when": "20 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "4472861",
       "subject": "Fix: Sponsorship News inside grid + clicking shows brief",
-      "when": "22 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "6b074c6",
       "subject": "Fix alerts, homepage pills, sponsorship news, HTML entities",
-      "when": "34 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "3d1f8ef",
       "subject": "Fix reply brief: avoid 'brief' intent classification",
-      "when": "53 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "d896aad",
       "subject": "Fix reply brief: route through memory engine, not EA agent",
-      "when": "70 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2977200",
       "subject": "Fix reply briefs: show actual reply content, not morning brief",
-      "when": "73 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "4e0767c",
@@ -49,7 +54,7 @@
     {
       "hash": "15d056d",
       "subject": "Interactive email drafter + scrollable detail panel",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2453aef",
@@ -64,12 +69,12 @@
     {
       "hash": "b307fc5",
       "subject": "Command Centre: tabs above grid, matching approved render",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "51e7328",
       "subject": "Command Centre: simple tabbed layout using existing styles",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "826fda2",
@@ -94,12 +99,7 @@
     {
       "hash": "dd35d1b",
       "subject": "Command Centre phase 2: Market Intelligence with F1/FE/WEC/MotoGP tabs",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "00a27bb",
-      "subject": "Command Centre redesign phase 1: Campaign Activity + Follow-ups prioritised",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     }
   ]
 }

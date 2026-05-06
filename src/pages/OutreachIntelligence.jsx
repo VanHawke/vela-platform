@@ -1011,7 +1011,6 @@ export default function OutreachIntelligence({ user }) {
           </aside>
         </div>
 
-        )}
       </div>
     </div>
   )
