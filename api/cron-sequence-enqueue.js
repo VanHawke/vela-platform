@@ -6,6 +6,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { wrapEmailBody, loadUserSignatures, loadVoiceProfile, voiceProfileToPrompt } from './lib/email-format.js';
 
+export const config = { maxDuration: 60 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 // ═══ TIMEZONE HELPERS — prospect location → UTC offset ═══
@@ -140,7 +141,7 @@ export default async function handler(req, res) {
 
     // Get active enrollments due today
     const enrollments = await sbFetch(
-      `kiko_sequence_enrollments?status=eq.active&next_send_at=lte.${todayEnd.toISOString()}&order=next_send_at&limit=25`
+      `kiko_sequence_enrollments?status=eq.active&next_send_at=lte.${todayEnd.toISOString()}&contact_email=not.is.null&contact_email=not.like.*needs-enrichment*&contact_email=not.like.*pending.*&order=next_send_at&limit=25`
     );
     const safe = Array.isArray(enrollments) ? enrollments : [];
     if (!safe.length) {

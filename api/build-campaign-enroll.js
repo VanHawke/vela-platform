@@ -4,6 +4,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+export const config = { maxDuration: 120 };
 
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -61,7 +62,7 @@ export default async function handler(req, res) {
     // Enroll targets WITHOUT emails — visible in campaign but marked for enrichment
     const pendingEnrollments = noEmailTargets.map(t => ({
       sequence_id: campaign_id,
-      contact_email: `pending.${(t.decision_maker_name || 'unknown').toLowerCase().replace(/\s+/g, '.')}@needs-enrichment.local`,
+      contact_email: null, // No fake placeholders — email stays null until enriched
       contact_name: t.decision_maker_name || t.company_name,
       title: t.decision_maker_title || null,
       company: t.company_name,
