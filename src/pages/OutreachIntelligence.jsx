@@ -592,7 +592,7 @@ export default function OutreachIntelligence({ user }) {
                       <div className={`cc-hot-card-channel ${ch}`}>{channelIcon(ch)}</div>
                       <div className="cc-hot-card-from">{r.entity_name || 'Unknown'}</div>
                       <div className="cc-hot-card-when">{relativeTime(r.created_at)}</div>
-                      <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_alerts').update({ dismissed: true }).eq('id', r.id); setHotReplies(prev => prev.filter(x => x.id !== r.id)); showToast('Alert cleared', 'success') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 13, padding: '0 2px', marginLeft: 4, lineHeight: 1 }} title="Dismiss">×</button>
+                      <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_alerts').update({ dismissed: true }).eq('id', r.id); await supabase.from('activities').insert({ type: 'alert_dismissed', entity_name: r.entity_name || r.title, subject: `Dismissed: ${r.title}`, status: 'completed' }).catch(() => {}); setHotReplies(prev => prev.filter(x => x.id !== r.id)); showToast('Alert cleared', 'success') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 13, padding: '0 2px', marginLeft: 4, lineHeight: 1 }} title="Dismiss">×</button>
                     </div>
                     <div className="cc-hot-card-title">
                       {r.type?.includes('connection') && <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: 4, background: 'rgba(6,214,160,0.12)', color: '#06a87d', fontSize: 10, fontWeight: 600, marginRight: 6, verticalAlign: 'middle' }}>CONNECTED</span>}

@@ -359,8 +359,21 @@ export default async function handler(req, res) {
       console.error('[ReplyDetect] LinkedIn scan failed:', linkedinErr.message);
     }
 
+    // Log cron actions to activities so Kiko knows what happened
+    if (replies > 0 || bounces > 0 || oooCount > 0) {
+      const parts = [];
+      if (replies > 0) parts.push(`${replies} reply${replies > 1 ? 'ies' : ''} detected`);
+      if (bounces > 0) parts.push(`${bounces} bounce${bounces > 1 ? 's' : ''} auto-fixed`);
+      if (oooCount > 0) parts.push(`${oooCount} OOO rescheduled`);
+      await sbFetch('activities', { method: 'POST', body: JSON.stringify({
+        type: 'kiko_cron_action', entity_name: 'Campaign Monitor',
+        subject: `Kiko auto-actions: ${parts.join(', ')}`,
+        status: 'completed',
+        metadata: { replies, bounces, oooCount, checked: safe.length }
+      }) }).catch(() => {});
+    }
     await cronHeartbeat('cron-sequence-reply-detect', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: replies + bounces });
-    return res.status(200).json({ ok: true, checked: safe.length, replies, bounces });
+    return res.status(200).json({ ok: true, checked: safe.length, replies, bounces, oooCount });
   } catch (err) {
     console.error('[ReplyDetect] Fatal:', err.message);
     await cronHeartbeat('cron-sequence-reply-detect', 'error', { heartbeatId: __hbId, errorMessage: err.message, durationMs: Date.now() - __hbStart }).catch(() => {});

@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-06T20:40:58.541Z",
+  "generated_at": "2026-05-06T21:01:00.924Z",
   "commits": [
+    {
+      "hash": "f8fd504",
+      "subject": "Timezone-optimised sending + PersonaMail correction capture",
+      "when": "19 minutes ago"
+    },
     {
       "hash": "fdba396",
       "subject": "Fix: oooCount variable not declared in reply-detect cron",
-      "when": "9 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "953683a",
       "subject": "Complete session 63-65: OOO reschedule + auto-deal creation + direct send + knowledge sync",
-      "when": "13 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "174534b",
       "subject": "Bounce auto-fix: Hunter fallback + replace contacts at same company",
-      "when": "25 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "cce28ca",
       "subject": "Fix 22 false bounces: tighten detection + clear false positives",
-      "when": "39 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "362b5e0",
       "subject": "Fix alerts, homepage pills, sponsorship news, HTML entities",
-      "when": "56 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "c7e2c05",
@@ -44,22 +49,22 @@
     {
       "hash": "56fc2fe",
       "subject": "CRITICAL: Global email voice rules in backend system prompt + auto-fix bounces",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "3df989e",
       "subject": "CRITICAL: Inject Van Hawke email voice into ALL Command Centre drafts",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "935eba9",
       "subject": "Kiko now alerts on bounced emails + bounce visual in Command Centre",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7a8b9f3",
       "subject": "Fix tab underline + auto-complete tasks on reply",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "6f6d87b",
@@ -84,21 +89,16 @@
     {
       "hash": "a60ecb4",
       "subject": "Fix: graceful error handling for overloaded API + all prompt fixes",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "4472861",
       "subject": "Fix: Sponsorship News inside grid + clicking shows brief",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "6b074c6",
       "subject": "Fix alerts, homepage pills, sponsorship news, HTML entities",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "3d1f8ef",
-      "subject": "Fix reply brief: avoid 'brief' intent classification",
       "when": "5 hours ago"
     }
   ]

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, ArrowUp, Mic } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
+import EmailDraft, { isEmailDraft } from './EmailDraft'
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
   bg: '#FFFFFF',
@@ -536,7 +537,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                     </div>
                   )}
                   <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? C.purple : 'rgba(0,0,0,0.04)', color: msg.role === 'user' ? '#FFFFFF' : C.textSec, fontSize: 13, lineHeight: 1.55, fontFamily: C.font }}>
-                    {msg.role === 'user' ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
+                    {msg.role === 'user' ? msg.content : isEmailDraft(msg.content) ? <EmailDraft text={msg.content} /> : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
                   </div>
                   </div>
                   {msg.role !== 'user' && !streaming && (
