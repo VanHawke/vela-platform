@@ -1,25 +1,35 @@
 {
-  "generated_at": "2026-05-06T20:27:44.051Z",
+  "generated_at": "2026-05-06T20:40:58.541Z",
   "commits": [
+    {
+      "hash": "fdba396",
+      "subject": "Fix: oooCount variable not declared in reply-detect cron",
+      "when": "9 minutes ago"
+    },
+    {
+      "hash": "953683a",
+      "subject": "Complete session 63-65: OOO reschedule + auto-deal creation + direct send + knowledge sync",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "174534b",
       "subject": "Bounce auto-fix: Hunter fallback + replace contacts at same company",
-      "when": "12 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "cce28ca",
       "subject": "Fix 22 false bounces: tighten detection + clear false positives",
-      "when": "26 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "362b5e0",
       "subject": "Fix alerts, homepage pills, sponsorship news, HTML entities",
-      "when": "43 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "c7e2c05",
       "subject": "Voice profile now loaded into EVERY email rewrite",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "d202eec",
@@ -54,7 +64,7 @@
     {
       "hash": "6f6d87b",
       "subject": "Fix: remove stray )} rendering on page + auto-dismiss follow-ups on reply",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "3afd5cb",
@@ -89,16 +99,6 @@
     {
       "hash": "3d1f8ef",
       "subject": "Fix reply brief: avoid 'brief' intent classification",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "d896aad",
-      "subject": "Fix reply brief: route through memory engine, not EA agent",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "2977200",
-      "subject": "Fix reply briefs: show actual reply content, not morning brief",
       "when": "5 hours ago"
     }
   ]

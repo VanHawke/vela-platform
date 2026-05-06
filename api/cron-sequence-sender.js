@@ -136,14 +136,23 @@ export default async function handler(req, res) {
             seqConfig = seqCache.get(seqId);
           }
 
-          // Resolve prospect timezone if auto_timezone is on
+          // Resolve prospect timezone: enrollment.timezone → contact location → default
           let tzOffset = 0;
-          if (seqConfig?.auto_timezone !== false && enr?.[0]?.contact_id) {
-            try {
-              const contact = await sbFetch(`contacts?id=eq.${enr[0].contact_id}&select=data&limit=1`).catch(() => []);
-              const loc = contact?.[0]?.data?.location || '';
-              tzOffset = getTimezoneOffset(loc);
-            } catch {}
+          if (seqConfig?.auto_timezone !== false) {
+            // First check enrollment timezone field
+            const enrTz = await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}&select=timezone&limit=1`).catch(() => []);
+            const enrollTz = enrTz?.[0]?.timezone;
+            if (enrollTz) {
+              // IANA timezone → offset (approximate, covers major zones)
+              const ianaMap = { 'America/New_York': -4, 'America/Chicago': -5, 'America/Denver': -6, 'America/Los_Angeles': -7, 'Europe/London': 1, 'Europe/Paris': 2, 'Europe/Berlin': 2, 'Asia/Kolkata': 5.5, 'Asia/Jerusalem': 3, 'Asia/Singapore': 8, 'Asia/Tokyo': 9, 'Australia/Sydney': 10, 'Pacific/Auckland': 12 };
+              tzOffset = ianaMap[enrollTz] ?? 0;
+            } else if (enr?.[0]?.contact_id) {
+              try {
+                const contact = await sbFetch(`contacts?id=eq.${enr[0].contact_id}&select=data&limit=1`).catch(() => []);
+                const loc = contact?.[0]?.data?.location || '';
+                tzOffset = getTimezoneOffset(loc);
+              } catch {}
+            }
           }
 
           // Calculate prospect's local time

@@ -268,6 +268,13 @@ export default function EmailDraft({ text }) {
         const label = targetEmail === 'sunny@vanhawke.com' ? 'done' : `done-${targetEmail}`
         setSent(label)
         setTimeout(() => setSent(false), 3000)
+        // PersonaMail correction capture: if user edited the draft, capture the diff
+        if (originalBodyRef.current && currentBody !== originalBodyRef.current) {
+          fetch('https://api.vanhawke.agency/api/capture-correction', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ original: originalBodyRef.current, edited: currentBody, recipient: currentTo, subject: currentSubject })
+          }).catch(() => {}) // fire and forget
+        }
       } else {
         console.error('[EmailDraft] API error:', data.error)
         setSent('error')
