@@ -13,7 +13,7 @@ import {
   Zap, TrendingUp, Clock, RefreshCw, Inbox, Send, ExternalLink, Calendar
 } from 'lucide-react'
 import './OutreachIntelligence.css'
-import KikoEmailComposer from '@/components/kiko/KikoEmailComposer'
+import EmailDraft, { isEmailDraft } from '@/components/kiko/EmailDraft'
 
 // Simple markdown → HTML for Kiko brief responses
 function parseBriefMarkdown(text) {
@@ -949,28 +949,13 @@ export default function OutreachIntelligence({ user }) {
                         </>
                       )}
                       <button className="cc-detail-btn secondary" onClick={() => setSelected(null)}>Close</button>
-                      <button className="cc-detail-btn primary" onClick={() => {
-                        const subjectMatch = brief.match(/Subject:\s*(.+?)(?:\n|<br|$)/i)
-                        const dearMatch = brief.match(/Dear\s+\w+[\s\S]*?(?:Kind regards|Best regards|Regards|Warm regards|Best wishes)[\s\S]*?{?signature}?/i)
-                        setDraftSubject(subjectMatch ? subjectMatch[1].replace(/\*\*/g, '').trim() : `Re: ${selected.title}`)
-                        setDraftBody(dearMatch ? dearMatch[0].replace(/\*\*/g, '').replace(/<[^>]+>/g, '').trim() : '')
-                        setShowDraft(!showDraft)
-                      }}>
-                        {showDraft ? 'Hide Composer' : 'Compose Email'} <Mail size={11} />
-                      </button>
                     </div>
                   )}
 
-                  {/* EMAIL COMPOSER */}
-                  {showDraft && (
+                  {/* EMAIL DRAFT — uses the same component as the main Kiko chat */}
+                  {!briefLoading && brief && isEmailDraft(brief) && (
                     <div style={{ marginTop: 14 }}>
-                      <KikoEmailComposer
-                        to={selected?.payload?.metadata?.from || ''}
-                        subject={draftSubject}
-                        body={draftBody}
-                        visible={showDraft}
-                        onClose={() => setShowDraft(false)}
-                      />
+                      <EmailDraft text={brief} />
                     </div>
                   )}
                 </div>
