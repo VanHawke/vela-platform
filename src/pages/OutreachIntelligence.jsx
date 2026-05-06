@@ -781,30 +781,60 @@ export default function OutreachIntelligence({ user }) {
               ))}
             </div>
 
-            {/* SIGNALS */}
+            {/* MARKET INTELLIGENCE */}
             <div className="cc-group">
               <div className="cc-group-h">
-                <h3><Zap size={10} />Market signals</h3>
+                <h3><Zap size={10} />Market Intelligence</h3>
                 <span className="cc-group-count">{signals.length}</span>
               </div>
-              {signals.length === 0 ? (
-                <div className="cc-empty-row">No active signals</div>
-              ) : signals.slice(0, 8).map(s => (
-                <div
-                  key={s.id}
-                  className={`cc-row ${isSelected('signal', s.id) ? 'selected' : ''}`}
-                  onClick={() => selectSignal(s)}
-                >
-                  <div className="cc-row-icon purple"><Zap size={10} /></div>
-                  <div className="cc-row-body">
-                    <div className="cc-row-title">{cleanTitle(s.title)}</div>
-                    <div className="cc-row-meta">
-                      {s.entity_name && <>{s.entity_name} · </>}
-                      {relativeTime(s.created_at)}
+              <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', marginBottom: 6 }}>
+                {[
+                  { id: 'f1', label: 'F1', match: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bwilliams\b|\baston martin\b|\bkick sauber\b|\bracing bulls\b/i },
+                  { id: 'fe', label: 'Formula E', match: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b|\bmahindra\b|\bporsche fe\b|\bnissan\b|\bmaserati\b|\benvision\b/i },
+                  { id: 'wec', label: 'WEC', match: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b|\bporsche penske\b|\btoyota gazoo\b/i },
+                  { id: 'motogp', label: 'MotoGP', match: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b|\byamaha\b|\bhonda hrc\b|\bktm\b/i },
+                  { id: 'all', label: 'All' },
+                ].map(tab => {
+                  const count = tab.id === 'all' ? signals.length : signals.filter(s => tab.match?.test(`${s.title} ${s.detail} ${s.entity_name}`)).length
+                  return (
+                    <button key={tab.id} onClick={() => setIntelTab(tab.id)} style={{
+                      padding: '6px 12px', fontSize: 11, fontWeight: intelTab === tab.id ? 600 : 400,
+                      color: intelTab === tab.id ? '#0A0A0A' : '#6B6B6B',
+                      borderBottom: intelTab === tab.id ? '2px solid #0A0A0A' : '2px solid transparent',
+                      background: 'none', border: 'none', borderBottomStyle: 'solid',
+                      cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
+                    }}>
+                      {tab.label} {count > 0 && <span style={{ color: '#A0A0A0', marginLeft: 2 }}>{count}</span>}
+                    </button>
+                  )
+                })}
+              </div>
+              {(() => {
+                const tabs = { f1: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bwilliams\b|\baston martin\b|\bkick sauber\b|\bracing bulls\b/i, fe: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b|\bmahindra\b/i, wec: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b/i, motogp: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b/i }
+                const filtered = intelTab === 'all' ? signals : signals.filter(s => tabs[intelTab]?.test(`${s.title} ${s.detail} ${s.entity_name}`))
+                return filtered.length === 0 ? (
+                  <div className="cc-empty-row">No {intelTab === 'all' ? '' : intelTab.toUpperCase() + ' '}intelligence this week</div>
+                ) : filtered.slice(0, 10).map(s => {
+                  const isPartnership = /partner|sponsor|renew/i.test(s.type + ' ' + s.title)
+                  const tagColor = isPartnership ? { bg: 'rgba(16,185,129,0.10)', color: '#059669' } : { bg: 'rgba(99,102,241,0.10)', color: '#6366f1' }
+                  const tagLabel = /renew/i.test(s.title) ? 'RENEWAL' : /new.*partner|new.*sponsor/i.test(s.type) ? 'NEW PARTNER' : 'SIGNAL'
+                  return (
+                    <div key={s.id} className={`cc-row ${isSelected('signal', s.id) ? 'selected' : ''}`} onClick={() => selectSignal(s)}>
+                      <div className="cc-row-icon purple"><Zap size={10} /></div>
+                      <div className="cc-row-body">
+                        <div className="cc-row-title">
+                          <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: 4, background: tagColor.bg, color: tagColor.color, fontSize: 9, fontWeight: 600, marginRight: 6, verticalAlign: 'middle', textTransform: 'uppercase' }}>{tagLabel}</span>
+                          {cleanTitle(s.title)}
+                        </div>
+                        <div className="cc-row-meta">
+                          {s.entity_name && <>{s.entity_name} · </>}
+                          {relativeTime(s.created_at)}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  )
+                })
+              })()}
             </div>
           </div>
 

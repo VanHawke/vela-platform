@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-06T12:19:53.856Z",
+  "generated_at": "2026-05-06T12:26:13.814Z",
   "commits": [
+    {
+      "hash": "00a27bb",
+      "subject": "Command Centre redesign phase 1: Campaign Activity + Follow-ups prioritised",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "cca8b7d",
       "subject": "OOO detection: Kiko now distinguishes auto-replies from genuine responses",
-      "when": "24 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "e130952",
       "subject": "FIX: Reply alerts now captured + error logged instead of silently swallowed",
-      "when": "35 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "8793b85",
       "subject": "Gmail send tracking + follow-up alerts for all CRM contacts",
-      "when": "40 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "00449d4",
       "subject": "FIX: Worker crash + email enrichment pipeline verified end-to-end",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "512d2a8",
@@ -94,11 +99,6 @@
     {
       "hash": "42082f4",
       "subject": "LinkedIn URL enrichment: automated pipeline + 87.7% coverage",
-      "when": "9 days ago"
-    },
-    {
-      "hash": "ed1ba5f",
-      "subject": "LinkedIn test: instant send + sending state",
       "when": "9 days ago"
     }
   ]
