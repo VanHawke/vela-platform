@@ -26,6 +26,7 @@ const SCHEDULES = [
   // Sequence engine (previously pg_cron — verified empty 2026-04-25)
   { schedule: '*/5 6-22 * * 1-5', path: '/api/cron-sequence-sender',       name: 'seq-sender' },
   { schedule: '*/30 8-20 * * 1-5', path: '/api/cron-sequence-reply-detect', name: 'seq-reply' },
+  { schedule: '*/30 8-20 * * 1-5', path: '/api/cron-gmail-send-tracker', name: 'gmail-tracker' },
   { schedule: '*/5 6-22 * * 1-5', path: '/api/cron-sequence-enqueue',      name: 'seq-enqueue' },
 
   // Intelligence (previously pg_cron)
@@ -64,7 +65,6 @@ const SCHEDULES = [
   // LinkedIn local — already handled correctly
   { schedule: '*/30 9-18 * * 1-5', path: '/linkedin-queue/process', name: 'linkedin-queue', local: true },
   // REMOVED: sync-cookies was destroying Matt's LinkedIn session by overwriting valid cookies
-  { schedule: '0 10,14,17 * * 1-5', path: '/linkedin-queue/check-replies', name: 'linkedin-replies', local: true },
   { schedule: '0 0,6,12,18 * * *', path: '/api/cron-linkedin-keepalive', name: 'li-keepalive' },
 ]
 
