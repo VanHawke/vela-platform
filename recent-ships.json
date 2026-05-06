@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-06T12:52:27.178Z",
+  "generated_at": "2026-05-06T13:06:02.025Z",
   "commits": [
+    {
+      "hash": "f4ccdf9",
+      "subject": "Command Centre redesign: tabbed layout matching approved mockup",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "72d4e46",
       "subject": "ROLLBACK: Reverted Command Centre to pre-redesign state",
-      "when": "10 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "dd35d1b",
       "subject": "Command Centre phase 2: Market Intelligence with F1/FE/WEC/MotoGP tabs",
-      "when": "20 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "00a27bb",
       "subject": "Command Centre redesign phase 1: Campaign Activity + Follow-ups prioritised",
-      "when": "29 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "cca8b7d",
       "subject": "OOO detection: Kiko now distinguishes auto-replies from genuine responses",
-      "when": "56 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "e130952",
       "subject": "FIX: Reply alerts now captured + error logged instead of silently swallowed",
-      "when": "68 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "8793b85",
       "subject": "Gmail send tracking + follow-up alerts for all CRM contacts",
-      "when": "73 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "00449d4",
@@ -39,7 +44,7 @@
     {
       "hash": "512d2a8",
       "subject": "CRITICAL FIX: Block fake placeholder emails from campaign sends",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "eaecf1d",
@@ -54,12 +59,12 @@
     {
       "hash": "c3bea4a",
       "subject": "Full system audit + cleanup",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "2385538",
       "subject": "VERCEL → HETZNER MIGRATION COMPLETE",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "137c058",
@@ -94,11 +99,6 @@
     {
       "hash": "0451201",
       "subject": "iPad responsive: 100dvh + safe-area padding + tablet nav sizing",
-      "when": "9 days ago"
-    },
-    {
-      "hash": "b758910",
-      "subject": "Fix: LinkedIn test button no longer hangs",
       "when": "9 days ago"
     }
   ]

@@ -255,7 +255,7 @@ export default function OutreachIntelligence({ user }) {
       const signalTypes = isSuperAdmin
         ? ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'promotion', 'prediction', 'self_discovery', 'proactive_intel', 'company_signal']
         : ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'prediction', 'company_signal']
-      const [dealsRes, hotRes, signalRes, campaignRes, eventsRes] = await Promise.all([
+      const [dealsRes, hotRes, signalRes, campaignRes, eventsRes, engagementRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at')
           .not('data->>status', 'in', '("won","lost")')
           .order('updated_at', { ascending: false }),
@@ -283,16 +283,30 @@ export default function OutreachIntelligence({ user }) {
           .gte('sent_at', new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString())
           .order('sent_at', { ascending: false })
           .limit(30),
+        // Also fetch campaign replies and LinkedIn responses (wider window for real engagement)
+        supabase.from('kiko_alerts')
+          .select('id, type, title, detail, entity_name, entity_id, metadata, created_at')
+          .or('type.eq.reply_from_prospect,type.eq.ooo_detected,type.eq.linkedin_connection_accepted,type.eq.email_reply_manual')
+          .gte('created_at', weekAgo)
+          .order('created_at', { ascending: false })
+          .limit(20),
       ])
       setDeals(dealsRes.data || [])
       setHotReplies(hotRes.data || [])
       setSignals(signalRes.data || [])
       setCampaignActivity(campaignRes.data || [])
-      setCampaignEvents((eventsRes.data || []).map(e => ({
-        ...e,
-        eventType: e.reply_snippet?.toLowerCase()?.match(/out of office|on leave|auto.?reply|will be back|currently (out|away)/) ? 'ooo'
-          : e.clicked_at ? 'clicked' : e.opened_at ? 'opened' : 'sent',
-      })).filter(e => e.eventType !== 'sent'))
+      // Campaign events = real engagement only: replies, OOO, LinkedIn responses
+      const oooFromQueue = (eventsRes.data || []).filter(e => {
+        const lower = (e.reply_snippet || '').toLowerCase()
+        return lower.match(/out of office|on leave|auto.?reply|will be back|currently (out|away)/)
+      }).map(e => ({ ...e, eventType: 'ooo', name: e.to_name, company: e.company }))
+      const repliesFromQueue = (eventsRes.data || []).filter(e => e.reply_snippet && !oooFromQueue.find(o => o.id === e.id))
+        .map(e => ({ ...e, eventType: 'reply', name: e.to_name, company: e.company }))
+      const engagementAlerts = (engagementRes.data || []).map(a => ({
+        id: a.id, eventType: a.type === 'ooo_detected' ? 'ooo' : a.type === 'linkedin_connection_accepted' ? 'linkedin' : 'reply',
+        name: a.entity_name, company: '', title: a.title, detail: a.detail, created_at: a.created_at,
+      }))
+      setCampaignEvents([...repliesFromQueue, ...oooFromQueue, ...engagementAlerts])
     } catch (err) {
       console.error('[CommandCentre] load', err)
     }
@@ -709,18 +723,20 @@ export default function OutreachIntelligence({ user }) {
                 </div>
                 {campaignEvents.map(e => {
                   const badge = e.eventType === 'clicked' ? { bg: 'rgba(16,185,129,0.08)', color: '#059669', label: 'CLICKED' }
+                    : e.eventType === 'reply' ? { bg: 'rgba(16,185,129,0.08)', color: '#059669', label: 'REPLIED' }
+                    : e.eventType === 'linkedin' ? { bg: 'rgba(99,102,241,0.08)', color: '#6366f1', label: 'LINKEDIN' }
                     : e.eventType === 'opened' ? { bg: 'rgba(245,158,11,0.08)', color: '#d97706', label: 'OPENED' }
                     : { bg: 'rgba(245,158,11,0.12)', color: '#b45309', label: 'OOO' }
                   return (
                     <div key={e.id} className={`cc-row ${isSelected('campaign_event', e.id) ? 'selected' : ''}`}
-                      onClick={() => setSelected({ kind: 'campaign', id: e.id, title: `${e.to_name || 'Unknown'} — ${e.company || ''}`, meta: `${e.subject || ''} · ${badge.label} · ${relativeTime(e.opened_at || e.sent_at)}`, payload: { ...e, contact_name: e.to_name } })}>
+                      onClick={() => setSelected({ kind: 'campaign', id: e.id, title: `${e.name || e.to_name || e.entity_name || 'Unknown'} — ${e.company || ''}`, meta: `${e.title || e.subject || ''} · ${badge.label} · ${relativeTime(e.created_at || e.opened_at || e.sent_at)}`, payload: { ...e, contact_name: e.name || e.to_name || e.entity_name } })}>
                       <div className="cc-row-icon purple"><Mail size={10} /></div>
                       <div className="cc-row-body">
                         <div className="cc-row-title">
                           <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: 4, background: badge.bg, color: badge.color, fontSize: 9, fontWeight: 600, marginRight: 6, verticalAlign: 'middle' }}>{badge.label}</span>
-                          {e.to_name || 'Unknown'}
+                          {e.name || e.to_name || e.entity_name || 'Unknown'}
                         </div>
-                        <div className="cc-row-meta">{e.company} · {e.subject?.slice(0, 35)} · {relativeTime(e.opened_at || e.sent_at)}</div>
+                        <div className="cc-row-meta">{e.company && <>{e.company} · </>}{(e.title || e.subject || '').slice(0, 45)} · {relativeTime(e.created_at || e.opened_at || e.sent_at)}</div>
                       </div>
                     </div>
                   )
@@ -805,30 +821,7 @@ export default function OutreachIntelligence({ user }) {
               })
             })()}
             </>)}
-            <div className="cc-group">
-              <div className="cc-group-h">
-                <h3><Calendar size={10} />Due this week</h3>
-                <span className="cc-group-count">{thisWeekTasks.length}</span>
-              </div>
-              {thisWeekTasks.length === 0 ? (
-                <div className="cc-empty-row">Nothing due this week</div>
-              ) : thisWeekTasks.slice(0, 8).map(t => (
-                <div
-                  key={t.id}
-                  className={`cc-row ${isSelected('task', t.id) ? 'selected' : ''}`}
-                  onClick={() => selectTask(t)}
-                >
-                  <button className="cc-row-icon sage" onClick={e => completeTask(t, e)} title="Mark done">
-                    <Square size={10} />
-                  </button>
-                  <div className="cc-row-body">
-                    <div className="cc-row-title">{taskLabel(t)}</div>
-                    <div className="cc-row-meta">
-                      {taskSub(t) && <>{taskSub(t)} · </>}
-                      {dueLabel(t.data?.dueDate)}
-                    </div>
-                  </div>
-                </div>
+            
               ))}
             </div>
 
