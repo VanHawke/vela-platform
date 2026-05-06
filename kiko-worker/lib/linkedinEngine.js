@@ -55,10 +55,12 @@ async function captureAndPersistCookies(identity, context, actionLabel) {
 // Returns { browser, context, page } — caller must close browser.
 async function openContextForIdentity(identity) {
   const stored = cookieStore.load(identity);
+  console.log(`[linkedinEngine] Loaded for ${identity}: ${stored ? (stored.cookies ? stored.cookies.length + " cookies" : "no .cookies") : "NULL"} stale=${stored?.stale}`);
   if (!stored) throw new Error(`no cookies stored for identity '${identity}'`);
   if (stored.stale) throw new Error(`cookies for identity '${identity}' are marked stale - please refresh`);
 
   // Proxy config from env vars — routes Playwright through residential ISP IP
+  console.log(`[linkedinEngine] Opening context for identity: ${identity}`);
   const proxyHost = process.env.PROXY_HOST;
   const proxyPort = process.env.PROXY_PORT;
   const proxyUser = process.env.PROXY_USER;
@@ -325,4 +327,103 @@ function normalizeLinkedinUrl(urlOrSlug) {
   if (urlOrSlug.startsWith('http')) return urlOrSlug;
   if (urlOrSlug.startsWith('/in/')) return `https://www.linkedin.com${urlOrSlug}`;
   return `https://www.linkedin.com/in/${urlOrSlug}/`;
+}
+
+export async function sendMessage(identity, profileUrl, messageText) {
+  return withLock(identity, async () => {
+    let browser, context;
+    try {
+      const opened = await openContextForIdentity(identity);
+      browser = opened.browser;
+      context = opened.context;
+      const { page } = opened;
+      const url = normalizeLinkedinUrl(profileUrl);
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2000 + Math.random() * 2000);
+
+      if (page.url().includes('/authwall') || page.url().includes('/login')) {
+        cookieStore.markStale(identity);
+        return { ok: false, status: 'error', error: 'cookies stale' };
+      }
+
+      // Find the Message link href for compose URL
+      const msgLinks = await page.$$('a');
+      let composeHref = null;
+      for (const link of msgLinks) {
+        const text = await link.textContent().catch(() => '');
+        const href = await link.getAttribute('href').catch(() => '');
+        if (text.trim() === 'Message' && href && href.includes('/messaging/compose')) {
+          composeHref = href;
+          break;
+        }
+      }
+      if (!composeHref) {
+        return { ok: false, status: 'not_connected', error: 'No Message link - may not be connected' };
+      }
+
+      // Navigate to compose URL
+      const composeUrl = composeHref.startsWith('http') ? composeHref : 'https://www.linkedin.com' + composeHref;
+      await page.goto(composeUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
+      await page.waitForTimeout(3500 + Math.random() * 1000);
+
+      // Find message input with multiple fallback selectors
+      let typed = false;
+      const inputSelectors = [
+        'div[contenteditable="true"][role="textbox"]',
+        'div.msg-form__contenteditable[contenteditable="true"]',
+        '[contenteditable="true"][aria-label*="message" i]',
+        '[contenteditable="true"][aria-label*="Write" i]',
+        '[contenteditable="true"][aria-placeholder*="Write" i]',
+        'div[contenteditable="true"]',
+      ];
+      for (const sel of inputSelectors) {
+        const el = page.locator(sel).first();
+        if (await el.count() > 0 && await el.isVisible().catch(() => false)) {
+          await el.click();
+          await page.waitForTimeout(300);
+          await page.keyboard.type(messageText.slice(0, 8000), { delay: 15 });
+          typed = true;
+          console.log('[sendMessage] Typed via:', sel);
+          break;
+        }
+      }
+      if (!typed) {
+        return { ok: false, status: 'error', error: 'Message input not found on compose page' };
+      }
+      await page.waitForTimeout(800 + Math.random() * 500);
+
+      // Click Send with multiple fallback selectors
+      let sent = false;
+      const sendSelectors = ['button.msg-form__send-button', 'button[type="submit"]'];
+      for (const sel of sendSelectors) {
+        const btn = page.locator(sel).first();
+        if (await btn.count() > 0 && await btn.isVisible().catch(() => false)) {
+          await btn.click({ delay: 150 });
+          sent = true;
+          console.log('[sendMessage] Sent via:', sel);
+          break;
+        }
+      }
+      if (!sent) {
+        const allBtns = await page.$$('button');
+        for (const btn of allBtns) {
+          const t = await btn.textContent().catch(() => '');
+          if (t.trim().toLowerCase() === 'send' && await btn.isVisible()) {
+            await btn.click({ delay: 150 });
+            sent = true;
+            break;
+          }
+        }
+      }
+      if (!sent) return { ok: false, status: 'error', error: 'Send button not found' };
+      await page.waitForTimeout(2000);
+
+      await captureAndPersistCookies(identity, context, 'message');
+      return { ok: true, status: 'sent' };
+    } catch (err) {
+      return { ok: false, status: 'error', error: err.message };
+    } finally {
+      if (browser) await browser.close().catch(() => {});
+    }
+  });
 }

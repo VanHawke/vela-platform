@@ -13,6 +13,11 @@ import "dotenv/config";
 import healthRoutes from "./routes/health.js";
 import linkedinRoutes from "./routes/linkedin.js";
 import linkedinQueueRoutes from "./routes/linkedin-queue.js";
+import linkedinConnect from "./api/linkedin-connect.js";
+import linkedinTrigger from "./api/linkedin-trigger.js";
+import enrichLinkedinUrls from "./api/enrich-linkedin-urls.js";
+import userBible from "./api/user-bible.js";
+import orgBible from "./api/org-bible.js";
 import emailIntelRoutes from "./routes/email-intel.js";
 import kikoChatRoutes from "./routes/kiko-chat.js";
 import webhookRoutes from "./routes/webhooks.js";
@@ -60,12 +65,17 @@ app.get("/", (req, res) => {
 // Routes — Kiko Chat API (no timeout limits!)
 app.use("/docs", express.static("/home/kiko/kiko-worker/public/docs"));
 app.use("/api/webhooks", webhookRoutes);
+app.all("/api/user-bible", userBible);
+app.all("/api/org-bible", orgBible);
 app.use("/api", kikoChatRoutes);
 
 // Routes — existing
 app.use("/", healthRoutes);
 app.use("/linkedin", linkedinRoutes);
 app.use("/linkedin-queue", linkedinQueueRoutes);
+app.post("/linkedin-connect", linkedinConnect);
+app.post("/api/linkedin-trigger", linkedinTrigger);
+app.post("/api/enrich-linkedin-urls", enrichLinkedinUrls);
 app.use("/email-intel", emailIntelRoutes);
 
 // Error handler

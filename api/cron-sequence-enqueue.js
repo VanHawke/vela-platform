@@ -141,7 +141,7 @@ export default async function handler(req, res) {
 
     // Get active enrollments due today
     const enrollments = await sbFetch(
-      `kiko_sequence_enrollments?status=eq.active&next_send_at=lte.${todayEnd.toISOString()}&order=next_send_at&limit=10`
+      `kiko_sequence_enrollments?status=eq.active&next_send_at=lte.${todayEnd.toISOString()}&order=next_send_at&limit=25`
     );
     const safe = Array.isArray(enrollments) ? enrollments : [];
     if (!safe.length) {

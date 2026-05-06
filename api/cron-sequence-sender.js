@@ -1,6 +1,6 @@
 // api/cron-sequence-sender.js — Sequence Email Sender
-// Runs every 30min Mon-Fri 8am-6pm. Picks up queued emails and sends via Gmail.
-// Max 5 per run to stay under Gmail rate limits. 30/day hard cap.
+// Runs every 5min Mon-Fri 8am-6pm. Picks up queued emails and sends via Gmail.
+// Reads DAILY_EMAIL_LIMIT and EMAIL_BATCH_SIZE from platform_config table.
 // STANDALONE — if this fails, emails just wait for the next run.
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
@@ -60,13 +60,20 @@ export default async function handler(req, res) {
     const todayStart = new Date(now); todayStart.setHours(0, 0, 0, 0);
     const sentToday = await sbFetch(`kiko_outreach_queue?status=eq.sent&sent_at=gte.${todayStart.toISOString()}&select=id`);
     const dailyCount = Array.isArray(sentToday) ? sentToday.length : 0;
-    if (dailyCount >= 30) {
+    // Read config from database (defaults: 100/day, 15/batch)
+    const configRows = await sbFetch('platform_config?key=in.(DAILY_EMAIL_LIMIT,EMAIL_BATCH_SIZE)&select=key,value').catch(() => []);
+    const cfg = {};
+    if (Array.isArray(configRows)) configRows.forEach(r => { cfg[r.key] = parseInt(r.value) || 0; });
+    const DAILY_LIMIT = cfg.DAILY_EMAIL_LIMIT || 100;
+    const BATCH_SIZE = cfg.EMAIL_BATCH_SIZE || 15;
+
+    if (dailyCount >= DAILY_LIMIT) {
       await cronHeartbeat('cron-sequence-sender', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
-      return res.status(200).json({ ok: true, message: `Daily limit reached (${dailyCount}/30)`, sent: 0 });
+      return res.status(200).json({ ok: true, message: `Daily limit reached (${dailyCount}/${DAILY_LIMIT})`, sent: 0 });
     }
 
     // Get queued emails ready to send
-    const queued = await sbFetch(`kiko_outreach_queue?status=eq.queued&channel=eq.email&scheduled_for=lte.${now.toISOString()}&order=scheduled_for&limit=5`);
+    const queued = await sbFetch(`kiko_outreach_queue?status=eq.queued&channel=eq.email&scheduled_for=lte.${now.toISOString()}&order=scheduled_for&limit=100`);
     const safe = Array.isArray(queued) ? queued : [];
     if (!safe.length) {
       await cronHeartbeat('cron-sequence-sender', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
@@ -377,7 +384,7 @@ export default async function handler(req, res) {
             user_id: u.user_id,
             type: 'sequence_send',
             title: `${sent} ${sent === 1 ? 'email' : 'emails'} sent`,
-            body: `Kiko just sent ${sent} sequence ${sent === 1 ? 'email' : 'emails'} from your active campaigns. Daily total: ${dailyCount + sent}/30.`,
+            body: `Kiko just sent ${sent} sequence ${sent === 1 ? 'email' : 'emails'} from your active campaigns. Daily total: ${dailyCount + sent}/${DAILY_LIMIT}.`,
             link: '/campaigns',
             metadata: { sent, daily_total: dailyCount + sent },
           })}).catch(() => {});
