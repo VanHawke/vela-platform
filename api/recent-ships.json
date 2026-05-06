@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-05-06T13:19:20.137Z",
+  "generated_at": "2026-05-06T13:34:54.787Z",
   "commits": [
+    {
+      "hash": "51e7328",
+      "subject": "Command Centre: simple tabbed layout using existing styles",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "826fda2",
       "subject": "ROLLBACK: Restored original Command Centre",
-      "when": "9 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "dd492f9",
       "subject": "Fix Campaign Activity: only show real engagement (replies, OOO, LinkedIn)",
-      "when": "13 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "f4ccdf9",
       "subject": "Command Centre redesign: tabbed layout matching approved mockup",
-      "when": "24 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "72d4e46",
       "subject": "ROLLBACK: Reverted Command Centre to pre-redesign state",
-      "when": "37 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "dd35d1b",
       "subject": "Command Centre phase 2: Market Intelligence with F1/FE/WEC/MotoGP tabs",
-      "when": "47 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "00a27bb",
       "subject": "Command Centre redesign phase 1: Campaign Activity + Follow-ups prioritised",
-      "when": "56 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "cca8b7d",
       "subject": "OOO detection: Kiko now distinguishes auto-replies from genuine responses",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e130952",
@@ -49,7 +54,7 @@
     {
       "hash": "00449d4",
       "subject": "FIX: Worker crash + email enrichment pipeline verified end-to-end",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "512d2a8",
@@ -59,7 +64,7 @@
     {
       "hash": "eaecf1d",
       "subject": "CLEANUP: Remove all Vercel remnants + dead syncCookies endpoint",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "906cb34",
@@ -94,11 +99,6 @@
     {
       "hash": "47886b1",
       "subject": "Campaign v4: race calendar timing + language clarity fixes",
-      "when": "9 days ago"
-    },
-    {
-      "hash": "0462a71",
-      "subject": "Campaign arc v3: learned from Lemlist + added paddock & assets themes",
       "when": "9 days ago"
     }
   ]
