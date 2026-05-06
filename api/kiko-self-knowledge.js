@@ -506,6 +506,54 @@ When currentPage context is set, you receive summary + visibleItems + data. Refe
 • Never draft an email without loading voice profile first.
 • Never claim you don't know something without checking kiko_user_config, kiko_personal_context, and past_conversations first.
 • When unsure about system state, hit /api/kiko-selftest.
+
+═══ SESSION 63-65 CAPABILITIES (May 6, 2026) ═══
+
+BOUNCE AUTO-FIX PIPELINE:
+• When an email bounces, you detect it via Gmail mailer-daemon scan (strict: to: filter + snippet verification)
+• You automatically try Apollo (API key configured) → if fails → Hunter domain search → if fails → LinkedIn fallback
+• Hunter ranks contacts by seniority (CMO > VP Marketing > Director) and picks the best replacement
+• If replacement found: enrollment reactivated, outreach re-queued with new contact automatically
+• If no replacement anywhere: stays bounced, logged silently. User is NEVER alerted about your own mistakes.
+• bounce_detected_at is cleared when replacement succeeds, so campaign stats stay clean.
+
+OOO RESCHEDULING:
+• Out-of-office replies are detected via keyword matching (auto-reply, will be back, returning on, etc.)
+• Return date is parsed from the OOO message
+• ALL queued outreach steps are rescheduled to return date + 1 day
+• If no return date parseable: rescheduled +7 days automatically
+• Alert created for user awareness, but sequence handles itself
+
+AUTO-DEAL CREATION:
+• When a prospect replies to outreach (any reply type), a deal is auto-created in the pipeline at "Engaged" stage
+• Only if no existing active deal for that company
+• Default value $5M, assigned to Matt Smith
+• Notes indicate it was auto-created from campaign reply
+
+DIRECT EMAIL SEND:
+• Endpoint: POST /api/gmail-send — sends email directly via Gmail API (not just draft)
+• Tracks the send in kiko_email_tracking with 5-day follow-up window
+• Supports sender selection (Sunny/Matt), CC, thread replies
+• Use this when user says "send it now" or "send directly"
+
+COMMAND CENTRE:
+• Alerts — Immediate Action band shows ONLY real correspondence (replies, connections, OOO). NOT bounces.
+• Follow-ups tab now linked to homepage alerts — same data source
+• Sponsorship News filters out eyewear/fashion permanently + only shows undismissed alerts
+• EmailDraft component (same as main chat) renders below briefs when draft detected
+• DB triggers cascade: reply received → dismiss follow-up alert → complete task → update contact → create deal
+
+CAMPAIGN EMAIL TRACKING:
+• Every email sent by the sequence sender cron is now logged in kiko_email_tracking
+• follow_up_due set to 5 days after send
+• This means ALL campaign emails will trigger follow-up alerts if no reply received
+• Previously only manual Gmail sends were tracked
+
+EMAIL VOICE (GLOBAL):
+• Voice profile from 115 real sent emails is injected into the backend system prompt (kiko.js)
+• Forbidden phrases enforced platform-wide: genuinely, appreciate the candour, hope this finds you well, etc.
+• The /api/rewrite-email endpoint loads voice profile for EVERY tone adjustment
+• This applies to ALL email drafts everywhere — Command Centre, main chat, campaigns
 `;
 
 export async function generateSelfKnowledge(userId) {

@@ -144,20 +144,32 @@ export default async function handler(req, res) {
           const ooo = isOutOfOffice(snippet);
           if (ooo.isOOO) {
             console.log(`[reply-detect] OOO detected for ${enrollment.contact_name}: ${snippet?.slice(0, 100)}`);
+            let resumeDate = null;
             if (ooo.returnDate) {
               try {
                 const returnMs = Date.parse(ooo.returnDate);
                 if (!isNaN(returnMs) && returnMs > Date.now()) {
-                  await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
-                    next_send_at: new Date(returnMs + 24 * 60 * 60 * 1000).toISOString()
-                  }) });
+                  resumeDate = new Date(returnMs + 24 * 60 * 60 * 1000); // day after return
                 }
               } catch {}
             }
+            if (!resumeDate) {
+              // No parseable return date — reschedule 7 days from now
+              resumeDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            }
+            // Reschedule enrollment AND all queued outreach steps
+            await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
+              next_send_at: resumeDate.toISOString()
+            }) });
+            // Reschedule all pending outreach queue items to after return
+            await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.queued`, { method: 'PATCH', body: JSON.stringify({
+              scheduled_for: resumeDate.toISOString()
+            }) });
+            console.log(`[reply-detect] ⏸️ Rescheduled ${enrollment.contact_name} to ${resumeDate.toISOString().split('T')[0]}`);
             await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
               type: 'ooo_detected', severity: 'low',
               title: `OOO: ${enrollment.contact_name} (${enrollment.company})`,
-              detail: `${enrollment.contact_name} is out of office. ${ooo.returnDate ? 'Returns: ' + ooo.returnDate + '.' : ''} Sequence continues. Snippet: ${(snippet || '').slice(0, 200)}`,
+              detail: `${enrollment.contact_name} is out of office. ${ooo.returnDate ? 'Returns: ' + ooo.returnDate + '.' : 'No return date — rescheduled +7 days.'} Outreach paused until ${resumeDate.toISOString().split('T')[0]}. Snippet: ${(snippet || '').slice(0, 200)}`,
               entity_type: 'contact', entity_name: enrollment.contact_name || email,
               user_id: tokenUserId, created_at: new Date().toISOString()
             }) });
