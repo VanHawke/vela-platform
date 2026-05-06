@@ -464,9 +464,19 @@ export default function OutreachIntelligence({ user }) {
               if (!raw || raw === '[DONE]') return
               try {
                 const evt = JSON.parse(raw)
-                // Kiko SSE stream uses `delta` for text chunks; also support `text` as fallback
+                if (evt.error || evt.type === 'error') {
+                  setBrief('Kiko is temporarily unavailable. Please try again in a moment.')
+                  return
+                }
                 const chunk = evt.delta || evt.text
-                if (chunk) setBrief(prev => prev + chunk)
+                if (chunk) {
+                  // Catch raw error JSON in the text stream
+                  if (chunk.includes('"overloaded_error"') || chunk.includes('"type":"error"')) {
+                    setBrief('Kiko is temporarily busy. Click the item again to retry.')
+                    return
+                  }
+                  setBrief(prev => prev + chunk)
+                }
               } catch {}
             })
           }
