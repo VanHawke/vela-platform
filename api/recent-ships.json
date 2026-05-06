@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-06T18:25:56.197Z",
+  "generated_at": "2026-05-06T18:32:25.939Z",
   "commits": [
+    {
+      "hash": "56fc2fe",
+      "subject": "CRITICAL: Global email voice rules in backend system prompt + auto-fix bounces",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "3df989e",
       "subject": "CRITICAL: Inject Van Hawke email voice into ALL Command Centre drafts",
-      "when": "8 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "935eba9",
       "subject": "Kiko now alerts on bounced emails + bounce visual in Command Centre",
-      "when": "13 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "7a8b9f3",
       "subject": "Fix tab underline + auto-complete tasks on reply",
-      "when": "74 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "6f6d87b",
       "subject": "Fix: remove stray )} rendering on page + auto-dismiss follow-ups on reply",
-      "when": "76 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "3afd5cb",
       "subject": "Alert dismiss + auto-clear + Gmail draft endpoint + signal briefs",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "0fdf885",
@@ -69,7 +74,7 @@
     {
       "hash": "4e0767c",
       "subject": "Fix: detail panel body scrollable (flex:1 min-height:0)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "15d056d",
@@ -94,11 +99,6 @@
     {
       "hash": "51e7328",
       "subject": "Command Centre: simple tabbed layout using existing styles",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "826fda2",
-      "subject": "ROLLBACK: Restored original Command Centre",
       "when": "5 hours ago"
     }
   ]
