@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-06T16:29:19.908Z",
+  "generated_at": "2026-05-06T16:35:04.378Z",
   "commits": [
+    {
+      "hash": "a60ecb4",
+      "subject": "Fix: graceful error handling for overloaded API + all prompt fixes",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "4472861",
       "subject": "Fix: Sponsorship News inside grid + clicking shows brief",
-      "when": "82 seconds ago"
+      "when": "7 minutes ago"
     },
     {
       "hash": "6b074c6",
       "subject": "Fix alerts, homepage pills, sponsorship news, HTML entities",
-      "when": "14 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "3d1f8ef",
       "subject": "Fix reply brief: avoid 'brief' intent classification",
-      "when": "33 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "d896aad",
       "subject": "Fix reply brief: route through memory engine, not EA agent",
-      "when": "50 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "2977200",
       "subject": "Fix reply briefs: show actual reply content, not morning brief",
-      "when": "53 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "4e0767c",
       "subject": "Fix: detail panel body scrollable (flex:1 min-height:0)",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "15d056d",
@@ -94,11 +99,6 @@
     {
       "hash": "e130952",
       "subject": "FIX: Reply alerts now captured + error logged instead of silently swallowed",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "8793b85",
-      "subject": "Gmail send tracking + follow-up alerts for all CRM contacts",
       "when": "5 hours ago"
     }
   ]

@@ -279,7 +279,7 @@ export default function OutreachIntelligence({ user }) {
     try {
       const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      const signalTypes = ['partnership_detected', 'new_partnership', 'competitive_change', 'proactive_intel', 'company_signal']
+      const signalTypes = ['partnership_detected', 'new_partnership', 'competitive_change', 'company_signal']
       const [dealsRes, hotRes, signalRes, campaignRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at')
           .not('data->>status', 'in', '("won","lost")')
@@ -319,7 +319,7 @@ export default function OutreachIntelligence({ user }) {
       })())
       setSignals((signalRes.data || []).filter(s => {
         const text = `${s.title} ${s.detail} ${s.entity_name}`.toLowerCase()
-        return /partner|sponsor|renew|deal|title.?partner|naming.?rights|category.?exclusive/i.test(text)
+        return /partner|sponsor|renew|title.?partner|naming.?rights|category.?exclusive/i.test(text)
           || s.type === 'partnership_detected' || s.type === 'new_partnership'
       }))
       setCampaignActivity(campaignRes.data || [])
