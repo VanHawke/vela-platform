@@ -5,6 +5,7 @@
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
+export const config = { maxDuration: 30 };
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
 
 export default async function handler(req, res) {
@@ -93,7 +94,7 @@ export default async function handler(req, res) {
           await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.queued`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
 
           // Create alert — schema-correct (type=reply_from_prospect to match Command Centre + Sequences UI queries)
-          await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+          const alertRes = await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
             type: 'reply_from_prospect',
             severity: 'high',
             title: `Reply: ${enrollment.contact_name || email}`,
@@ -104,7 +105,8 @@ export default async function handler(req, res) {
             user_id: tokenUserId,
             metadata: { gmail_id: msgId, thread_id: threadId, sequence_id: enrollment.sequence_id, enrollment_id: enrollment.id, source: 'sequence_reply_detect' },
             created_at: new Date().toISOString()
-          }) }).catch(() => {});
+          }) });
+          if (alertRes?.code) console.error('[reply-detect] Alert insert failed:', JSON.stringify(alertRes));
           // Attribution
           await sbFetch('kiko_deal_attribution', { method: 'POST', body: JSON.stringify({
             deal_company: enrollment.company, event_type: 'reply_received',
