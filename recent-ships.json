@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-06T15:39:14.383Z",
+  "generated_at": "2026-05-06T15:55:52.633Z",
   "commits": [
+    {
+      "hash": "d896aad",
+      "subject": "Fix reply brief: route through memory engine, not EA agent",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "2977200",
       "subject": "Fix reply briefs: show actual reply content, not morning brief",
-      "when": "3 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "4e0767c",
       "subject": "Fix: detail panel body scrollable (flex:1 min-height:0)",
-      "when": "39 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "15d056d",
       "subject": "Interactive email drafter + scrollable detail panel",
-      "when": "61 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "2453aef",
       "subject": "Alert pill links to CC + KikoInsights sidebar removed + Sponsorship News sub-tabs",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "70fd2e7",
@@ -34,12 +39,12 @@
     {
       "hash": "51e7328",
       "subject": "Command Centre: simple tabbed layout using existing styles",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "826fda2",
       "subject": "ROLLBACK: Restored original Command Centre",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "dd492f9",
@@ -64,7 +69,7 @@
     {
       "hash": "00a27bb",
       "subject": "Command Centre redesign phase 1: Campaign Activity + Follow-ups prioritised",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "cca8b7d",
@@ -89,16 +94,11 @@
     {
       "hash": "512d2a8",
       "subject": "CRITICAL FIX: Block fake placeholder emails from campaign sends",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "eaecf1d",
       "subject": "CLEANUP: Remove all Vercel remnants + dead syncCookies endpoint",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "906cb34",
-      "subject": "FIX: Intent classifier company lookup false positives + email alias recursion",
       "when": "6 hours ago"
     }
   ]
