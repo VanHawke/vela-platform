@@ -225,6 +225,7 @@ export default function OutreachIntelligence({ user }) {
   const [hotReplies, setHotReplies] = useState([])
   const [signals, setSignals] = useState([])
   const [campaignActivity, setCampaignActivity] = useState([])
+  const [mainTab, setMainTab] = useState('followups')
   const [taskFilter, setTaskFilter] = useState('overdue')
   const [showNewTask, setShowNewTask] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
@@ -530,6 +531,58 @@ export default function OutreachIntelligence({ user }) {
         <div className="cc-grid">
           {/* LEFT: Grouped priority list */}
           <div className="cc-list">
+            {/* MAIN TABS */}
+            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.08)', marginBottom: 8 }}>
+              {[
+                { id: 'followups', label: 'Follow-ups' },
+                { id: 'campaign', label: 'Campaign Activity' },
+                { id: 'stale', label: 'Stale Deals' },
+                { id: 'intel', label: 'Market Intelligence' },
+              ].map(t => (
+                <button key={t.id} onClick={() => setMainTab(t.id)} style={{
+                  padding: '8px 12px', fontSize: 12, fontWeight: mainTab === t.id ? 600 : 400,
+                  color: mainTab === t.id ? '#0A0A0A' : '#6B6B6B',
+                  borderBottom: mainTab === t.id ? '2px solid #0A0A0A' : '2px solid transparent',
+                  background: 'none', border: 'none', borderBottomStyle: 'solid',
+                  cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
+                }}>{t.label}</button>
+              ))}
+            </div>
+
+            {mainTab === 'followups' && (<>
+            {/* FOLLOW-UP TRACKER */}
+            {followUps.length > 0 && (
+              <div className="cc-group">
+                <div className="cc-group-h">
+                  <h3><Send size={10} />Awaiting replies</h3>
+                  <span className="cc-group-count">{followUps.length}</span>
+                </div>
+                {followUps.map(fu => {
+                  const isOverdue = fu.follow_up_due_at && new Date(fu.follow_up_due_at) < new Date()
+                  return (
+                    <div
+                      key={fu.id}
+                      className={`cc-row ${isSelected('followup', fu.id) ? 'selected' : ''}`}
+                      onClick={() => selectFollowUp(fu)}
+                    >
+                      <button className="cc-row-icon sage" onClick={e => markFollowUpDone(fu, e)} title="Mark done">
+                        <CheckSquare size={10} />
+                      </button>
+                      <div className="cc-row-body">
+                        <div className="cc-row-title">{fu.recipient_name || fu.recipient_email}</div>
+                        <div className="cc-row-meta">
+                          {fu.company && <>{fu.company} · </>}
+                          {fu.subject && <>{fu.subject.slice(0, 40)} · </>}
+                          {dueLabel(fu.follow_up_due_at)}
+                          {isOverdue && <span className="cc-row-tag overdue">OVERDUE</span>}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
             {/* TASK FILTER TABS */}
             <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', marginBottom: 8, alignItems: 'center' }}>
               {[
@@ -597,64 +650,9 @@ export default function OutreachIntelligence({ user }) {
               })()}
             </div>
 
-            {/* STALE DEALS */}
-            <div className="cc-group">
-              <div className="cc-group-h">
-                <h3><Clock size={10} />Stale deals</h3>
-                <span className="cc-group-count">{staleDeals.length}</span>
-              </div>
-              {staleDeals.length === 0 ? (
-                <div className="cc-empty-row">All deals active</div>
-              ) : staleDeals.slice(0, 6).map(d => (
-                <div
-                  key={d._id}
-                  className={`cc-row ${isSelected('deal', d._id) ? 'selected' : ''}`}
-                  onClick={() => selectDeal(d)}
-                >
-                  <div className="cc-row-icon amber"><TrendingUp size={10} /></div>
-                  <div className="cc-row-body">
-                    <div className="cc-row-title">{d.company || d.title || 'Untitled'}</div>
-                    <div className="cc-row-meta">
-                      {d.stage} · {fmtCurrency(parseFloat(d.value) || 0)} · {d.daysSince}d idle
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            </>)}
 
-            {/* FOLLOW-UP TRACKER */}
-            {followUps.length > 0 && (
-              <div className="cc-group">
-                <div className="cc-group-h">
-                  <h3><Send size={10} />Awaiting replies</h3>
-                  <span className="cc-group-count">{followUps.length}</span>
-                </div>
-                {followUps.map(fu => {
-                  const isOverdue = fu.follow_up_due_at && new Date(fu.follow_up_due_at) < new Date()
-                  return (
-                    <div
-                      key={fu.id}
-                      className={`cc-row ${isSelected('followup', fu.id) ? 'selected' : ''}`}
-                      onClick={() => selectFollowUp(fu)}
-                    >
-                      <button className="cc-row-icon sage" onClick={e => markFollowUpDone(fu, e)} title="Mark done">
-                        <CheckSquare size={10} />
-                      </button>
-                      <div className="cc-row-body">
-                        <div className="cc-row-title">{fu.recipient_name || fu.recipient_email}</div>
-                        <div className="cc-row-meta">
-                          {fu.company && <>{fu.company} · </>}
-                          {fu.subject && <>{fu.subject.slice(0, 40)} · </>}
-                          {dueLabel(fu.follow_up_due_at)}
-                          {isOverdue && <span className="cc-row-tag overdue">OVERDUE</span>}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
+            {mainTab === 'campaign' && (<>
             {/* CAMPAIGN ACTIVITY */}
             {campaignActivity.length > 0 && (
               <div className="cc-group">
@@ -681,34 +679,37 @@ export default function OutreachIntelligence({ user }) {
               </div>
             )}
 
-            {/* THIS WEEK TASKS */}
+            </>)}
+
+            {mainTab === 'stale' && (<>
+            {/* STALE DEALS */}
             <div className="cc-group">
               <div className="cc-group-h">
-                <h3><Calendar size={10} />Due this week</h3>
-                <span className="cc-group-count">{thisWeekTasks.length}</span>
+                <h3><Clock size={10} />Stale deals</h3>
+                <span className="cc-group-count">{staleDeals.length}</span>
               </div>
-              {thisWeekTasks.length === 0 ? (
-                <div className="cc-empty-row">Nothing due this week</div>
-              ) : thisWeekTasks.slice(0, 8).map(t => (
+              {staleDeals.length === 0 ? (
+                <div className="cc-empty-row">All deals active</div>
+              ) : staleDeals.slice(0, 6).map(d => (
                 <div
-                  key={t.id}
-                  className={`cc-row ${isSelected('task', t.id) ? 'selected' : ''}`}
-                  onClick={() => selectTask(t)}
+                  key={d._id}
+                  className={`cc-row ${isSelected('deal', d._id) ? 'selected' : ''}`}
+                  onClick={() => selectDeal(d)}
                 >
-                  <button className="cc-row-icon sage" onClick={e => completeTask(t, e)} title="Mark done">
-                    <Square size={10} />
-                  </button>
+                  <div className="cc-row-icon amber"><TrendingUp size={10} /></div>
                   <div className="cc-row-body">
-                    <div className="cc-row-title">{taskLabel(t)}</div>
+                    <div className="cc-row-title">{d.company || d.title || 'Untitled'}</div>
                     <div className="cc-row-meta">
-                      {taskSub(t) && <>{taskSub(t)} · </>}
-                      {dueLabel(t.data?.dueDate)}
+                      {d.stage} · {fmtCurrency(parseFloat(d.value) || 0)} · {d.daysSince}d idle
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
+            </>)}
+
+            {mainTab === 'intel' && (<>
             {/* SIGNALS */}
             <div className="cc-group">
               <div className="cc-group-h">
@@ -734,8 +735,8 @@ export default function OutreachIntelligence({ user }) {
                 </div>
               ))}
             </div>
+            </>)}
           </div>
-
           {/* RIGHT: Detail pane with Kiko brief */}
           <aside className="cc-detail">
             {!selected ? (

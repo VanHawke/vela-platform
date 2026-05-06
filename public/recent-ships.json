@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-05-06T13:10:23.455Z",
+  "generated_at": "2026-05-06T13:19:20.137Z",
   "commits": [
+    {
+      "hash": "826fda2",
+      "subject": "ROLLBACK: Restored original Command Centre",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "dd492f9",
       "subject": "Fix Campaign Activity: only show real engagement (replies, OOO, LinkedIn)",
-      "when": "4 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "f4ccdf9",
       "subject": "Command Centre redesign: tabbed layout matching approved mockup",
-      "when": "15 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "72d4e46",
       "subject": "ROLLBACK: Reverted Command Centre to pre-redesign state",
-      "when": "28 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "dd35d1b",
       "subject": "Command Centre phase 2: Market Intelligence with F1/FE/WEC/MotoGP tabs",
-      "when": "38 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "00a27bb",
       "subject": "Command Centre redesign phase 1: Campaign Activity + Follow-ups prioritised",
-      "when": "47 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "cca8b7d",
       "subject": "OOO detection: Kiko now distinguishes auto-replies from genuine responses",
-      "when": "74 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "e130952",
       "subject": "FIX: Reply alerts now captured + error logged instead of silently swallowed",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8793b85",
@@ -94,11 +99,6 @@
     {
       "hash": "0462a71",
       "subject": "Campaign arc v3: learned from Lemlist + added paddock & assets themes",
-      "when": "9 days ago"
-    },
-    {
-      "hash": "c080fbe",
-      "subject": "Campaign intelligence v2: narrative arc + JSON-only output",
       "when": "9 days ago"
     }
   ]
