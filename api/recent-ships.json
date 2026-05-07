@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-05-07T11:31:06.347Z",
+  "generated_at": "2026-05-07T11:34:06.599Z",
   "commits": [
+    {
+      "hash": "e4190f9",
+      "subject": "Mobile Command Centre: replaces bell alert view with stripped-down command centre",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "97fb13c",
       "subject": "Fix LinkedIn shows disconnected: RLS blocks token stored under wrong email",
@@ -14,7 +19,7 @@
     {
       "hash": "b9f247e",
       "subject": "Fix LinkedIn connect: target VISIBLE inputs (LinkedIn has hidden duplicates)",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "d6913fa",
@@ -69,7 +74,7 @@
     {
       "hash": "31ce2b3",
       "subject": "KikoFloat EmailDraft + cron activity logging + UI action logging",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "f8fd504",
@@ -94,11 +99,6 @@
     {
       "hash": "cce28ca",
       "subject": "Fix 22 false bounces: tighten detection + clear false positives",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "362b5e0",
-      "subject": "Fix alerts, homepage pills, sponsorship news, HTML entities",
       "when": "16 hours ago"
     }
   ]

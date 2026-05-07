@@ -1485,15 +1485,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       </div>
     )
   }
-                </div>
-                <div style={{ fontSize: 12, padding: '4px 12px', borderRadius: 8, background: 'rgba(125,138,100,0.10)', color: '#7d8a64', fontWeight: 500 }}>Active</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
 
   // ── Mobile Chat History panel ──
   const MobileChatHistory = () => {
