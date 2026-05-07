@@ -35,7 +35,15 @@ export function extractEmailSection(text) {
 }
 
 function parseEmail(text) {
-  let t = text.replace(/#{1,3}\s*\d*\.?\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT)\s*/gi, '').replace(/\*?\*?\[Subject to[^\]]*\]\*?\*?\s*/gi, '')
+  // First: try to isolate the DRAFT section if the text contains a brief + draft
+  // Look for "DRAFT REPLY", "DRAFT EMAIL", "DRAFT:", "5. DRAFT" etc.
+  const draftSectionMatch = text.match(/(?:#{1,4}\s*)?(?:\*{0,2})?\s*(?:\d+\.?\s*)?(?:DRAFT\s*(?:REPLY|EMAIL|OUTREACH|FOLLOW[- ]?UP)?)[:\s\*—\-]*\n/i)
+  let emailText = text
+  if (draftSectionMatch) {
+    emailText = text.slice(draftSectionMatch.index + draftSectionMatch[0].length)
+  }
+  
+  let t = emailText.replace(/#{1,3}\s*\d*\.?\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT)\s*/gi, '').replace(/\*?\*?\[Subject to[^\]]*\]\*?\*?\s*/gi, '')
   t = t.replace(/(Subject\s*:)/i, '\n$1').replace(/(To\s*:)/i, '\n$1').replace(/(Dear\s+\w)/i, '\n$1')
   const subMatch = t.match(/\*?\*?Subject\*?\*?\s*:\s*(.+?)(?:\n|$)/i)
   const subject = subMatch ? subMatch[1].replace(/\*\*/g, '').replace(/[\u2014\u2013]/g, '-').replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'").trim() : ''

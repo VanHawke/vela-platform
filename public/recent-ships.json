@@ -1,25 +1,40 @@
 {
-  "generated_at": "2026-05-07T17:13:13.725Z",
+  "generated_at": "2026-05-07T17:40:55.887Z",
   "commits": [
+    {
+      "hash": "6e302f1",
+      "subject": "FIX: Command Centre ALWAYS uses Sonnet — Haiku was truncating drafts",
+      "when": "9 minutes ago"
+    },
+    {
+      "hash": "d87f8cc",
+      "subject": "FIX: Command Centre briefs never truncated — force 4096 tokens minimum",
+      "when": "15 minutes ago"
+    },
+    {
+      "hash": "e061ae7",
+      "subject": "CRITICAL: Test emails don't trigger tracking + reply follow-up guarantee",
+      "when": "27 minutes ago"
+    },
     {
       "hash": "c83b328",
       "subject": "FIX: Reply alerts visible for 7 days (was 24hrs), cognitive alerts in Command Centre",
-      "when": "5 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "5be09cf",
       "subject": "FIX: Campaign stats reading from wrong table + pre-send validation",
-      "when": "42 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "4b9d97c",
       "subject": "CRITICAL: Pre-send email validation + enhanced campaign visibility",
-      "when": "50 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "22a9295",
       "subject": "Phase 2 complete: all wiring verified, Kiko self-knowledge updated",
-      "when": "72 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "781d13d",
@@ -39,17 +54,17 @@
     {
       "hash": "a5977c4",
       "subject": "Kiko: add General Intelligence section + update self-knowledge",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "3c60c9f",
       "subject": "Update Kiko self-knowledge: Session 66+ capabilities",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "12abaca",
       "subject": "Command Centre: default sender = Matt for campaign replies/tasks",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "ff76893",
@@ -84,21 +99,6 @@
     {
       "hash": "b1207a5",
       "subject": "Add Send Test button to EmailDraft composer",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "25fd626",
-      "subject": "Fix: editable To field + strip blockquote > from briefs",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "f127379",
-      "subject": "Fix: EmailDraft shows error despite draft succeeding — field mismatch",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "6d976d2",
-      "subject": "Force-strip em dashes at rendering level (LLM ignores prompt instructions)",
       "when": "5 hours ago"
     }
   ]
