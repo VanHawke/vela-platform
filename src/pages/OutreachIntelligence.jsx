@@ -23,6 +23,18 @@ function stripDraftFromBrief(text) {
   return text.replace(/\n*(?:#{1,4}\s*)?(?:\d+\.\s*)?(?:DRAFT\s*(?:REPLY|EMAIL|OUTREACH|FOLLOW.?UP))[:\s—\-]*[\s\S]*/i, '\n').trim()
 }
 
+// Strip tool calls, tool responses, and Kiko's internal narration from brief text
+function stripToolCalls(text) {
+  if (!text) return text
+  return text
+    .replace(/<tool_call>[\s\S]*?<\/tool_call>/g, '')
+    .replace(/<tool_response>[\s\S]*?<\/tool_response>/g, '')
+    .replace(/I'll pull.*?(?:now|first)\.?\s*/gi, '')
+    .replace(/Let me (?:look up|search|check|find|pull).*?(?:\.|$)/gim, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 function parseBriefMarkdown(text) {
   if (!text) return ''
   return text
@@ -215,20 +227,18 @@ function buildBriefPrompt(sel) {
   const titleSuffix = titleParts.length > 1 ? titleParts[titleParts.length - 1].trim() : null
   if (sel.kind === 'reply') {
     const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
-    return `REPLY ANALYSIS — ${p.entity_name || 'prospect'} has replied to our outreach.
+    return `REPLY ANALYSIS — ${p.entity_name || 'prospect'} replied to our outreach.
 
-Look up ${p.entity_name || 'this prospect'} in our CRM contacts and deals. Pull their company, role, deal stage, and full relationship history.
+THEIR REPLY: "${snippet}"
+Subject: "${sel.title}". Arrived ${relativeTime(p.created_at)}.
 
-THEIR EXACT REPLY: "${snippet}"
+IMPORTANT: Do NOT show tool calls, tool responses, or your internal reasoning. Present ONLY the clean brief below. Do NOT narrate what you're looking up.
 
-Subject thread: "${sel.title}". Arrived ${relativeTime(p.created_at)}.
-
-Respond with these sections only:
-1. LAST CORRESPONDENCE — show the full text of the last email sent TO this person AND their reply. Include dates, subject lines, and full body text. If we sent a follow-up, show that too.
-2. WHAT THEY SAID — key points of their reply and sentiment
-3. WHERE WE STAND — our relationship history and deal status with them
-4. DEFINITIVE NEXT STEP — tell me EXACTLY what to do: who to contact, when to send, via what channel (email/LinkedIn/call), and what the message should achieve. No hedging. One clear action.
-5. DRAFT REPLY — Subject: line, then Dear [Name], body, Kind regards
+Respond with ONLY these sections:
+1. CONTEXT — ${p.entity_name || 'This person'}: their role, company, one sentence on where we stand. Keep it to 2-3 lines max.
+2. THEIR REPLY — what they said and what it means. 2-3 lines.
+3. DEFINITIVE NEXT STEP — EXACTLY what to do: who, when, what channel, what the message should achieve. One action, no hedging.
+4. DRAFT REPLY — Subject: line, then Dear [Name], body, Kind regards
 
 ${VH_EMAIL_VOICE}`
   }
@@ -240,7 +250,7 @@ ${VH_EMAIL_VOICE}`
     if (d.contact) bits.push(`Contact: ${d.contact}`)
     if (d.dueDate) bits.push(`Due: ${d.dueDate}`)
     if (d.notes) bits.push(`Notes: ${d.notes}`)
-    return `I need a focused brief on ONE SPECIFIC PERSON: ${d.contact || titleSuffix || 'the contact'} at ${d.company || 'their company'}.\n\n${bits.join('\n')}\n\nRESPOND WITH ONLY THESE 5 SECTIONS:\n1. LAST CORRESPONDENCE — search Gmail for the last email sent to or received from ${d.contact || titleSuffix || 'this person'}. Show the full email text, subject line, and date. If no email found, state that clearly.\n2. WHO — ${d.contact || titleSuffix || 'This person'}: their role, their company, what the company does, our relationship history\n3. DEAL STATUS — current deal stage with ${d.company || 'this company'}, value, last touchpoint date\n4. DEFINITIVE NEXT STEP — tell me EXACTLY what to do: who to contact, when, via what channel, what the message should achieve. One clear action, no hedging, no \"consider\" or \"might want to\".\n5. DRAFT EMAIL — Subject: line, then Dear ${d.contact ? d.contact.split(' ')[0] : '[Name]'}, body, Kind regards\n\nDO NOT mention any other deals, companies, tasks, or pipeline metrics. This is about ${d.contact || d.company || sel.title} ONLY.\n\n${VH_EMAIL_VOICE}`
+    return `Brief on ${d.contact || titleSuffix || 'the contact'} at ${d.company || 'their company'}.\n\n${bits.join('\n')}\n\nIMPORTANT: Do NOT show tool calls, tool responses, or internal reasoning. Present ONLY the clean brief.\n\nRESPOND WITH ONLY THESE 4 SECTIONS:\n1. CONTEXT — ${d.contact || titleSuffix || 'This person'}: role, company, one line on where we stand. 2-3 lines max.\n2. LAST COMMS — the last email we sent or received from them. Just the most recent one for context, not every message.\n3. DEFINITIVE NEXT STEP — EXACTLY what to do: who, when, what channel, what the message should achieve. One action, no hedging.\n4. DRAFT EMAIL — Subject: line, then Dear ${d.contact ? d.contact.split(' ')[0] : '[Name]'}, body, Kind regards\n\nThis is about ${d.contact || d.company || sel.title} ONLY. Keep it short and actionable.\n\n${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'deal') {
     return `FOCUS: Brief me ONLY on this specific deal. Do NOT give a general pipeline review.\n\nDeal: ${p.company || p.title}\nStage: ${p.stage}\nValue: ${p.value ? '$' + p.value : 'n/a'}\nDays since activity: ${p.daysSince}\n\nRespond with ONLY:\n1. ACCOUNT STATUS — where we are with ${p.company || p.title} specifically, what's happened, key contacts\n2. NEXT MOVE — the single best action to progress this deal\n3. MARKET SIGNALS — any recent news or signals on this company\n4. DRAFT EMAIL — format with Subject: on its own line, then Dear [Name], body, Kind regards\n\nStay focused on ${p.company || p.title} ONLY. Senior sales voice, specific names and dates.\n\n${VH_EMAIL_VOICE}`
@@ -906,7 +916,7 @@ export default function OutreachIntelligence({ user }) {
                 </div>
                 <div className="cc-detail-body">
                   {brief ? (
-                    <div className="cc-detail-section-body" style={{ lineHeight: 1.65, fontSize: 13.5, color: '#2A2A2A', fontFamily: 'Inter, system-ui, sans-serif' }} dangerouslySetInnerHTML={{ __html: parseBriefMarkdown(isEmailDraft(brief) ? stripDraftFromBrief(brief) : brief) }} />
+                    <div className="cc-detail-section-body" style={{ lineHeight: 1.65, fontSize: 13.5, color: '#2A2A2A', fontFamily: 'Inter, system-ui, sans-serif' }} dangerouslySetInnerHTML={{ __html: parseBriefMarkdown(stripToolCalls(isEmailDraft(brief) ? stripDraftFromBrief(brief) : brief)) }} />
                   ) : briefLoading ? (
                     <div className="cc-detail-loading">
                       <span className="dot" /><span className="dot" /><span className="dot" />
