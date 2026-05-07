@@ -224,10 +224,11 @@ THEIR EXACT REPLY: "${snippet}"
 Subject thread: "${sel.title}". Arrived ${relativeTime(p.created_at)}.
 
 Respond with these sections only:
-1. WHAT THEY SAID — key points of their reply and sentiment
-2. WHERE WE STAND — our relationship history and deal status with them
-3. RECOMMENDED NEXT MOVE — the single best action right now
-4. DRAFT REPLY — Subject: line, then Dear [Name], body, Kind regards
+1. LAST CORRESPONDENCE — show the full text of the last email sent TO this person AND their reply. Include dates, subject lines, and full body text. If we sent a follow-up, show that too.
+2. WHAT THEY SAID — key points of their reply and sentiment
+3. WHERE WE STAND — our relationship history and deal status with them
+4. DEFINITIVE NEXT STEP — tell me EXACTLY what to do: who to contact, when to send, via what channel (email/LinkedIn/call), and what the message should achieve. No hedging. One clear action.
+5. DRAFT REPLY — Subject: line, then Dear [Name], body, Kind regards
 
 ${VH_EMAIL_VOICE}`
   }
@@ -239,7 +240,7 @@ ${VH_EMAIL_VOICE}`
     if (d.contact) bits.push(`Contact: ${d.contact}`)
     if (d.dueDate) bits.push(`Due: ${d.dueDate}`)
     if (d.notes) bits.push(`Notes: ${d.notes}`)
-    return `I need a focused brief on ONE SPECIFIC PERSON: ${d.contact || titleSuffix || 'the contact'} at ${d.company || 'their company'}.\n\n${bits.join('\n')}\n\nRESPOND WITH ONLY THESE 4 SECTIONS:\n1. WHO — ${d.contact || titleSuffix || 'This person'}: their role, their company, what the company does, our relationship history\n2. DEAL STATUS — current deal stage with ${d.company || 'this company'}, value, last touchpoint date\n3. RECOMMENDED ACTION — what specifically to do for this re-engagement task and why\n4. DRAFT EMAIL — Subject: line, then Dear ${d.contact ? d.contact.split(' ')[0] : '[Name]'}, body, Kind regards\n\nDO NOT mention any other deals, companies, tasks, or pipeline metrics. This is about ${d.contact || d.company || sel.title} ONLY.\n\n${VH_EMAIL_VOICE}`
+    return `I need a focused brief on ONE SPECIFIC PERSON: ${d.contact || titleSuffix || 'the contact'} at ${d.company || 'their company'}.\n\n${bits.join('\n')}\n\nRESPOND WITH ONLY THESE 5 SECTIONS:\n1. LAST CORRESPONDENCE — search Gmail for the last email sent to or received from ${d.contact || titleSuffix || 'this person'}. Show the full email text, subject line, and date. If no email found, state that clearly.\n2. WHO — ${d.contact || titleSuffix || 'This person'}: their role, their company, what the company does, our relationship history\n3. DEAL STATUS — current deal stage with ${d.company || 'this company'}, value, last touchpoint date\n4. DEFINITIVE NEXT STEP — tell me EXACTLY what to do: who to contact, when, via what channel, what the message should achieve. One clear action, no hedging, no \"consider\" or \"might want to\".\n5. DRAFT EMAIL — Subject: line, then Dear ${d.contact ? d.contact.split(' ')[0] : '[Name]'}, body, Kind regards\n\nDO NOT mention any other deals, companies, tasks, or pipeline metrics. This is about ${d.contact || d.company || sel.title} ONLY.\n\n${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'deal') {
     return `FOCUS: Brief me ONLY on this specific deal. Do NOT give a general pipeline review.\n\nDeal: ${p.company || p.title}\nStage: ${p.stage}\nValue: ${p.value ? '$' + p.value : 'n/a'}\nDays since activity: ${p.daysSince}\n\nRespond with ONLY:\n1. ACCOUNT STATUS — where we are with ${p.company || p.title} specifically, what's happened, key contacts\n2. NEXT MOVE — the single best action to progress this deal\n3. MARKET SIGNALS — any recent news or signals on this company\n4. DRAFT EMAIL — format with Subject: on its own line, then Dear [Name], body, Kind regards\n\nStay focused on ${p.company || p.title} ONLY. Senior sales voice, specific names and dates.\n\n${VH_EMAIL_VOICE}`
@@ -259,7 +260,7 @@ Give me:
 4. DRAFT OUTREACH — if there's an opportunity, a draft email to the relevant contact`
   }
   if (sel.kind === 'followup') {
-    return `I need a re-engagement brief for ${p.recipient_name || p.recipient_email} at ${p.company || 'their company'}.\n\nOriginal email subject: "${p.subject || ''}"\nSent: ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : 'unknown'}\nFollow-up due: ${p.follow_up_due_at ? new Date(p.follow_up_due_at).toLocaleDateString('en-GB') : 'unknown'}\nStatus: ${p.status}\n\nGive me: (1) where we stand — check CRM for deal context, (2) why they haven't replied — psychological analysis, (3) recommended approach for the follow-up, (4) a DRAFT follow-up email — Subject: line, Dear [Name], body, Kind regards. Use a different angle from the original — don't just "check in."\n\n${VH_EMAIL_VOICE}`
+    return `I need a re-engagement brief for ${p.recipient_name || p.recipient_email} at ${p.company || 'their company'}.\n\nOriginal email subject: "${p.subject || ''}"\nSent: ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : 'unknown'}\nFollow-up due: ${p.follow_up_due_at ? new Date(p.follow_up_due_at).toLocaleDateString('en-GB') : 'unknown'}\nStatus: ${p.status}\n\nGive me:\n1. LAST CORRESPONDENCE — search Gmail for our full email thread with ${p.recipient_name || p.recipient_email}. Show the last email WE sent (full text) and any reply received. Include dates.\n2. WHY NO REPLY — psychological analysis of why they haven't responded, based on their role, company stage, and timing\n3. DEFINITIVE NEXT STEP — tell me EXACTLY what to do: when to send, what angle to use, what channel. One clear action. No hedging.\n4. DRAFT FOLLOW-UP EMAIL — Subject: line, Dear [Name], body, Kind regards. Use a completely different angle from the original — don't just "check in."\n\n${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'campaign') {
     return `Brief me on campaign prospect: ${p.contact_name || 'Unknown'} at ${p.company || 'their company'}.\n\nCurrent step: ${p.current_step}\nNext send scheduled: ${p.next_send_at ? new Date(p.next_send_at).toLocaleDateString('en-GB') : 'pending'}\n\nGive me: (1) company background, (2) where they are in the sequence, (3) whether we should continue, pause, or escalate this prospect.`
@@ -346,12 +347,14 @@ export default function OutreachIntelligence({ user }) {
       })())
       setSignals((signalRes.data || []).filter(s => {
         const text = `${s.title} ${s.detail} ${s.entity_name}`.toLowerCase()
-        // Permanently exclude eyewear/fashion content — not F1 sponsorship
+        // Permanently exclude eyewear/fashion/non-sports content
         if (/eyewear|gentle.?monster|kering|luxottica|essilor|sunglass|optical|lens.?craft|safilo|marchon|maui.?jim/i.test(text)) return false
-        // Only show partnership/sponsorship relevant content
-        return /partner|sponsor|renew|naming.?rights|category.?exclusive|title.?sponsor|agency/i.test(text)
-          || /\bf1\b|formula.?1|formula.?e|motogp|wec|le mans/i.test(text)
-          || s.type === 'partnership_detected' || s.type === 'new_partnership'
+        // ONLY show actual sports sponsorship/partnership content — not competitor intelligence
+        const isSportsSponsorship = /sponsor|partner|naming.?rights|title.?sponsor|team.?deal|paddock|grid|race.?week|category.?exclusive/i.test(text)
+          && /\bf1\b|formula.?1|formula.?e|fe\b|motogp|wec|le mans|indycar|nascar|rally|endurance|motorsport/i.test(text)
+        const isAgencySignal = s.title?.includes('[AGENCY]')
+        const isPartnership = s.type === 'partnership_detected' || s.type === 'new_partnership'
+        return isSportsSponsorship || isAgencySignal || isPartnership
       }))
       setCampaignActivity(campaignRes.data || [])
     } catch (err) {
@@ -911,8 +914,21 @@ export default function OutreachIntelligence({ user }) {
                     </div>
                   ) : null}
 
+                  {/* EMAIL DRAFT — uses the same component as the main Kiko chat */}
+                  {!briefLoading && brief && isEmailDraft(brief) && (
+                    <div style={{ marginTop: 14 }}>
+                      <EmailDraft text={brief} />
+                    </div>
+                  )}
+
+                  {/* ACTION BUTTONS — below the composer */}
                   {!briefLoading && brief && (
-                    <div className="cc-detail-actions">
+                    <div className="cc-detail-actions" style={{ marginTop: 14 }}>
+                      {selected.kind === 'task' && (
+                        <button className="cc-detail-btn primary" onClick={e => completeTask(selected.payload, e)}>
+                          Mark complete <CheckSquare size={11} />
+                        </button>
+                      )}
                       {selected.kind === 'deal' && (
                         <button className="cc-detail-btn primary" onClick={() => nav('/pipeline')}>
                           Open in Pipeline <ExternalLink size={11} />
@@ -923,50 +939,22 @@ export default function OutreachIntelligence({ user }) {
                           Open contact <ExternalLink size={11} />
                         </button>
                       )}
-                      {selected.kind === 'task' && (
-                        <button className="cc-detail-btn primary" onClick={e => completeTask(selected.payload, e)}>
-                          Mark complete <CheckSquare size={11} />
+                      {selected.kind === 'followup' && (
+                        <button className="cc-detail-btn primary" onClick={e => markFollowUpDone(selected.payload, e)}>
+                          Mark cleared <CheckSquare size={11} />
                         </button>
                       )}
                       {selected.kind === 'signal' && (
-                        <>
-                          <button className="cc-detail-btn primary" onClick={() => nav('/campaigns')}>
-                            Generate campaign <Zap size={11} />
-                          </button>
-                          {selected.payload?.entity_name && (
-                            <button className="cc-detail-btn secondary" onClick={() => nav('/contacts')}>
-                              Research deeper <ExternalLink size={11} />
-                            </button>
-                          )}
-                        </>
-                      )}
-                      {selected.kind === 'followup' && (
-                        <>
-                          <button className="cc-detail-btn primary" onClick={e => markFollowUpDone(selected.payload, e)}>
-                            Mark cleared <CheckSquare size={11} />
-                          </button>
-                          {selected.payload?.company && (
-                            <button className="cc-detail-btn secondary" onClick={() => nav('/pipeline')}>
-                              View deal <ExternalLink size={11} />
-                            </button>
-                          )}
-                        </>
+                        <button className="cc-detail-btn primary" onClick={() => nav('/campaigns')}>
+                          Generate campaign <Zap size={11} />
+                        </button>
                       )}
                       {selected.kind === 'campaign' && (
-                        <>
-                          <button className="cc-detail-btn primary" onClick={() => selected.payload?.sequence_id && nav(`/campaigns/${selected.payload.sequence_id}`)}>
-                            Open campaign <ExternalLink size={11} />
-                          </button>
-                        </>
+                        <button className="cc-detail-btn primary" onClick={() => selected.payload?.sequence_id && nav(`/campaigns/${selected.payload.sequence_id}`)}>
+                          Open campaign <ExternalLink size={11} />
+                        </button>
                       )}
                       <button className="cc-detail-btn secondary" onClick={() => setSelected(null)}>Close</button>
-                    </div>
-                  )}
-
-                  {/* EMAIL DRAFT — uses the same component as the main Kiko chat */}
-                  {!briefLoading && brief && isEmailDraft(brief) && (
-                    <div style={{ marginTop: 14 }}>
-                      <EmailDraft text={brief} />
                     </div>
                   )}
                 </div>

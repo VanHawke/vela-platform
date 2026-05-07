@@ -141,6 +141,13 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
       } catch { setOrderedTabs(DEFAULT_TOP_PAGES) }
     }
     applyOrder()
+    // Also load from Supabase in case localStorage was cleared
+    supabase.from('kiko_user_config').select('nav_settings').limit(1).single().then(({ data }) => {
+      if (data?.nav_settings?.kiko_top_nav_v2) {
+        localStorage.setItem('kiko_top_nav_v2', JSON.stringify(data.nav_settings.kiko_top_nav_v2))
+        applyOrder() // re-apply with Supabase data now in localStorage
+      }
+    }).catch(() => {})
     const onUpdate = () => applyOrder()
     const onMoreUpdate = () => {
       try { const s = localStorage.getItem('kiko_more_order'); setMoreOrder(s ? JSON.parse(s) : null) } catch {}
