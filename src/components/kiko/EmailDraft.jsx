@@ -1,6 +1,6 @@
 // src/components/kiko/EmailDraft.jsx — Email draft frame with tone CTAs, copy, edit, and team Gmail send
 import { useState, useRef, useEffect } from 'react'
-import { Send, Pen, RotateCcw, Copy, Check, ChevronDown, Clock } from 'lucide-react'
+import { Send, Pen, RotateCcw, Copy, Check, ChevronDown, Clock, Mail } from 'lucide-react'
 import T from '@/lib/theme'
 
 // Display name + agency email mapping
@@ -483,6 +483,31 @@ export default function EmailDraft({ text }) {
               </div>
             </div>
           )}
+        </div>
+        {/* Send Test button — sends to yourself to preview */}
+        <div style={{ position: 'relative' }}>
+          <button onClick={async () => {
+            const testTo = prompt('Send test email to:', 'sunny@vanhawke.com')
+            if (!testTo) return
+            setSent('sending')
+            try {
+              const senderEmail = selectedSender?.email || 'sunny@vanhawke.com'
+              const res = await fetch('https://api.vanhawke.agency/api/gmail-send', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to: testTo, subject: `[TEST] ${currentSubject}`, body: currentBody, sender: senderEmail })
+              })
+              const data = await res.json()
+              if (data.success || data.ok) { setSent('done'); setTimeout(() => setSent(false), 3000) }
+              else { setSent('error'); setTimeout(() => setSent(false), 3000) }
+            } catch { setSent('error'); setTimeout(() => setSent(false), 3000) }
+          }} style={{
+            padding: '6px 12px', borderRadius: 50,
+            background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)',
+            color: 'rgba(0,0,0,0.55)', fontSize: 12, cursor: 'pointer', fontFamily: T.font,
+            display: 'flex', alignItems: 'center', gap: 5, fontWeight: 500,
+          }}>
+            <Mail size={11} /> Send test
+          </button>
         </div>
       </div>
     </div>

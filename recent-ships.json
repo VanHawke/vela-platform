@@ -1,60 +1,65 @@
 {
-  "generated_at": "2026-05-07T12:14:59.307Z",
+  "generated_at": "2026-05-07T12:43:33.070Z",
   "commits": [
+    {
+      "hash": "25fd626",
+      "subject": "Fix: editable To field + strip blockquote > from briefs",
+      "when": "28 minutes ago"
+    },
     {
       "hash": "f127379",
       "subject": "Fix: EmailDraft shows error despite draft succeeding — field mismatch",
-      "when": "4 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "6d976d2",
       "subject": "Force-strip em dashes at rendering level (LLM ignores prompt instructions)",
-      "when": "7 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "942a2a5",
       "subject": "Fix brief quality: full reply shown, previous comms, greeting matching, em dash ban",
-      "when": "13 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "bdb6ee1",
       "subject": "Fix: remove orange hue + strip tool calls from briefs + concise prompts",
-      "when": "26 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "2182a3b",
       "subject": "Fix: remove leftover old MobileCommandCentre code causing build error",
-      "when": "41 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "e4190f9",
       "subject": "Mobile Command Centre: replaces bell alert view with stripped-down command centre",
-      "when": "44 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "97fb13c",
       "subject": "Fix LinkedIn shows disconnected: RLS blocks token stored under wrong email",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "eb6aef9",
       "subject": "Fix LinkedIn status check: match any LinkedIn token, not just Kiko email",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "b9f247e",
       "subject": "Fix LinkedIn connect: target VISIBLE inputs (LinkedIn has hidden duplicates)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "d6913fa",
       "subject": "Fix LinkedIn connect: keyboard simulation instead of fill()",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "69abf6c",
       "subject": "Fix LinkedIn connect: check cookies not URL for login success",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "4450105",
@@ -64,17 +69,17 @@
     {
       "hash": "e9984d6",
       "subject": "Fix: LinkedIn connect use domcontentloaded not networkidle (LinkedIn never stops loading)",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "3473ffb",
       "subject": "Fix LinkedIn connect: resilient selectors for new SDUI login page + full cookie storage",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "f5bb02d",
       "subject": "LinkedIn client now reads cookies from database (not just env vars)",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "7b8fc60",
@@ -89,16 +94,11 @@
     {
       "hash": "1e78f83",
       "subject": "CC: buttons below composer, last correspondence in briefs, definitive actions, nav persistence, sponsorship filter",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "a5627d5",
       "subject": "Settings persist to Supabase + CC draft deduplication + cron activity logging",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "31ce2b3",
-      "subject": "KikoFloat EmailDraft + cron activity logging + UI action logging",
       "when": "15 hours ago"
     }
   ]
