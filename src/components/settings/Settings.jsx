@@ -360,9 +360,9 @@ export default function Settings({ user }) {
 
   const checkLinkedinStatus = async () => {
     try {
-      // Check both @vanhawke.com and @vanhawke.agency
-      const { data } = await supabase.from('user_tokens').select('access_token, updated_at').eq('provider', 'linkedin').or(`user_email.eq.${email},user_email.eq.${email.replace(/@vanhawke\.com$/,'@vanhawke.agency')}`).limit(1).maybeSingle()
-      setLinkedinStatus(data ? { connected: true, last_updated: data.updated_at } : { connected: false })
+      // Check for ANY LinkedIn token in the org (LinkedIn login email may differ from Kiko email)
+      const { data } = await supabase.from('user_tokens').select('access_token, updated_at, user_email').eq('provider', 'linkedin').limit(1).maybeSingle()
+      setLinkedinStatus(data ? { connected: true, last_updated: data.updated_at, email: data.user_email } : { connected: false })
     } catch { setLinkedinStatus({ connected: false }) }
   }
 

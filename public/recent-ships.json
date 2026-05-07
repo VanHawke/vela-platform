@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-05-07T06:31:16.896Z",
+  "generated_at": "2026-05-07T09:09:25.338Z",
   "commits": [
+    {
+      "hash": "b9f247e",
+      "subject": "Fix LinkedIn connect: target VISIBLE inputs (LinkedIn has hidden duplicates)",
+      "when": "7 minutes ago"
+    },
+    {
+      "hash": "d6913fa",
+      "subject": "Fix LinkedIn connect: keyboard simulation instead of fill()",
+      "when": "11 minutes ago"
+    },
+    {
+      "hash": "69abf6c",
+      "subject": "Fix LinkedIn connect: check cookies not URL for login success",
+      "when": "17 minutes ago"
+    },
+    {
+      "hash": "4450105",
+      "subject": "Fix LinkedIn connect: force:true for SDUI invisible inputs + state:attached selector",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "e9984d6",
+      "subject": "Fix: LinkedIn connect use domcontentloaded not networkidle (LinkedIn never stops loading)",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "3473ffb",
+      "subject": "Fix LinkedIn connect: resilient selectors for new SDUI login page + full cookie storage",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "f5bb02d",
+      "subject": "LinkedIn client now reads cookies from database (not just env vars)",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "7b8fc60",
+      "subject": "Contact re-enrichment cron + LinkedIn status confirmed",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "5a2a62b",
+      "subject": "Proactive recommendations engine + campaign tracking backfill + prospect sourcing confirmed",
+      "when": "3 hours ago"
+    },
     {
       "hash": "1e78f83",
       "subject": "CC: buttons below composer, last correspondence in briefs, definitive actions, nav persistence, sponsorship filter",
-      "when": "20 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a5627d5",
       "subject": "Settings persist to Supabase + CC draft deduplication + cron activity logging",
-      "when": "9 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "31ce2b3",
       "subject": "KikoFloat EmailDraft + cron activity logging + UI action logging",
-      "when": "9 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "f8fd504",
       "subject": "Timezone-optimised sending + PersonaMail correction capture",
-      "when": "10 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "fdba396",
       "subject": "Fix: oooCount variable not declared in reply-detect cron",
-      "when": "10 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "953683a",
       "subject": "Complete session 63-65: OOO reschedule + auto-deal creation + direct send + knowledge sync",
-      "when": "10 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "174534b",
       "subject": "Bounce auto-fix: Hunter fallback + replace contacts at same company",
-      "when": "10 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "cce28ca",
       "subject": "Fix 22 false bounces: tighten detection + clear false positives",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "362b5e0",
       "subject": "Fix alerts, homepage pills, sponsorship news, HTML entities",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "c7e2c05",
       "subject": "Voice profile now loaded into EVERY email rewrite",
-      "when": "11 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "d202eec",
       "subject": "Use EXISTING EmailDraft component in Command Centre — same as main chat",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "6343e7d",
-      "subject": "Proper email composer component (Gmail-style) + bounce alerts removed from CC",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "56fc2fe",
-      "subject": "CRITICAL: Global email voice rules in backend system prompt + auto-fix bounces",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "3df989e",
-      "subject": "CRITICAL: Inject Van Hawke email voice into ALL Command Centre drafts",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "935eba9",
-      "subject": "Kiko now alerts on bounced emails + bounce visual in Command Centre",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "7a8b9f3",
-      "subject": "Fix tab underline + auto-complete tasks on reply",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "6f6d87b",
-      "subject": "Fix: remove stray )} rendering on page + auto-dismiss follow-ups on reply",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "3afd5cb",
-      "subject": "Alert dismiss + auto-clear + Gmail draft endpoint + signal briefs",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "0fdf885",
-      "subject": "Fix Sponsorship News filter: include proactive_intel + F1/series keywords",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "9454f85",
-      "subject": "Tighten Sponsorship News filter: remove proactive_intel + broad 'deal' keyword",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     }
   ]
 }
