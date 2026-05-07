@@ -4,7 +4,7 @@ import { Send, Pen, RotateCcw, Copy, Check, ChevronDown, Clock, Mail } from 'luc
 import T from '@/lib/theme'
 
 // Display name + agency email mapping
-const DISPLAY_NAMES = { 'sunny@vanhawke.com': 'Sunny Sidhu', 'matt.smith@vanhawke.com': 'Matt Smith' }
+const DISPLAY_NAMES = { 'sunny@vanhawke.agency': 'Sunny Sidhu', 'matt.smith@vanhawke.agency': 'Matt Smith' }
 function displayName(email) { return DISPLAY_NAMES[email] || email?.split('@')[0] || 'Unknown' }
 function agencyEmail(email) { return email?.replace('@vanhawke.com', '@vanhawke.agency') || email }
 

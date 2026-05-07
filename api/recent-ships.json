@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-07T13:22:21.956Z",
+  "generated_at": "2026-05-07T13:25:28.803Z",
   "commits": [
+    {
+      "hash": "95653d1",
+      "subject": "Fix: Send Test sender wrong + add Send to all + use .agency domain",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "ca5d985",
       "subject": "Send Test: dropdown of team members, vanhawke.agency domain",
-      "when": "7 minutes ago"
+      "when": "10 minutes ago"
     },
     {
       "hash": "b1207a5",
       "subject": "Add Send Test button to EmailDraft composer",
-      "when": "39 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "25fd626",
       "subject": "Fix: editable To field + strip blockquote > from briefs",
-      "when": "67 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "f127379",
       "subject": "Fix: EmailDraft shows error despite draft succeeding — field mismatch",
-      "when": "71 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "6d976d2",
       "subject": "Force-strip em dashes at rendering level (LLM ignores prompt instructions)",
-      "when": "74 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "942a2a5",
       "subject": "Fix brief quality: full reply shown, previous comms, greeting matching, em dash ban",
-      "when": "80 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "bdb6ee1",
@@ -94,11 +99,6 @@
     {
       "hash": "7b8fc60",
       "subject": "Contact re-enrichment cron + LinkedIn status confirmed",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "5a2a62b",
-      "subject": "Proactive recommendations engine + campaign tracking backfill + prospect sourcing confirmed",
       "when": "7 hours ago"
     }
   ]

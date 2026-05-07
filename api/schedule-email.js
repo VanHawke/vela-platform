@@ -12,13 +12,13 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
       body: JSON.stringify({
-        sender_email: sender || 'sunny@vanhawke.com',
+        sender_email: sender || 'sunny@vanhawke.agency',
         recipient_email: to,
         recipient_name: recipientName || null,
         subject,
         body,
         scheduled_for: scheduledFor,
-        created_by: sender || 'sunny@vanhawke.com',
+        created_by: sender || 'sunny@vanhawke.agency',
       }),
     });
     const data = await res2.json();

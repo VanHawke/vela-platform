@@ -82,7 +82,7 @@ function stripHtml(html) {
     .trim();
 }
 
-const DEFAULT_COLD_SIG = `—<br><strong>Sunny</strong><br>Founder &amp; CEO<br>Van Hawke<br><a href="mailto:sunny@vanhawke.com">sunny@vanhawke.com</a><br><a href="https://www.vanhawke.com">www.vanhawke.com</a>`;
+const DEFAULT_COLD_SIG = `—<br><strong>Sunny</strong><br>Founder &amp; CEO<br>Van Hawke<br><a href="mailto:sunny@vanhawke.agency">sunny@vanhawke.agency</a><br><a href="https://www.vanhawke.com">www.vanhawke.com</a>`;
 const DEFAULT_WARM_SIG = `${DEFAULT_COLD_SIG}<br>(786) 828-6126`;
 
 export async function loadUserSignatures(sbFetch, userId, accessToken = null, fromEmail = null) {

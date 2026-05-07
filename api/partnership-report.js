@@ -63,7 +63,7 @@ export default async function handler(req, res) {
 </style></head><body>
 <h1>F1 Partnership Matrix</h1>
 <p class="subtitle">Gap Analysis Report · ${filteredTeams.length} teams · ${partnerships.length} partnerships · ${totalGaps} gaps · Generated ${new Date().toLocaleDateString('en-GB')}</p>
-<p class="subtitle" style="margin-top:2px">Prepared by Van Hawke Group · vanhawke.com</p>
+<p class="subtitle" style="margin-top:2px">Prepared by Van Hawke Group · vanhawke.agency</p>
 
 ${analysis.map(t => `
 <div class="team-card">

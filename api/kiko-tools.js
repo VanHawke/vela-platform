@@ -345,12 +345,12 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'create_email_draft',
-    description: 'Create an email draft in a team member\'s Gmail. Use this when the user asks you to draft an email, compose a message, or prepare outreach. After drafting, the user can refine the content with you, then you push the final version to their Gmail drafts (or another team member like Matt). Always confirm the final draft with the user before creating it. Default: send to the current user\'s Gmail. Option: send to matt.smith@vanhawke.com for Matt to review and send.',
+    description: 'Create an email draft in a team member\'s Gmail. Use this when the user asks you to draft an email, compose a message, or prepare outreach. After drafting, the user can refine the content with you, then you push the final version to their Gmail drafts (or another team member like Matt). Always confirm the final draft with the user before creating it. Default: send to the current user\'s Gmail. Option: send to matt.smith@vanhawke.agency for Matt to review and send.',
     input_schema: { type: 'object', properties: {
       to: { type: 'string', description: 'Recipient email address' },
       subject: { type: 'string', description: 'Email subject line' },
       body: { type: 'string', description: 'Email body in HTML format. Use <br> for line breaks, <b> for bold, <i> for italic. Include the full email with greeting and sign-off.' },
-      draft_for: { type: 'string', description: 'Email of the team member whose Gmail drafts folder should receive this draft. Default: sunny@vanhawke.com (current user). Use matt.smith@vanhawke.com to send to Matt\'s drafts.' },
+      draft_for: { type: 'string', description: 'Email of the team member whose Gmail drafts folder should receive this draft. Default: sunny@vanhawke.agency (current user). Use matt.smith@vanhawke.agency to send to Matt\'s drafts.' },
       original_draft: { type: 'string', description: 'IMPORTANT: If the user made corrections to your original draft, include your FIRST version here so Kiko can learn from the edits. Leave empty if the user accepted the first draft without changes.' },
     }, required: ['to', 'subject', 'body'] },
   },
@@ -360,7 +360,7 @@ export const TOOL_DEFINITIONS = [
     input_schema: { type: 'object', properties: {
       min_days_stale: { type: 'number', description: 'Minimum days since last activity to include. Default: 14' },
       max_deals: { type: 'number', description: 'Maximum number of deals to draft for. Default: 10' },
-      sender: { type: 'string', description: 'Email of the sender (determines From + signature). Default: matt.smith@vanhawke.com' },
+      sender: { type: 'string', description: 'Email of the sender (determines From + signature). Default: matt.smith@vanhawke.agency' },
       draft_for: { type: 'string', description: 'Whose Gmail receives the drafts. Default: same as sender' },
       tone: { type: 'string', description: 'Tone directive: "direct", "warm", "formal", "casual". Default: "direct"' },
     } },
@@ -799,7 +799,7 @@ Document:\n${document_text.slice(0, 25000)}` }],
 
   if (name === 'create_email_draft') {
     const { to, subject, body, draft_for, original_draft } = input;
-    const targetEmail = draft_for || 'sunny@vanhawke.com';
+    const targetEmail = draft_for || 'sunny@vanhawke.agency';
     try {
       const res = await fetch('https://api.vanhawke.agency/api/create-gmail-draft', {
         method: 'POST',
@@ -816,7 +816,7 @@ Document:\n${document_text.slice(0, 25000)}` }],
             }) });
           } catch (logErr) { /* silent — don't block draft creation */ }
         }
-        return `✅ Draft created in ${targetEmail === 'matt.smith@vanhawke.com' ? "Matt's" : "your"} Gmail drafts.\n\n**To:** ${to}\n**Subject:** ${subject}\n**Draft in:** ${targetEmail}\n\n${targetEmail === 'matt.smith@vanhawke.com' ? 'Matt can review and send from his Gmail.' : 'Open Gmail to review and send.'}`;
+        return `✅ Draft created in ${targetEmail.includes('matt') ? "Matt's" : "your"} Gmail drafts.\n\n**To:** ${to}\n**Subject:** ${subject}\n**Draft in:** ${targetEmail}\n\n${targetEmail.includes('matt') ? 'Matt can review and send from his Gmail.' : 'Open Gmail to review and send.'}`;
       } else {
         return `❌ Failed to create draft: ${data.error}`;
       }
@@ -829,7 +829,7 @@ Document:\n${document_text.slice(0, 25000)}` }],
   if (name === 'batch_draft_emails') {
     const minDays = input.min_days_stale || 14;
     const maxDeals = Math.min(input.max_deals || 10, 20); // Cap at 20
-    const senderEmail = input.sender || 'matt.smith@vanhawke.com';
+    const senderEmail = input.sender || 'matt.smith@vanhawke.agency';
     const draftFor = input.draft_for || senderEmail;
     const tone = input.tone || 'direct';
     
@@ -919,7 +919,7 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
       const failed = results.filter(r => r.status === 'failed');
       
       let report = `📧 BATCH DRAFT COMPLETE\n\n`;
-      report += `✅ ${drafted.length} drafts created in ${draftFor === 'matt.smith@vanhawke.com' ? "Matt's" : "your"} Gmail\n`;
+      report += `✅ ${drafted.length} drafts created in ${draftFor?.includes('matt') ? "Matt's" : "your"} Gmail\n`;
       if (skipped.length) report += `⏭️ ${skipped.length} skipped (no contact email)\n`;
       if (failed.length) report += `❌ ${failed.length} failed\n`;
       report += `\n`;

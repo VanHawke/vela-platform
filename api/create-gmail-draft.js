@@ -42,8 +42,8 @@ const SEND_AS_ALIAS = {
 };
 
 const DISPLAY_NAMES = {
-  'sunny@vanhawke.com': 'Sunny Sidhu',
-  'matt.smith@vanhawke.com': 'Matt Smith',
+  'sunny@vanhawke.agency': 'Sunny Sidhu',
+  'matt.smith@vanhawke.agency': 'Matt Smith',
 };
 
 async function getGmailSignature(token, email) {
@@ -65,7 +65,7 @@ async function getGmailSignature(token, email) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   const { to, subject, body, htmlBody, draftFor, sender } = req.body;
-  const targetEmail = draftFor || 'sunny@vanhawke.com';
+  const targetEmail = draftFor || 'sunny@vanhawke.agency';
   const senderEmail = sender || targetEmail; // sender determines From + signature
   if (!to || !subject) { console.error('[gmail-draft] 400: missing to or subject', { to, subject: subject?.slice(0,30) }); return res.status(400).json({ error: 'to and subject required' }); }
 

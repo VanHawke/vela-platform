@@ -39,7 +39,7 @@ export default function Settings({ user }) {
     name: 'Sunny Sidhu',
     display: 'Sunny',
     title: 'CEO, Van Hawke Group',
-    email: user?.email || 'sunny@vanhawke.com',
+    email: user?.email || 'sunny@vanhawke.agency',
     location: 'Weybridge, United Kingdom',
     timezone: 'Europe/London (BST · UTC+1)',
     workStart: '08:00',
@@ -48,7 +48,7 @@ export default function Settings({ user }) {
     appendKiko: false,
     tone: 'Direct',
     mode: 'Strategic advisor (default)',
-    signature: `Sunny Sidhu\nCEO · Van Hawke Group\nsunny@vanhawke.com · +44 (0) 20 8004 3300\nvanhawke.com`,
+    signature: `Sunny Sidhu\nCEO · Van Hawke Group\nsunny@vanhawke.agency · +44 (0) 20 8004 3300\nvanhawke.agency`,
   })
   const [hasChanges, setHasChanges] = useState(false)
   const upd = (k, v) => { setProfile(p => ({ ...p, [k]: v })); setHasChanges(true) }
@@ -200,7 +200,7 @@ export default function Settings({ user }) {
                   <div className="ps"><a className="pri-link">Manage all →</a></div>
                 </div>
                 {[
-                  { icon: 'gmail', name: 'Gmail · sunny@vanhawke.com', meta: <>Connected · <strong>read & send</strong> · syncing every 2 min</> },
+                  { icon: 'gmail', name: 'Gmail · sunny@vanhawke.agency', meta: <>Connected · <strong>read & send</strong> · syncing every 2 min</> },
                   { icon: 'gcal', name: 'Google Calendar', meta: <>Connected · <strong>read & write</strong> · 4 meetings auto-prepped this week</> },
                   { icon: 'linkedin', name: 'LinkedIn', meta: <>Connected via Hetzner worker · <strong>178.104.73.22</strong> · 28 connections accepted this week</> },
                   { icon: 'lemlist', name: 'Lemlist', meta: <>Connected · 5 active sequences · webhook last fired 3m ago</> },
@@ -274,7 +274,7 @@ const SECTION_PANELS = {
       <div className="st-panel">
         <div className="st-panel-h"><div className="pt">Sending identity</div><div className="ps">Who emails appear to be from</div></div>
         <div className="st-field"><div className="field-label">From name</div><div className="field-input"><input className="input" defaultValue="Sunny Sidhu" /></div></div>
-        <div className="st-field"><div className="field-label">From email</div><div className="field-input"><input className="input" defaultValue="sunny@vanhawke.com" /></div></div>
+        <div className="st-field"><div className="field-label">From email</div><div className="field-input"><input className="input" defaultValue="sunny@vanhawke.agency" /></div></div>
         <div className="st-field"><div className="field-label">Reply-to<div className="field-help">Where replies should land. Defaults to From email if blank.</div></div><div className="field-input"><input className="input" placeholder="(same as From)" /></div></div>
         <div className="st-field"><div className="field-label">Daily send cap<div className="field-help">Max outbound emails per day across all sequences. Protects deliverability.</div></div><div className="field-input"><input className="input" defaultValue="120" style={{ width: 100 }} /></div></div>
       </div>
@@ -340,7 +340,7 @@ const SECTION_PANELS = {
     <div className="st-panel">
       <div className="st-panel-h"><div className="pt">All integrations</div><div className="ps">Connect or disconnect</div></div>
       {[
-        { icon: 'gmail', name: 'Gmail', state: 'Connected · sunny@vanhawke.com', cta: 'Disconnect' },
+        { icon: 'gmail', name: 'Gmail', state: 'Connected · sunny@vanhawke.agency', cta: 'Disconnect' },
         { icon: 'gcal', name: 'Google Calendar', state: 'Connected · 4 events synced today', cta: 'Disconnect' },
         { icon: 'linkedin', name: 'LinkedIn (via Hetzner worker)', state: 'Connected · 178.104.73.22', cta: 'Disconnect' },
         { icon: 'lemlist', name: 'Lemlist', state: 'Connected · 5 active sequences', cta: 'Disconnect' },
@@ -356,7 +356,7 @@ const SECTION_PANELS = {
   ),
   password: (
     <div className="st-panel">
-      <div className="st-panel-h"><div className="pt">Change password</div><div className="ps">Sign-in password for sunny@vanhawke.com</div></div>
+      <div className="st-panel-h"><div className="pt">Change password</div><div className="ps">Sign-in password for sunny@vanhawke.agency</div></div>
       <div className="st-field"><div className="field-label">Current password</div><div className="field-input"><input className="input" type="password" placeholder="••••••••" /></div></div>
       <div className="st-field"><div className="field-label">New password</div><div className="field-input"><input className="input" type="password" placeholder="At least 12 characters" /></div></div>
       <div className="st-field"><div className="field-label">Confirm new password</div><div className="field-input"><input className="input" type="password" /></div></div>
@@ -390,7 +390,7 @@ const SECTION_PANELS = {
       <div className="st-panel-h"><div className="pt">Team members</div><div className="ps">2 members · 1 pending invite</div></div>
       <div className="conn-row">
         <div className="conn-icon" style={{ background: '#0A0A0A', color: 'white' }}>S</div>
-        <div className="conn-info"><div className="conn-name">Sunny Sidhu (you)</div><div className="conn-meta">CEO · Owner · sunny@vanhawke.com</div></div>
+        <div className="conn-info"><div className="conn-name">Sunny Sidhu (you)</div><div className="conn-meta">CEO · Owner · sunny@vanhawke.agency</div></div>
         <button className="ghost-btn" disabled>Owner</button>
       </div>
       <div className="conn-row">

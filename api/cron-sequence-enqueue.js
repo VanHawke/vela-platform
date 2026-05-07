@@ -128,7 +128,7 @@ export default async function handler(req, res) {
     // Voice profile = patterns learned from his actual sent emails (Sun 4am cron)
     // Signatures = pulled live from Gmail API (native sendAs signature) — no Settings UI needed
     const SUNNY_USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
-    const SUNNY_EMAIL = 'sunny@vanhawke.com';
+    const SUNNY_EMAIL = 'sunny@vanhawke.agency';
     const FROM_ADDRESS = 'sunny@vanhawke.agency';
     const { getGoogleToken } = await import('./google-token.js');
     const accessToken = await getGoogleToken(SUNNY_EMAIL).catch(() => null);
