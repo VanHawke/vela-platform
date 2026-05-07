@@ -1128,7 +1128,7 @@ export default async function handler(req, res) {
       : [...nativeTools, ...TOOL_DEFINITIONS];
     const allTools = voiceTools;
     // Light tool set for email/simple intents — dramatically reduces prompt size
-    const EMAIL_TOOL_NAMES = ['create_email_draft', 'read_email', 'ask_data_agent', 'ask_memory_engine', 'search_conversations', 'navigate_page', 'log_activity', 'manage_knowledge', 'learning_search', 'search_knowledge', 'web_search'];
+    const EMAIL_TOOL_NAMES = ['create_email_draft', 'read_email', 'ask_data_agent', 'ask_memory_engine', 'search_conversations', 'navigate_page', 'log_activity', 'manage_knowledge', 'learning_search', 'search_knowledge', 'web_search', 'get_cognitive_analysis'];
     const lightEmailTools = allTools.filter(t => EMAIL_TOOL_NAMES.includes(t.name));
 
     // ── PHASE 1: Intent Classification ──
