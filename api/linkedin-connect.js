@@ -37,8 +37,8 @@ export default async function handler(req, res) {
     const page = await ctx.newPage();
 
     // Navigate to LinkedIn login
-    await page.goto('https://www.linkedin.com/login', { waitUntil: 'networkidle', timeout: 30000 });
-    await page.waitForTimeout(2000 + Math.random() * 1000);
+    await page.goto('https://www.linkedin.com/login', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(3000 + Math.random() * 2000);
 
     // Fill credentials — use resilient selectors (LinkedIn changed from #username to SDUI)
     const emailInput = await page.waitForSelector(
