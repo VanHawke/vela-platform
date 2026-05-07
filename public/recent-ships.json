@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-05-07T17:59:15.758Z",
+  "generated_at": "2026-05-07T18:35:21.319Z",
   "commits": [
+    {
+      "hash": "854899d",
+      "subject": "FIX: Command Centre max_tokens 8192 — complete briefs with full drafts",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "5b16589",
       "subject": "FIX: stripToolCalls handles open-ended tags during streaming + raw JSON",
-      "when": "7 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "49ea2f1",
       "subject": "FIX: EmailDraft streaming sync — body was freezing mid-sentence",
-      "when": "13 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "70853ac",
       "subject": "FIX: EmailDraft parser now isolates DRAFT section from full brief",
-      "when": "18 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "6e302f1",
       "subject": "FIX: Command Centre ALWAYS uses Sonnet — Haiku was truncating drafts",
-      "when": "27 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "d87f8cc",
       "subject": "FIX: Command Centre briefs never truncated — force 4096 tokens minimum",
-      "when": "33 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "e061ae7",
       "subject": "CRITICAL: Test emails don't trigger tracking + reply follow-up guarantee",
-      "when": "46 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "c83b328",
       "subject": "FIX: Reply alerts visible for 7 days (was 24hrs), cognitive alerts in Command Centre",
-      "when": "51 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "5be09cf",
       "subject": "FIX: Campaign stats reading from wrong table + pre-send validation",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "4b9d97c",
@@ -49,17 +54,17 @@
     {
       "hash": "22a9295",
       "subject": "Phase 2 complete: all wiring verified, Kiko self-knowledge updated",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "781d13d",
       "subject": "Phase 2: Cognitive Architecture — Event Bus + Reasoning Chains + Synthesis",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "afa22d3",
       "subject": "Task 1: Foundation knowledge populated + injection fixed",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "2d82d2d",
@@ -69,36 +74,31 @@
     {
       "hash": "a5977c4",
       "subject": "Kiko: add General Intelligence section + update self-knowledge",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "3c60c9f",
       "subject": "Update Kiko self-knowledge: Session 66+ capabilities",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "12abaca",
       "subject": "Command Centre: default sender = Matt for campaign replies/tasks",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "ff76893",
       "subject": "Fix: gmail-send fetches sender's Gmail signature from their account",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "4570ddd",
       "subject": "IRONCLAD: sender-specific token + signature across entire platform",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "65049f1",
       "subject": "Fix Send Test: outside-click handler was closing dropdown before onClick fired",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "f6394fb",
-      "subject": "Global: all user-facing emails use vanhawke.agency (not .com)",
       "when": "5 hours ago"
     }
   ]

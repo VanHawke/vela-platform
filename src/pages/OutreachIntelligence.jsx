@@ -943,7 +943,7 @@ export default function OutreachIntelligence({ user }) {
                   {/* EMAIL DRAFT — uses the same component as the main Kiko chat */}
                   {!briefLoading && brief && isEmailDraft(brief) && (
                     <div style={{ marginTop: 14 }}>
-                      <EmailDraft text={brief} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} />
+                      <EmailDraft key={brief.length} text={brief} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} />
                     </div>
                   )}
 
