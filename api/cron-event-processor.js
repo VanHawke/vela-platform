@@ -43,15 +43,17 @@ async function fetchContext(entityName, entityType) {
   const ctx = {};
   if (!entityName) return ctx;
   try {
-    // Contacts use JSONB data column: data->>'first_name', data->>'company'
+    // Contacts use JSONB data column: data->>'firstName', data->>'company'
     const firstName = entityName.split(' ')[0] || '';
     const lastName = entityName.split(' ').slice(1).join(' ') || '';
     let contacts = [];
     if (firstName && lastName) {
-      contacts = await sbFetch(`contacts?data->>first_name=ilike.${encodeURIComponent(firstName)}&data->>last_name=ilike.${encodeURIComponent(lastName)}&select=id,data&limit=1`).catch(() => []);
+      // Primary lookup: exact first + last name match (CRM uses camelCase)
+      contacts = await sbFetch(`contacts?data->>firstName=ilike.${encodeURIComponent(firstName)}&data->>lastName=ilike.${encodeURIComponent(lastName)}&select=id,data&limit=1`).catch(() => []);
     }
-    if (!contacts?.length && entityName) {
-      contacts = await sbFetch(`contacts?data->>company=ilike.*${encodeURIComponent(entityName.split(' ').pop())}*&select=id,data&limit=1`).catch(() => []);
+    if (!contacts?.length && firstName && lastName) {
+      // Fallback: search by full name in any text field — NOT by last name as company
+      contacts = await sbFetch(`contacts?or=(data->>firstName.ilike.*${encodeURIComponent(firstName)}*,data->>email.ilike.*${encodeURIComponent(lastName.toLowerCase())}*)&data->>lastName=ilike.*${encodeURIComponent(lastName)}*&select=id,data&limit=1`).catch(() => []);
     }
     if (contacts?.length) ctx.contact = { id: contacts[0].id, ...contacts[0].data };
     
