@@ -254,7 +254,8 @@ Respond with ONLY these sections:
 2. OUR LAST EMAIL — the most recent email WE sent to them. Show the subject and key lines so the user knows what triggered this reply.
 3. THEIR REPLY IN FULL — reproduce their complete reply text above. Do not truncate or summarise it.
 4. DEFINITIVE NEXT STEP — EXACTLY what to do: who, when, what channel, what to achieve. One action, no hedging. EXPLAIN THE PSYCHOLOGY: why this approach works on this type of prospect at this stage (e.g. commitment-consistency, loss aversion, tactical empathy, scarcity). This is what makes your advice valuable.
-5. DRAFT REPLY — CRITICAL: Match the greeting style they used. If they wrote "Hi Matt" then use "Hi [Name]" not "Dear [Name]". Mirror their tone and formality level. No em dashes. No corporate filler. Subject: line, then greeting matching their style, body, sign-off matching our previous emails.
+
+Do NOT write a draft email. The draft will be generated separately.
 
 ${VH_EMAIL_VOICE}`
   }
@@ -323,6 +324,8 @@ export default function OutreachIntelligence({ user }) {
   const [draftSubject, setDraftSubject] = useState('')
   const [draftBody, setDraftBody] = useState('')
   const [draftTone, setDraftTone] = useState('advisory')
+  const [separateDraft, setSeparateDraft] = useState('')
+  const [draftGenerating, setDraftGenerating] = useState(false)
 
   const isSuperAdmin = user?.app_metadata?.role === 'super_admin'
 
@@ -486,7 +489,7 @@ export default function OutreachIntelligence({ user }) {
   // consuming `pageContext.selectedItem` for command-centre task detail, which caused
   // briefs to come back generic with no company/contact context attached.
   useEffect(() => {
-    if (!selected) { setBrief(''); return }
+    if (!selected) { setBrief(''); setSeparateDraft(''); return }
     if (briefAbortRef.current) briefAbortRef.current.abort()
     const controller = new AbortController()
     briefAbortRef.current = controller
@@ -545,6 +548,53 @@ export default function OutreachIntelligence({ user }) {
         if (err.name !== 'AbortError') console.error('[CommandCentre] brief', err)
       }
       setBriefLoading(false)
+      
+      // ── SEPARATE DRAFT GENERATION — generates email draft independently from brief ──
+      if (selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup') {
+        const p = selected.payload || {}
+        const entityName = p.entity_name || selected.title?.split('—')?.[1]?.trim() || ''
+        const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
+        setSeparateDraft('')
+        setDraftGenerating(true)
+        try {
+          const draftRes = await fetch('https://api.vanhawke.agency/api/kiko', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: `Write ONLY an email reply to ${entityName}. No analysis, no sections, no commentary. JUST the email.\n\nTheir message: "${snippet?.slice(0, 500)}"\n\nFormat EXACTLY like this:\nSubject: Re: [appropriate subject]\nTo: ${p.metadata?.to || entityName.toLowerCase().replace(/\s/g,'.')+'@company.com'}\n\nDear/Hi [Name],\n\n[2-3 short paragraphs. Match their greeting style. No em dashes. No corporate filler.]\n\nBest,`,
+              userEmail: user?.email || 'sunny@vanhawke.com',
+              currentPage: 'command-centre',
+              conversationHistory: [],
+            }),
+            signal: controller.signal,
+          })
+          if (draftRes.body) {
+            const dr = draftRes.body.getReader()
+            const dd = new TextDecoder()
+            let dbuf = ''
+            while (true) {
+              const { done, value } = await dr.read()
+              if (done) break
+              dbuf += dd.decode(value, { stream: true })
+              let didx
+              while ((didx = dbuf.indexOf('\n\n')) !== -1) {
+                const dchunk = dbuf.slice(0, didx); dbuf = dbuf.slice(didx + 2)
+                dchunk.split('\n').forEach(line => {
+                  if (!line.startsWith('data:')) return
+                  const raw = line.slice(5).trim()
+                  if (!raw || raw === '[DONE]') return
+                  try {
+                    const evt = JSON.parse(raw)
+                    const txt = evt.delta || evt.text
+                    if (txt) setSeparateDraft(prev => prev + txt)
+                  } catch {}
+                })
+              }
+            }
+          }
+        } catch (e) { if (e.name !== 'AbortError') console.error('[CC] draft gen error:', e) }
+        setDraftGenerating(false)
+      }
     })()
     return () => controller.abort()
   }, [selected, user?.email])
@@ -940,10 +990,15 @@ export default function OutreachIntelligence({ user }) {
                     </div>
                   ) : null}
 
-                  {/* EMAIL DRAFT — uses the same component as the main Kiko chat */}
-                  {!briefLoading && brief && isEmailDraft(brief) && (
+                  {/* EMAIL DRAFT — generated as a separate API call, not parsed from brief */}
+                  {draftGenerating && (
+                    <div style={{ marginTop: 14, padding: 16, background: 'rgba(0,0,0,0.02)', borderRadius: 8 }}>
+                      <span className="dot" /><span className="dot" /><span className="dot" /> Drafting reply...
+                    </div>
+                  )}
+                  {!draftGenerating && separateDraft && isEmailDraft(separateDraft) && (
                     <div style={{ marginTop: 14 }}>
-                      <EmailDraft key={brief.length} text={brief} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} />
+                      <EmailDraft key={'draft-' + separateDraft.length} text={separateDraft} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} />
                     </div>
                   )}
 

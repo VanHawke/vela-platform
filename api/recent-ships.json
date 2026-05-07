@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-05-07T18:35:21.319Z",
+  "generated_at": "2026-05-07T18:41:59.172Z",
   "commits": [
+    {
+      "hash": "8e578ea",
+      "subject": "FIX: EmailDraft key={brief.length} forces fresh mount on complete text",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "854899d",
       "subject": "FIX: Command Centre max_tokens 8192 — complete briefs with full drafts",
-      "when": "13 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "5b16589",
       "subject": "FIX: stripToolCalls handles open-ended tags during streaming + raw JSON",
-      "when": "43 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "49ea2f1",
       "subject": "FIX: EmailDraft streaming sync — body was freezing mid-sentence",
-      "when": "49 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "70853ac",
       "subject": "FIX: EmailDraft parser now isolates DRAFT section from full brief",
-      "when": "54 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "6e302f1",
       "subject": "FIX: Command Centre ALWAYS uses Sonnet — Haiku was truncating drafts",
-      "when": "63 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "d87f8cc",
       "subject": "FIX: Command Centre briefs never truncated — force 4096 tokens minimum",
-      "when": "69 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "e061ae7",
       "subject": "CRITICAL: Test emails don't trigger tracking + reply follow-up guarantee",
-      "when": "82 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "c83b328",
       "subject": "FIX: Reply alerts visible for 7 days (was 24hrs), cognitive alerts in Command Centre",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "5be09cf",
@@ -69,7 +74,7 @@
     {
       "hash": "2d82d2d",
       "subject": "Kiko: Applied Psychology section + psychology in brief recommendations",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "a5977c4",
@@ -94,11 +99,6 @@
     {
       "hash": "4570ddd",
       "subject": "IRONCLAD: sender-specific token + signature across entire platform",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "65049f1",
-      "subject": "Fix Send Test: outside-click handler was closing dropdown before onClick fired",
       "when": "5 hours ago"
     }
   ]
