@@ -104,7 +104,7 @@ function renderBody(text) {
     .trim()
 }
 
-export default function EmailDraft({ text }) {
+export default function EmailDraft({ text, defaultSender }) {
   const parsed = parseEmail(text)
   const [currentBody, setCurrentBody] = useState(parsed.body)
   const originalBodyRef = useRef(parsed.body)
@@ -160,7 +160,11 @@ export default function EmailDraft({ text }) {
         if (data.ok && data.members?.length > 0) {
           setTeamMembers(data.members)
           const me = data.members.find(u => u.role === 'super_admin') || data.members[0]
-          if (me) { setSelectedMember(me); setSelectedSender(me) }
+          if (me) { 
+            setSelectedMember(me)
+            const senderMatch = defaultSender ? data.members.find(m => m.email?.includes(defaultSender)) : null
+            setSelectedSender(senderMatch || me) 
+          }
         }
       } catch {}
     }
@@ -239,7 +243,7 @@ export default function EmailDraft({ text }) {
   }
 
   const handleSchedule = async (scheduledFor) => {
-    const senderEmail = selectedSender?.email || 'sunny@vanhawke.com'
+    const senderEmail = selectedSender?.email || 'sunny@vanhawke.agency'
     if (!currentTo || !currentSubject || !currentBody) return
     setScheduleOpen(false)
     try {
@@ -257,8 +261,8 @@ export default function EmailDraft({ text }) {
   }
 
   const handleSendGmail = async (member) => {
-    const targetEmail = member?.email || selectedMember?.email || 'sunny@vanhawke.com'
-    const senderEmail = selectedSender?.email || 'sunny@vanhawke.com'
+    const targetEmail = member?.email || selectedMember?.email || 'sunny@vanhawke.agency'
+    const senderEmail = selectedSender?.email || 'sunny@vanhawke.agency'
     if (!currentTo || !currentSubject) { setSent('error'); setTimeout(() => setSent(false), 3000); return }
     setSent('sending')
     setSendDropdownOpen(false)
@@ -271,7 +275,7 @@ export default function EmailDraft({ text }) {
       if (!res.ok) { const errText = await res.text(); console.error('[EmailDraft] HTTP error:', res.status, errText); throw new Error(`HTTP ${res.status}`) }
       const data = await res.json()
       if (data.ok || data.success) {
-        const label = targetEmail === 'sunny@vanhawke.com' ? 'done' : `done-${targetEmail}`
+        const label = targetEmail === 'sunny@vanhawke.agency' ? 'done' : `done-${targetEmail}`
         setSent(label)
         setTimeout(() => setSent(false), 3000)
         // PersonaMail correction capture: if user edited the draft, capture the diff

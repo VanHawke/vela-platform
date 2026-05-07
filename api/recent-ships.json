@@ -1,40 +1,50 @@
 {
-  "generated_at": "2026-05-07T13:39:19.799Z",
+  "generated_at": "2026-05-07T13:49:36.042Z",
   "commits": [
+    {
+      "hash": "ff76893",
+      "subject": "Fix: gmail-send fetches sender's Gmail signature from their account",
+      "when": "6 minutes ago"
+    },
+    {
+      "hash": "4570ddd",
+      "subject": "IRONCLAD: sender-specific token + signature across entire platform",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "65049f1",
       "subject": "Fix Send Test: outside-click handler was closing dropdown before onClick fired",
-      "when": "9 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "f6394fb",
       "subject": "Global: all user-facing emails use vanhawke.agency (not .com)",
-      "when": "13 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "95653d1",
       "subject": "Fix: Send Test sender wrong + add Send to all + use .agency domain",
-      "when": "17 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "ca5d985",
       "subject": "Send Test: dropdown of team members, vanhawke.agency domain",
-      "when": "24 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "b1207a5",
       "subject": "Add Send Test button to EmailDraft composer",
-      "when": "56 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "25fd626",
       "subject": "Fix: editable To field + strip blockquote > from briefs",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f127379",
       "subject": "Fix: EmailDraft shows error despite draft succeeding — field mismatch",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6d976d2",
@@ -64,7 +74,7 @@
     {
       "hash": "97fb13c",
       "subject": "Fix LinkedIn shows disconnected: RLS blocks token stored under wrong email",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "eb6aef9",
@@ -89,16 +99,6 @@
     {
       "hash": "4450105",
       "subject": "Fix LinkedIn connect: force:true for SDUI invisible inputs + state:attached selector",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "e9984d6",
-      "subject": "Fix: LinkedIn connect use domcontentloaded not networkidle (LinkedIn never stops loading)",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "3473ffb",
-      "subject": "Fix LinkedIn connect: resilient selectors for new SDUI login page + full cookie storage",
       "when": "7 hours ago"
     }
   ]
