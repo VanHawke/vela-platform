@@ -208,12 +208,12 @@ async function enrichSelectedForBrief(sel) {
 // Van Hawke email voice — learned from 115 real sent emails. MUST be included in every draft.
 const VH_EMAIL_VOICE = `
 EMAIL VOICE RULES (MANDATORY — learned from 115 real sent emails, match EXACTLY):
-- Opening: "Dear [First name]," for formal/cold. "Hi [Name]," for warm contacts only.
-- Tone: Authoritative and formal for prospects. Semi-formal and collegial for warm contacts.
+- Opening: ALWAYS match the greeting style of the existing thread. If they wrote "Hi Matt" then reply "Hi [Name]". If the thread uses "Dear", use "Dear". When no thread exists, default to "Dear [First name],".
+- Tone: Match the formality of the prospect's last message. If they're casual, be casual. If formal, be formal.
 - Replies: SHORT. 2-4 paragraphs max. Each paragraph often a single sentence. Standalone one-line paragraphs for emphasis.
 - Closing: "Kind regards," for formal. "Best," for warm. ALWAYS followed by signature block.
-- Em-dashes used to append qualifications mid-sentence. Minimal exclamation marks.
-- Short declarative statements → then a longer explanatory clause.
+- NEVER use em dashes (—). Use commas or full stops instead. No dashes of any kind mid-sentence.
+- Short declarative statements. Then a longer explanatory clause in a new sentence.
 - NEVER use: "hope this finds you well", "just wanted to reach out", "circle back", "touch base", "synergy", "I think", "maybe", "hopefully", "excited to", "please don't hesitate", "don't hesitate to reach out", "I'd love to", "thrilled", "delighted"
 - PREFERRED phrases: "at this level", "in practice", "while the category remains open", "long-term positioning", "happy to work around whatever is easiest", "much appreciated"
 - NO AI FILLER. No corporate pleasantries. No "genuinely helpful" or "appreciate the candour". Every word earns its place.
@@ -227,18 +227,21 @@ function buildBriefPrompt(sel) {
   const titleSuffix = titleParts.length > 1 ? titleParts[titleParts.length - 1].trim() : null
   if (sel.kind === 'reply') {
     const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
-    return `REPLY ANALYSIS — ${p.entity_name || 'prospect'} replied to our outreach.
+    return `REPLY BRIEF — ${p.entity_name || 'prospect'} replied.
 
-THEIR REPLY: "${snippet}"
+THEIR FULL REPLY (show this verbatim): "${snippet}"
 Subject: "${sel.title}". Arrived ${relativeTime(p.created_at)}.
 
-IMPORTANT: Do NOT show tool calls, tool responses, or your internal reasoning. Present ONLY the clean brief below. Do NOT narrate what you're looking up.
+IMPORTANT: Do NOT show tool calls, tool responses, or internal reasoning. Present ONLY the clean brief.
+
+Use Gmail search to find the LAST EMAIL WE SENT to ${p.entity_name || 'this person'} — show it for context.
 
 Respond with ONLY these sections:
-1. CONTEXT — ${p.entity_name || 'This person'}: their role, company, one sentence on where we stand. Keep it to 2-3 lines max.
-2. THEIR REPLY — what they said and what it means. 2-3 lines.
-3. DEFINITIVE NEXT STEP — EXACTLY what to do: who, when, what channel, what the message should achieve. One action, no hedging.
-4. DRAFT REPLY — Subject: line, then Dear [Name], body, Kind regards
+1. CONTEXT — ${p.entity_name || 'This person'}: role, company, where we stand. 2-3 lines.
+2. OUR LAST EMAIL — the most recent email WE sent to them. Show the subject and key lines so the user knows what triggered this reply.
+3. THEIR REPLY IN FULL — reproduce their complete reply text above. Do not truncate or summarise it.
+4. DEFINITIVE NEXT STEP — EXACTLY what to do: who, when, what channel, what to achieve. One action, no hedging.
+5. DRAFT REPLY — CRITICAL: Match the greeting style they used. If they wrote "Hi Matt" then use "Hi [Name]" not "Dear [Name]". Mirror their tone and formality level. No em dashes. No corporate filler. Subject: line, then greeting matching their style, body, sign-off matching our previous emails.
 
 ${VH_EMAIL_VOICE}`
   }
@@ -250,7 +253,7 @@ ${VH_EMAIL_VOICE}`
     if (d.contact) bits.push(`Contact: ${d.contact}`)
     if (d.dueDate) bits.push(`Due: ${d.dueDate}`)
     if (d.notes) bits.push(`Notes: ${d.notes}`)
-    return `Brief on ${d.contact || titleSuffix || 'the contact'} at ${d.company || 'their company'}.\n\n${bits.join('\n')}\n\nIMPORTANT: Do NOT show tool calls, tool responses, or internal reasoning. Present ONLY the clean brief.\n\nRESPOND WITH ONLY THESE 4 SECTIONS:\n1. CONTEXT — ${d.contact || titleSuffix || 'This person'}: role, company, one line on where we stand. 2-3 lines max.\n2. LAST COMMS — the last email we sent or received from them. Just the most recent one for context, not every message.\n3. DEFINITIVE NEXT STEP — EXACTLY what to do: who, when, what channel, what the message should achieve. One action, no hedging.\n4. DRAFT EMAIL — Subject: line, then Dear ${d.contact ? d.contact.split(' ')[0] : '[Name]'}, body, Kind regards\n\nThis is about ${d.contact || d.company || sel.title} ONLY. Keep it short and actionable.\n\n${VH_EMAIL_VOICE}`
+    return `Brief on ${d.contact || titleSuffix || 'the contact'} at ${d.company || 'their company'}.\n\n${bits.join('\n')}\n\nIMPORTANT: Do NOT show tool calls, tool responses, or internal reasoning. Present ONLY the clean brief.\n\nRESPOND WITH ONLY THESE 4 SECTIONS:\n1. CONTEXT — ${d.contact || titleSuffix || 'This person'}: role, company, one line on where we stand. 2-3 lines max.\n2. LAST COMMS — search Gmail for the last email we sent or received from ${d.contact || 'this person'}. Show the subject line and key content of just the most recent email for context.\n3. DEFINITIVE NEXT STEP — EXACTLY what to do: who, when, what channel, what the message should achieve. One action, no hedging.\n4. DRAFT EMAIL — Match the greeting style of our previous emails to this person. No em dashes. Subject: line, then greeting, body, sign-off.\n\nThis is about ${d.contact || d.company || sel.title} ONLY. Keep it short and actionable.\n\n${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'deal') {
     return `FOCUS: Brief me ONLY on this specific deal. Do NOT give a general pipeline review.\n\nDeal: ${p.company || p.title}\nStage: ${p.stage}\nValue: ${p.value ? '$' + p.value : 'n/a'}\nDays since activity: ${p.daysSince}\n\nRespond with ONLY:\n1. ACCOUNT STATUS — where we are with ${p.company || p.title} specifically, what's happened, key contacts\n2. NEXT MOVE — the single best action to progress this deal\n3. MARKET SIGNALS — any recent news or signals on this company\n4. DRAFT EMAIL — format with Subject: on its own line, then Dear [Name], body, Kind regards\n\nStay focused on ${p.company || p.title} ONLY. Senior sales voice, specific names and dates.\n\n${VH_EMAIL_VOICE}`
