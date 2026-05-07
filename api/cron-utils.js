@@ -40,7 +40,9 @@ export async function sbFetch(path, opts = {}) {
 
 // Google token helper — proactively refreshes if missing/near-expiry and returns null on failure (no stale fallback)
 export async function getGoogleToken(email) {
-  const rows = await sbFetch(`user_tokens?user_email=eq.${encodeURIComponent(email)}&provider=eq.google&select=access_token,refresh_token,expires_at&limit=1`);
+  // Always look up tokens with .com (how Google OAuth tokens are stored in Supabase)
+  const lookupEmail = email.replace('@vanhawke.agency', '@vanhawke.com');
+  const rows = await sbFetch(`user_tokens?user_email=eq.${encodeURIComponent(lookupEmail)}&provider=eq.google&select=access_token,refresh_token,expires_at&limit=1`);
   if (!rows?.[0]) return null;
   const token = rows[0];
   // Refresh if: no expires_at OR within 5 min of expiry OR already past expiry

@@ -19,9 +19,15 @@ export default async function handler(req, res) {
     const token = await getGoogleToken(tokenEmail);
     if (!token) return res.status(401).json({ error: `No Gmail token for ${tokenEmail}` });
 
-    // Load signature
-    const cfgRes = await sbFetch(`kiko_user_config?select=email_signature_html&limit=1`);
-    const signature = cfgRes?.[0]?.email_signature_html || '';
+    // Load SENDER-SPECIFIC signature (not just the first user's)
+    const cfgRes = await sbFetch(`kiko_user_config?select=email_signature_html&email=eq.${encodeURIComponent(fromEmail)}&limit=1`);
+    let signature = cfgRes?.[0]?.email_signature_html || '';
+    // Fallback: try with .com email variant
+    if (!signature) {
+      const cfgRes2 = await sbFetch(`kiko_user_config?select=email_signature_html&email=eq.${encodeURIComponent(tokenEmail)}&limit=1`);
+      signature = cfgRes2?.[0]?.email_signature_html || '';
+    }
+    // If still no signature for this sender, don't inject one (Gmail has its own)
 
     // Build MIME message
     const fullBody = body + (signature ? `\n\n${signature}` : '');

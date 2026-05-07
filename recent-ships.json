@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-05-07T13:29:46.427Z",
+  "generated_at": "2026-05-07T13:39:19.799Z",
   "commits": [
+    {
+      "hash": "65049f1",
+      "subject": "Fix Send Test: outside-click handler was closing dropdown before onClick fired",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "f6394fb",
       "subject": "Global: all user-facing emails use vanhawke.agency (not .com)",
-      "when": "4 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "95653d1",
       "subject": "Fix: Send Test sender wrong + add Send to all + use .agency domain",
-      "when": "7 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "ca5d985",
       "subject": "Send Test: dropdown of team members, vanhawke.agency domain",
-      "when": "14 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "b1207a5",
       "subject": "Add Send Test button to EmailDraft composer",
-      "when": "46 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "25fd626",
       "subject": "Fix: editable To field + strip blockquote > from briefs",
-      "when": "75 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "f127379",
       "subject": "Fix: EmailDraft shows error despite draft succeeding — field mismatch",
-      "when": "79 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "6d976d2",
       "subject": "Force-strip em dashes at rendering level (LLM ignores prompt instructions)",
-      "when": "81 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "942a2a5",
       "subject": "Fix brief quality: full reply shown, previous comms, greeting matching, em dash ban",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "bdb6ee1",
@@ -64,12 +69,12 @@
     {
       "hash": "eb6aef9",
       "subject": "Fix LinkedIn status check: match any LinkedIn token, not just Kiko email",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "b9f247e",
       "subject": "Fix LinkedIn connect: target VISIBLE inputs (LinkedIn has hidden duplicates)",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "d6913fa",
@@ -89,16 +94,11 @@
     {
       "hash": "e9984d6",
       "subject": "Fix: LinkedIn connect use domcontentloaded not networkidle (LinkedIn never stops loading)",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "3473ffb",
       "subject": "Fix LinkedIn connect: resilient selectors for new SDUI login page + full cookie storage",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "f5bb02d",
-      "subject": "LinkedIn client now reads cookies from database (not just env vars)",
       "when": "7 hours ago"
     }
   ]

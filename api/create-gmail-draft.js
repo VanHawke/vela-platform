@@ -21,7 +21,9 @@ async function sbPatch(path, body) {
 }
 
 async function forceRefreshToken(email) {
-  const rows = await sbGet(`user_tokens?user_email=eq.${encodeURIComponent(email)}&provider=eq.google&select=refresh_token&limit=1`);
+  // Token lookup: always use .com (how Google tokens are stored in Supabase)
+  const lookupEmail = email.replace('@vanhawke.agency', '@vanhawke.com');
+  const rows = await sbGet(`user_tokens?user_email=eq.${encodeURIComponent(lookupEmail)}&provider=eq.google&select=refresh_token&limit=1`);
   if (!Array.isArray(rows) || !rows[0]?.refresh_token) return null;
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -29,7 +31,7 @@ async function forceRefreshToken(email) {
   });
   const data = await res.json();
   if (!data.access_token) { console.error('[gmail-draft] Refresh failed:', JSON.stringify(data)); return null; }
-  await sbPatch(`user_tokens?user_email=eq.${encodeURIComponent(email)}&provider=eq.google`, {
+  await sbPatch(`user_tokens?user_email=eq.${encodeURIComponent(lookupEmail)}&provider=eq.google`, {
     access_token: data.access_token, expires_at: new Date(Date.now() + (data.expires_in || 3600) * 1000).toISOString(), updated_at: new Date().toISOString(),
   });
   return data.access_token;
@@ -39,6 +41,8 @@ async function forceRefreshToken(email) {
 const SEND_AS_ALIAS = {
   'sunny@vanhawke.com': 'sunny@vanhawke.agency',
   'matt.smith@vanhawke.com': 'matt.smith@vanhawke.agency',
+  'sunny@vanhawke.agency': 'sunny@vanhawke.agency',
+  'matt.smith@vanhawke.agency': 'matt.smith@vanhawke.agency',
 };
 
 const DISPLAY_NAMES = {

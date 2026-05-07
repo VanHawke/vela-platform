@@ -61,7 +61,9 @@ export default async function handler(req, res) {
   try {
     // Resolve sender — use senderEmail if provided, otherwise default to Sunny
     const resolvedSender = senderEmail || 'sunny@vanhawke.agency'
-    const accessToken = await getGoogleToken(resolvedSender)
+    // Token lookup must use .com (how Google tokens are stored)
+    const tokenLookupEmail = resolvedSender.replace('@vanhawke.agency', '@vanhawke.com')
+    const accessToken = await getGoogleToken(tokenLookupEmail)
     if (!accessToken) return res.status(401).json({ error: `No Google token for ${resolvedSender}` })
 
     // Resolve user_id and from_address for this sender
