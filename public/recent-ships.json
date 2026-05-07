@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-07T20:15:36.605Z",
+  "generated_at": "2026-05-07T20:29:43.640Z",
   "commits": [
+    {
+      "hash": "5fb87f3",
+      "subject": "FIX: Brief consistency — anchored to cognitive reasoning chains",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "e8751aa",
       "subject": "Send Now button + AuroraCanvas removed from voice mode",
-      "when": "2 minutes ago"
+      "when": "16 minutes ago"
     },
     {
       "hash": "51816ce",
       "subject": "FIX: Remove duplicate CORS header from draftOnly path",
-      "when": "14 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "3f3eb98",
       "subject": "FIX: draftOnly fast path + separate AbortController for draft",
-      "when": "55 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "e308033",
       "subject": "VERIFIED: Separate draft generation working — complete 3-paragraph emails",
-      "when": "70 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "b192233",
@@ -44,12 +49,12 @@
     {
       "hash": "5b16589",
       "subject": "FIX: stripToolCalls handles open-ended tags during streaming + raw JSON",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "49ea2f1",
       "subject": "FIX: EmailDraft streaming sync — body was freezing mid-sentence",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "70853ac",
@@ -95,11 +100,6 @@
       "hash": "781d13d",
       "subject": "Phase 2: Cognitive Architecture — Event Bus + Reasoning Chains + Synthesis",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "afa22d3",
-      "subject": "Task 1: Foundation knowledge populated + injection fixed",
-      "when": "6 hours ago"
     }
   ]
 }
