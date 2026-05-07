@@ -22,14 +22,14 @@ export default async function handler(req, res) {
 
     // Load active pipeline and upcoming calendar context
     const [pipeline, news, tasks] = await Promise.all([
-      sbFetch('deals?stage=neq.closed_won&stage=neq.closed_lost&select=title,company,contact,stage,value,updated_at&order=updated_at.desc&limit=15').catch(() => []),
+      sbFetch('deals?select=id,data&order=updated_at.desc&limit=15').catch(() => []),
       sbFetch(`kiko_alerts?type=eq.sponsorship_news&dismissed=eq.false&created_at=gte.${new Date(Date.now() - 7 * 86400000).toISOString()}&select=title,entity_name,detail&limit=10`).catch(() => []),
       sbFetch(`tasks?data->>completed=is.null&select=data&order=updated_at.desc&limit=10`).catch(() => [])
     ]);
 
     // Build synthesis prompt
     const eventSummaries = events.map(e => `[${e.event_type}] ${e.entity_name}: ${e.reasoning_output?.brief || e.reasoning_output?.classification?.summary || JSON.stringify(e.payload).slice(0, 150)}`).join('\n');
-    const pipelineSummary = (pipeline || []).map(d => `${d.company} (${d.stage}, $${d.value})`).join(', ');
+    const pipelineSummary = (pipeline || []).map(d => { const dd = d.data || {}; return `${dd.company || dd.title || 'Unknown'} (${dd.stage || 'unknown'}, $${dd.value || 0})`; }).join(', ');
     const newsSummary = (news || []).map(n => `${n.title}: ${(n.detail || '').slice(0, 100)}`).join('\n');
 
     const r = await anthropic.messages.create({
