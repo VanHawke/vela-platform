@@ -603,7 +603,7 @@ export default function OutreachIntelligence({ user }) {
         console.log('[CC] Starting draft generation for', entityName, 'draftOnly=true')
         try {
           const safeContext = (briefContext || '').replace(/[^\x20-\x7E\n]/g, ' ').slice(0, 800)
-          const draftRes = await fetch('https://api.vanhawke.agency/api/kiko-draft', {
+          const draftRes = await fetch('https://api.vanhawke.agency/api/kiko', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

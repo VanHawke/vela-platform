@@ -1,35 +1,45 @@
 {
-  "generated_at": "2026-05-07T20:44:12.679Z",
+  "generated_at": "2026-05-07T20:54:17.349Z",
   "commits": [
+    {
+      "hash": "706981d",
+      "subject": "Add get_cognitive_analysis to EMAIL_TOOL_NAMES",
+      "when": "7 minutes ago"
+    },
+    {
+      "hash": "3c86384",
+      "subject": "get_cognitive_analysis tool + self-knowledge sync + all session fixes",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "3271954",
       "subject": "FIX: Two-step reasoning chain query fetches all 5 steps",
-      "when": "4 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "b5752e9",
       "subject": "FIX: Reasoning chain query — correct column names and JSONB filter",
-      "when": "14 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "5fb87f3",
       "subject": "FIX: Brief consistency — anchored to cognitive reasoning chains",
-      "when": "28 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "e8751aa",
       "subject": "Send Now button + AuroraCanvas removed from voice mode",
-      "when": "31 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "51816ce",
       "subject": "FIX: Remove duplicate CORS header from draftOnly path",
-      "when": "43 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "3f3eb98",
       "subject": "FIX: draftOnly fast path + separate AbortController for draft",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e308033",
@@ -54,7 +64,7 @@
     {
       "hash": "854899d",
       "subject": "FIX: Command Centre max_tokens 8192 — complete briefs with full drafts",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "5b16589",
@@ -89,16 +99,6 @@
     {
       "hash": "c83b328",
       "subject": "FIX: Reply alerts visible for 7 days (was 24hrs), cognitive alerts in Command Centre",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "5be09cf",
-      "subject": "FIX: Campaign stats reading from wrong table + pre-send validation",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "4b9d97c",
-      "subject": "CRITICAL: Pre-send email validation + enhanced campaign visibility",
       "when": "4 hours ago"
     }
   ]
