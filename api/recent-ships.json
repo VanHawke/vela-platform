@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-07T12:01:38.697Z",
+  "generated_at": "2026-05-07T12:08:14.284Z",
   "commits": [
+    {
+      "hash": "942a2a5",
+      "subject": "Fix brief quality: full reply shown, previous comms, greeting matching, em dash ban",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "bdb6ee1",
       "subject": "Fix: remove orange hue + strip tool calls from briefs + concise prompts",
-      "when": "13 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "2182a3b",
       "subject": "Fix: remove leftover old MobileCommandCentre code causing build error",
-      "when": "27 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "e4190f9",
       "subject": "Mobile Command Centre: replaces bell alert view with stripped-down command centre",
-      "when": "30 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "97fb13c",
@@ -69,7 +74,7 @@
     {
       "hash": "5a2a62b",
       "subject": "Proactive recommendations engine + campaign tracking backfill + prospect sourcing confirmed",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "1e78f83",
@@ -94,11 +99,6 @@
     {
       "hash": "fdba396",
       "subject": "Fix: oooCount variable not declared in reply-detect cron",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "953683a",
-      "subject": "Complete session 63-65: OOO reschedule + auto-deal creation + direct send + knowledge sync",
       "when": "16 hours ago"
     }
   ]

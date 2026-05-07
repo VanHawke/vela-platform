@@ -23,7 +23,7 @@ function stripDraftFromBrief(text) {
   return text.replace(/\n*(?:#{1,4}\s*)?(?:\d+\.\s*)?(?:DRAFT\s*(?:REPLY|EMAIL|OUTREACH|FOLLOW.?UP))[:\s—\-]*[\s\S]*/i, '\n').trim()
 }
 
-// Strip tool calls, tool responses, and Kiko's internal narration from brief text
+// Strip tool calls, tool responses, Kiko's internal narration, and em dashes from brief text
 function stripToolCalls(text) {
   if (!text) return text
   return text
@@ -31,6 +31,9 @@ function stripToolCalls(text) {
     .replace(/<tool_response>[\s\S]*?<\/tool_response>/g, '')
     .replace(/I'll pull.*?(?:now|first)\.?\s*/gi, '')
     .replace(/Let me (?:look up|search|check|find|pull).*?(?:\.|$)/gim, '')
+    .replace(/\s*—\s*/g, '. ')
+    .replace(/\s*–\s*/g, '. ')
+    .replace(/\.\.\s/g, '. ')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }

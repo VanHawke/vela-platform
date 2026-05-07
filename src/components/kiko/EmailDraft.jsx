@@ -74,6 +74,8 @@ function parseEmail(text) {
     .replace(/\n?\s*(Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?)\s*$/im, '')
     .replace(/\n\s*vanhawke\.(com|agency)\s*$/im, '')
     .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .replace(/\s*—\s*/g, ', ')
+    .replace(/\s*–\s*/g, ', ')
     .trim()
   return { subject, to, body }
 }
