@@ -207,7 +207,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [mobileCommandOpen, setMobileCommandOpen] = useState(false)
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false)
   const [mobileHistoryConvos, setMobileHistoryConvos] = useState([])
-  const [commandData, setCommandData] = useState({ replies: [], tasks: [], campaigns: [] })
+  const [commandData, setCommandData] = useState({ replies: [], tasks: [], campaigns: [], recommendations: [], overdue: [] })
 
   // Load command centre data when bell is tapped
   const loadCommandData = useCallback(async () => {
@@ -228,10 +228,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         const enrs = enrollments.filter(e => e.sequence_id === c.id)
         return { ...c, enrolled: enrs.length, replied: enrs.filter(e => e.reply_detected_at).length, bounced: enrs.filter(e => e.bounce_detected_at).length }
       })
-      // Filter alerts to replies and important items
-      const replies = (alertsRes.data || [])
+      // Filter alerts by type
+      const allAlerts = alertsRes.data || []
+      const replies = allAlerts.filter(a => !a.dismissed && ['email_reply', 'email_reply_manual', 'linkedin_reply', 'linkedin_connection_accepted', 'reply_from_prospect'].includes(a.type))
+      const recommendations = allAlerts.filter(a => !a.dismissed && a.type === 'proactive_recommendation')
       const tasks = (tasksRes.data || []).filter(t => !t.data?.completed).map(t => ({ ...t, ...(t.data || {}) }))
-      setCommandData({ replies, tasks, campaigns })
+      const overdue = tasks.filter(t => { const d = t.dueDate || t.due_date; return d && new Date(d) < new Date() })
+      setCommandData({ replies, tasks, campaigns, recommendations, overdue })
     } catch (err) { console.error('[MobileCommand]', err) }
   }, [])
 
@@ -1387,84 +1390,101 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── Mobile Command Centre panel (bell icon) ──
   const MobileCommandCentre = () => {
     if (!isMobile || !mobileCommandOpen) return null
-    const { replies, tasks, campaigns } = commandData
+    const { replies, tasks, campaigns, recommendations, overdue } = commandData
     const timeAgo = (d) => { if (!d) return ''; const s = Math.floor((Date.now() - new Date(d)) / 1000); if (s < 60) return 'just now'; if (s < 3600) return `${Math.floor(s/60)}m ago`; if (s < 86400) return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago` }
-    const isOverdue = (d) => d && new Date(d) < new Date()
-    const getTaskDue = (t) => t.data?.dueDate || t.data?.due_date
-    const typeColor = (t) => t === 'task_due' || t === 'task_automation' ? '#B8643E' : t === 'morning_brief' ? '#7d8a64' : t === 'new_partnership' ? '#B89C5C' : t === 'category_recommendation' ? '#534AB7' : t === 'reply_from_prospect' ? '#7d8a64' : t === 'linkedin_connection_accepted' ? '#B89C5C' : t === 'bounce_detected' ? '#B8643E' : '#5A6470'
-    const typeLabel = (t) => t === 'task_due' ? 'Task' : t === 'task_automation' ? 'Auto' : t === 'morning_brief' ? 'Brief' : t === 'new_partnership' ? 'Deal' : t === 'category_recommendation' ? 'Insight' : t === 'reply_from_prospect' ? 'Email' : t === 'linkedin_connection_accepted' ? 'LinkedIn' : t === 'bounce_detected' ? 'Bounce' : t === 'monitoring' ? 'Monitor' : t?.replace(/_/g, ' ') || 'Alert'
-    const Sect = ({ label }) => <div style={{ fontSize: 12, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '14px 0 8px' }}>{label}</div>
+    const Sect = ({ label, icon }) => <div style={{ fontSize: 11, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 500, padding: '14px 0 8px', display: 'flex', alignItems: 'center', gap: 6 }}>{icon}{label}</div>
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column', overflow: 'hidden', overscrollBehavior: 'none', touchAction: 'none' }}>
-        {/* Header — matches MobileHeader but bell is active */}
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column', overflow: 'hidden', overscrollBehavior: 'none' }}>
         <div style={{ padding: '10px 20px', paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div onClick={() => { setMobileCommandOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => { setMobileCommandOpen(false); navigate('/voice') }} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
+            <button onClick={() => { setMobileCommandOpen(false); navigate('/voice') }} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
             </button>
-            <button onClick={() => setMobileCommandOpen(false)}
-              style={{ width: 44, height: 44, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
+            <button onClick={() => setMobileCommandOpen(false)} style={{ width: 44, height: 44, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', WebkitTapHighlightColor: 'transparent' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </button>
           </div>
         </div>
-        {/* Scrollable content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 18px 24px', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
-          {/* Replies */}
-          <Sect label="Today" />
-          {replies.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No replies yet</div>}
-          {replies.map(r => (
-            <div key={r.id} onClick={() => {
-              const alertName = r.title || r.entity_name || 'Alert'
-              setMobileCommandOpen(false)
-              handleSubmit(`Tell me about this alert: "${alertName}". What happened, what does it mean, and what should I do next?`)
-            }} style={{ background: '#FFFFFF', borderRadius: '0 12px 12px 0', padding: '14px 16px', marginBottom: 8, border: '1px solid rgba(0,0,0,0.04)', borderLeft: `3px solid ${typeColor(r.type)}`, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A' }}>{r.title || r.entity_name || 'Reply'}</div>
-                <div style={{ fontSize: 12, fontWeight: 500, color: typeColor(r.type) }}>{typeLabel(r.type)}</div>
-              </div>
-              {r.detail && <div style={{ fontSize: 13, color: '#6B6B6B', marginTop: 3 }}>{r.entity_type || ''}</div>}
-              {r.detail && <div style={{ fontSize: 12, color: '#A0A0A0', marginTop: 4, fontStyle: 'italic' }}>"{r.detail.slice(0, 80)}{r.detail.length > 80 ? '...' : ''}"</div>}
-              <div style={{ fontSize: 11, color: '#A0A0A0', marginTop: 5 }}>{timeAgo(r.created_at)}</div>
-            </div>
-          ))}
 
-          {/* Tasks */}
-          <Sect label="Tasks due" />
-          {tasks.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No tasks</div>}
-          {tasks.map(t => {
-            const overdue = isOverdue(getTaskDue(t))
-            return (
-              <div key={t.id} onClick={() => {
-                const taskName = t.data?.subject || t.data?.title || t.data?.notes || t.data?.contact || 'Task'
-                const company = t.data?.company || t.data?.entity_name || ''
-                setMobileCommandOpen(false)
-                handleSubmit(`Tell me about this task and what I need to do: "${taskName}"${company ? ` for ${company}` : ''}. Include any relevant context, next steps, and suggested actions.`)
-              }} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, padding: '14px 16px', marginBottom: 8, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 20, height: 20, borderRadius: 5, border: `1.5px solid ${overdue ? 'rgba(184,100,62,0.4)' : 'rgba(0,0,0,0.15)'}`, flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.data?.subject || t.data?.title || t.data?.notes || t.data?.contact || 'Task'}</div>
-                    <div style={{ fontSize: 13, color: overdue ? '#B8643E' : '#6B6B6B', marginTop: 3 }}>{t.data?.company || t.data?.entity_name || ''}{(t.data?.dueDate || t.data?.due_date) ? ` · ${overdue ? 'Overdue' : 'Due ' + new Date(t.data.dueDate || t.data.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ''}</div>
-                  </div>
+        {/* Summary pills */}
+        <div style={{ display: 'flex', gap: 8, padding: '4px 18px 8px', overflow: 'hidden' }}>
+          {replies.length > 0 && <div style={{ padding: '5px 14px', borderRadius: 20, background: '#0A0A0A', color: '#fff', fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap' }}>{replies.length} {replies.length === 1 ? 'reply' : 'replies'}</div>}
+          {overdue.length > 0 && <div style={{ padding: '5px 14px', borderRadius: 20, background: '#DC2626', color: '#fff', fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap' }}>{overdue.length} overdue</div>}
+          {campaigns.length > 0 && <div style={{ padding: '5px 14px', borderRadius: 20, background: '#F5F4F1', color: '#6B6B6B', fontSize: 12, whiteSpace: 'nowrap' }}>{campaigns[0]?.enrolled || 0} active</div>}
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 18px 24px', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+
+          {/* Immediate action — replies */}
+          {replies.length > 0 && (<>
+            <Sect label="Immediate action" icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C4723A" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>} />
+            {replies.map(r => (
+              <div key={r.id} onClick={() => { setMobileCommandOpen(false); handleSubmit(`REPLY ANALYSIS — ${r.entity_name || 'prospect'} has replied.\n\nAlert: "${r.title}"\nSnippet: "${(r.detail || '').slice(0, 200)}"\n\nRespond with: 1. LAST CORRESPONDENCE 2. WHAT THEY SAID 3. DEFINITIVE NEXT STEP 4. DRAFT REPLY`) }} style={{ background: '#fff', borderLeft: '3px solid #C4723A', padding: '14px 16px', marginBottom: 8, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A' }}>{r.entity_name || r.title || 'Reply'}</div>
+                  <span style={{ fontSize: 11, color: '#C4723A', fontWeight: 500 }}>Reply</span>
+                </div>
+                <div style={{ fontSize: 12, color: '#A0A0A0', marginTop: 2 }}>{r.title?.replace(/^Reply from /, '') || ''} · {timeAgo(r.created_at)}</div>
+                {r.detail && <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 6, fontStyle: 'italic', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>"{r.detail.slice(0, 120)}{r.detail.length > 120 ? '...' : ''}"</div>}
+              </div>
+            ))}
+          </>)}
+
+          {/* Follow-ups due */}
+          {overdue.length > 0 && (<>
+            <Sect label="Follow-ups due" icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>} />
+            {overdue.slice(0, 4).map(t => (
+              <div key={t.id} onClick={() => { setMobileCommandOpen(false); handleSubmit(`I need to follow up with ${t.contact || t.title || 'this person'} at ${t.company || 'their company'}. Give me: 1. LAST CORRESPONDENCE 2. WHY NO REPLY 3. DEFINITIVE NEXT STEP 4. DRAFT FOLLOW-UP EMAIL`) }} style={{ background: '#fff', borderLeft: '3px solid #DC2626', padding: '12px 16px', marginBottom: 8, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A' }}>Due: follow_up — {t.company || t.contact || ''}</div>
+                  <span style={{ fontSize: 11, color: '#C4723A', fontWeight: 500 }}>Task</span>
+                </div>
+                <div style={{ fontSize: 12, color: '#A0A0A0', marginTop: 2 }}>{t.contact || ''} · {t.dueDate ? `${Math.ceil((new Date() - new Date(t.dueDate)) / 86400000)}d overdue` : 'overdue'}</div>
+              </div>
+            ))}
+            {overdue.length > 4 && <div onClick={() => { setMobileCommandOpen(false); navigate('/command-centre') }} style={{ textAlign: 'center', padding: '8px 0', cursor: 'pointer' }}><span style={{ fontSize: 12, color: '#C4723A', fontWeight: 500 }}>View all {overdue.length} overdue →</span></div>}
+          </>)}
+
+          {/* Campaign activity */}
+          {campaigns.length > 0 && (<>
+            <Sect label="Campaign activity" icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>} />
+            {campaigns.map(c => (
+              <div key={c.id} onClick={() => { setMobileCommandOpen(false); navigate('/campaigns') }} style={{ background: '#fff', borderLeft: '3px solid #0A0A0A', padding: '14px 16px', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A', marginBottom: 10 }}>{c.name}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                  <div style={{ background: '#F8F7F4', borderRadius: 8, padding: '10px 12px' }}><div style={{ fontSize: 11, color: '#A0A0A0' }}>Active</div><div style={{ fontSize: 18, fontWeight: 500, color: '#0A0A0A' }}>{c.enrolled}</div></div>
+                  <div style={{ background: '#F8F7F4', borderRadius: 8, padding: '10px 12px' }}><div style={{ fontSize: 11, color: '#A0A0A0' }}>Replied</div><div style={{ fontSize: 18, fontWeight: 500, color: '#0A0A0A' }}>{c.replied}</div></div>
+                  <div style={{ background: '#F8F7F4', borderRadius: 8, padding: '10px 12px' }}><div style={{ fontSize: 11, color: '#A0A0A0' }}>Bounced</div><div style={{ fontSize: 18, fontWeight: 500, color: c.bounced === 0 ? '#16A34A' : '#DC2626' }}>{c.bounced}</div></div>
+                  <div style={{ background: '#F8F7F4', borderRadius: 8, padding: '10px 12px' }}><div style={{ fontSize: 11, color: '#A0A0A0' }}>Steps</div><div style={{ fontSize: 18, fontWeight: 500, color: '#0A0A0A' }}>{c.steps?.length || '—'}</div></div>
                 </div>
               </div>
-            )
-          })}
+            ))}
+          </>)}
 
-          {/* Active campaigns */}
-          <Sect label="Campaigns active" />
-          {campaigns.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No active campaigns</div>}
-          {campaigns.map(c => (
-            <div key={c.id} onClick={() => {
-              setMobileCommandOpen(false)
-              handleSubmit(`Give me a status update on the "${c.name}" campaign. How many enrolled, replies, bounces? What's working and what needs attention?`)
-            }} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, padding: '14px 16px', marginBottom: 8, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A' }}>{c.name}</div>
-                  <div style={{ fontSize: 13, color: '#6B6B6B', marginTop: 3 }}>{c.enrolled} enrolled · {c.replied} replies · {c.bounced} bounced</div>
+          {/* Kiko recommends */}
+          {recommendations.length > 0 && (<>
+            <Sect label="Kiko recommends" icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C4723A" strokeWidth="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 12 18.469c-1.006 0-1.916.44-2.535 1.137l-.005.006"/></svg>} />
+            {recommendations.slice(0, 2).map(r => (
+              <div key={r.id} onClick={() => { setMobileCommandOpen(false); handleSubmit(`${r.entity_name || 'This prospect'} opened my email but hasn't replied. Draft a short, direct follow-up email for them. Include: 1. CONTEXT 2. DEFINITIVE NEXT STEP 3. DRAFT EMAIL`) }} style={{ background: '#fff', borderLeft: '3px solid #C4723A', padding: '14px 16px', marginBottom: 8, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A' }}>{r.entity_name || r.title}</div>
+                <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 4, lineHeight: 1.4 }}>{(r.detail || '').slice(0, 100)}{(r.detail || '').length > 100 ? '...' : ''}</div>
+                <div style={{ marginTop: 10 }}><span style={{ display: 'inline-block', padding: '6px 16px', borderRadius: 6, background: '#0A0A0A', color: '#fff', fontSize: 12, fontWeight: 500 }}>Draft follow-up</span></div>
+              </div>
+            ))}
+          </>)}
+
+          {/* Empty state */}
+          {replies.length === 0 && overdue.length === 0 && recommendations.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#A0A0A0' }}>
+              <div style={{ fontSize: 14 }}>All clear — no immediate actions</div>
+              <div style={{ fontSize: 12, marginTop: 4 }}>Kiko is monitoring your campaigns</div>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
                 </div>
                 <div style={{ fontSize: 12, padding: '4px 12px', borderRadius: 8, background: 'rgba(125,138,100,0.10)', color: '#7d8a64', fontWeight: 500 }}>Active</div>
               </div>
