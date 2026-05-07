@@ -85,13 +85,53 @@ async function updateAuditRow(auditId, updates) {
 }
 
 // ── Auth headers ──
-function getAuthHeaders() {
-  const liAt = process.env.LINKEDIN_LI_AT;
-  const jsessionid = process.env.LINKEDIN_JSESSIONID;
-  if (!liAt || !jsessionid) throw new Error('LINKEDIN_LI_AT or LINKEDIN_JSESSIONID env var not set. Extract cookies from browser and add to Vercel env.');
-  const csrfToken = jsessionid.replace(/^"|"$/g, '');
-  return { 'cookie': `li_at=${liAt}; JSESSIONID=${jsessionid}`, 'csrf-token': csrfToken, 'x-restli-protocol-version': '2.0.0', 'accept': 'application/vnd.linkedin.normalized+json+2.1', 'user-agent': USER_AGENT, 'content-type': 'application/json; charset=UTF-8' };
+// Reads from env vars first, then falls back to user_tokens DB (where linkedin-connect stores them)
+let _cachedCookies = null;
+let _cookieLoadedAt = 0;
+
+async function loadLinkedInCookies() {
+  if (_cachedCookies && Date.now() - _cookieLoadedAt < 5 * 60 * 1000) return _cachedCookies;
+  
+  if (process.env.LINKEDIN_LI_AT && process.env.LINKEDIN_JSESSIONID) {
+    _cachedCookies = { liAt: process.env.LINKEDIN_LI_AT, jsessionid: process.env.LINKEDIN_JSESSIONID };
+    _cookieLoadedAt = Date.now();
+    return _cachedCookies;
+  }
+  
+  try {
+    const SB = process.env.VITE_SUPABASE_URL;
+    const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const res = await fetch(`${SB}/rest/v1/user_tokens?provider=eq.linkedin&select=access_token,refresh_token&limit=1`, {
+      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }
+    });
+    const data = await res.json();
+    if (data?.[0]?.access_token) {
+      try {
+        const cookies = JSON.parse(data[0].access_token);
+        const liAtCookie = cookies.find(c => c.name === 'li_at');
+        const jsessionCookie = cookies.find(c => c.name === 'JSESSIONID');
+        if (liAtCookie?.value && jsessionCookie?.value) {
+          _cachedCookies = { liAt: liAtCookie.value, jsessionid: jsessionCookie.value };
+          _cookieLoadedAt = Date.now();
+          return _cachedCookies;
+        }
+      } catch {}
+      _cachedCookies = { liAt: data[0].access_token, jsessionid: data[0].refresh_token || '' };
+      _cookieLoadedAt = Date.now();
+      return _cachedCookies;
+    }
+  } catch (e) { console.error('[linkedin-client] DB cookie load failed:', e.message); }
+  return null;
 }
+
+function getAuthHeaders() {
+  const c = _cachedCookies;
+  if (!c?.liAt || !c?.jsessionid) throw new Error('LinkedIn session not found. Reconnect via Settings → LinkedIn.');
+  const csrfToken = c.jsessionid.replace(/^"|"$/g, '');
+  return { 'cookie': `li_at=${c.liAt}; JSESSIONID=${c.jsessionid}`, 'csrf-token': csrfToken, 'x-restli-protocol-version': '2.0.0', 'accept': 'application/vnd.linkedin.normalized+json+2.1', 'user-agent': USER_AGENT, 'content-type': 'application/json; charset=UTF-8' };
+}
+
+loadLinkedInCookies().catch(() => {});
 
 // Retryable network error patterns — Vercel undici TLS flakiness against LinkedIn.
 // These are transient and benefit from a fresh TCP connection.
@@ -100,6 +140,7 @@ const RETRY_DELAYS_MS = [500, 1500]; // 2 retries after the initial → 3 attemp
 const FETCH_TIMEOUT_MS = 6000; // Per-attempt hard cap so a hung fetch can't blow the function budget
 
 async function voyagerFetch(path, opts = {}) {
+  await loadLinkedInCookies(); // Ensure cookies are loaded from DB before making request
   const url = path.startsWith('http') ? path : `${VOYAGER_BASE}${path}`;
   let lastError = null;
 
