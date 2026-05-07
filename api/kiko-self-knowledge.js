@@ -554,6 +554,59 @@ EMAIL VOICE (GLOBAL):
 • Forbidden phrases enforced platform-wide: genuinely, appreciate the candour, hope this finds you well, etc.
 • The /api/rewrite-email endpoint loads voice profile for EVERY tone adjustment
 • This applies to ALL email drafts everywhere — Command Centre, main chat, campaigns
+
+═══ SESSION 66+ CAPABILITIES (May 7, 2026) ═══
+
+IRONCLAD SENDER ROUTING:
+• Every email endpoint now correctly sends FROM the selected sender's Gmail account
+• getGoogleToken() converts .agency→.com automatically (tokens stored under .com, aliases use .agency)
+• Gmail signatures are fetched from the sender's Gmail API (users.settings.sendAs), not from a shared config
+• When "From: Matt" is selected: Matt's OAuth token → Matt's Gmail account → Matt's signature
+• This applies to: gmail-send.js, gmail-draft.js, create-gmail-draft.js, cron-sequence-sender.js, schedule-email.js
+• ALL user-facing emails use @vanhawke.agency domain. Internal auth stays @vanhawke.com.
+
+SEND TEST:
+• Every EmailDraft component now has a "Send test" button with dropdown
+• Options: Send to myself (sunny@vanhawke.agency), Send to Matt (matt.smith@vanhawke.agency), Send to all team
+• Sends the exact same email content but with [TEST] prefix in subject
+• Uses the selected sender's token + signature (if From: Matt selected, test arrives from Matt)
+• Future-proofed: any new org members auto-populate from team_members API
+
+MOBILE COMMAND CENTRE:
+• Bell icon now opens a stripped-down Command Centre (replaced the old flat alert list)
+• Matches exact Kiko mobile skin: serif logo, warm off-white, copper/terra left-border card accents
+• Sections: Summary pills → Immediate action (replies) → Follow-ups due → Campaign activity (2x2 grid) → Kiko recommends
+• Tapping any card sends a structured prompt to Kiko chat requesting brief + draft
+• Campaign activity shows 2x2 stat grid: Active, Replied, Bounced, Steps
+
+COMMAND CENTRE BRIEFS:
+• Tool calls (<tool_call>/<tool_response>) are stripped from brief rendering — users never see raw XML
+• Blockquote > characters stripped from brief text
+• Em dashes (—) force-stripped at rendering level: replaced with '. ' in briefs, ', ' in email drafts
+• Reply briefs show: CONTEXT (2-3 lines), OUR LAST EMAIL, THEIR REPLY IN FULL, NEXT STEP, DRAFT
+• Task briefs show: CONTEXT (2-3 lines), LAST COMMS (most recent only), NEXT STEP, DRAFT
+• All briefs include: "Do NOT show tool calls or internal reasoning"
+• Greeting matching: "ALWAYS match the greeting style of the existing thread" — if they wrote "Hi Matt", use "Hi", not "Dear"
+
+SUPER ADMIN OVERSIGHT:
+• Sunny as super_admin has full visibility of all alerts, tasks, campaigns, communications org-wide
+• Can respond to prospects on Matt's behalf: click reply alert → draft defaults to From: Matt → send from Matt's account
+• EmailDraft component accepts defaultSender prop — Command Centre passes 'matt' for campaign replies/tasks
+• Drafts/sends/tests all use the campaign sender's token and signature, not the logged-in user's
+
+LINKEDIN CONNECT (FIXED):
+• LinkedIn rebuilt their login page as React SDUI — old #username/#password IDs removed
+• New page renders DUPLICATE inputs: hidden (:r0:, :r1:) + visible (:r3:, :r4:)
+• Fix: page.locator('input[type="email"]:visible').first() — skips hidden duplicates
+• keyboard type() with delay simulates real input events for React's onChange handlers
+• Post-login checks cookies (not URL) for success — LinkedIn redirects to /login temporarily after verification
+• Cookies stored as full JSON array under the user's Kiko email (not LinkedIn login email) for RLS compatibility
+• Both Sunny and Matt LinkedIn sessions stored and operational
+
+UI CHANGES:
+• AuroraCanvas (orange/amber hue around edges) REMOVED — clean white background
+• EmailDraft To: field is now editable — can change recipient directly
+• EmailDraft "Send to drafts" now checks data.ok || data.success (API returns 'success' field)
 `;
 
 export async function generateSelfKnowledge(userId) {
