@@ -208,21 +208,31 @@ async function enrichSelectedForBrief(sel) {
     const entityName = companyName || contactName || titleSuffix || ''
     if (entityName) {
       try {
-        // Step 1: find event_ids where entity_name matches (classify/context steps have it in input)
-        const { data: matchingSteps } = await supabase
-          .from('kiko_reasoning_chains')
-          .select('event_id')
-          .filter('input->>entity_name', 'ilike', `%${entityName}%`)
-          .order('created_at', { ascending: false })
-          .limit(2)
-        if (matchingSteps?.length) {
+        // Timeout: if chain lookup takes >5s, skip it — don't block the brief
+        const chainPromise = (async () => {
+          // Step 1: find event_ids where entity_name matches (classify/context steps have it in input)
+          const { data: matchingSteps, error: err1 } = await supabase
+            .from('kiko_reasoning_chains')
+            .select('event_id')
+            .filter('input->>entity_name', 'ilike', `%${entityName}%`)
+            .order('created_at', { ascending: false })
+            .limit(2)
+          if (err1) { console.warn('[enrichBrief] chain step1 error:', err1.message); return null }
+          if (!matchingSteps?.length) return null
           const eventIds = [...new Set(matchingSteps.map(s => s.event_id))]
           // Step 2: fetch ALL steps for those events (including psychology + action)
-          const { data: chains } = await supabase
+          const { data: chains, error: err2 } = await supabase
             .from('kiko_reasoning_chains')
             .select('step_type, output, created_at')
             .in('event_id', eventIds)
             .order('created_at', { ascending: false })
+          if (err2) { console.warn('[enrichBrief] chain step2 error:', err2.message); return null }
+          return chains
+        })()
+        const chains = await Promise.race([
+          chainPromise,
+          new Promise(resolve => setTimeout(() => resolve(null), 5000))
+        ])
           if (chains?.length) {
             const psychologyStep = chains.find(c => c.step_type === 'psychology')
             const actionStep = chains.find(c => c.step_type === 'action')
@@ -235,7 +245,6 @@ async function enrichSelectedForBrief(sel) {
               facts.push(`\n--- KIKO'S EXISTING ANALYSIS (from cognitive reasoning chain, generated ${new Date(chains[0].created_at).toLocaleDateString('en-GB')}) ---\n${parts.join('\n')}\n--- END EXISTING ANALYSIS ---\nCRITICAL: Use the above analysis as your definitive recommendation. Do NOT contradict it. The cognitive engine has already analysed this signal. Your brief must be consistent with its conclusion. If suggesting timing (e.g. follow up in X weeks), use the SAME timing as the analysis above.`)
             }
           }
-        }
       } catch (e) { console.error('[enrichBrief] reasoning chain lookup:', e) }
     }
     

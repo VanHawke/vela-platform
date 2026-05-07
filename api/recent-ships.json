@@ -1,55 +1,60 @@
 {
-  "generated_at": "2026-05-07T21:21:29.383Z",
+  "generated_at": "2026-05-07T21:48:24.808Z",
   "commits": [
+    {
+      "hash": "a52a0e1",
+      "subject": "FIX: Strip double Re: from subject + fix outreach queue column name",
+      "when": "27 minutes ago"
+    },
     {
       "hash": "e33d6de",
       "subject": "FIX: Email subject line from actual thread, not alert title",
-      "when": "5 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "c052866",
       "subject": "CRITICAL FIX: Event processor used snake_case field names for camelCase CRM data",
-      "when": "19 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "dece7bd",
       "subject": "FIX: Draft fetch URL was /api/kiko-draft (404) — changed to /api/kiko",
-      "when": "27 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "706981d",
       "subject": "Add get_cognitive_analysis to EMAIL_TOOL_NAMES",
-      "when": "34 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "3c86384",
       "subject": "get_cognitive_analysis tool + self-knowledge sync + all session fixes",
-      "when": "37 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "3271954",
       "subject": "FIX: Two-step reasoning chain query fetches all 5 steps",
-      "when": "42 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "b5752e9",
       "subject": "FIX: Reasoning chain query — correct column names and JSONB filter",
-      "when": "52 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "5fb87f3",
       "subject": "FIX: Brief consistency — anchored to cognitive reasoning chains",
-      "when": "66 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e8751aa",
       "subject": "Send Now button + AuroraCanvas removed from voice mode",
-      "when": "68 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "51816ce",
       "subject": "FIX: Remove duplicate CORS header from draftOnly path",
-      "when": "80 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "3f3eb98",
@@ -59,7 +64,7 @@
     {
       "hash": "e308033",
       "subject": "VERIFIED: Separate draft generation working — complete 3-paragraph emails",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "b192233",
@@ -84,7 +89,7 @@
     {
       "hash": "5b16589",
       "subject": "FIX: stripToolCalls handles open-ended tags during streaming + raw JSON",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "49ea2f1",
@@ -94,11 +99,6 @@
     {
       "hash": "70853ac",
       "subject": "FIX: EmailDraft parser now isolates DRAFT section from full brief",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "6e302f1",
-      "subject": "FIX: Command Centre ALWAYS uses Sonnet — Haiku was truncating drafts",
       "when": "4 hours ago"
     }
   ]
