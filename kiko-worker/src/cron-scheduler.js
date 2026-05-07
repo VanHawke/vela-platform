@@ -36,6 +36,7 @@ const SCHEDULES = [
   { schedule: '30 6 * * 1-5',   path: '/api/cron-morning-email',           name: 'morning-email' },
   { schedule: '0 4 * * 1-5',    path: '/api/cron-inbox-triage',            name: 'inbox-triage' },
   { schedule: '0 5 * * 0',      path: '/api/cron-rule-promotion',          name: 'rule-promotion' },
+  { schedule: '0 3 * * 0',      path: '/api/cron-contact-reenrich',        name: 'contact-reenrich' },
   { schedule: '0 2 * * *',      path: '/api/cron-self-awareness',          name: 'self-awareness' },
   { schedule: '0 6 * * 1-5',    path: '/api/cron-company-monitor',         name: 'company-monitor' },
 

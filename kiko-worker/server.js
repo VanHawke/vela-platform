@@ -25,6 +25,7 @@ import gmailDraft from "./api/gmail-draft.js";
 import gmailSend from "./api/gmail-send.js";
 import captureCorrection from "./api/capture-correction.js";
 import proactiveRecs from "./api/cron-proactive-recommendations.js";
+import contactReenrich from "./api/cron-contact-reenrich.js";
 import { startMonitors } from "./monitors/scheduler.js";
 import { startScheduler } from "./src/cron-scheduler.js";
 
@@ -75,6 +76,7 @@ app.post("/api/create-gmail-draft", gmailDraft);
 app.post("/api/gmail-send", gmailSend);
 app.post("/api/capture-correction", captureCorrection);
 app.post("/api/cron-proactive-recommendations", proactiveRecs);
+app.post("/api/cron-contact-reenrich", contactReenrich);
 app.use("/api", kikoChatRoutes);
 
 // Routes — existing
