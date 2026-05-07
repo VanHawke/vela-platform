@@ -1,40 +1,50 @@
 {
-  "generated_at": "2026-05-07T20:54:17.349Z",
+  "generated_at": "2026-05-07T21:15:52.376Z",
   "commits": [
+    {
+      "hash": "c052866",
+      "subject": "CRITICAL FIX: Event processor used snake_case field names for camelCase CRM data",
+      "when": "13 minutes ago"
+    },
+    {
+      "hash": "dece7bd",
+      "subject": "FIX: Draft fetch URL was /api/kiko-draft (404) — changed to /api/kiko",
+      "when": "21 minutes ago"
+    },
     {
       "hash": "706981d",
       "subject": "Add get_cognitive_analysis to EMAIL_TOOL_NAMES",
-      "when": "7 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "3c86384",
       "subject": "get_cognitive_analysis tool + self-knowledge sync + all session fixes",
-      "when": "10 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "3271954",
       "subject": "FIX: Two-step reasoning chain query fetches all 5 steps",
-      "when": "15 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "b5752e9",
       "subject": "FIX: Reasoning chain query — correct column names and JSONB filter",
-      "when": "24 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "5fb87f3",
       "subject": "FIX: Brief consistency — anchored to cognitive reasoning chains",
-      "when": "38 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "e8751aa",
       "subject": "Send Now button + AuroraCanvas removed from voice mode",
-      "when": "41 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "51816ce",
       "subject": "FIX: Remove duplicate CORS header from draftOnly path",
-      "when": "53 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "3f3eb98",
@@ -49,17 +59,17 @@
     {
       "hash": "b192233",
       "subject": "FIX: Draft To: field uses real contact email from CRM lookup",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "23c7581",
       "subject": "PROPER FIX: Draft email generated as SEPARATE API call — no more parsing from brief",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "8e578ea",
       "subject": "FIX: EmailDraft key={brief.length} forces fresh mount on complete text",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "854899d",
@@ -79,26 +89,16 @@
     {
       "hash": "70853ac",
       "subject": "FIX: EmailDraft parser now isolates DRAFT section from full brief",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "6e302f1",
       "subject": "FIX: Command Centre ALWAYS uses Sonnet — Haiku was truncating drafts",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "d87f8cc",
       "subject": "FIX: Command Centre briefs never truncated — force 4096 tokens minimum",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "e061ae7",
-      "subject": "CRITICAL: Test emails don't trigger tracking + reply follow-up guarantee",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "c83b328",
-      "subject": "FIX: Reply alerts visible for 7 days (was 24hrs), cognitive alerts in Command Centre",
       "when": "4 hours ago"
     }
   ]

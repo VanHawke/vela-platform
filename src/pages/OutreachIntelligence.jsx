@@ -275,10 +275,11 @@ function buildBriefPrompt(sel) {
   const titleSuffix = titleParts.length > 1 ? titleParts[titleParts.length - 1].trim() : null
   if (sel.kind === 'reply') {
     const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
+    const emailSubject = p.metadata?.subject || sel.title
     return `REPLY BRIEF — ${p.entity_name || 'prospect'} replied.
 
 THEIR FULL REPLY (show this verbatim): "${snippet}"
-Subject: "${sel.title}". Arrived ${relativeTime(p.created_at)}.
+Email thread subject: "${emailSubject}". Arrived ${relativeTime(p.created_at)}.
 
 IMPORTANT: Do NOT show tool calls, tool responses, or internal reasoning. Present ONLY the clean brief.
 
@@ -592,8 +593,35 @@ export default function OutreachIntelligence({ user }) {
         const entityName = p.entity_name || selected.title?.split('—')?.[1]?.trim() || ''
         const firstName = entityName.split(' ')[0] || 'there'
         const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
-        const subjectLine = (selected.title || '').replace(/^Re:\s*/i, '')
-        const prospectEmail = p.prospect_email || p.email || ''
+        const prospectEmail = p.prospect_email || p.email || p.metadata?.from || ''
+        
+        // Get the REAL email subject from the thread — not the alert title
+        let subjectLine = p.metadata?.subject || ''
+        if (!subjectLine) {
+          // Look up from email tracking (most recent sent email to this entity)
+          try {
+            const { data: tracked } = await supabase
+              .from('kiko_outreach_queue')
+              .select('subject')
+              .ilike('contact_email', `%${entityName.split(' ').pop()}%`)
+              .order('created_at', { ascending: false })
+              .limit(1)
+            if (tracked?.[0]?.subject) subjectLine = tracked[0].subject
+          } catch {}
+        }
+        if (!subjectLine) {
+          // Try email tracking table
+          try {
+            const { data: tracking } = await supabase
+              .from('kiko_email_tracking')
+              .select('subject')
+              .ilike('recipient_email', `%${entityName.split(' ').pop()}%`)
+              .order('sent_at', { ascending: false })
+              .limit(1)
+            if (tracking?.[0]?.subject) subjectLine = tracking[0].subject
+          } catch {}
+        }
+        if (!subjectLine) subjectLine = (selected.title || '').replace(/^Re:\s*/i, '').replace(/^Reply from\s+/i, '').replace(/[!.]+$/, '')
         // Use the brief we just generated as context for the draft
         const briefRef = document.querySelector('.cc-detail-section-body')
         const briefContext = briefRef ? briefRef.innerText.slice(0, 1500) : ''

@@ -162,6 +162,7 @@ export default async function handler(req, res) {
                 entity_type: 'contact',
                 entity_name: tracked_email.recipient_name,
                 user_id: user.user_id,
+                metadata: { subject: tracked_email.subject, from: tracked_email.recipient_email, company: tracked_email.company },
               }),
             });
             replies++;
