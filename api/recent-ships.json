@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-05-07T18:45:12.029Z",
+  "generated_at": "2026-05-07T18:59:44.702Z",
   "commits": [
+    {
+      "hash": "b192233",
+      "subject": "FIX: Draft To: field uses real contact email from CRM lookup",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "23c7581",
       "subject": "PROPER FIX: Draft email generated as SEPARATE API call — no more parsing from brief",
-      "when": "3 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "8e578ea",
       "subject": "FIX: EmailDraft key={brief.length} forces fresh mount on complete text",
-      "when": "10 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "854899d",
       "subject": "FIX: Command Centre max_tokens 8192 — complete briefs with full drafts",
-      "when": "23 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "5b16589",
       "subject": "FIX: stripToolCalls handles open-ended tags during streaming + raw JSON",
-      "when": "53 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "49ea2f1",
       "subject": "FIX: EmailDraft streaming sync — body was freezing mid-sentence",
-      "when": "59 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "70853ac",
       "subject": "FIX: EmailDraft parser now isolates DRAFT section from full brief",
-      "when": "64 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "6e302f1",
       "subject": "FIX: Command Centre ALWAYS uses Sonnet — Haiku was truncating drafts",
-      "when": "73 minutes ago"
+      "when": "87 minutes ago"
     },
     {
       "hash": "d87f8cc",
       "subject": "FIX: Command Centre briefs never truncated — force 4096 tokens minimum",
-      "when": "79 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e061ae7",
@@ -59,7 +64,7 @@
     {
       "hash": "4b9d97c",
       "subject": "CRITICAL: Pre-send email validation + enhanced campaign visibility",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "22a9295",
@@ -94,11 +99,6 @@
     {
       "hash": "12abaca",
       "subject": "Command Centre: default sender = Matt for campaign replies/tasks",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "ff76893",
-      "subject": "Fix: gmail-send fetches sender's Gmail signature from their account",
       "when": "5 hours ago"
     }
   ]

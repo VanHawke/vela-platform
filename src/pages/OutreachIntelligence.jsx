@@ -554,17 +554,7 @@ export default function OutreachIntelligence({ user }) {
         const p = selected.payload || {}
         const entityName = p.entity_name || selected.title?.split('—')?.[1]?.trim() || ''
         const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
-        // Try to get real email from alert metadata or contact lookup
-        const contactEmail = p.metadata?.contact_email || p.metadata?.email || ''
-        let realEmail = contactEmail
-        if (!realEmail && entityName) {
-          try {
-            const nameParts = entityName.split(' ')
-            const cRes = await supabase.from('contacts').select('data').ilike('data->>first_name', nameParts[0] || '').limit(3)
-            const match = (cRes.data || []).find(c => c.data?.last_name?.toLowerCase() === (nameParts.slice(1).join(' ') || '').toLowerCase())
-            if (match?.data?.email) realEmail = match.data.email
-          } catch {}
-        }
+        const subjectLine = selected.title || ''
         setSeparateDraft('')
         setDraftGenerating(true)
         try {
@@ -572,7 +562,7 @@ export default function OutreachIntelligence({ user }) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              message: `Write ONLY an email reply to ${entityName}. No analysis, no sections, no commentary. JUST the email.\n\nTheir message: "${snippet?.slice(0, 500)}"\n\nFormat EXACTLY like this:\nSubject: Re: Haas F1 Team x ${p.metadata?.company || entityName.split(' ').pop()}\nTo: ${realEmail || entityName.toLowerCase().replace(/\s/g,'.')+'@company.com'}\n\nHi ${entityName.split(' ')[0]},\n\n[2-3 short paragraphs. Match their greeting style. No em dashes. No corporate filler. End with a forward-looking question or statement.]\n\nBest,`,
+              message: `Write ONLY an email reply to ${entityName}. No analysis, no sections, no commentary, no headers. Output JUST the email in this exact format:\n\nSubject: Re: ${subjectLine.replace(/^Re:\s*/i,'')}\nTo: [look up their email from contacts]\n\nHi ${entityName.split(' ')[0]},\n\n[2-3 short paragraphs responding to their message below. No em dashes. End with a forward-looking question or next step.]\n\nBest,\n\nTheir message was: "${snippet?.slice(0, 400)}"`,
               userEmail: user?.email || 'sunny@vanhawke.com',
               currentPage: 'command-centre',
               conversationHistory: [],
