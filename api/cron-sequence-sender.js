@@ -122,6 +122,26 @@ export default async function handler(req, res) {
 
     for (const email of safe) {
       try {
+        // ── PRE-SEND VALIDATION: reject corrupted, unverified, or invalid emails ──
+        const toEmail = (email.to_email || '').trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!toEmail || !emailRegex.test(toEmail) || toEmail.includes('[object') || toEmail.includes('undefined') || toEmail.includes('null')) {
+          console.log(`[seq-sender] ❌ BLOCKED: invalid email "${toEmail}" for ${email.contact_name || 'unknown'}`);
+          await sbFetch(`kiko_outreach_queue?id=eq.${email.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error: `Invalid email address: ${toEmail}` }) });
+          continue;
+        }
+        // Check enrollment email confidence — block sends to unverified zero-confidence emails on step 1
+        if (email.step_number <= 1 && email.enrollment_id) {
+          const enr = await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}&select=email_verified,email_confidence&limit=1`).catch(() => []);
+          const conf = parseFloat(enr?.[0]?.email_confidence || '0');
+          const verified = enr?.[0]?.email_verified;
+          if (!verified && conf === 0) {
+            console.log(`[seq-sender] ⚠️ SKIPPED: unverified zero-confidence email for ${email.contact_name || toEmail} — needs verification before first send`);
+            await sbFetch(`kiko_outreach_queue?id=eq.${email.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error: 'Email unverified with 0 confidence — needs verification' }) });
+            continue;
+          }
+        }
+
         // Resolve sequence config (cached)
         let seqConfig = null;
         let seqId = null;

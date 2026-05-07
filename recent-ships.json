@@ -1,104 +1,104 @@
 {
-  "generated_at": "2026-05-07T14:11:33.543Z",
+  "generated_at": "2026-05-07T16:22:47.246Z",
   "commits": [
+    {
+      "hash": "22a9295",
+      "subject": "Phase 2 complete: all wiring verified, Kiko self-knowledge updated",
+      "when": "21 minutes ago"
+    },
+    {
+      "hash": "781d13d",
+      "subject": "Phase 2: Cognitive Architecture — Event Bus + Reasoning Chains + Synthesis",
+      "when": "49 minutes ago"
+    },
+    {
+      "hash": "afa22d3",
+      "subject": "Task 1: Foundation knowledge populated + injection fixed",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "2d82d2d",
+      "subject": "Kiko: Applied Psychology section + psychology in brief recommendations",
+      "when": "2 hours ago"
+    },
     {
       "hash": "a5977c4",
       "subject": "Kiko: add General Intelligence section + update self-knowledge",
-      "when": "10 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "3c60c9f",
       "subject": "Update Kiko self-knowledge: Session 66+ capabilities",
-      "when": "20 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "12abaca",
       "subject": "Command Centre: default sender = Matt for campaign replies/tasks",
-      "when": "22 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ff76893",
       "subject": "Fix: gmail-send fetches sender's Gmail signature from their account",
-      "when": "28 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4570ddd",
       "subject": "IRONCLAD: sender-specific token + signature across entire platform",
-      "when": "32 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "65049f1",
       "subject": "Fix Send Test: outside-click handler was closing dropdown before onClick fired",
-      "when": "42 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f6394fb",
       "subject": "Global: all user-facing emails use vanhawke.agency (not .com)",
-      "when": "45 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "95653d1",
       "subject": "Fix: Send Test sender wrong + add Send to all + use .agency domain",
-      "when": "49 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ca5d985",
       "subject": "Send Test: dropdown of team members, vanhawke.agency domain",
-      "when": "56 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "b1207a5",
       "subject": "Add Send Test button to EmailDraft composer",
-      "when": "88 minutes ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "25fd626",
       "subject": "Fix: editable To field + strip blockquote > from briefs",
-      "when": "2 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "f127379",
       "subject": "Fix: EmailDraft shows error despite draft succeeding — field mismatch",
-      "when": "2 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "6d976d2",
       "subject": "Force-strip em dashes at rendering level (LLM ignores prompt instructions)",
-      "when": "2 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "942a2a5",
       "subject": "Fix brief quality: full reply shown, previous comms, greeting matching, em dash ban",
-      "when": "2 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "bdb6ee1",
       "subject": "Fix: remove orange hue + strip tool calls from briefs + concise prompts",
-      "when": "2 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "2182a3b",
       "subject": "Fix: remove leftover old MobileCommandCentre code causing build error",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "e4190f9",
-      "subject": "Mobile Command Centre: replaces bell alert view with stripped-down command centre",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "97fb13c",
-      "subject": "Fix LinkedIn shows disconnected: RLS blocks token stored under wrong email",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "eb6aef9",
-      "subject": "Fix LinkedIn status check: match any LinkedIn token, not just Kiko email",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "b9f247e",
-      "subject": "Fix LinkedIn connect: target VISIBLE inputs (LinkedIn has hidden duplicates)",
       "when": "5 hours ago"
     }
   ]

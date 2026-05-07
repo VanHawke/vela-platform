@@ -728,18 +728,55 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
         return `✅ ENROLLED: ${contactName || contactEmail} at ${company} in "${seq.name}" (${steps.length} steps)\nFirst email scheduled for: ${new Date(nextSendAt).toLocaleDateString('en-GB')}\nSequence: ${steps.map(s => `Step ${s.step}: ${s.channel} (${s.approach})`).join(' → ')}`;
       }
       case 'sequence_status': {
-        const enrollments = await sbFetch('kiko_sequence_enrollments?order=created_at.desc&limit=20&select=contact_name,company,status,current_step,next_send_at,sequence_id');
+        const enrollments = await sbFetch('kiko_sequence_enrollments?order=created_at.desc&limit=50&select=id,contact_name,contact_email,company,status,current_step,next_send_at,sequence_id,bounce_detected_at,reply_detected_at,email_verified,email_confidence');
         const arr = Array.isArray(enrollments) ? enrollments : [];
         if (!arr.length) return 'No sequence enrollments found. Use start_sequence to enroll contacts.';
         const seqs = await sbFetch('kiko_sequences?select=id,name,steps');
         const seqMap = {};
         (Array.isArray(seqs) ? seqs : []).forEach(s => { seqMap[s.id] = s; });
-        let out = `ACTIVE SEQUENCES (${arr.length} enrollments):\n\n`;
+        
+        // Get email tracking data for engagement metrics
+        const tracking = await sbFetch('kiko_email_tracking?order=sent_at.desc&limit=200&select=to_email,opened,opened_at,clicked,clicked_at,sent_at').catch(() => []);
+        const trackByEmail = {};
+        for (const t of (tracking || [])) { if (t.to_email && !trackByEmail[t.to_email]) trackByEmail[t.to_email] = t; }
+        
+        // Get sent email counts from outreach queue
+        const sentEmails = await sbFetch('kiko_outreach_queue?status=eq.sent&select=enrollment_id,to_email,sent_at&order=sent_at.desc').catch(() => []);
+        const sentByEnrollment = {};
+        for (const s of (sentEmails || [])) { if (!sentByEnrollment[s.enrollment_id]) sentByEnrollment[s.enrollment_id] = []; sentByEnrollment[s.enrollment_id].push(s); }
+        
+        let out = `CAMPAIGN STATUS (${arr.length} enrollments):\n\n`;
+        
+        // Summary stats
+        const total = arr.length;
+        const active = arr.filter(e => e.status === 'active').length;
+        const replied = arr.filter(e => e.status === 'replied').length;
+        const bounced = arr.filter(e => e.status === 'bounced').length;
+        const totalSent = (sentEmails || []).length;
+        const totalOpened = Object.values(trackByEmail).filter(t => t.opened).length;
+        const openRate = totalSent > 0 ? Math.round((totalOpened / totalSent) * 100) : 0;
+        
+        out += `SUMMARY: ${total} enrolled | ${active} active | ${replied} replied | ${bounced} bounced\n`;
+        out += `EMAILS SENT: ${totalSent} | OPENED: ${totalOpened} (${openRate}% open rate)\n\n`;
+        out += `INDIVIDUAL PROSPECT STATUS:\n`;
+        
         for (const e of arr) {
           const seq = seqMap[e.sequence_id];
           const totalSteps = seq?.steps?.length || '?';
-          out += `${e.status === 'active' ? '🟢' : e.status === 'replied' ? '✅' : e.status === 'bounced' ? '❌' : '⏸️'} ${e.contact_name || 'Unknown'} at ${e.company} — ${seq?.name || 'Unknown sequence'}\n`;
-          out += `   Step ${e.current_step}/${totalSteps} | Status: ${e.status} | Next: ${e.next_send_at ? new Date(e.next_send_at).toLocaleDateString('en-GB') : 'n/a'}\n\n`;
+          const track = trackByEmail[e.contact_email];
+          const sentCount = (sentByEnrollment[e.id] || []).length;
+          const lastSent = sentByEnrollment[e.id]?.[0]?.sent_at;
+          const icon = e.status === 'active' ? '🟢' : e.status === 'replied' ? '✅' : e.status === 'bounced' ? '❌' : e.status === 'completed' ? '🏁' : '⏸️';
+          const verified = e.email_verified ? '✓' : (parseFloat(e.email_confidence || 0) > 0 ? `${e.email_confidence}%` : '⚠️ unverified');
+          
+          out += `${icon} ${e.contact_name || 'Unknown'} at ${e.company} — Step ${e.current_step}/${totalSteps}\n`;
+          out += `   Email: ${e.contact_email} (${verified}) | Status: ${e.status}\n`;
+          out += `   Sent: ${sentCount} emails${lastSent ? ' | Last: ' + new Date(lastSent).toLocaleDateString('en-GB') : ''}`;
+          if (track?.opened) out += ` | OPENED ${new Date(track.opened_at).toLocaleDateString('en-GB')}`;
+          if (track?.clicked) out += ` | CLICKED`;
+          if (e.reply_detected_at) out += ` | REPLIED ${new Date(e.reply_detected_at).toLocaleDateString('en-GB')}`;
+          if (e.bounce_detected_at) out += ` | BOUNCED`;
+          out += `\n   Next: ${e.next_send_at ? new Date(e.next_send_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'n/a'}\n\n`;
         }
         return out;
       }
