@@ -37,13 +37,40 @@ export default async function handler(req, res) {
     const page = await ctx.newPage();
 
     // Navigate to LinkedIn login
-    await page.goto('https://www.linkedin.com/login', { waitUntil: 'domcontentloaded', timeout: 20000 });
-    await page.waitForTimeout(1500 + Math.random() * 1000);
+    await page.goto('https://www.linkedin.com/login', { waitUntil: 'networkidle', timeout: 30000 });
+    await page.waitForTimeout(2000 + Math.random() * 1000);
 
-    // Fill credentials with human-like delays
-    await page.fill('#username', email);
+    // Fill credentials — use resilient selectors (LinkedIn changed from #username to SDUI)
+    const emailInput = await page.waitForSelector(
+      'input#username, input[name="session_key"], input[autocomplete="username"], input[type="email"]',
+      { timeout: 15000 }
+    ).catch(() => null);
+    
+    if (!emailInput) {
+      // Try by placeholder/label text as last resort
+      const byLabel = page.getByLabel(/email|phone|username/i);
+      if (await byLabel.count() > 0) {
+        await byLabel.first().fill(email);
+      } else {
+        await browser.close();
+        return res.json({ ok: false, status: 'selector_failed', 
+          message: 'LinkedIn has changed their login page. Cannot find email input. Please log in manually and try the cookie import method.' });
+      }
+    } else {
+      await emailInput.fill(email);
+    }
     await page.waitForTimeout(300 + Math.random() * 300);
-    await page.fill('#password', password);
+
+    const passInput = await page.waitForSelector(
+      'input#password, input[name="session_password"], input[autocomplete="current-password"], input[type="password"]',
+      { timeout: 10000 }
+    ).catch(() => null);
+    
+    if (!passInput) {
+      await browser.close();
+      return res.json({ ok: false, status: 'selector_failed', message: 'Cannot find password input.' });
+    }
+    await passInput.fill(password);
     await page.waitForTimeout(300 + Math.random() * 300);
 
     // Click sign in
@@ -79,16 +106,18 @@ export default async function handler(req, res) {
     // Save full cookie set to encrypted store
     cookieStore.save(id, linkedinCookies, { email, source: 'linkedin-connect', connected_at: new Date().toISOString() });
 
-    // Also update user_tokens table
+    // Also update user_tokens table — store FULL cookie set as JSON
     const liAt = linkedinCookies.find(c => c.name === 'li_at');
+    const jsession = linkedinCookies.find(c => c.name === 'JSESSIONID');
     if (liAt) {
       const SB = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
       const SK = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
       const tokenEmail = email.replace(/@vanhawke\.agency$/i, '@vanhawke.com');
-      await fetch(`${SB}/rest/v1/user_tokens?user_email=eq.${encodeURIComponent(tokenEmail)}&provider=eq.linkedin`, {
-        method: 'PATCH', headers: { apikey: SK, Authorization: `Bearer ${SK}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-        body: JSON.stringify({ access_token: liAt.value, updated_at: new Date().toISOString() })
-      }).catch(() => {});
+      // UPSERT — create if not exists, update if exists
+      await fetch(`${SB}/rest/v1/user_tokens`, {
+        method: 'POST', headers: { apikey: SK, Authorization: `Bearer ${SK}`, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({ user_email: tokenEmail, provider: 'linkedin', access_token: JSON.stringify(linkedinCookies), refresh_token: jsession?.value || '', updated_at: new Date().toISOString() })
+      }).catch(e => console.error('[linkedin-connect] Token upsert failed:', e.message));
     }
 
     console.log(`[linkedin-connect] Connected ${id} — ${linkedinCookies.length} cookies`);
