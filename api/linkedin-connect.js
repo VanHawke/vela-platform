@@ -116,16 +116,17 @@ export default async function handler(req, res) {
     cookieStore.save(id, linkedinCookies, { email, source: 'linkedin-connect', connected_at: new Date().toISOString() });
 
     // Also update user_tokens table — store FULL cookie set as JSON
+    // IMPORTANT: store under the KIKO email (from req body), not the LinkedIn login email
     const liAt = linkedinCookies.find(c => c.name === 'li_at');
     const jsession = linkedinCookies.find(c => c.name === 'JSESSIONID');
     if (liAt) {
       const SB = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
       const SK = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-      const tokenEmail = email.replace(/@vanhawke\.agency$/i, '@vanhawke.com');
-      // UPSERT — create if not exists, update if exists
+      // Use the Kiko platform email (passed as kikoEmail), not the LinkedIn login email
+      const storeEmail = req.body.kikoEmail || email.replace(/@vanhawke\.agency$/i, '@vanhawke.com');
       await fetch(`${SB}/rest/v1/user_tokens`, {
         method: 'POST', headers: { apikey: SK, Authorization: `Bearer ${SK}`, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
-        body: JSON.stringify({ user_email: tokenEmail, provider: 'linkedin', access_token: JSON.stringify(linkedinCookies), refresh_token: jsession?.value || '', updated_at: new Date().toISOString() })
+        body: JSON.stringify({ user_email: storeEmail, provider: 'linkedin', access_token: JSON.stringify(linkedinCookies), refresh_token: jsession?.value || '', updated_at: new Date().toISOString() })
       }).catch(e => console.error('[linkedin-connect] Token upsert failed:', e.message));
     }
 

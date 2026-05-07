@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-07T09:09:25.338Z",
+  "generated_at": "2026-05-07T09:12:27.350Z",
   "commits": [
+    {
+      "hash": "eb6aef9",
+      "subject": "Fix LinkedIn status check: match any LinkedIn token, not just Kiko email",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "b9f247e",
       "subject": "Fix LinkedIn connect: target VISIBLE inputs (LinkedIn has hidden duplicates)",
-      "when": "7 minutes ago"
+      "when": "10 minutes ago"
     },
     {
       "hash": "d6913fa",
       "subject": "Fix LinkedIn connect: keyboard simulation instead of fill()",
-      "when": "11 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "69abf6c",
       "subject": "Fix LinkedIn connect: check cookies not URL for login success",
-      "when": "17 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "4450105",
@@ -64,7 +69,7 @@
     {
       "hash": "f8fd504",
       "subject": "Timezone-optimised sending + PersonaMail correction capture",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "fdba396",
@@ -95,11 +100,6 @@
       "hash": "c7e2c05",
       "subject": "Voice profile now loaded into EVERY email rewrite",
       "when": "14 hours ago"
-    },
-    {
-      "hash": "d202eec",
-      "subject": "Use EXISTING EmailDraft component in Command Centre — same as main chat",
-      "when": "15 hours ago"
     }
   ]
 }

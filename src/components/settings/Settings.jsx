@@ -375,7 +375,7 @@ export default function Settings({ user }) {
       const res = await fetch('https://api.vanhawke.agency/linkedin-connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer kiko-hetzner-2026-vanhawke' },
-        body: JSON.stringify({ email: linkedinInput.trim(), password: linkedinPassword.trim(), identity }),
+        body: JSON.stringify({ email: linkedinInput.trim(), password: linkedinPassword.trim(), identity, kikoEmail: email }),
       })
       const data = await res.json()
       if (data.ok) {
