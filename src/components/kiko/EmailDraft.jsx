@@ -245,7 +245,7 @@ export default function EmailDraft({ text }) {
         body: JSON.stringify({ to: currentTo, subject: currentSubject, body: currentBody, sender: senderEmail, scheduledFor, recipientName: currentTo.split('@')[0] }),
       })
       const data = await res.json()
-      if (data.ok) {
+      if (data.ok || data.success) {
         setScheduled({ display: data.display || 'Scheduled' })
         setTimeout(() => setScheduled(null), 5000)
       }
@@ -266,7 +266,7 @@ export default function EmailDraft({ text }) {
       })
       if (!res.ok) { const errText = await res.text(); console.error('[EmailDraft] HTTP error:', res.status, errText); throw new Error(`HTTP ${res.status}`) }
       const data = await res.json()
-      if (data.ok) {
+      if (data.ok || data.success) {
         const label = targetEmail === 'sunny@vanhawke.com' ? 'done' : `done-${targetEmail}`
         setSent(label)
         setTimeout(() => setSent(false), 3000)
