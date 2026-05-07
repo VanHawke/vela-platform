@@ -803,7 +803,7 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { message: rawMessage, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false, personality = 'executive', voiceMode = false, timezone = 'Europe/London', locale = 'en-GB' } = req.body;
+  const { message: rawMessage, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false, personality = 'executive', voiceMode = false, timezone = 'Europe/London', locale = 'en-GB', draftOnly = false } = req.body;
   const message = sanitizeUnicode(rawMessage);
   if (!message && action !== 'title') return res.status(400).json({ error: 'message required' });
 
@@ -818,6 +818,39 @@ export default async function handler(req, res) {
       const titleRes = await anthropic.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 20, messages: [{ role: 'user', content: `Generate a 3-5 word title for: "${(message || '').slice(0, 200)}". Reply with ONLY the title.` }] });
       return res.status(200).json({ title: titleRes.content?.[0]?.text?.trim() || message?.slice(0, 40) });
     } catch { return res.status(200).json({ title: message?.slice(0, 40) }); }
+  }
+
+  // ── DRAFT-ONLY FAST PATH — lightweight email generation, no tools, no reasoning ──
+  if (draftOnly) {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    try {
+      const stream = await anthropic.messages.stream({
+        model: MODEL,
+        max_tokens: 1024,
+        temperature: 0.7,
+        system: `You are a senior sponsorship executive drafting email replies. Rules:
+- Output ONLY the email. No commentary, no analysis, no sections, no headers.
+- Format: Subject: line, then To: line, then blank line, then greeting, then body, then sign-off.
+- Greeting: match their style (Hi/Hello/Dear). If they said "Hi Matt", reply "Hi Matthew" (never "Hi Matt" back).
+- Body: 2-3 short paragraphs. Warm but professional. No em dashes (use commas or full stops). No exclamation marks.
+- Always end with "Best," on its own line (not "Kind regards" unless replying to a formal email).
+- Always include a forward-looking question or next step in the final paragraph.`,
+        messages: [{ role: 'user', content: message }],
+      });
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta?.text) {
+          res.write(`data: ${JSON.stringify({ delta: event.delta.text })}\n\n`);
+        }
+      }
+      res.write('data: [DONE]\n\n');
+    } catch (err) {
+      res.write(`data: ${JSON.stringify({ delta: '[Draft generation error]' })}\n\n`);
+      res.write('data: [DONE]\n\n');
+    }
+    return res.end();
   }
 
   // ── Build system prompt ──

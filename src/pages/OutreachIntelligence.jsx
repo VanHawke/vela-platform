@@ -549,25 +549,39 @@ export default function OutreachIntelligence({ user }) {
       }
       setBriefLoading(false)
       
-      // ── SEPARATE DRAFT GENERATION — generates email draft independently from brief ──
+      // ── SEPARATE DRAFT GENERATION — lightweight draftOnly path, no tools ──
       if (selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup') {
         const p = selected.payload || {}
         const entityName = p.entity_name || selected.title?.split('—')?.[1]?.trim() || ''
+        const firstName = entityName.split(' ')[0] || 'there'
         const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
-        const subjectLine = selected.title || ''
+        const subjectLine = (selected.title || '').replace(/^Re:\s*/i, '')
+        const prospectEmail = p.prospect_email || p.email || ''
+        // Use the brief we just generated as context for the draft
+        const briefRef = document.querySelector('.cc-detail-section-body')
+        const briefContext = briefRef ? briefRef.innerText.slice(0, 1500) : ''
         setSeparateDraft('')
         setDraftGenerating(true)
+        const draftController = new AbortController()
         try {
           const draftRes = await fetch('https://api.vanhawke.agency/api/kiko', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              message: `Write ONLY an email reply to ${entityName}. No analysis, no sections, no commentary, no headers. Output JUST the email in this exact format:\n\nSubject: Re: ${subjectLine.replace(/^Re:\s*/i,'')}\nTo: [look up their email from contacts]\n\nHi ${entityName.split(' ')[0]},\n\n[2-3 short paragraphs responding to their message below. No em dashes. End with a forward-looking question or next step.]\n\nBest,\n\nTheir message was: "${snippet?.slice(0, 400)}"`,
+              draftOnly: true,
+              message: `Write a reply email to ${entityName}${prospectEmail ? ` (${prospectEmail})` : ''}.
+
+Subject: Re: ${subjectLine}
+${prospectEmail ? `To: ${prospectEmail}` : `To: [use their email if you know it]`}
+
+Their message: "${snippet?.slice(0, 500)}"
+
+${briefContext ? `Brief context from our analysis:\n${briefContext.slice(0, 800)}` : ''}
+
+Write the email now. Start with "Subject: Re: ${subjectLine}" then "To:" then greeting "Hi ${firstName}," then 2-3 paragraphs then "Best," sign-off.`,
               userEmail: user?.email || 'sunny@vanhawke.com',
-              currentPage: 'command-centre',
-              conversationHistory: [],
             }),
-            signal: controller.signal,
+            signal: draftController.signal,
           })
           if (draftRes.body) {
             const dr = draftRes.body.getReader()
