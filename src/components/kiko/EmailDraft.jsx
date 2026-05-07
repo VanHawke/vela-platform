@@ -112,7 +112,7 @@ function renderBody(text) {
     .trim()
 }
 
-export default function EmailDraft({ text, defaultSender }) {
+export default function EmailDraft({ text, defaultSender, defaultTo }) {
   const parsed = parseEmail(text)
   const [currentBody, setCurrentBody] = useState(parsed.body)
   const originalBodyRef = useRef(parsed.body)
@@ -150,7 +150,7 @@ export default function EmailDraft({ text, defaultSender }) {
   const editRef = useRef(null)
   const { subject: parsedSubject, to: parsedTo } = parsed
   const [currentSubject, setCurrentSubject] = useState(parsedSubject)
-  const [currentTo, setCurrentTo] = useState(parsedTo)
+  const [currentTo, setCurrentTo] = useState(parsedTo || defaultTo || '')
 
   // Keep subject and to in sync with streaming updates
   useEffect(() => {

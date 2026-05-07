@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-05-07T21:48:24.808Z",
+  "generated_at": "2026-05-07T21:59:35.827Z",
   "commits": [
+    {
+      "hash": "abc5d40",
+      "subject": "FIX: Reasoning chain lookup timeout + error handling",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "a52a0e1",
       "subject": "FIX: Strip double Re: from subject + fix outreach queue column name",
-      "when": "27 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "e33d6de",
       "subject": "FIX: Email subject line from actual thread, not alert title",
-      "when": "32 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "c052866",
       "subject": "CRITICAL FIX: Event processor used snake_case field names for camelCase CRM data",
-      "when": "46 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "dece7bd",
       "subject": "FIX: Draft fetch URL was /api/kiko-draft (404) — changed to /api/kiko",
-      "when": "54 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "706981d",
       "subject": "Add get_cognitive_analysis to EMAIL_TOOL_NAMES",
-      "when": "61 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "3c86384",
       "subject": "get_cognitive_analysis tool + self-knowledge sync + all session fixes",
-      "when": "64 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "3271954",
       "subject": "FIX: Two-step reasoning chain query fetches all 5 steps",
-      "when": "69 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "b5752e9",
       "subject": "FIX: Reasoning chain query — correct column names and JSONB filter",
-      "when": "78 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "5fb87f3",
@@ -59,7 +64,7 @@
     {
       "hash": "3f3eb98",
       "subject": "FIX: draftOnly fast path + separate AbortController for draft",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e308033",
@@ -84,7 +89,7 @@
     {
       "hash": "854899d",
       "subject": "FIX: Command Centre max_tokens 8192 — complete briefs with full drafts",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "5b16589",
@@ -94,11 +99,6 @@
     {
       "hash": "49ea2f1",
       "subject": "FIX: EmailDraft streaming sync — body was freezing mid-sentence",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "70853ac",
-      "subject": "FIX: EmailDraft parser now isolates DRAFT section from full brief",
       "when": "4 hours ago"
     }
   ]

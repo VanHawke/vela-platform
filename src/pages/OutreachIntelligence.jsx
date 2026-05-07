@@ -1089,7 +1089,7 @@ Write the email now. Start with "Subject: Re: ${subjectLine}" then "To:" then gr
                   )}
                   {!draftGenerating && separateDraft && isEmailDraft(separateDraft) && (
                     <div style={{ marginTop: 14 }}>
-                      <EmailDraft key={'draft-' + separateDraft.length} text={separateDraft} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} />
+                      <EmailDraft key={'draft-' + separateDraft.length} text={separateDraft} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} defaultTo={selected?.payload?.metadata?.from || selected?.payload?.prospect_email || selected?.payload?.email || ''} />
                     </div>
                   )}
 
