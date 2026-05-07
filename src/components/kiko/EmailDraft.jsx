@@ -307,6 +307,33 @@ export default function EmailDraft({ text, defaultSender }) {
     }
   }
 
+  // ── SEND NOW — actually sends the email to the prospect ──
+  const [sendNowState, setSendNowState] = useState(false) // false | 'confirm' | 'sending' | 'sent' | 'error'
+  const handleSendNow = async () => {
+    if (sendNowState === false) { setSendNowState('confirm'); return }
+    if (sendNowState !== 'confirm') return
+    if (!currentTo || !currentSubject || !currentBody) { setSendNowState('error'); setTimeout(() => setSendNowState(false), 3000); return }
+    setSendNowState('sending')
+    try {
+      const res = await fetch('https://api.vanhawke.agency/api/gmail-send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: currentTo, subject: currentSubject, body: currentBody, sender: selectedSender?.email || 'sunny@vanhawke.agency' })
+      })
+      const data = await res.json()
+      if (data.ok || data.success || data.messageId) {
+        setSendNowState('sent')
+        // Capture correction if user edited the draft
+        if (originalBodyRef.current && currentBody !== originalBodyRef.current) {
+          fetch('https://api.vanhawke.agency/api/capture-correction', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ original: originalBodyRef.current, edited: currentBody, recipient: currentTo, subject: currentSubject })
+          }).catch(() => {})
+        }
+      } else { setSendNowState('error'); setTimeout(() => setSendNowState(false), 3000) }
+    } catch (e) { console.error('[EmailDraft] Send now failed:', e); setSendNowState('error'); setTimeout(() => setSendNowState(false), 3000) }
+  }
+
   const handleRewrite = async (prompt) => {
     setRewriting(true)
     try {
@@ -406,6 +433,23 @@ export default function EmailDraft({ text, defaultSender }) {
             </div>
           )}
         </div>
+        {/* SEND NOW — primary action, sends email directly */}
+        <button onClick={handleSendNow} disabled={sendNowState === 'sending' || sendNowState === 'sent'} style={{
+          padding: '6px 14px', borderRadius: 50,
+          background: sendNowState === 'sent' ? 'rgba(34,197,94,0.1)' : sendNowState === 'error' ? 'rgba(255,80,80,0.1)' : sendNowState === 'confirm' ? 'rgba(180,90,40,0.12)' : 'rgba(180,90,40,0.08)',
+          border: sendNowState === 'sent' ? '1px solid rgba(34,197,94,0.2)' : sendNowState === 'confirm' ? '1px solid rgba(180,90,40,0.3)' : '1px solid rgba(180,90,40,0.15)',
+          color: sendNowState === 'sent' ? 'rgba(34,197,94,0.8)' : sendNowState === 'error' ? 'rgba(255,80,80,0.8)' : 'rgba(180,90,40,0.85)',
+          fontSize: 12, cursor: sendNowState === 'sent' ? 'default' : 'pointer', fontFamily: T.font,
+          display: 'flex', alignItems: 'center', gap: 5, fontWeight: 600, transition: 'all 0.15s',
+        }}>
+          <Send size={11} /> {sendNowState === 'sent' ? 'Sent' : sendNowState === 'sending' ? 'Sending...' : sendNowState === 'error' ? 'Failed' : sendNowState === 'confirm' ? `Confirm send to ${currentTo?.split('@')[0]}?` : 'Send now'}
+        </button>
+        {sendNowState === 'confirm' && (
+          <button onClick={() => setSendNowState(false)} style={{ padding: '6px 10px', borderRadius: 50, background: 'transparent', border: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.4)', fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>
+            Cancel
+          </button>
+        )}
+
         {/* Send to Gmail with member dropdown */}
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <div style={{ display: 'flex' }}>

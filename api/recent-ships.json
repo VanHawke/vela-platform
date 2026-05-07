@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-07T20:01:30.474Z",
+  "generated_at": "2026-05-07T20:13:14.040Z",
   "commits": [
+    {
+      "hash": "51816ce",
+      "subject": "FIX: Remove duplicate CORS header from draftOnly path",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "3f3eb98",
       "subject": "FIX: draftOnly fast path + separate AbortController for draft",
-      "when": "41 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "e308033",
       "subject": "VERIFIED: Separate draft generation working — complete 3-paragraph emails",
-      "when": "56 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "b192233",
       "subject": "FIX: Draft To: field uses real contact email from CRM lookup",
-      "when": "76 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "23c7581",
       "subject": "PROPER FIX: Draft email generated as SEPARATE API call — no more parsing from brief",
-      "when": "79 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8e578ea",
       "subject": "FIX: EmailDraft key={brief.length} forces fresh mount on complete text",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "854899d",
@@ -44,12 +49,12 @@
     {
       "hash": "70853ac",
       "subject": "FIX: EmailDraft parser now isolates DRAFT section from full brief",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6e302f1",
       "subject": "FIX: Command Centre ALWAYS uses Sonnet — Haiku was truncating drafts",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "d87f8cc",
@@ -84,21 +89,16 @@
     {
       "hash": "781d13d",
       "subject": "Phase 2: Cognitive Architecture — Event Bus + Reasoning Chains + Synthesis",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "afa22d3",
       "subject": "Task 1: Foundation knowledge populated + injection fixed",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "2d82d2d",
       "subject": "Kiko: Applied Psychology section + psychology in brief recommendations",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "a5977c4",
-      "subject": "Kiko: add General Intelligence section + update self-knowledge",
       "when": "6 hours ago"
     }
   ]

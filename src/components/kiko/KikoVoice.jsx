@@ -435,7 +435,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micS
 
   const voiceUI = isMobile ? mobileVoiceContent : (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
-      {!isMobile && <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>}
+      {/* AuroraCanvas removed — user requested clean white background */}
 
       {/* X close */}
       {/* Continue in chat — voice → text handoff (Sunny spec 2026-04-12) */}
