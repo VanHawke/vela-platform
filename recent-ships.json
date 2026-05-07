@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-07T20:29:43.640Z",
+  "generated_at": "2026-05-07T20:39:32.805Z",
   "commits": [
+    {
+      "hash": "b5752e9",
+      "subject": "FIX: Reasoning chain query — correct column names and JSONB filter",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "5fb87f3",
       "subject": "FIX: Brief consistency — anchored to cognitive reasoning chains",
-      "when": "14 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "e8751aa",
       "subject": "Send Now button + AuroraCanvas removed from voice mode",
-      "when": "16 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "51816ce",
       "subject": "FIX: Remove duplicate CORS header from draftOnly path",
-      "when": "28 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "3f3eb98",
       "subject": "FIX: draftOnly fast path + separate AbortController for draft",
-      "when": "69 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "e308033",
       "subject": "VERIFIED: Separate draft generation working — complete 3-paragraph emails",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b192233",
@@ -79,7 +84,7 @@
     {
       "hash": "c83b328",
       "subject": "FIX: Reply alerts visible for 7 days (was 24hrs), cognitive alerts in Command Centre",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "5be09cf",
@@ -94,11 +99,6 @@
     {
       "hash": "22a9295",
       "subject": "Phase 2 complete: all wiring verified, Kiko self-knowledge updated",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "781d13d",
-      "subject": "Phase 2: Cognitive Architecture — Event Bus + Reasoning Chains + Synthesis",
       "when": "5 hours ago"
     }
   ]

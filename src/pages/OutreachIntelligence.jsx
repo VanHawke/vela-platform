@@ -208,23 +208,32 @@ async function enrichSelectedForBrief(sel) {
     const entityName = companyName || contactName || titleSuffix || ''
     if (entityName) {
       try {
-        // entity_name is inside the JSONB 'input' column, not a top-level column
-        const { data: chains } = await supabase
+        // Step 1: find event_ids where entity_name matches (classify/context steps have it in input)
+        const { data: matchingSteps } = await supabase
           .from('kiko_reasoning_chains')
-          .select('step_type, input, output, created_at')
+          .select('event_id')
           .filter('input->>entity_name', 'ilike', `%${entityName}%`)
           .order('created_at', { ascending: false })
-          .limit(10)
-        if (chains?.length) {
-          const psychologyStep = chains.find(c => c.step_type === 'psychology')
-          const actionStep = chains.find(c => c.step_type === 'action')
-          const classifyStep = chains.find(c => c.step_type === 'classify')
-          const parts = []
-          if (classifyStep?.output) parts.push(`Classification: ${JSON.stringify(classifyStep.output).slice(0, 300)}`)
-          if (psychologyStep?.output) parts.push(`Psychology analysis: ${JSON.stringify(psychologyStep.output).slice(0, 800)}`)
-          if (actionStep?.output) parts.push(`Recommended actions: ${JSON.stringify(actionStep.output).slice(0, 500)}`)
-          if (parts.length) {
-            facts.push(`\n--- KIKO'S EXISTING ANALYSIS (from cognitive reasoning chain, generated ${new Date(chains[0].created_at).toLocaleDateString('en-GB')}) ---\n${parts.join('\n')}\n--- END EXISTING ANALYSIS ---\nCRITICAL: Use the above analysis as your definitive recommendation. Do NOT contradict it. The cognitive engine has already analysed this signal. Your brief must be consistent with its conclusion. If suggesting timing (e.g. follow up in X weeks), use the SAME timing as the analysis above.`)
+          .limit(2)
+        if (matchingSteps?.length) {
+          const eventIds = [...new Set(matchingSteps.map(s => s.event_id))]
+          // Step 2: fetch ALL steps for those events (including psychology + action)
+          const { data: chains } = await supabase
+            .from('kiko_reasoning_chains')
+            .select('step_type, output, created_at')
+            .in('event_id', eventIds)
+            .order('created_at', { ascending: false })
+          if (chains?.length) {
+            const psychologyStep = chains.find(c => c.step_type === 'psychology')
+            const actionStep = chains.find(c => c.step_type === 'action')
+            const classifyStep = chains.find(c => c.step_type === 'classify')
+            const parts = []
+            if (classifyStep?.output) parts.push(`Classification: ${JSON.stringify(classifyStep.output).slice(0, 300)}`)
+            if (psychologyStep?.output) parts.push(`Psychology analysis: ${JSON.stringify(psychologyStep.output).slice(0, 800)}`)
+            if (actionStep?.output) parts.push(`Recommended actions: ${JSON.stringify(actionStep.output).slice(0, 500)}`)
+            if (parts.length >= 2) {
+              facts.push(`\n--- KIKO'S EXISTING ANALYSIS (from cognitive reasoning chain, generated ${new Date(chains[0].created_at).toLocaleDateString('en-GB')}) ---\n${parts.join('\n')}\n--- END EXISTING ANALYSIS ---\nCRITICAL: Use the above analysis as your definitive recommendation. Do NOT contradict it. The cognitive engine has already analysed this signal. Your brief must be consistent with its conclusion. If suggesting timing (e.g. follow up in X weeks), use the SAME timing as the analysis above.`)
+            }
           }
         }
       } catch (e) { console.error('[enrichBrief] reasoning chain lookup:', e) }
