@@ -87,17 +87,27 @@ export default async function handler(req, res) {
     if (url.includes('/checkpoint') || url.includes('/challenge')) {
       await browser.close();
       return res.json({ ok: false, status: 'verification_required',
-        message: 'LinkedIn is asking for a verification code. Please log into LinkedIn in your normal browser first, complete the verification, then try connecting again here.' });
+        message: 'LinkedIn is asking for verification. Please verify in your browser, then try connecting again.' });
     }
 
-    // Check for wrong credentials
-    if (url.includes('/login') || url.includes('/authwall')) {
-      await browser.close();
-      return res.json({ ok: false, status: 'login_failed', message: 'Login failed. Please check email and password.' });
+    // Check cookies FIRST — li_at cookie = successful login regardless of URL
+    await page.waitForTimeout(2000);
+    const checkCookies = await ctx.cookies();
+    const hasLiAt = checkCookies.some(c => c.name === 'li_at' && c.value.length > 20);
+    
+    if (!hasLiAt) {
+      // No li_at cookie — might still be loading. Wait more and retry.
+      await page.waitForTimeout(3000);
+      const recheck = await ctx.cookies();
+      const recheckLiAt = recheck.some(c => c.name === 'li_at' && c.value.length > 20);
+      
+      if (!recheckLiAt && (url.includes('/login') || url.includes('/authwall'))) {
+        await browser.close();
+        return res.json({ ok: false, status: 'login_failed', message: 'Login failed. Please check email and password.' });
+      }
     }
 
     // Success — capture ALL cookies
-    await page.waitForTimeout(2000);
     const allCookies = await ctx.cookies();
     const linkedinCookies = allCookies.filter(c => c.domain.includes('linkedin'));
 
