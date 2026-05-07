@@ -1805,6 +1805,12 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     const isComplexDraft = isEmailIntent && /\b(negotiat|strateg|invest|disput|pricing|proposal|partner|board|acquisition|due diligence|term sheet)\b/i.test(message);
     const useHaikuForEmail = isSimpleDraft && !isComplexDraft;
     const toolOpts = skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : isEmailIntent ? { lightTools: lightEmailTools, useHaiku: useHaikuForEmail } : {};
+    // OVERRIDE: Command Centre briefs must ALWAYS have enough tokens for full draft + analysis
+    if (currentPage === 'command-centre' && toolOpts.maxTokens && toolOpts.maxTokens < 4096) {
+      toolOpts.maxTokens = 4096;
+      toolOpts.noTools = false;
+      toolOpts.useHaiku = false;
+    }
 
     // ── REASONING ENGINE — gather intelligence BEFORE Claude sees the message ──
     // Only runs for substantive queries about specific entities — NOT for follow-ups, greetings, or simple commands
