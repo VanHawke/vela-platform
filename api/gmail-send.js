@@ -68,16 +68,55 @@ export default async function handler(req, res) {
 
     // Track the send — but NOT for test emails
     if (!isTest) {
+      // 1. Track in email_tracking with follow-up due
       await sbFetch('kiko_email_tracking', { method: 'POST', body: JSON.stringify({
-      sender_email: fromEmail,
-      recipient_email: to,
-      subject: subject || '',
-      gmail_message_id: result.id,
-      gmail_thread_id: result.threadId,
-      source: 'direct_send',
-      sent_at: new Date().toISOString(),
-      follow_up_due: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    }) }).catch(() => {});
+        sender_email: fromEmail,
+        recipient_email: to,
+        subject: subject || '',
+        gmail_message_id: result.id,
+        gmail_thread_id: result.threadId,
+        source: 'direct_send',
+        sent_at: new Date().toISOString(),
+        follow_up_due: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      }) }).catch(() => {});
+
+      // 2. Dismiss any reply alerts for this recipient (they've been handled)
+      const recipientName = to.split('@')[0].replace(/\./g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+      await sbFetch(`kiko_alerts?type=in.(email_reply,email_reply_manual)&entity_name=ilike.*${encodeURIComponent(recipientName.split(' ').pop())}*&dismissed=eq.false`, {
+        method: 'PATCH', body: JSON.stringify({ dismissed: true })
+      }).catch(() => {});
+
+      // 3. Log activity
+      await sbFetch('activities', { method: 'POST', body: JSON.stringify({
+        type: 'email', direction: 'outbound', subject: subject || '',
+        entity_name: recipientName,
+        created_at: new Date().toISOString(),
+        metadata: { sender: fromEmail, recipient: to },
+      }) }).catch(() => {});
+
+      // 4. Update contact last activity + get company for task
+      let contactCompany = ''
+      const contacts = await sbFetch(`contacts?select=id,data&data->>email=ilike.${encodeURIComponent(to)}&limit=1`).catch(() => []);
+      if (contacts?.[0]) {
+        contactCompany = contacts[0].data?.company || ''
+        const updated = { ...contacts[0].data, lastActivity: new Date().toISOString().split('T')[0] };
+        await sbFetch(`contacts?id=eq.${contacts[0].id}`, { method: 'PATCH', body: JSON.stringify({ data: updated }) }).catch(() => {});
+      }
+
+      // 5. Create follow-up task if this is a reply (not a cold outreach)
+      if (subject?.toLowerCase().includes('re:')) {
+        const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        await sbFetch('tasks', { method: 'POST', body: JSON.stringify({
+          id: `t${Date.now()}`,
+          data: {
+            type: 'Follow-up', notes: `Reply sent on "${subject}". Check for response or schedule next touchpoint.`,
+            company: contactCompany, contact: recipientName, dueDate,
+            completed: false, createdAt: new Date().toISOString(), assignedTo: isMatt ? 'Matt Smith' : 'Sunny Sidhu',
+          },
+          org_id: '35975d96-c2c9-4b6c-b4d4-bb947ae817d5',
+          updated_at: new Date().toISOString(),
+        }) }).catch(() => {});
+      }
     } // end if (!isTest)
 
     return res.status(200).json({ success: true, messageId: result.id, threadId: result.threadId, isTest });
