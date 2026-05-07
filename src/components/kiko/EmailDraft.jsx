@@ -314,7 +314,7 @@ export default function EmailDraft({ text }) {
       <div style={{ padding: '14px 18px 12px', borderBottom: '0.5px solid rgba(0,0,0,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 10, color: '#A0A0A0', fontFamily: T.font, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>Email Draft</div>
-          {currentTo && <div style={{ fontSize: 13, color: '#6B6B6B', fontFamily: T.font, marginBottom: 4 }}><span style={{ color: '#A0A0A0' }}>To:</span> {currentTo}</div>}
+          {currentTo && <div style={{ fontSize: 13, color: '#6B6B6B', fontFamily: T.font, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ color: '#A0A0A0' }}>To:</span> <input value={currentTo} onChange={e => setCurrentTo(e.target.value)} style={{ border: 'none', outline: 'none', fontSize: 13, color: '#6B6B6B', fontFamily: T.font, flex: 1, background: 'transparent', padding: 0 }} /></div>}
           <div style={{ fontSize: 15, color: '#0A0A0A', fontFamily: T.font, fontWeight: 500 }}>{currentSubject}</div>
         </div>
         <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>

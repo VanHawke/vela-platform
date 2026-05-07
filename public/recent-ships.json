@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-07T12:10:44.998Z",
+  "generated_at": "2026-05-07T12:14:59.307Z",
   "commits": [
+    {
+      "hash": "f127379",
+      "subject": "Fix: EmailDraft shows error despite draft succeeding — field mismatch",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "6d976d2",
       "subject": "Force-strip em dashes at rendering level (LLM ignores prompt instructions)",
-      "when": "2 minutes ago"
+      "when": "7 minutes ago"
     },
     {
       "hash": "942a2a5",
       "subject": "Fix brief quality: full reply shown, previous comms, greeting matching, em dash ban",
-      "when": "9 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "bdb6ee1",
       "subject": "Fix: remove orange hue + strip tool calls from briefs + concise prompts",
-      "when": "22 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "2182a3b",
       "subject": "Fix: remove leftover old MobileCommandCentre code causing build error",
-      "when": "36 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "e4190f9",
       "subject": "Mobile Command Centre: replaces bell alert view with stripped-down command centre",
-      "when": "39 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "97fb13c",
@@ -74,7 +79,7 @@
     {
       "hash": "7b8fc60",
       "subject": "Contact re-enrichment cron + LinkedIn status confirmed",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "5a2a62b",
@@ -94,11 +99,6 @@
     {
       "hash": "31ce2b3",
       "subject": "KikoFloat EmailDraft + cron activity logging + UI action logging",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "f8fd504",
-      "subject": "Timezone-optimised sending + PersonaMail correction capture",
       "when": "15 hours ago"
     }
   ]

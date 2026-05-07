@@ -34,6 +34,7 @@ function stripToolCalls(text) {
     .replace(/\s*—\s*/g, '. ')
     .replace(/\s*–\s*/g, '. ')
     .replace(/\.\.\s/g, '. ')
+    .replace(/^>\s?/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }
