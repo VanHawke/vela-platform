@@ -551,6 +551,8 @@ export default function OutreachIntelligence({ user }) {
       
       // ── SEPARATE DRAFT GENERATION — lightweight draftOnly path, no tools ──
       if (selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup') {
+        // Small delay to ensure brief SSE connection is fully closed before draft fetch
+        await new Promise(r => setTimeout(r, 500))
         const p = selected.payload || {}
         const entityName = p.entity_name || selected.title?.split('—')?.[1]?.trim() || ''
         const firstName = entityName.split(' ')[0] || 'there'
@@ -563,8 +565,10 @@ export default function OutreachIntelligence({ user }) {
         setSeparateDraft('')
         setDraftGenerating(true)
         const draftController = new AbortController()
+        console.log('[CC] Starting draft generation for', entityName, 'draftOnly=true')
         try {
-          const draftRes = await fetch('https://api.vanhawke.agency/api/kiko', {
+          const safeContext = (briefContext || '').replace(/[^\x20-\x7E\n]/g, ' ').slice(0, 800)
+          const draftRes = await fetch('https://api.vanhawke.agency/api/kiko-draft', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -576,7 +580,7 @@ ${prospectEmail ? `To: ${prospectEmail}` : `To: [use their email if you know it]
 
 Their message: "${snippet?.slice(0, 500)}"
 
-${briefContext ? `Brief context from our analysis:\n${briefContext.slice(0, 800)}` : ''}
+${safeContext ? `Brief context from our analysis:\n${safeContext}` : ''}
 
 Write the email now. Start with "Subject: Re: ${subjectLine}" then "To:" then greeting "Hi ${firstName}," then 2-3 paragraphs then "Best," sign-off.`,
               userEmail: user?.email || 'sunny@vanhawke.com',

@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-07T19:20:40.404Z",
+  "generated_at": "2026-05-07T20:01:30.474Z",
   "commits": [
+    {
+      "hash": "3f3eb98",
+      "subject": "FIX: draftOnly fast path + separate AbortController for draft",
+      "when": "41 minutes ago"
+    },
     {
       "hash": "e308033",
       "subject": "VERIFIED: Separate draft generation working — complete 3-paragraph emails",
-      "when": "15 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "b192233",
       "subject": "FIX: Draft To: field uses real contact email from CRM lookup",
-      "when": "35 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "23c7581",
       "subject": "PROPER FIX: Draft email generated as SEPARATE API call — no more parsing from brief",
-      "when": "38 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "8e578ea",
       "subject": "FIX: EmailDraft key={brief.length} forces fresh mount on complete text",
-      "when": "45 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "854899d",
       "subject": "FIX: Command Centre max_tokens 8192 — complete briefs with full drafts",
-      "when": "59 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "5b16589",
       "subject": "FIX: stripToolCalls handles open-ended tags during streaming + raw JSON",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "49ea2f1",
@@ -49,32 +54,32 @@
     {
       "hash": "d87f8cc",
       "subject": "FIX: Command Centre briefs never truncated — force 4096 tokens minimum",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e061ae7",
       "subject": "CRITICAL: Test emails don't trigger tracking + reply follow-up guarantee",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "c83b328",
       "subject": "FIX: Reply alerts visible for 7 days (was 24hrs), cognitive alerts in Command Centre",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "5be09cf",
       "subject": "FIX: Campaign stats reading from wrong table + pre-send validation",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "4b9d97c",
       "subject": "CRITICAL: Pre-send email validation + enhanced campaign visibility",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "22a9295",
       "subject": "Phase 2 complete: all wiring verified, Kiko self-knowledge updated",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "781d13d",
@@ -89,17 +94,12 @@
     {
       "hash": "2d82d2d",
       "subject": "Kiko: Applied Psychology section + psychology in brief recommendations",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "a5977c4",
       "subject": "Kiko: add General Intelligence section + update self-knowledge",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "3c60c9f",
-      "subject": "Update Kiko self-knowledge: Session 66+ capabilities",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     }
   ]
 }

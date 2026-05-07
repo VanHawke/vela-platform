@@ -825,7 +825,7 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // NOTE: Do NOT set Access-Control-Allow-Origin here — nginx already adds it for /api/kiko
     try {
       const stream = await anthropic.messages.stream({
         model: MODEL,
