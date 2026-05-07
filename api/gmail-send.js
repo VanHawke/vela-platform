@@ -8,12 +8,16 @@ export default async function handler(req, res) {
   if (!to || !body) return res.status(400).json({ error: 'Missing to or body' });
 
   try {
-    // Determine sender email
-    const senderEmail = sender === 'matt' || sender === 'matt.smith'
-      ? 'matt.smith@vanhawke.agency' : 'sunny@vanhawke.com';
+    // Determine sender — accept full email or shorthand
+    const senderRaw = (sender || 'sunny').toLowerCase()
+    const isMatt = senderRaw.includes('matt')
+    // Token lookup uses .com (how Google tokens are stored in user_tokens)
+    const tokenEmail = isMatt ? 'matt.smith@vanhawke.com' : 'sunny@vanhawke.com'
+    // From header uses .agency (the business email)
+    const fromEmail = isMatt ? 'matt.smith@vanhawke.agency' : 'sunny@vanhawke.agency'
     
-    const token = await getGoogleToken(senderEmail);
-    if (!token) return res.status(401).json({ error: `No Gmail token for ${senderEmail}` });
+    const token = await getGoogleToken(tokenEmail);
+    if (!token) return res.status(401).json({ error: `No Gmail token for ${tokenEmail}` });
 
     // Load signature
     const cfgRes = await sbFetch(`kiko_user_config?select=email_signature_html&limit=1`);
@@ -23,7 +27,7 @@ export default async function handler(req, res) {
     const fullBody = body + (signature ? `\n\n${signature}` : '');
     const headers = [
       `To: ${to}`,
-      `From: ${senderEmail}`,
+      `From: ${fromEmail}`,
       `Subject: ${subject || '(no subject)'}`,
       'MIME-Version: 1.0',
       'Content-Type: text/html; charset=UTF-8',
@@ -48,7 +52,7 @@ export default async function handler(req, res) {
 
     // Track the send
     await sbFetch('kiko_email_tracking', { method: 'POST', body: JSON.stringify({
-      sender_email: senderEmail,
+      sender_email: fromEmail,
       recipient_email: to,
       subject: subject || '',
       gmail_message_id: result.id,

@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-07T13:15:17.349Z",
+  "generated_at": "2026-05-07T13:22:21.956Z",
   "commits": [
+    {
+      "hash": "ca5d985",
+      "subject": "Send Test: dropdown of team members, vanhawke.agency domain",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "b1207a5",
       "subject": "Add Send Test button to EmailDraft composer",
-      "when": "32 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "25fd626",
       "subject": "Fix: editable To field + strip blockquote > from briefs",
-      "when": "60 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "f127379",
       "subject": "Fix: EmailDraft shows error despite draft succeeding — field mismatch",
-      "when": "64 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "6d976d2",
       "subject": "Force-strip em dashes at rendering level (LLM ignores prompt instructions)",
-      "when": "67 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "942a2a5",
       "subject": "Fix brief quality: full reply shown, previous comms, greeting matching, em dash ban",
-      "when": "73 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "bdb6ee1",
       "subject": "Fix: remove orange hue + strip tool calls from briefs + concise prompts",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2182a3b",
@@ -64,7 +69,7 @@
     {
       "hash": "69abf6c",
       "subject": "Fix LinkedIn connect: check cookies not URL for login success",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "4450105",
@@ -84,7 +89,7 @@
     {
       "hash": "f5bb02d",
       "subject": "LinkedIn client now reads cookies from database (not just env vars)",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "7b8fc60",
@@ -94,11 +99,6 @@
     {
       "hash": "5a2a62b",
       "subject": "Proactive recommendations engine + campaign tracking backfill + prospect sourcing confirmed",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "1e78f83",
-      "subject": "CC: buttons below composer, last correspondence in briefs, definitive actions, nav persistence, sponsorship filter",
       "when": "7 hours ago"
     }
   ]

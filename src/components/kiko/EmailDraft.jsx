@@ -505,26 +505,35 @@ export default function EmailDraft({ text }) {
               {[
                 { label: 'Send to myself', email: 'sunny@vanhawke.agency' },
                 { label: 'Send to Matt', email: 'matt.smith@vanhawke.agency' },
+                { label: 'Send to all team', email: 'ALL' },
               ].concat(teamMembers.filter(m => !['sunny@vanhawke.com','matt.smith@vanhawke.com','sunny@vanhawke.agency','matt.smith@vanhawke.agency'].includes(m.email)).map(m => ({ label: `Send to ${displayName(m.email)}`, email: agencyEmail(m.email) }))).map((opt, i) => (
-                <button key={i} onClick={async () => {
+                <button key={i} onClick={async (e) => {
+                  e.stopPropagation()
                   setTestDropdownOpen(false)
                   setTestSent('Sending...')
+                  const recipients = opt.email === 'ALL' 
+                    ? ['sunny@vanhawke.agency', 'matt.smith@vanhawke.agency'] 
+                    : [opt.email]
                   try {
                     const senderEmail = selectedSender?.email || 'sunny@vanhawke.agency'
-                    const res = await fetch('https://api.vanhawke.agency/api/gmail-send', {
-                      method: 'POST', headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ to: opt.email, subject: `[TEST] ${currentSubject}`, body: currentBody, sender: senderEmail })
-                    })
-                    const data = await res.json()
-                    if (data.success || data.ok) { setTestSent('Sent ✓'); setTimeout(() => setTestSent(null), 3000) }
-                    else { setTestSent('Failed'); setTimeout(() => setTestSent(null), 3000) }
+                    let allOk = true
+                    for (const recipient of recipients) {
+                      const res = await fetch('https://api.vanhawke.agency/api/gmail-send', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ to: recipient, subject: `[TEST] ${currentSubject}`, body: currentBody, sender: senderEmail })
+                      })
+                      const data = await res.json()
+                      if (!data.success && !data.ok) allOk = false
+                    }
+                    setTestSent(allOk ? 'Sent ✓' : 'Failed')
+                    setTimeout(() => setTestSent(null), 3000)
                   } catch { setTestSent('Failed'); setTimeout(() => setTestSent(null), 3000) }
                 }} style={{ width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s' }}
                   onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
-                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: '#6B6B6B' }}>{opt.email[0].toUpperCase()}</div>
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: opt.email === 'ALL' ? 'rgba(124,92,252,0.1)' : 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: opt.email === 'ALL' ? '#7C5CFC' : '#6B6B6B' }}>{opt.email === 'ALL' ? '✦' : opt.email[0].toUpperCase()}</div>
                   <div>
                     <div style={{ fontWeight: 500 }}>{opt.label}</div>
-                    <div style={{ fontSize: 10, color: '#A0A0A0' }}>{opt.email}</div>
+                    <div style={{ fontSize: 10, color: '#A0A0A0' }}>{opt.email === 'ALL' ? 'All team members' : opt.email}</div>
                   </div>
                 </button>
               ))}
