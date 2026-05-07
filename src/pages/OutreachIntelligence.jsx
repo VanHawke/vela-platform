@@ -596,14 +596,14 @@ export default function OutreachIntelligence({ user }) {
         const prospectEmail = p.prospect_email || p.email || p.metadata?.from || ''
         
         // Get the REAL email subject from the thread — not the alert title
-        let subjectLine = p.metadata?.subject || ''
+        let subjectLine = (p.metadata?.subject || '').replace(/^Re:\s*/gi, '').trim()
         if (!subjectLine) {
           // Look up from email tracking (most recent sent email to this entity)
           try {
             const { data: tracked } = await supabase
               .from('kiko_outreach_queue')
               .select('subject')
-              .ilike('contact_email', `%${entityName.split(' ').pop()}%`)
+              .ilike('to_email', `%${entityName.split(' ').pop().toLowerCase()}%`)
               .order('created_at', { ascending: false })
               .limit(1)
             if (tracked?.[0]?.subject) subjectLine = tracked[0].subject

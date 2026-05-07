@@ -1,50 +1,55 @@
 {
-  "generated_at": "2026-05-07T21:15:52.376Z",
+  "generated_at": "2026-05-07T21:21:29.383Z",
   "commits": [
+    {
+      "hash": "e33d6de",
+      "subject": "FIX: Email subject line from actual thread, not alert title",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "c052866",
       "subject": "CRITICAL FIX: Event processor used snake_case field names for camelCase CRM data",
-      "when": "13 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "dece7bd",
       "subject": "FIX: Draft fetch URL was /api/kiko-draft (404) — changed to /api/kiko",
-      "when": "21 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "706981d",
       "subject": "Add get_cognitive_analysis to EMAIL_TOOL_NAMES",
-      "when": "29 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "3c86384",
       "subject": "get_cognitive_analysis tool + self-knowledge sync + all session fixes",
-      "when": "31 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "3271954",
       "subject": "FIX: Two-step reasoning chain query fetches all 5 steps",
-      "when": "36 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "b5752e9",
       "subject": "FIX: Reasoning chain query — correct column names and JSONB filter",
-      "when": "46 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "5fb87f3",
       "subject": "FIX: Brief consistency — anchored to cognitive reasoning chains",
-      "when": "60 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "e8751aa",
       "subject": "Send Now button + AuroraCanvas removed from voice mode",
-      "when": "62 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "51816ce",
       "subject": "FIX: Remove duplicate CORS header from draftOnly path",
-      "when": "74 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "3f3eb98",
@@ -84,7 +89,7 @@
     {
       "hash": "49ea2f1",
       "subject": "FIX: EmailDraft streaming sync — body was freezing mid-sentence",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "70853ac",
@@ -94,11 +99,6 @@
     {
       "hash": "6e302f1",
       "subject": "FIX: Command Centre ALWAYS uses Sonnet — Haiku was truncating drafts",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "d87f8cc",
-      "subject": "FIX: Command Centre briefs never truncated — force 4096 tokens minimum",
       "when": "4 hours ago"
     }
   ]
