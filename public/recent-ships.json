@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-05-07T18:41:59.172Z",
+  "generated_at": "2026-05-07T18:45:12.029Z",
   "commits": [
+    {
+      "hash": "23c7581",
+      "subject": "PROPER FIX: Draft email generated as SEPARATE API call — no more parsing from brief",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "8e578ea",
       "subject": "FIX: EmailDraft key={brief.length} forces fresh mount on complete text",
-      "when": "6 minutes ago"
+      "when": "10 minutes ago"
     },
     {
       "hash": "854899d",
       "subject": "FIX: Command Centre max_tokens 8192 — complete briefs with full drafts",
-      "when": "20 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "5b16589",
       "subject": "FIX: stripToolCalls handles open-ended tags during streaming + raw JSON",
-      "when": "50 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "49ea2f1",
       "subject": "FIX: EmailDraft streaming sync — body was freezing mid-sentence",
-      "when": "56 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "70853ac",
       "subject": "FIX: EmailDraft parser now isolates DRAFT section from full brief",
-      "when": "61 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "6e302f1",
       "subject": "FIX: Command Centre ALWAYS uses Sonnet — Haiku was truncating drafts",
-      "when": "70 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "d87f8cc",
       "subject": "FIX: Command Centre briefs never truncated — force 4096 tokens minimum",
-      "when": "76 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "e061ae7",
       "subject": "CRITICAL: Test emails don't trigger tracking + reply follow-up guarantee",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "c83b328",
@@ -94,11 +99,6 @@
     {
       "hash": "ff76893",
       "subject": "Fix: gmail-send fetches sender's Gmail signature from their account",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "4570ddd",
-      "subject": "IRONCLAD: sender-specific token + signature across entire platform",
       "when": "5 hours ago"
     }
   ]
