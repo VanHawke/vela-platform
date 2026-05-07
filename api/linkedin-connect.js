@@ -40,39 +40,39 @@ export default async function handler(req, res) {
     await page.goto('https://www.linkedin.com/login', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(3000 + Math.random() * 2000);
 
-    // Fill credentials — simulate real keyboard input so React SDUI detects changes
-    // LinkedIn's new SDUI framework ignores programmatic .fill() — must use click + type
-    const emailSel = 'input#username, input[name="session_key"], input[autocomplete="username"], input[type="email"]:not([type="hidden"])';
-    const passSel = 'input#password, input[name="session_password"], input[autocomplete="current-password"], input[type="password"]';
+    // Fill credentials — LinkedIn has DUPLICATE inputs (hidden + visible). Must target VISIBLE ones.
+    // Visible email: autocomplete="username webauthn", visible password: autocomplete="current-password"
+    // Use Playwright's :visible pseudo-class to skip the hidden duplicates
+    const emailLocator = page.locator('input[type="email"]:visible').first();
+    const passLocator = page.locator('input[type="password"]:visible').first();
 
     try {
-      await page.waitForSelector(emailSel, { timeout: 15000, state: 'attached' });
+      await emailLocator.waitFor({ timeout: 15000 });
     } catch {
       await browser.close();
       return res.json({ ok: false, status: 'selector_failed', message: 'Cannot find email input on LinkedIn login page.' });
     }
 
-    // Click the email field, clear it, type character by character
-    await page.click(emailSel, { force: true }).catch(() => {});
+    await emailLocator.click();
     await page.waitForTimeout(200);
-    await page.evaluate((sel) => { const el = document.querySelector(sel); if (el) { el.value = ''; el.focus(); } }, emailSel);
-    await page.type(emailSel, email, { delay: 30 + Math.random() * 40 });
-    await page.waitForTimeout(300 + Math.random() * 200);
+    await emailLocator.fill('');
+    await emailLocator.type(email, { delay: 30 + Math.random() * 40 });
+    await page.waitForTimeout(300);
 
-    // Click the password field, clear it, type character by character
     try {
-      await page.waitForSelector(passSel, { timeout: 10000, state: 'attached' });
+      await passLocator.waitFor({ timeout: 10000 });
     } catch {
       await browser.close();
       return res.json({ ok: false, status: 'selector_failed', message: 'Cannot find password input.' });
     }
-    await page.click(passSel, { force: true }).catch(() => {});
-    await page.waitForTimeout(200);
-    await page.evaluate((sel) => { const el = document.querySelector(sel); if (el) { el.value = ''; el.focus(); } }, passSel);
-    await page.type(passSel, password, { delay: 30 + Math.random() * 40 });
-    await page.waitForTimeout(500 + Math.random() * 300);
 
-    // Submit via Enter key (more reliable than clicking button in SDUI)
+    await passLocator.click();
+    await page.waitForTimeout(200);
+    await passLocator.fill('');
+    await passLocator.type(password, { delay: 30 + Math.random() * 40 });
+    await page.waitForTimeout(500);
+
+    // Submit via Enter key
     await page.keyboard.press('Enter');
     await page.waitForTimeout(4000 + Math.random() * 2000);
 
