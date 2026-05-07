@@ -41,40 +41,43 @@ export default async function handler(req, res) {
     await page.waitForTimeout(3000 + Math.random() * 2000);
 
     // Fill credentials — use resilient selectors (LinkedIn changed from #username to SDUI)
+    // Use force:true because LinkedIn's SDUI renders inputs as "not visible" initially
     const emailInput = await page.waitForSelector(
       'input#username, input[name="session_key"], input[autocomplete="username"], input[type="email"]',
-      { timeout: 15000 }
+      { timeout: 15000, state: 'attached' }
     ).catch(() => null);
     
     if (!emailInput) {
-      // Try by placeholder/label text as last resort
       const byLabel = page.getByLabel(/email|phone|username/i);
       if (await byLabel.count() > 0) {
-        await byLabel.first().fill(email);
+        await byLabel.first().fill(email, { force: true });
       } else {
         await browser.close();
         return res.json({ ok: false, status: 'selector_failed', 
-          message: 'LinkedIn has changed their login page. Cannot find email input. Please log in manually and try the cookie import method.' });
+          message: 'LinkedIn has changed their login page. Cannot find email input.' });
       }
     } else {
-      await emailInput.fill(email);
+      await emailInput.fill(email, { force: true });
     }
     await page.waitForTimeout(300 + Math.random() * 300);
 
     const passInput = await page.waitForSelector(
       'input#password, input[name="session_password"], input[autocomplete="current-password"], input[type="password"]',
-      { timeout: 10000 }
+      { timeout: 10000, state: 'attached' }
     ).catch(() => null);
     
     if (!passInput) {
       await browser.close();
       return res.json({ ok: false, status: 'selector_failed', message: 'Cannot find password input.' });
     }
-    await passInput.fill(password);
+    await passInput.fill(password, { force: true });
     await page.waitForTimeout(300 + Math.random() * 300);
 
-    // Click sign in
-    await page.click('button[type="submit"]');
+    // Click sign in — also force in case button is overlaid
+    await page.click('button[type="submit"]', { force: true }).catch(async () => {
+      // Fallback: try pressing Enter
+      await page.keyboard.press('Enter');
+    });
     await page.waitForTimeout(4000 + Math.random() * 2000);
 
     const url = page.url();
