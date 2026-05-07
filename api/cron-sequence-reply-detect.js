@@ -203,6 +203,13 @@ export default async function handler(req, res) {
             event_detail: `Reply to automated sequence step ${enrollment.current_step - 1}`,
             source: 'sequence_engine', kiko_contributed: true, kiko_action: `Sequence email triggered reply`
           }) });
+          // ── EVENT BUS: emit event for cognitive processing ──
+          await sbFetch('kiko_events', { method: 'POST', body: JSON.stringify({
+            event_type: 'email_reply', source: 'gmail', entity_type: 'contact',
+            entity_id: enrollment.contact_id || null, entity_name: enrollment.contact_name || email,
+            payload: { snippet: (snippet || '').slice(0, 1000), subject: enrollment.last_subject || '', company: enrollment.company, sequence_id: enrollment.sequence_id, step: enrollment.current_step - 1, gmail_id: msgId, thread_id: threadId },
+            processed: false
+          }) }).catch(e => console.warn('[reply-detect] Event emit failed (non-fatal):', e.message));
           // ═══ REPLY → PIPELINE BRIDGE: Create/update CRM deal ═══
           try {
             // Check if deal already exists for this company
@@ -255,6 +262,13 @@ export default async function handler(req, res) {
               status: 'bounced', bounce_detected_at: new Date().toISOString()
             }) });
           await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.queued`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
+          // ── EVENT BUS: emit bounce event ──
+          await sbFetch('kiko_events', { method: 'POST', body: JSON.stringify({
+            event_type: 'bounce', source: 'gmail', entity_type: 'contact',
+            entity_name: enrollment.contact_name || email,
+            payload: { email, company: enrollment.company, sequence_id: enrollment.sequence_id },
+            processed: false
+          }) }).catch(() => {});
           // Auto-re-enrich: try to find a new email automatically instead of alerting user
           try {
             const nameParts = (enrollment.contact_name || '').trim().split(/\s+/);

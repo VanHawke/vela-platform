@@ -32,6 +32,11 @@ const SCHEDULES = [
   { schedule: '0 3 * * *',      path: '/api/cron-learning-director',       name: 'learning-director' },
   { schedule: '0 7,14 * * 1-5', path: '/api/cron-proactive',              name: 'proactive-convergence' },
   { schedule: '30 7 * * 1-5',   path: '/api/cron-proactive-recommendations', name: 'proactive-recommendations' },
+
+  // Cognitive Architecture (Phase 2)
+  { schedule: '*/10 7-22 * * 1-5', path: '/api/cron-event-processor',     name: 'event-processor' },
+  { schedule: '0 23 * * 1-5',   path: '/api/cron-cognitive-synthesis',     name: 'cognitive-synthesis' },
+  { schedule: '0 0 * * 2-6',    path: '/api/cron-personamail-loop',        name: 'personamail-loop' },
   { schedule: '0 6 * * 1-5',    path: '/api/cron-morning-intelligence',    name: 'morning-intel' },
   { schedule: '30 6 * * 1-5',   path: '/api/cron-morning-email',           name: 'morning-email' },
   { schedule: '0 4 * * 1-5',    path: '/api/cron-inbox-triage',            name: 'inbox-triage' },
