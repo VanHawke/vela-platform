@@ -425,6 +425,13 @@ export const TOOL_DEFINITIONS = [
       team: { type: 'string', description: 'F1 team name. Default: auto-selects based on category availability. E.g. "alpine", "haas".' },
     }, required: ['category'] },
   },
+  {
+    name: 'get_cognitive_analysis',
+    description: 'Retrieve the cognitive reasoning chain analysis for a specific entity (person or company). Returns the 5-step analysis: classification, context, knowledge matching, psychology diagnosis, and recommended actions. ALWAYS check this BEFORE generating your own analysis for a prospect or contact — the cognitive engine has already done the deep work. This ensures consistency across all interactions.',
+    input_schema: { type: 'object', properties: {
+      entity_name: { type: 'string', description: 'Name of the person or company to look up. E.g. "Matthew Liberty", "Proofpoint", "Jasmyn Collings".' },
+    }, required: ['entity_name'] },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -503,6 +510,28 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
           : 'Limited view — contact your admin for account connection details.',
       }, null, 2);
     } catch (e) { return agentError('PlatformUsers', e); }
+  }
+
+  // ── Cognitive Analysis — retrieve reasoning chain for an entity ──
+  if (name === 'get_cognitive_analysis') {
+    try {
+      const { entity_name } = input;
+      if (!entity_name) return JSON.stringify({ error: 'entity_name required' });
+      // Step 1: find event_ids from classify/context steps (which have entity_name in input JSONB)
+      const matchRes = await sbFetch(`kiko_reasoning_chains?select=event_id&input-%3E%3Eentity_name=ilike.*${encodeURIComponent(entity_name)}*&order=created_at.desc&limit=4`);
+      if (!matchRes?.length) return JSON.stringify({ found: false, message: `No cognitive analysis found for "${entity_name}". The event processor may not have processed this entity yet.` });
+      const eventIds = [...new Set(matchRes.map(s => s.event_id))];
+      // Step 2: fetch ALL steps for those events
+      const chains = await sbFetch(`kiko_reasoning_chains?select=step_type,output,created_at&event_id=in.(${eventIds.join(',')})&order=created_at.asc`);
+      if (!chains?.length) return JSON.stringify({ found: false, message: 'Event found but no reasoning steps.' });
+      const result = { found: true, entity: entity_name, steps: {} };
+      for (const c of chains) {
+        if (!result.steps[c.step_type] || new Date(c.created_at) > new Date(result.steps[c.step_type].created_at)) {
+          result.steps[c.step_type] = { output: c.output, created_at: c.created_at };
+        }
+      }
+      return JSON.stringify(result, null, 2);
+    } catch (e) { return agentError('CognitiveAnalysis', e); }
   }
 
   // ── Preference Update — self-adjustment via user prompting ──

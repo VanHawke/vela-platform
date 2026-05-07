@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-07T20:39:32.805Z",
+  "generated_at": "2026-05-07T20:44:12.679Z",
   "commits": [
+    {
+      "hash": "3271954",
+      "subject": "FIX: Two-step reasoning chain query fetches all 5 steps",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "b5752e9",
       "subject": "FIX: Reasoning chain query — correct column names and JSONB filter",
-      "when": "10 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "5fb87f3",
       "subject": "FIX: Brief consistency — anchored to cognitive reasoning chains",
-      "when": "24 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "e8751aa",
       "subject": "Send Now button + AuroraCanvas removed from voice mode",
-      "when": "26 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "51816ce",
       "subject": "FIX: Remove duplicate CORS header from draftOnly path",
-      "when": "38 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "3f3eb98",
       "subject": "FIX: draftOnly fast path + separate AbortController for draft",
-      "when": "79 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "e308033",
@@ -79,7 +84,7 @@
     {
       "hash": "e061ae7",
       "subject": "CRITICAL: Test emails don't trigger tracking + reply follow-up guarantee",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "c83b328",
@@ -95,11 +100,6 @@
       "hash": "4b9d97c",
       "subject": "CRITICAL: Pre-send email validation + enhanced campaign visibility",
       "when": "4 hours ago"
-    },
-    {
-      "hash": "22a9295",
-      "subject": "Phase 2 complete: all wiring verified, Kiko self-knowledge updated",
-      "when": "5 hours ago"
     }
   ]
 }
