@@ -29,8 +29,17 @@ function stripToolCalls(text) {
   return text
     .replace(/<tool_call>[\s\S]*?<\/tool_call>/g, '')
     .replace(/<tool_response>[\s\S]*?<\/tool_response>/g, '')
+    // Strip open-ended tool tags during streaming (closing tag not yet arrived)
+    .replace(/<tool_response>[\s\S]*/g, '')
+    .replace(/<tool_call>[\s\S]*/g, '')
+    // Strip raw JSON blocks that leak from tool responses
+    .replace(/\{"success"\s*:\s*true[\s\S]*?\}\s*/g, '')
+    .replace(/\{"emails"\s*:[\s\S]*?\}\s*/g, '')
+    // Strip narration about tool use
     .replace(/I'll pull.*?(?:now|first)\.?\s*/gi, '')
-    .replace(/Let me (?:look up|search|check|find|pull).*?(?:\.|$)/gim, '')
+    .replace(/Let me (?:look up|search|check|find|pull|retrieve).*?(?:\.|$)/gim, '')
+    .replace(/Reading email (?:history|thread).*?(?:\.|$)/gim, '')
+    .replace(/I now have everything.*?(?:\.|$)/gim, '')
     .replace(/\s*—\s*/g, '. ')
     .replace(/\s*–\s*/g, '. ')
     .replace(/\.\.\s/g, '. ')
