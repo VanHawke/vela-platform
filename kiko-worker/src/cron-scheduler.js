@@ -31,6 +31,7 @@ const SCHEDULES = [
   // Intelligence (previously pg_cron)
   { schedule: '0 3 * * *',      path: '/api/cron-learning-director',       name: 'learning-director' },
   { schedule: '0 7,14 * * 1-5', path: '/api/cron-proactive',              name: 'proactive-convergence' },
+  { schedule: '30 7 * * 1-5',   path: '/api/cron-proactive-recommendations', name: 'proactive-recommendations' },
   { schedule: '0 6 * * 1-5',    path: '/api/cron-morning-intelligence',    name: 'morning-intel' },
   { schedule: '30 6 * * 1-5',   path: '/api/cron-morning-email',           name: 'morning-email' },
   { schedule: '0 4 * * 1-5',    path: '/api/cron-inbox-triage',            name: 'inbox-triage' },

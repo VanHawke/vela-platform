@@ -24,6 +24,7 @@ import webhookRoutes from "./routes/webhooks.js";
 import gmailDraft from "./api/gmail-draft.js";
 import gmailSend from "./api/gmail-send.js";
 import captureCorrection from "./api/capture-correction.js";
+import proactiveRecs from "./api/cron-proactive-recommendations.js";
 import { startMonitors } from "./monitors/scheduler.js";
 import { startScheduler } from "./src/cron-scheduler.js";
 
@@ -73,6 +74,7 @@ app.all("/api/org-bible", orgBible);
 app.post("/api/create-gmail-draft", gmailDraft);
 app.post("/api/gmail-send", gmailSend);
 app.post("/api/capture-correction", captureCorrection);
+app.post("/api/cron-proactive-recommendations", proactiveRecs);
 app.use("/api", kikoChatRoutes);
 
 // Routes — existing
