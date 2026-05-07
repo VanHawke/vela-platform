@@ -119,9 +119,11 @@ export default function EmailDraft({ text, defaultSender }) {
   const [hasRewritten, setHasRewritten] = useState(false)
 
   // CRITICAL: Update body when streaming delivers new content
-  // useState only initializes once — this keeps body in sync with streaming text
+  // Always take the latest parse result — during streaming, the draft section may arrive
+  // AFTER analysis sections, making the correctly-parsed draft SHORTER than the raw text.
+  // The old `>` comparison blocked this update. Now: update whenever the parsed body changes.
   useEffect(() => {
-    if (!hasRewritten && parsed.body && parsed.body.length > (currentBody || '').length) {
+    if (!hasRewritten && parsed.body && parsed.body !== currentBody) {
       setCurrentBody(parsed.body)
       originalBodyRef.current = parsed.body
     }

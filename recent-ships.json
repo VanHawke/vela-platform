@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-07T17:40:55.887Z",
+  "generated_at": "2026-05-07T17:46:17.135Z",
   "commits": [
+    {
+      "hash": "70853ac",
+      "subject": "FIX: EmailDraft parser now isolates DRAFT section from full brief",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "6e302f1",
       "subject": "FIX: Command Centre ALWAYS uses Sonnet — Haiku was truncating drafts",
-      "when": "9 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "d87f8cc",
       "subject": "FIX: Command Centre briefs never truncated — force 4096 tokens minimum",
-      "when": "15 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "e061ae7",
       "subject": "CRITICAL: Test emails don't trigger tracking + reply follow-up guarantee",
-      "when": "27 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "c83b328",
       "subject": "FIX: Reply alerts visible for 7 days (was 24hrs), cognitive alerts in Command Centre",
-      "when": "33 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "5be09cf",
       "subject": "FIX: Campaign stats reading from wrong table + pre-send validation",
-      "when": "70 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "4b9d97c",
       "subject": "CRITICAL: Pre-send email validation + enhanced campaign visibility",
-      "when": "78 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "22a9295",
@@ -49,7 +54,7 @@
     {
       "hash": "2d82d2d",
       "subject": "Kiko: Applied Psychology section + psychology in brief recommendations",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "a5977c4",
@@ -94,11 +99,6 @@
     {
       "hash": "ca5d985",
       "subject": "Send Test: dropdown of team members, vanhawke.agency domain",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "b1207a5",
-      "subject": "Add Send Test button to EmailDraft composer",
       "when": "5 hours ago"
     }
   ]
