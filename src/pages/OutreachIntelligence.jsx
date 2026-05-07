@@ -244,7 +244,7 @@ Respond with ONLY these sections:
 1. CONTEXT — ${p.entity_name || 'This person'}: role, company, where we stand. 2-3 lines.
 2. OUR LAST EMAIL — the most recent email WE sent to them. Show the subject and key lines so the user knows what triggered this reply.
 3. THEIR REPLY IN FULL — reproduce their complete reply text above. Do not truncate or summarise it.
-4. DEFINITIVE NEXT STEP — EXACTLY what to do: who, when, what channel, what to achieve. One action, no hedging.
+4. DEFINITIVE NEXT STEP — EXACTLY what to do: who, when, what channel, what to achieve. One action, no hedging. EXPLAIN THE PSYCHOLOGY: why this approach works on this type of prospect at this stage (e.g. commitment-consistency, loss aversion, tactical empathy, scarcity). This is what makes your advice valuable.
 5. DRAFT REPLY — CRITICAL: Match the greeting style they used. If they wrote "Hi Matt" then use "Hi [Name]" not "Dear [Name]". Mirror their tone and formality level. No em dashes. No corporate filler. Subject: line, then greeting matching their style, body, sign-off matching our previous emails.
 
 ${VH_EMAIL_VOICE}`

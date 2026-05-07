@@ -1,40 +1,55 @@
 {
-  "generated_at": "2026-05-07T13:49:36.042Z",
+  "generated_at": "2026-05-07T14:11:33.543Z",
   "commits": [
+    {
+      "hash": "a5977c4",
+      "subject": "Kiko: add General Intelligence section + update self-knowledge",
+      "when": "10 minutes ago"
+    },
+    {
+      "hash": "3c60c9f",
+      "subject": "Update Kiko self-knowledge: Session 66+ capabilities",
+      "when": "20 minutes ago"
+    },
+    {
+      "hash": "12abaca",
+      "subject": "Command Centre: default sender = Matt for campaign replies/tasks",
+      "when": "22 minutes ago"
+    },
     {
       "hash": "ff76893",
       "subject": "Fix: gmail-send fetches sender's Gmail signature from their account",
-      "when": "6 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "4570ddd",
       "subject": "IRONCLAD: sender-specific token + signature across entire platform",
-      "when": "10 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "65049f1",
       "subject": "Fix Send Test: outside-click handler was closing dropdown before onClick fired",
-      "when": "20 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "f6394fb",
       "subject": "Global: all user-facing emails use vanhawke.agency (not .com)",
-      "when": "24 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "95653d1",
       "subject": "Fix: Send Test sender wrong + add Send to all + use .agency domain",
-      "when": "27 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "ca5d985",
       "subject": "Send Test: dropdown of team members, vanhawke.agency domain",
-      "when": "34 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "b1207a5",
       "subject": "Add Send Test button to EmailDraft composer",
-      "when": "66 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "25fd626",
@@ -64,12 +79,12 @@
     {
       "hash": "2182a3b",
       "subject": "Fix: remove leftover old MobileCommandCentre code causing build error",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e4190f9",
       "subject": "Mobile Command Centre: replaces bell alert view with stripped-down command centre",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "97fb13c",
@@ -85,21 +100,6 @@
       "hash": "b9f247e",
       "subject": "Fix LinkedIn connect: target VISIBLE inputs (LinkedIn has hidden duplicates)",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "d6913fa",
-      "subject": "Fix LinkedIn connect: keyboard simulation instead of fill()",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "69abf6c",
-      "subject": "Fix LinkedIn connect: check cookies not URL for login success",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "4450105",
-      "subject": "Fix LinkedIn connect: force:true for SDUI invisible inputs + state:attached selector",
-      "when": "7 hours ago"
     }
   ]
 }
