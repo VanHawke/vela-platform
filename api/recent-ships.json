@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-05-07T13:25:28.803Z",
+  "generated_at": "2026-05-07T13:29:46.427Z",
   "commits": [
+    {
+      "hash": "f6394fb",
+      "subject": "Global: all user-facing emails use vanhawke.agency (not .com)",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "95653d1",
       "subject": "Fix: Send Test sender wrong + add Send to all + use .agency domain",
-      "when": "3 minutes ago"
+      "when": "7 minutes ago"
     },
     {
       "hash": "ca5d985",
       "subject": "Send Test: dropdown of team members, vanhawke.agency domain",
-      "when": "10 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "b1207a5",
       "subject": "Add Send Test button to EmailDraft composer",
-      "when": "42 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "25fd626",
       "subject": "Fix: editable To field + strip blockquote > from briefs",
-      "when": "70 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "f127379",
       "subject": "Fix: EmailDraft shows error despite draft succeeding — field mismatch",
-      "when": "75 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "6d976d2",
       "subject": "Force-strip em dashes at rendering level (LLM ignores prompt instructions)",
-      "when": "77 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "942a2a5",
       "subject": "Fix brief quality: full reply shown, previous comms, greeting matching, em dash ban",
-      "when": "84 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "bdb6ee1",
@@ -69,7 +74,7 @@
     {
       "hash": "d6913fa",
       "subject": "Fix LinkedIn connect: keyboard simulation instead of fill()",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "69abf6c",
@@ -89,16 +94,11 @@
     {
       "hash": "3473ffb",
       "subject": "Fix LinkedIn connect: resilient selectors for new SDUI login page + full cookie storage",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "f5bb02d",
       "subject": "LinkedIn client now reads cookies from database (not just env vars)",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "7b8fc60",
-      "subject": "Contact re-enrichment cron + LinkedIn status confirmed",
       "when": "7 hours ago"
     }
   ]

@@ -136,6 +136,7 @@ export default function EmailDraft({ text }) {
   const [selectedSender, setSelectedSender] = useState(null) // who the email is FROM (determines signature)
   const dropdownRef = useRef(null)
   const senderDropdownRef = useRef(null)
+  const testDropdownRef = useRef(null)
   const editRef = useRef(null)
   const { subject: parsedSubject, to: parsedTo } = parsed
   const [currentSubject, setCurrentSubject] = useState(parsedSubject)
@@ -170,7 +171,7 @@ export default function EmailDraft({ text }) {
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setSendDropdownOpen(false)
-      setTestDropdownOpen(false)
+      if (testDropdownRef.current && !testDropdownRef.current.contains(e.target)) setTestDropdownOpen(false)
       if (senderDropdownRef.current && !senderDropdownRef.current.contains(e.target)) setSenderDropdownOpen(false)
     }
     document.addEventListener('mousedown', handler)
@@ -488,7 +489,7 @@ export default function EmailDraft({ text }) {
           )}
         </div>
         {/* Send Test button — dropdown of team members */}
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative' }} ref={testDropdownRef}>
           <button onClick={() => setTestDropdownOpen(!testDropdownOpen)} style={{
             padding: '6px 12px', borderRadius: 50,
             background: testSent ? 'rgba(34,197,94,0.08)' : 'rgba(0,0,0,0.04)',
