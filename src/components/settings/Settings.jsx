@@ -1189,6 +1189,38 @@ export default function Settings({ user }) {
                       <button onClick={() => { setShowLinkedinGuide(false); setLinkedinError('') }} style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.12)', background: 'transparent', color: T.textTertiary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
                     </div>
                     <p style={{ fontSize: 11, color: T.textTertiary, margin: '4px 0 0', fontFamily: T.font }}>Your credentials are used once to establish a session. LinkedIn may ask for a verification code on first connection — complete it in your browser first, then try again here.</p>
+                    
+                    <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', marginTop: 16, paddingTop: 16 }}>
+                      <h4 style={{ fontSize: 13, fontWeight: 600, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Or import cookie directly</h4>
+                      <p style={{ fontSize: 11, color: T.textTertiary, margin: '0 0 10px', fontFamily: T.font }}>
+                        Open LinkedIn in your browser → DevTools (F12) → Application → Cookies → linkedin.com → copy the <strong>li_at</strong> cookie value and paste below.
+                      </p>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <input 
+                          id="li-at-cookie-input"
+                          placeholder="Paste li_at cookie value here" 
+                          type="text" 
+                          style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.12)', fontSize: 12, fontFamily: 'monospace', outline: 'none' }} 
+                        />
+                        <button onClick={async () => {
+                          const cookieVal = document.getElementById('li-at-cookie-input')?.value?.trim()
+                          if (!cookieVal || cookieVal.length < 50) { setLinkedinError('Cookie value too short — paste the full li_at value'); return }
+                          try {
+                            setLinkedinConnecting(true)
+                            const res = await fetch('https://api.vanhawke.agency/api/linkedin-cookie-import', {
+                              method: 'POST', headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ li_at: cookieVal, email: user?.email || linkedinInput })
+                            })
+                            const data = await res.json()
+                            if (data.ok) { setLinkedinStatus({ connected: true, last_updated: new Date().toISOString() }); setShowLinkedinGuide(false); setLinkedinError('') }
+                            else setLinkedinError(data.message || 'Import failed')
+                          } catch (e) { setLinkedinError('Network error: ' + e.message) }
+                          finally { setLinkedinConnecting(false) }
+                        }} style={{ padding: '10px 16px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, whiteSpace: 'nowrap' }}>
+                          Import Cookie
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

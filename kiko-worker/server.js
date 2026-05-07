@@ -26,6 +26,7 @@ import gmailSend from "./api/gmail-send.js";
 import captureCorrection from "./api/capture-correction.js";
 import proactiveRecs from "./api/cron-proactive-recommendations.js";
 import contactReenrich from "./api/cron-contact-reenrich.js";
+import linkedinCookieImport from "./api/linkedin-cookie-import.js";
 import { startMonitors } from "./monitors/scheduler.js";
 import { startScheduler } from "./src/cron-scheduler.js";
 

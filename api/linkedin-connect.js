@@ -40,44 +40,40 @@ export default async function handler(req, res) {
     await page.goto('https://www.linkedin.com/login', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(3000 + Math.random() * 2000);
 
-    // Fill credentials — use resilient selectors (LinkedIn changed from #username to SDUI)
-    // Use force:true because LinkedIn's SDUI renders inputs as "not visible" initially
-    const emailInput = await page.waitForSelector(
-      'input#username, input[name="session_key"], input[autocomplete="username"], input[type="email"]',
-      { timeout: 15000, state: 'attached' }
-    ).catch(() => null);
-    
-    if (!emailInput) {
-      const byLabel = page.getByLabel(/email|phone|username/i);
-      if (await byLabel.count() > 0) {
-        await byLabel.first().fill(email, { force: true });
-      } else {
-        await browser.close();
-        return res.json({ ok: false, status: 'selector_failed', 
-          message: 'LinkedIn has changed their login page. Cannot find email input.' });
-      }
-    } else {
-      await emailInput.fill(email, { force: true });
-    }
-    await page.waitForTimeout(300 + Math.random() * 300);
+    // Fill credentials — simulate real keyboard input so React SDUI detects changes
+    // LinkedIn's new SDUI framework ignores programmatic .fill() — must use click + type
+    const emailSel = 'input#username, input[name="session_key"], input[autocomplete="username"], input[type="email"]:not([type="hidden"])';
+    const passSel = 'input#password, input[name="session_password"], input[autocomplete="current-password"], input[type="password"]';
 
-    const passInput = await page.waitForSelector(
-      'input#password, input[name="session_password"], input[autocomplete="current-password"], input[type="password"]',
-      { timeout: 10000, state: 'attached' }
-    ).catch(() => null);
-    
-    if (!passInput) {
+    try {
+      await page.waitForSelector(emailSel, { timeout: 15000, state: 'attached' });
+    } catch {
+      await browser.close();
+      return res.json({ ok: false, status: 'selector_failed', message: 'Cannot find email input on LinkedIn login page.' });
+    }
+
+    // Click the email field, clear it, type character by character
+    await page.click(emailSel, { force: true }).catch(() => {});
+    await page.waitForTimeout(200);
+    await page.evaluate((sel) => { const el = document.querySelector(sel); if (el) { el.value = ''; el.focus(); } }, emailSel);
+    await page.type(emailSel, email, { delay: 30 + Math.random() * 40 });
+    await page.waitForTimeout(300 + Math.random() * 200);
+
+    // Click the password field, clear it, type character by character
+    try {
+      await page.waitForSelector(passSel, { timeout: 10000, state: 'attached' });
+    } catch {
       await browser.close();
       return res.json({ ok: false, status: 'selector_failed', message: 'Cannot find password input.' });
     }
-    await passInput.fill(password, { force: true });
-    await page.waitForTimeout(300 + Math.random() * 300);
+    await page.click(passSel, { force: true }).catch(() => {});
+    await page.waitForTimeout(200);
+    await page.evaluate((sel) => { const el = document.querySelector(sel); if (el) { el.value = ''; el.focus(); } }, passSel);
+    await page.type(passSel, password, { delay: 30 + Math.random() * 40 });
+    await page.waitForTimeout(500 + Math.random() * 300);
 
-    // Click sign in — also force in case button is overlaid
-    await page.click('button[type="submit"]', { force: true }).catch(async () => {
-      // Fallback: try pressing Enter
-      await page.keyboard.press('Enter');
-    });
+    // Submit via Enter key (more reliable than clicking button in SDUI)
+    await page.keyboard.press('Enter');
     await page.waitForTimeout(4000 + Math.random() * 2000);
 
     const url = page.url();
