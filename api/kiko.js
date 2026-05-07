@@ -1805,8 +1805,11 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     const isComplexDraft = isEmailIntent && /\b(negotiat|strateg|invest|disput|pricing|proposal|partner|board|acquisition|due diligence|term sheet)\b/i.test(message);
     const useHaikuForEmail = isSimpleDraft && !isComplexDraft;
     const toolOpts = skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : isEmailIntent ? { lightTools: lightEmailTools, useHaiku: useHaikuForEmail } : {};
-    // Command Centre: never use Haiku — Sonnet writes complete drafts
-    if (currentPage === 'command-centre' && toolOpts.useHaiku) toolOpts.useHaiku = false;
+    // Command Centre: never use Haiku, always enough tokens for full brief + draft
+    if (currentPage === 'command-centre') {
+      toolOpts.maxTokens = 8192;
+      toolOpts.useHaiku = false;
+    }
 
     // ── REASONING ENGINE — gather intelligence BEFORE Claude sees the message ──
     // Only runs for substantive queries about specific entities — NOT for follow-ups, greetings, or simple commands

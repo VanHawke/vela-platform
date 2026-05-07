@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-05-07T17:52:17.004Z",
+  "generated_at": "2026-05-07T17:59:15.758Z",
   "commits": [
+    {
+      "hash": "5b16589",
+      "subject": "FIX: stripToolCalls handles open-ended tags during streaming + raw JSON",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "49ea2f1",
       "subject": "FIX: EmailDraft streaming sync — body was freezing mid-sentence",
-      "when": "6 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "70853ac",
       "subject": "FIX: EmailDraft parser now isolates DRAFT section from full brief",
-      "when": "11 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "6e302f1",
       "subject": "FIX: Command Centre ALWAYS uses Sonnet — Haiku was truncating drafts",
-      "when": "20 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "d87f8cc",
       "subject": "FIX: Command Centre briefs never truncated — force 4096 tokens minimum",
-      "when": "26 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "e061ae7",
       "subject": "CRITICAL: Test emails don't trigger tracking + reply follow-up guarantee",
-      "when": "39 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "c83b328",
       "subject": "FIX: Reply alerts visible for 7 days (was 24hrs), cognitive alerts in Command Centre",
-      "when": "45 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "5be09cf",
       "subject": "FIX: Campaign stats reading from wrong table + pre-send validation",
-      "when": "82 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "4b9d97c",
       "subject": "CRITICAL: Pre-send email validation + enhanced campaign visibility",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "22a9295",
@@ -94,11 +99,6 @@
     {
       "hash": "f6394fb",
       "subject": "Global: all user-facing emails use vanhawke.agency (not .com)",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "95653d1",
-      "subject": "Fix: Send Test sender wrong + add Send to all + use .agency domain",
       "when": "5 hours ago"
     }
   ]
