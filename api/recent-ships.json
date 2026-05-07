@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-07T20:13:14.040Z",
+  "generated_at": "2026-05-07T20:15:36.605Z",
   "commits": [
+    {
+      "hash": "e8751aa",
+      "subject": "Send Now button + AuroraCanvas removed from voice mode",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "51816ce",
       "subject": "FIX: Remove duplicate CORS header from draftOnly path",
-      "when": "12 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "3f3eb98",
       "subject": "FIX: draftOnly fast path + separate AbortController for draft",
-      "when": "52 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "e308033",
       "subject": "VERIFIED: Separate draft generation working — complete 3-paragraph emails",
-      "when": "68 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "b192233",
       "subject": "FIX: Draft To: field uses real contact email from CRM lookup",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "23c7581",
@@ -94,11 +99,6 @@
     {
       "hash": "afa22d3",
       "subject": "Task 1: Foundation knowledge populated + injection fixed",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "2d82d2d",
-      "subject": "Kiko: Applied Psychology section + psychology in brief recommendations",
       "when": "6 hours ago"
     }
   ]

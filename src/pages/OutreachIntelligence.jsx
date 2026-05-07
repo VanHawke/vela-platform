@@ -204,6 +204,31 @@ async function enrichSelectedForBrief(sel) {
         facts.push(`RECENT SIGNALS/ALERTS:\n${alerts.map(a => `  [${new Date(a.created_at).toLocaleDateString('en-GB', { day:'numeric',month:'short' })}] ${a.title}`).join('\n')}`)
       }
     }
+    // ── REASONING CHAIN — check for existing cognitive analysis to ensure consistency ──
+    const entityName = companyName || contactName || titleSuffix || ''
+    if (entityName) {
+      try {
+        const { data: chains } = await supabase
+          .from('kiko_reasoning_chains')
+          .select('step_name, output, created_at')
+          .ilike('entity_name', `%${entityName}%`)
+          .order('created_at', { ascending: false })
+          .limit(10)
+        if (chains?.length) {
+          const psychologyStep = chains.find(c => c.step_name === 'PSYCHOLOGY')
+          const actionStep = chains.find(c => c.step_name === 'ACTION')
+          const classifyStep = chains.find(c => c.step_name === 'CLASSIFY')
+          const parts = []
+          if (classifyStep?.output) parts.push(`Classification: ${String(classifyStep.output).slice(0, 300)}`)
+          if (psychologyStep?.output) parts.push(`Psychology analysis: ${String(psychologyStep.output).slice(0, 800)}`)
+          if (actionStep?.output) parts.push(`Recommended actions: ${String(actionStep.output).slice(0, 500)}`)
+          if (parts.length) {
+            facts.push(`\n--- KIKO'S EXISTING ANALYSIS (from cognitive reasoning chain, generated ${new Date(chains[0].created_at).toLocaleDateString('en-GB')}) ---\n${parts.join('\n')}\n--- END EXISTING ANALYSIS ---\nCRITICAL: Use the above analysis as your definitive recommendation. Do NOT contradict it. The cognitive engine has already analysed this signal — your brief must be consistent with its conclusion. If suggesting timing (e.g. follow up in X weeks), use the SAME timing as the analysis above.`)
+          }
+        }
+      } catch (e) { console.error('[enrichBrief] reasoning chain lookup:', e) }
+    }
+    
     if (facts.length === 0) {
       // No CRM data found — tell Kiko to web search the entity
       const entityName = companyName || contactSearch || titleSuffix || sel?.title || ''
