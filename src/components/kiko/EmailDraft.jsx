@@ -126,7 +126,9 @@ export default function EmailDraft({ text }) {
   const [sendDropdownOpen, setSendDropdownOpen] = useState(false)
   const [senderDropdownOpen, setSenderDropdownOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
-  const [scheduled, setScheduled] = useState(null) // { display: 'Mon 29 Apr at 09:00' }
+  const [scheduled, setScheduled] = useState(null)
+  const [testDropdownOpen, setTestDropdownOpen] = useState(false)
+  const [testSent, setTestSent] = useState(null) // { display: 'Mon 29 Apr at 09:00' }
   const [customDateTime, setCustomDateTime] = useState('')
   const [showCustomPicker, setShowCustomPicker] = useState(false)
   const [teamMembers, setTeamMembers] = useState([])
@@ -168,6 +170,7 @@ export default function EmailDraft({ text }) {
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setSendDropdownOpen(false)
+      setTestDropdownOpen(false)
       if (senderDropdownRef.current && !senderDropdownRef.current.contains(e.target)) setSenderDropdownOpen(false)
     }
     document.addEventListener('mousedown', handler)
@@ -484,30 +487,49 @@ export default function EmailDraft({ text }) {
             </div>
           )}
         </div>
-        {/* Send Test button — sends to yourself to preview */}
+        {/* Send Test button — dropdown of team members */}
         <div style={{ position: 'relative' }}>
-          <button onClick={async () => {
-            const testTo = prompt('Send test email to:', 'sunny@vanhawke.com')
-            if (!testTo) return
-            setSent('sending')
-            try {
-              const senderEmail = selectedSender?.email || 'sunny@vanhawke.com'
-              const res = await fetch('https://api.vanhawke.agency/api/gmail-send', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ to: testTo, subject: `[TEST] ${currentSubject}`, body: currentBody, sender: senderEmail })
-              })
-              const data = await res.json()
-              if (data.success || data.ok) { setSent('done'); setTimeout(() => setSent(false), 3000) }
-              else { setSent('error'); setTimeout(() => setSent(false), 3000) }
-            } catch { setSent('error'); setTimeout(() => setSent(false), 3000) }
-          }} style={{
+          <button onClick={() => setTestDropdownOpen(!testDropdownOpen)} style={{
             padding: '6px 12px', borderRadius: 50,
-            background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)',
-            color: 'rgba(0,0,0,0.55)', fontSize: 12, cursor: 'pointer', fontFamily: T.font,
+            background: testSent ? 'rgba(34,197,94,0.08)' : 'rgba(0,0,0,0.04)',
+            border: testSent ? '1px solid rgba(34,197,94,0.15)' : '1px solid rgba(0,0,0,0.08)',
+            color: testSent ? 'rgba(34,197,94,0.8)' : 'rgba(0,0,0,0.55)',
+            fontSize: 12, cursor: 'pointer', fontFamily: T.font,
             display: 'flex', alignItems: 'center', gap: 5, fontWeight: 500,
           }}>
-            <Mail size={11} /> Send test
+            <Mail size={11} /> {testSent || 'Send test'}
           </button>
+          {testDropdownOpen && (
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 220, overflow: 'hidden' }}>
+              <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>Send test email to:</div>
+              {[
+                { label: 'Send to myself', email: 'sunny@vanhawke.agency' },
+                { label: 'Send to Matt', email: 'matt.smith@vanhawke.agency' },
+              ].concat(teamMembers.filter(m => !['sunny@vanhawke.com','matt.smith@vanhawke.com','sunny@vanhawke.agency','matt.smith@vanhawke.agency'].includes(m.email)).map(m => ({ label: `Send to ${displayName(m.email)}`, email: agencyEmail(m.email) }))).map((opt, i) => (
+                <button key={i} onClick={async () => {
+                  setTestDropdownOpen(false)
+                  setTestSent('Sending...')
+                  try {
+                    const senderEmail = selectedSender?.email || 'sunny@vanhawke.agency'
+                    const res = await fetch('https://api.vanhawke.agency/api/gmail-send', {
+                      method: 'POST', headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ to: opt.email, subject: `[TEST] ${currentSubject}`, body: currentBody, sender: senderEmail })
+                    })
+                    const data = await res.json()
+                    if (data.success || data.ok) { setTestSent('Sent ✓'); setTimeout(() => setTestSent(null), 3000) }
+                    else { setTestSent('Failed'); setTimeout(() => setTestSent(null), 3000) }
+                  } catch { setTestSent('Failed'); setTimeout(() => setTestSent(null), 3000) }
+                }} style={{ width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s' }}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: '#6B6B6B' }}>{opt.email[0].toUpperCase()}</div>
+                  <div>
+                    <div style={{ fontWeight: 500 }}>{opt.label}</div>
+                    <div style={{ fontSize: 10, color: '#A0A0A0' }}>{opt.email}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
