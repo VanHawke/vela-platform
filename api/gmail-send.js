@@ -4,7 +4,7 @@ import { sbFetch } from './kiko-tools.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  const { to, subject, body, sender = 'sunny', cc, thread_id } = req.body || {};
+  const { to, subject, body, sender = 'sunny', cc, thread_id, isTest = false } = req.body || {};
   if (!to || !body) return res.status(400).json({ error: 'Missing to or body' });
 
   try {
@@ -66,8 +66,9 @@ export default async function handler(req, res) {
 
     if (!gmailRes.ok) return res.status(500).json({ error: result.error?.message || 'Gmail send failed' });
 
-    // Track the send
-    await sbFetch('kiko_email_tracking', { method: 'POST', body: JSON.stringify({
+    // Track the send — but NOT for test emails
+    if (!isTest) {
+      await sbFetch('kiko_email_tracking', { method: 'POST', body: JSON.stringify({
       sender_email: fromEmail,
       recipient_email: to,
       subject: subject || '',
@@ -77,8 +78,9 @@ export default async function handler(req, res) {
       sent_at: new Date().toISOString(),
       follow_up_due: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
     }) }).catch(() => {});
+    } // end if (!isTest)
 
-    return res.status(200).json({ success: true, messageId: result.id, threadId: result.threadId });
+    return res.status(200).json({ success: true, messageId: result.id, threadId: result.threadId, isTest });
   } catch (e) {
     console.error('[gmail-send] Error:', e);
     return res.status(500).json({ error: e.message });

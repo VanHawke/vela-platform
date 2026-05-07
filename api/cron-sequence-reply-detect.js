@@ -210,6 +210,17 @@ export default async function handler(req, res) {
             payload: { snippet: (snippet || '').slice(0, 1000), subject: enrollment.last_subject || '', company: enrollment.company, sequence_id: enrollment.sequence_id, step: enrollment.current_step - 1, gmail_id: msgId, thread_id: threadId },
             processed: false
           }) }).catch(e => console.warn('[reply-detect] Event emit failed (non-fatal):', e.message));
+          // ── FOLLOW-UP GUARANTEE: Always create a response-needed task so prospect never vanishes ──
+          await sbFetch('kiko_email_tracking', { method: 'POST', body: JSON.stringify({
+            sender_email: 'matt.smith@vanhawke.agency',
+            recipient_email: email,
+            recipient_name: enrollment.contact_name || email,
+            company: enrollment.company,
+            subject: `Reply from ${enrollment.contact_name || email} — needs response`,
+            source: 'reply_followup',
+            sent_at: new Date().toISOString(),
+            follow_up_due: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          }) }).catch(() => {});
           // ═══ REPLY → PIPELINE BRIDGE: Create/update CRM deal ═══
           try {
             // Check if deal already exists for this company

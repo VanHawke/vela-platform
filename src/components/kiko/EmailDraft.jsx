@@ -525,7 +525,7 @@ export default function EmailDraft({ text, defaultSender }) {
                     for (const recipient of recipients) {
                       const res = await fetch('https://api.vanhawke.agency/api/gmail-send', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ to: recipient, subject: `[TEST] ${currentSubject}`, body: currentBody, sender: senderEmail })
+                        body: JSON.stringify({ to: recipient, subject: `[TEST] ${currentSubject}`, body: currentBody, sender: senderEmail, isTest: true })
                       })
                       const data = await res.json()
                       if (!data.success && !data.ok) allOk = false

@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-07T17:07:32.646Z",
+  "generated_at": "2026-05-07T17:13:13.725Z",
   "commits": [
+    {
+      "hash": "c83b328",
+      "subject": "FIX: Reply alerts visible for 7 days (was 24hrs), cognitive alerts in Command Centre",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "5be09cf",
       "subject": "FIX: Campaign stats reading from wrong table + pre-send validation",
-      "when": "37 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "4b9d97c",
       "subject": "CRITICAL: Pre-send email validation + enhanced campaign visibility",
-      "when": "45 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "22a9295",
       "subject": "Phase 2 complete: all wiring verified, Kiko self-knowledge updated",
-      "when": "66 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "781d13d",
@@ -24,7 +29,7 @@
     {
       "hash": "afa22d3",
       "subject": "Task 1: Foundation knowledge populated + injection fixed",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2d82d2d",
@@ -49,12 +54,12 @@
     {
       "hash": "ff76893",
       "subject": "Fix: gmail-send fetches sender's Gmail signature from their account",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "4570ddd",
       "subject": "IRONCLAD: sender-specific token + signature across entire platform",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "65049f1",
@@ -94,11 +99,6 @@
     {
       "hash": "6d976d2",
       "subject": "Force-strip em dashes at rendering level (LLM ignores prompt instructions)",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "942a2a5",
-      "subject": "Fix brief quality: full reply shown, previous comms, greeting matching, em dash ban",
       "when": "5 hours ago"
     }
   ]
