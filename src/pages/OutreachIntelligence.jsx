@@ -322,7 +322,7 @@ export default function OutreachIntelligence({ user }) {
     try {
       const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      const signalTypes = ['partnership_detected', 'new_partnership', 'competitive_change', 'company_signal', 'proactive_intel', 'prediction']
+      const signalTypes = ['partnership_detected', 'new_partnership', 'competitive_change', 'company_signal', 'proactive_intel', 'prediction', 'cognitive_analysis', 'cognitive_synthesis', 'convergence', 'proactive_recommendation', 'follow_up_overdue']
       const [dealsRes, hotRes, signalRes, campaignRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at')
           .not('data->>status', 'in', '("won","lost")')
@@ -331,9 +331,9 @@ export default function OutreachIntelligence({ user }) {
           .select('id, type, title, detail, entity_name, entity_id, metadata, created_at')
           .eq('dismissed', false)
           .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply,type.eq.email_reply_manual,type.eq.linkedin_connection_accepted,type.like.linkedin_connection%')
-          .gte('created_at', dayAgo)
+          .gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString())
           .order('created_at', { ascending: false })
-          .limit(10),
+          .limit(20),
         supabase.from('kiko_alerts')
           .select('id, type, severity, title, detail, entity_name, created_at')
           .in('type', signalTypes)

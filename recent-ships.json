@@ -1,15 +1,25 @@
 {
-  "generated_at": "2026-05-07T16:22:47.246Z",
+  "generated_at": "2026-05-07T17:07:32.646Z",
   "commits": [
+    {
+      "hash": "5be09cf",
+      "subject": "FIX: Campaign stats reading from wrong table + pre-send validation",
+      "when": "37 minutes ago"
+    },
+    {
+      "hash": "4b9d97c",
+      "subject": "CRITICAL: Pre-send email validation + enhanced campaign visibility",
+      "when": "45 minutes ago"
+    },
     {
       "hash": "22a9295",
       "subject": "Phase 2 complete: all wiring verified, Kiko self-knowledge updated",
-      "when": "21 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "781d13d",
       "subject": "Phase 2: Cognitive Architecture — Event Bus + Reasoning Chains + Synthesis",
-      "when": "49 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "afa22d3",
@@ -19,12 +29,12 @@
     {
       "hash": "2d82d2d",
       "subject": "Kiko: Applied Psychology section + psychology in brief recommendations",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a5977c4",
       "subject": "Kiko: add General Intelligence section + update self-knowledge",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "3c60c9f",
@@ -49,22 +59,22 @@
     {
       "hash": "65049f1",
       "subject": "Fix Send Test: outside-click handler was closing dropdown before onClick fired",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "f6394fb",
       "subject": "Global: all user-facing emails use vanhawke.agency (not .com)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "95653d1",
       "subject": "Fix: Send Test sender wrong + add Send to all + use .agency domain",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "ca5d985",
       "subject": "Send Test: dropdown of team members, vanhawke.agency domain",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "b1207a5",
@@ -74,31 +84,21 @@
     {
       "hash": "25fd626",
       "subject": "Fix: editable To field + strip blockquote > from briefs",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "f127379",
       "subject": "Fix: EmailDraft shows error despite draft succeeding — field mismatch",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "6d976d2",
       "subject": "Force-strip em dashes at rendering level (LLM ignores prompt instructions)",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "942a2a5",
       "subject": "Fix brief quality: full reply shown, previous comms, greeting matching, em dash ban",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "bdb6ee1",
-      "subject": "Fix: remove orange hue + strip tool calls from briefs + concise prompts",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "2182a3b",
-      "subject": "Fix: remove leftover old MobileCommandCentre code causing build error",
       "when": "5 hours ago"
     }
   ]
