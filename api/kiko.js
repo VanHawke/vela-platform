@@ -898,7 +898,7 @@ export default async function handler(req, res) {
     sbFetch('kiko_core_bible?select=content&order=version.desc&limit=1').catch(() => []),
     orgId ? sbFetch(`org_bibles?organization_id=eq.${orgId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
     isRegistered ? sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
-    isLightweight ? Promise.resolve([]) : sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=60').catch(() => []),
+    isLightweight ? Promise.resolve([]) : sbFetch('kiko_knowledge?select=domain,content,researched_at,source&order=researched_at.desc&limit=100').catch(() => []),
     isLightweight ? Promise.resolve([]) : sbFetch(`kiko_learned_rules?active=eq.true&select=id,rule_text,category,evidence_count,weight&order=weight.desc&limit=20`).catch(() => []),
     isLightweight ? Promise.resolve([]) : sbFetch(`kiko_preferences?select=category,preference,confidence&order=confidence.desc&limit=15`).catch(() => []),
   ]);
@@ -913,7 +913,30 @@ export default async function handler(req, res) {
     for (const k of (knowledgeBaseResult || []).filter(k => k.content)) {
       if (!byDomain.has(k.domain)) byDomain.set(k.domain, k);
     }
-    return [...byDomain.values()].slice(0, 28).map(k => `[${k.domain} — ${new Date(k.researched_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}]\n${k.content.slice(0, 1500)}`).join('\n\n');
+    // Topic-relevance scoring: match user's message against domain names
+    const msgLower = (message || '').toLowerCase();
+    const allDomains = [...byDomain.values()];
+    
+    // Score each domain: higher score = more relevant to current message
+    const scored = allDomains.map(k => {
+      const domWords = k.domain.replace(/-/g, ' ').split(' ');
+      let score = 0;
+      for (const w of domWords) {
+        if (w.length > 2 && msgLower.includes(w)) score += 3;
+      }
+      // Boost foundation knowledge in relevant contexts
+      if (k.source === 'foundation_v1') score += 1;
+      return { ...k, relevance: score };
+    });
+    
+    // Sort: relevant domains first, then by recency
+    scored.sort((a, b) => b.relevance - a.relevance || new Date(b.researched_at) - new Date(a.researched_at));
+    
+    // Load relevant domains in FULL (no truncation), others at 3000 chars
+    return scored.map(k => {
+      const contentLimit = k.relevance >= 3 ? k.content.length : 3000;
+      return `[${k.domain} — ${new Date(k.researched_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}]\n${k.content.slice(0, contentLimit)}`;
+    }).join('\n\n');
   })();
   const bibleBlock = [
     coreBible ? `\n\n═══ KIKO CORE BIBLE ═══\n${coreBible}` : '',
