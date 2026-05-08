@@ -129,9 +129,9 @@ async function processEvent(event) {
 
   // ── STEP 5: ACTION (Haiku — generate structured actions) ──
   const actionResult = await callClaude(HAIKU,
-    'You generate structured actions from a strategic analysis. Respond with ONLY raw JSON, no markdown, no code fences, no backticks.',
-    `Based on this analysis:\n${psychResult.text.slice(0, 1500)}\n\nEntity: ${entity_name}\nEvent type: ${event_type}\nContact email: ${context.contact?.email || 'unknown'}\nCompany: ${context.contact?.company || ''}\n\nGenerate actions as raw JSON (NO markdown, NO code fences):\n{"actions":[{"type":"create_alert","data":{"alert_type":"cognitive_analysis","title":"brief title","detail":"2 sentences"}}],"brief_for_user":"2-3 sentence summary of what happened and why the recommended approach works psychologically"}`,
-    600
+    'You generate structured CRM actions from a strategic analysis. Respond with ONLY raw JSON, no markdown, no code fences.',
+    `Based on this analysis:\n${psychResult.text.slice(0, 1500)}\n\nEntity: ${entity_name}\nEvent type: ${event_type}\nContact email: ${context.contact?.email || 'unknown'}\nCompany: ${context.contact?.company || ''}\nCurrent deal stage: ${context.deal?.stage || 'none'}\nCurrent deal status: ${context.deal?.status || 'none'}\n\nGenerate ALL applicable actions as raw JSON. Available action types:\n1. "create_alert" — always create one with brief_for_user summary\n2. "create_task" — create a follow-up task with specific timing from the analysis. REQUIRED fields: title, notes, due_date (YYYY-MM-DD), assigned_to ("Matt Smith" or "Sunny Sidhu")\n3. "update_deal" — if the deal stage should change (e.g. from "Closed Lost" to "To revisit" when prospect re-engages). Fields: stage, status, notes\n4. "update_contact_notes" — append a timestamped note to the contact record. Fields: note (1-2 sentences summarising what happened and what to do next)\n\nIMPORTANT: The task due_date must match your psychological recommendation. If you recommend following up in 6-8 weeks, set due_date to 6 weeks from today (${new Date().toISOString().split('T')[0]}). Be specific.\n\nFormat: {"actions":[...],"brief_for_user":"2-3 sentence summary"}`,
+    800
   );
   let actions = { actions: [], brief_for_user: '' };
   try { actions = JSON.parse(actionResult.text.replace(/```json|```/g, '').trim()); } catch { actions = { actions: [], brief_for_user: actionResult.text.slice(0, 300) }; }
@@ -153,16 +153,34 @@ async function processEvent(event) {
       }
       if (action.type === 'create_task' && action.data?.title) {
         await sbFetch('tasks', { method: 'POST', body: JSON.stringify({
+          id: `t${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
           org_id: '35975d96-c2c9-4b6c-b4d4-bb947ae817d5',
-          data: { title: action.data.title, company: context.contact?.company, contact: entity_name, dueDate: action.data.due_date, notes: action.data.notes, type: 'follow_up' }
+          updated_at: new Date().toISOString(),
+          data: {
+            type: 'Follow-up', notes: action.data.notes || '', company: context.contact?.company || '',
+            contact: entity_name, dueDate: action.data.due_date || null,
+            completed: false, createdAt: new Date().toISOString(),
+            assignedTo: action.data.assigned_to || 'Matt Smith',
+          }
         }) });
         executed.push({ type: 'create_task', success: true });
       }
+      if (action.type === 'update_contact_notes' && action.data?.note && context.contact?.id) {
+        const existing = context.contact || {};
+        const existingNotes = existing.notes || '';
+        const timestamp = new Date().toISOString().split('T')[0];
+        const updatedNotes = `${existingNotes}\n[${timestamp}] ${action.data.note}`.trim();
+        await sbFetch(`contacts?id=eq.${context.contact.id}`, { method: 'PATCH', body: JSON.stringify({
+          data: { ...existing, notes: updatedNotes }
+        }) });
+        executed.push({ type: 'update_contact_notes', success: true });
+      }
       if (action.type === 'update_deal' && context.deal?.id) {
+        const dealData = { ...(context.deal || {}), lastActivity: new Date().toISOString().split('T')[0] };
+        if (action.data?.stage) { dealData.stage = action.data.stage; dealData.status = 'active'; dealData.lostDate = null; dealData.lostReason = ''; }
+        if (action.data?.notes) { dealData.notes = ((dealData.notes || '') + '\n' + action.data.notes).trim(); }
         await sbFetch(`deals?id=eq.${context.deal.id}`, { method: 'PATCH', body: JSON.stringify({
-          stage: action.data?.stage || context.deal.stage,
-          notes: action.data?.notes,
-          updated_at: new Date().toISOString()
+          data: dealData, updated_at: new Date().toISOString()
         }) });
         executed.push({ type: 'update_deal', success: true });
       }

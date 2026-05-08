@@ -99,9 +99,20 @@ export default async function handler(req, res) {
       const contacts = await sbFetch(`contacts?select=id,data&data->>email=ilike.${encodeURIComponent(to)}&limit=1`).catch(() => []);
       if (contacts?.[0]) {
         contactCompany = contacts[0].data?.company || ''
-        // MERGE — don't overwrite existing data, just update lastActivity
-        const updated = { ...contacts[0].data, lastActivity: new Date().toISOString().split('T')[0] };
+        // MERGE — update lastActivity AND append interaction note
+        const existingNotes = contacts[0].data?.notes || ''
+        const timestamp = new Date().toISOString().split('T')[0]
+        const newNote = `[${timestamp}] Outbound email sent: "${subject || '(no subject)'}". Sender: ${fromEmail}.`
+        const updated = { ...contacts[0].data, lastActivity: timestamp, notes: (existingNotes + '\n' + newNote).trim() };
         await sbFetch(`contacts?id=eq.${contacts[0].id}`, { method: 'PATCH', body: JSON.stringify({ data: updated }) }).catch(() => {});
+        
+        // Also update the deal if one exists for this contact
+        const deals = await sbFetch(`deals?select=id,data&data->>contactName=ilike.*${encodeURIComponent(recipientName.split(' ').pop())}*&limit=1`).catch(() => []);
+        if (deals?.[0]) {
+          const dealNotes = deals[0].data?.notes || ''
+          const updatedDeal = { ...deals[0].data, lastActivity: timestamp, notes: (dealNotes + '\n' + newNote).trim() };
+          await sbFetch(`deals?id=eq.${deals[0].id}`, { method: 'PATCH', body: JSON.stringify({ data: updatedDeal, updated_at: new Date().toISOString() }) }).catch(() => {});
+        }
       } else {
         // Contact doesn't exist — auto-create from email metadata
         const [localPart] = to.split('@')
