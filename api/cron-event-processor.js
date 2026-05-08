@@ -108,7 +108,7 @@ async function processEvent(event) {
   const knowledge = await loadRelevantKnowledge(keywords);
   const knowledgeResult = await callClaude(HAIKU,
     'You identify which psychological and strategic principles apply to a business signal. Respond ONLY in valid JSON.',
-    `Signal: ${classification.summary}\nIntent: ${classification.intent}\nEntity: ${entity_name} (${context.contact?.job_title || ''} at ${context.contact?.company || ''})\nDeal stage: ${context.deal?.stage || 'none'}\n\nAvailable knowledge:\n${knowledge.slice(0, 4000)}\n\nRespond with JSON: {"applicable_principles":["principle1: brief explanation","principle2: brief explanation"],"recommended_approach":"one paragraph approach","relevant_domains":["domain1","domain2"]}`,
+    `Signal: ${classification.summary}\nIntent: ${classification.intent}\nEntity: ${entity_name} (${context.contact?.title || ''} at ${context.contact?.company || ''})\nDeal stage: ${context.deal?.stage || 'none'}\n\nAvailable knowledge:\n${knowledge.slice(0, 4000)}\n\nRespond with JSON: {"applicable_principles":["principle1: brief explanation","principle2: brief explanation"],"recommended_approach":"one paragraph approach","relevant_domains":["domain1","domain2"]}`,
     600
   );
   let knowledgeAnalysis = {};
@@ -116,7 +116,7 @@ async function processEvent(event) {
   await saveStep(id, 3, 'knowledge', { keywords: keywords.slice(0, 200) }, knowledgeAnalysis, HAIKU, knowledgeResult.tokens, knowledgeResult.duration);
 
   // ── STEP 4: PSYCHOLOGY (Sonnet — deep analysis) ──
-  const contactInfo = context.contact ? `${context.contact.first_name} ${context.contact.last_name}, ${context.contact.job_title} at ${context.contact.company}` : entity_name;
+  const contactInfo = context.contact ? `${context.contact.firstName || ''} ${context.contact.lastName || ''}, ${context.contact.title || ''} at ${context.contact.company || ''}`.trim() : entity_name;
   const dealInfo = context.deal ? `Deal: ${context.deal.title}, stage: ${context.deal.stage}, value: $${context.deal.value}, days since activity: ${context.deal.days_since_activity || 'unknown'}` : 'No active deal';
   
   const psychResult = await callClaude(SONNET,
