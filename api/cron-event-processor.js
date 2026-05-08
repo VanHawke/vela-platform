@@ -151,29 +151,41 @@ async function processEvent(event) {
         }) });
         executed.push({ type: 'create_alert', success: true });
       }
-      if (action.type === 'create_task' && action.data?.title) {
+      if (action.type === 'create_task') {
+        const d = action.data || action; // model sometimes puts fields directly on action
+        if (!d.title) continue;
+        // Fix hallucinated past dates — if due_date is in the past, recalculate from today
+        let dueDate = d.due_date || null;
+        if (dueDate && new Date(dueDate) < new Date()) {
+          const daysDiff = Math.round((new Date(dueDate) - new Date(d.due_date?.replace(/\d{4}/, new Date().getFullYear()))) / 86400000) || 14;
+          dueDate = new Date(Date.now() + Math.abs(daysDiff) * 86400000).toISOString().split('T')[0];
+        }
         await sbFetch('tasks', { method: 'POST', body: JSON.stringify({
           id: `t${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
           org_id: '35975d96-c2c9-4b6c-b4d4-bb947ae817d5',
           updated_at: new Date().toISOString(),
           data: {
-            type: 'Follow-up', notes: action.data.notes || '', company: context.contact?.company || '',
-            contact: entity_name, dueDate: action.data.due_date || null,
+            type: 'Follow-up', notes: d.notes || '', company: context.contact?.company || '',
+            contact: entity_name, dueDate: dueDate,
             completed: false, createdAt: new Date().toISOString(),
-            assignedTo: action.data.assigned_to || 'Matt Smith',
+            assignedTo: d.assigned_to || 'Matt Smith',
           }
         }) });
-        executed.push({ type: 'create_task', success: true });
+        executed.push({ type: 'create_task', title: d.title, success: true });
       }
-      if (action.type === 'update_contact_notes' && action.data?.note && context.contact?.id) {
-        const existing = context.contact || {};
-        const existingNotes = existing.notes || '';
-        const timestamp = new Date().toISOString().split('T')[0];
-        const updatedNotes = `${existingNotes}\n[${timestamp}] ${action.data.note}`.trim();
-        await sbFetch(`contacts?id=eq.${context.contact.id}`, { method: 'PATCH', body: JSON.stringify({
-          data: { ...existing, notes: updatedNotes }
-        }) });
-        executed.push({ type: 'update_contact_notes', success: true });
+      if (action.type === 'update_contact_notes') {
+        const d = action.data || action;
+        const note = d.note || d.notes || '';
+        if (note && context.contact?.id) {
+          const existing = context.contact || {};
+          const existingNotes = existing.notes || '';
+          const timestamp = new Date().toISOString().split('T')[0];
+          const updatedNotes = `${existingNotes}\n[${timestamp}] ${note}`.trim();
+          await sbFetch(`contacts?id=eq.${context.contact.id}`, { method: 'PATCH', body: JSON.stringify({
+            data: { ...existing, notes: updatedNotes }
+          }) });
+          executed.push({ type: 'update_contact_notes', success: true });
+        }
       }
       if (action.type === 'update_deal' && context.deal?.id) {
         const dealData = { ...(context.deal || {}), lastActivity: new Date().toISOString().split('T')[0] };
