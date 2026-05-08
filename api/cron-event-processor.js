@@ -154,11 +154,15 @@ async function processEvent(event) {
       if (action.type === 'create_task') {
         const d = action.data || action; // model sometimes puts fields directly on action
         if (!d.title) continue;
-        // Fix hallucinated past dates — if due_date is in the past, recalculate from today
+        // Fix hallucinated past dates — replace year with current, add 1 if still past
         let dueDate = d.due_date || null;
-        if (dueDate && new Date(dueDate) < new Date()) {
-          const daysDiff = Math.round((new Date(dueDate) - new Date(d.due_date?.replace(/\d{4}/, new Date().getFullYear()))) / 86400000) || 14;
-          dueDate = new Date(Date.now() + Math.abs(daysDiff) * 86400000).toISOString().split('T')[0];
+        if (dueDate) {
+          let dt = new Date(dueDate);
+          if (dt < new Date()) {
+            dt.setFullYear(new Date().getFullYear());
+            if (dt < new Date()) dt.setFullYear(dt.getFullYear() + 1);
+            dueDate = dt.toISOString().split('T')[0];
+          }
         }
         await sbFetch('tasks', { method: 'POST', body: JSON.stringify({
           id: `t${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
