@@ -94,13 +94,32 @@ export default async function handler(req, res) {
         metadata: { sender: fromEmail, recipient: to },
       }) }).catch(() => {});
 
-      // 4. Update contact last activity + get company for task
+      // 4. Update contact last activity — or CREATE contact if doesn't exist
       let contactCompany = ''
       const contacts = await sbFetch(`contacts?select=id,data&data->>email=ilike.${encodeURIComponent(to)}&limit=1`).catch(() => []);
       if (contacts?.[0]) {
         contactCompany = contacts[0].data?.company || ''
+        // MERGE — don't overwrite existing data, just update lastActivity
         const updated = { ...contacts[0].data, lastActivity: new Date().toISOString().split('T')[0] };
         await sbFetch(`contacts?id=eq.${contacts[0].id}`, { method: 'PATCH', body: JSON.stringify({ data: updated }) }).catch(() => {});
+      } else {
+        // Contact doesn't exist — auto-create from email metadata
+        const [localPart] = to.split('@')
+        const domain = to.split('@')[1] || ''
+        const nameParts = localPart.replace(/[._]/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        const firstName = nameParts[0] || ''
+        const lastName = nameParts.slice(1).join(' ') || ''
+        const companyDomain = domain.replace(/\.(com|co\.uk|io|net|org)$/i, '')
+        const newContact = {
+          firstName, lastName, email: to, company: companyDomain.charAt(0).toUpperCase() + companyDomain.slice(1),
+          source: 'kiko', lastActivity: new Date().toISOString().split('T')[0],
+          createdAt: new Date().toISOString().split('T')[0],
+          notes: `Auto-created by Kiko when email sent on "${subject || '(no subject)'}"`,
+        }
+        contactCompany = newContact.company
+        await sbFetch('contacts', { method: 'POST', body: JSON.stringify({
+          id: `kc${Date.now()}`, data: newContact, org_id: '35975d96-c2c9-4b6c-b4d4-bb947ae817d5', updated_at: new Date().toISOString(),
+        }) }).catch(e => console.log('[gmail-send] Auto-create contact:', e.message));
       }
 
       // 5. Create follow-up task if this is a reply (not a cold outreach)
