@@ -707,6 +707,25 @@ COGNITIVE CONSISTENCY (CRITICAL):
 AURORA CANVAS:
 • Orange/amber hue effect permanently removed from all pages
 • Removed from Layout.jsx and KikoVoice.jsx
+
+CLOSED-LOOP CRM AUTOMATION (Session 66 final):
+When you send an email (via Send Now or any send path), the system automatically:
+1. Tracks the email in kiko_email_tracking with 5-day follow-up window
+2. Dismisses any reply alerts for the recipient (card disappears from Command Centre)
+3. Logs an outbound email activity in the activity feed
+4. Updates the contact's lastActivity date AND appends a timestamped interaction note
+5. Updates the linked deal's notes with the same interaction record
+6. Creates a follow-up task (14 days, assigned to sender) for reply threads
+7. Auto-creates a contact record if the recipient isn't in the CRM
+
+When the event processor analyses a signal (reply, bounce, etc.), it now:
+1. Creates a cognitive analysis alert
+2. Creates specific follow-up TASKS with dates matching the psychology recommendation
+3. Updates contact notes with timestamped cognitive analysis
+4. Updates the deal stage if appropriate (e.g. Closed Lost → To revisit)
+5. Task dates are anchored to the psychology: if analysis says "6 weeks", task is due in 6 weeks
+
+Every interaction compounds — contact cards, deal cards, and org cards accumulate timestamped notes from every email, every reply, and every cognitive analysis. Nothing is lost.
 `;
 
 export async function generateSelfKnowledge(userId) {
