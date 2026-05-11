@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-11T10:15:36.189Z",
+  "generated_at": "2026-05-11T10:40:10.515Z",
   "commits": [
+    {
+      "hash": "a005e54",
+      "subject": "Smooth streaming: token buffer renders 3 chars/frame at 60fps",
+      "when": "24 minutes ago"
+    },
     {
       "hash": "eda730b",
       "subject": "Kiko self-monitors data quality — catches her own mistakes",
-      "when": "10 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "96d6d2f",
       "subject": "CRITICAL: Name/email mismatch guardrails — 3 layers of protection",
-      "when": "13 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "7f790fc",
       "subject": "Disable morning-intel, morning-email, weekly-report crons",
-      "when": "20 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "49f2005",
@@ -94,11 +99,6 @@
     {
       "hash": "3271954",
       "subject": "FIX: Two-step reasoning chain query fetches all 5 steps",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "b5752e9",
-      "subject": "FIX: Reasoning chain query — correct column names and JSONB filter",
       "when": "4 days ago"
     }
   ]

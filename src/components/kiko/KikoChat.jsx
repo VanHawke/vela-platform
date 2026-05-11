@@ -34,6 +34,8 @@ import HomeDashboard from './HomeDashboard'
 import KikoInsights, { InsightsBadge } from './KikoInsights'
 import { useKikoLive } from '@/contexts/KikoLiveContext'
 import EmailDraft, { isEmailDraft, extractEmailSection } from './EmailDraft'
+import KikoMessage from './KikoMessage'
+import KikoThinking, { getToolLabel } from './KikoThinking'
 import { useDynamicChips } from '@/hooks/useDynamicChips'
 
 // Theme imported from @/lib/theme.js
@@ -1342,13 +1344,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               const testParse = emailOnly ? (() => { try { const m = emailOnly.match(/\*?\*?Subject\*?\*?\s*:\s*(.+?)(?:\n|$)/i); const t = emailOnly.match(/\*?\*?To\*?\*?\s*:\s*(.+?)(?:\n|$)/i); const bodyStart = t ? emailOnly.indexOf(t[0]) + t[0].length : (m ? emailOnly.indexOf(m[0]) + m[0].length : 0); const rawBody = emailOnly.slice(bodyStart).replace(/\*\*/g,'').replace(/Best regards.*$/is,'').replace(/Sunny\s*Sidhu/gi,'').replace(/Van\s*Hawke[^\n]*/gi,'').trim(); return rawBody.length > 30; } catch { return false } })() : false
               if (testParse) {
                 return <>
-                  {pre && <span dangerouslySetInnerHTML={{ __html: md(pre) }} />}
+                  {pre && <KikoMessage content={pre} isStreaming={false} role="assistant" />}
                   {emailOnly && <EmailDraft text={emailOnly} />}
-                  {postEmail && <span dangerouslySetInnerHTML={{ __html: md(postEmail) }} />}
+                  {postEmail && <KikoMessage content={postEmail} isStreaming={false} role="assistant" />}
                 </>
               }
             }
-            return displayText ? <span dangerouslySetInnerHTML={{ __html: md(displayText) }} /> : null
+            return displayText ? <KikoMessage content={displayText} isStreaming={false} role="assistant" /> : null
           })()}
           {/* DraftPreview DISABLED — EmailDraft handles all email rendering */}
         </div>
@@ -1914,13 +1916,17 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             </div>
           )}
           {/* Streaming response */}
+          {/* Thinking/tool status before any text arrives */}
+          {streaming && !streamText && (
+            <div style={{ marginBottom: 24, paddingLeft: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(90,100,112,0.55)', fontFamily: C.font, marginBottom: 6 }}>Kiko</div>
+              <KikoThinking status={toolStatus || 'thinking'} />
+            </div>
+          )}
           {streaming && streamText && (
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(90,100,112,0.55)', fontFamily: C.font, marginBottom: 6 }}>Kiko</div>
-              <div style={{ fontSize: 15, color: '#0A0A0A', lineHeight: 1.7, fontFamily: C.font, fontWeight: 400 }}>
-                <span dangerouslySetInnerHTML={{ __html: md(stripToolXml(streamText)) }} />
-                <span style={{ display: 'inline-block', width: 2, height: 16, background: 'rgba(90,100,112,0.4)', marginLeft: 2, verticalAlign: 'text-bottom', animation: 'kikoBlink 1s infinite' }} />
-              </div>
+              <KikoMessage content={stripToolXml(streamText)} isStreaming={true} role="assistant" />
               <button onClick={stopKiko} style={{ marginTop: 10, padding: '6px 14px', borderRadius: 8, background: 'rgba(0,0,0,0.02)', border: '0.5px solid rgba(0,0,0,0.08)', color: '#A0A0A0', fontSize: 12, cursor: 'pointer', fontFamily: C.font, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 2, background: 'currentColor', display: 'inline-block' }} /> Stop
               </button>
