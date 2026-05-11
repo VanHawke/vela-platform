@@ -81,28 +81,24 @@ export default async function handler(req, res) {
         const slug = prospect.linkedin.replace(/https?:\/\/(www\.)?linkedin\.com\/in\//i, '').replace(/\/$/, '');
         if (!slug) continue;
         
-        const activityUrl = `https://www.linkedin.com/in/${slug}/recent-activity/all/`;
-        
-        // Use engine.getProfile pattern — open context, visit feed first, then activity
-        const result = await engine.getProfile(identity, activityUrl);
+        // Use dedicated getActivity function — visits activity page and extracts posts
+        const result = await engine.getActivity(identity, slug);
         
         // If authwall, abort entire run — session may be compromised
-        if (result?.error?.includes('authwall')) {
+        if (result?.error === 'authwall') {
           console.error('[linkedin-social-listen] Authwall detected — aborting run');
           errors.push({ name: prospect.name, error: 'authwall' });
-          break; // Abort entire run
+          break;
         }
         
-        // The profile data won't be useful (it's an activity page), but we need the page content
-        // For now, use the raw page text that getProfile captures
-        const pageText = result?.raw_text || result?.headline || '';
+        if (!result?.ok || !result.posts?.length) {
+          console.log(`[linkedin-social-listen] No posts for ${prospect.name}`);
+          continue;
+        }
         
-        // Extract posts from the page content (simplified — LinkedIn activity page)
-        // The page text will contain post snippets separated by time markers
-        const postChunks = pageText.split(/\d+[hdwmo]\s*·?\s*(?:Edited)?/).filter(chunk => chunk.trim().length > 50);
-        
-        for (const chunk of postChunks.slice(0, 3)) { // Max 3 posts per person
-          const text = chunk.trim().slice(0, 500);
+        for (const post of result.posts.slice(0, 3)) {
+          const text = post.text.trim().slice(0, 500);
+          if (text.length < 30) continue;
           const hash = postHash(prospect.name, text);
           
           // Dedup check
