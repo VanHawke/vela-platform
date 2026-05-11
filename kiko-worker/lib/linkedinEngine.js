@@ -427,3 +427,96 @@ export async function sendMessage(identity, profileUrl, messageText) {
     }
   });
 }
+
+
+export async function getActivity(identity, profileSlug) {
+  return withLock(identity, async () => {
+    let browser, context;
+    try {
+      const opened = await openContextForIdentity(identity);
+      browser = opened.browser;
+      context = opened.context;
+      const { page } = opened;
+
+      // Block heavy resources for speed
+      await context.route('**/*', route => {
+        const type = route.request().resourceType();
+        if (['image', 'font', 'media'].includes(type)) return route.abort();
+        const url = route.request().url();
+        if (url.includes('analytics') || url.includes('tracking') || url.includes('ads')) return route.abort();
+        return route.continue();
+      });
+
+      // Warm up session via feed
+      await page.goto('https://www.linkedin.com/feed/', { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2000 + Math.random() * 2000);
+
+      // Navigate to activity page
+      const activityUrl = 'https://www.linkedin.com/in/' + profileSlug + '/recent-activity/all/';
+      await page.goto(activityUrl, { waitUntil: 'domcontentloaded', referer: 'https://www.linkedin.com/feed/' });
+      await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
+      await page.waitForTimeout(2000 + Math.random() * 2000);
+
+      const finalUrl = page.url();
+      if (finalUrl.includes('/authwall') || finalUrl.includes('/uas/login')) {
+        await captureAndPersistCookies(identity, context, 'activity-authwall');
+        return { ok: false, error: 'authwall', posts: [] };
+      }
+
+      // Scroll to load more posts
+      await page.mouse.wheel(0, 800);
+      await page.waitForTimeout(1500 + Math.random() * 1500);
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(1000 + Math.random() * 1000);
+
+      // Extract posts using multiple selector strategies
+      const posts = await page.evaluate(() => {
+        const results = [];
+        const selectors = [
+          '.profile-creator-shared-feed-update__container',
+          '[data-urn*="activity"]',
+          '.occludable-update',
+          '.feed-shared-update-v2',
+        ];
+        let items = [];
+        for (const sel of selectors) {
+          items = document.querySelectorAll(sel);
+          if (items.length > 0) break;
+        }
+        for (const item of Array.from(items).slice(0, 5)) {
+          const textSels = [
+            '.break-words',
+            '.feed-shared-update-v2__description',
+            '.feed-shared-text',
+            '.update-components-text',
+            'span[dir="ltr"]',
+          ];
+          let text = '';
+          for (const ts of textSels) {
+            const el = item.querySelector(ts);
+            if (el && el.innerText && el.innerText.trim().length > 20) {
+              text = el.innerText.trim().slice(0, 500);
+              break;
+            }
+          }
+          if (!text || text.length < 20) continue;
+          const timeSels = ['time', '.feed-shared-actor__sub-description span', '.update-components-actor__sub-description'];
+          let time = '';
+          for (const ts of timeSels) {
+            const el = item.querySelector(ts);
+            if (el) { time = el.getAttribute('datetime') || el.innerText || ''; break; }
+          }
+          results.push({ text, time: time.trim() });
+        }
+        return results;
+      });
+
+      await captureAndPersistCookies(identity, context, 'activity');
+      return { ok: true, url: finalUrl, posts };
+    } catch (err) {
+      return { ok: false, error: err.message, posts: [] };
+    } finally {
+      if (browser) await browser.close().catch(() => {});
+    }
+  });
+}

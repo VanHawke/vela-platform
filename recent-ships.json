@@ -1,55 +1,75 @@
 {
-  "generated_at": "2026-05-11T11:27:48.530Z",
+  "generated_at": "2026-05-11T13:24:43.889Z",
   "commits": [
+    {
+      "hash": "27c256a",
+      "subject": "FULL SYSTEM AUDIT COMPLETE — all components verified",
+      "when": "26 minutes ago"
+    },
+    {
+      "hash": "66453cf",
+      "subject": "LinkedIn: dedicated getActivity function + updated cron",
+      "when": "65 minutes ago"
+    },
+    {
+      "hash": "5c094e5",
+      "subject": "LinkedIn Social Listening: cron-linkedin-social-listen.js",
+      "when": "80 minutes ago"
+    },
+    {
+      "hash": "7e0c2d4",
+      "subject": "FIX: Streaming hang (tick checks streamingRef) + orange hue eliminated",
+      "when": "2 hours ago"
+    },
     {
       "hash": "7936b6a",
       "subject": "KikoFloat: smooth streaming + react-markdown + streaming hang fix",
-      "when": "11 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "c1f3898",
       "subject": "FIX: Streaming hang — flush no longer re-sets streamText + 10s timeout",
-      "when": "27 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "79b161d",
       "subject": "Self-knowledge: chat UX capabilities documented",
-      "when": "34 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4dbdd69",
       "subject": "Image paste support: Cmd+V screenshots into Kiko chat",
-      "when": "35 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "31841dc",
       "subject": "FIX: Remove duplicate KikoThinking during streaming",
-      "when": "38 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "bdfee15",
       "subject": "Chat UX: react-markdown rendering + thinking indicator + smooth streaming",
-      "when": "47 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a005e54",
       "subject": "Smooth streaming: token buffer renders 3 chars/frame at 60fps",
-      "when": "72 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "eda730b",
       "subject": "Kiko self-monitors data quality — catches her own mistakes",
-      "when": "82 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "96d6d2f",
       "subject": "CRITICAL: Name/email mismatch guardrails — 3 layers of protection",
-      "when": "86 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7f790fc",
       "subject": "Disable morning-intel, morning-email, weekly-report crons",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "49f2005",
@@ -80,26 +100,6 @@
       "hash": "4502f04",
       "subject": "Post-send: auto-create contacts + fix data merge + full CRM updates",
       "when": "3 days ago"
-    },
-    {
-      "hash": "57185cc",
-      "subject": "Post-send actions: dismiss alert, log activity, update contact, create task",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "e49091a",
-      "subject": "EmailDraft: defaultTo prop for auto-populating recipient",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "abc5d40",
-      "subject": "FIX: Reasoning chain lookup timeout + error handling",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "a52a0e1",
-      "subject": "FIX: Strip double Re: from subject + fix outreach queue column name",
-      "when": "4 days ago"
     }
   ]
 }

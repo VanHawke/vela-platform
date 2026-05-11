@@ -2,7 +2,61 @@
 
 ## For session handoff — read THIS before writing ANY code
 
-## Last updated: 2026-04-26 10:00 UTC
+## Last updated: 2026-05-11 13:00 UTC (Session 66 final)
+
+### SESSION 66 CHANGES (CRITICAL — read before any code):
+
+**Email Draft & Send Now:**
+- draftOnly fast path: separate `/api/kiko` call with `draftOnly: true`, bypasses full Kiko pipeline
+- Send Now button: 2-step confirmation, sends via `/api/gmail-send`
+- Real email thread subject from metadata (not alert title)
+- defaultTo prop auto-populates recipient from alert metadata
+
+**Closed-Loop CRM Automation (gmail-send.js post-send actions):**
+- Track email in `kiko_email_tracking` (5-day follow-up)
+- Dismiss reply alerts for recipient
+- Log outbound activity
+- Update contact lastActivity + append timestamped interaction note
+- Update linked deal notes
+- Create 14-day follow-up task
+- Auto-create contact if recipient not in CRM
+
+**Cognitive Engine (cron-event-processor.js):**
+- ACTION step now generates: create_alert, create_task, update_deal, update_contact_notes
+- Task due dates anchored to psychology recommendation timing
+- Contact notes get timestamped cognitive analysis
+- Deals auto-reactivate when stage changes (Closed Lost → To revisit)
+- Field names fixed: firstName/lastName (camelCase), title (not job_title)
+- Task date fixer: replace year, not offset recalculation
+- Action handlers support both action.data.field and action.field
+
+**Data Quality Guardrails (3 layers):**
+- start_sequence: blocks enrollment if name doesn't match email
+- bulk_enroll: filters mismatched contacts before enrollment
+- cron-sequence-sender: validates every email before send, creates data_quality alert
+- cron-selfcheck-watcher: scans queue 3x daily for mismatches, auto-blocks
+
+**Chat UX:**
+- Smooth streaming: token buffer, 3 chars/frame at 60fps
+- react-markdown rendering (KikoMessage.jsx): tables, bold, code blocks, lists
+- Streaming hang fix: tickStreamBuffer checks streamingRef.current
+- Inactivity timeout reduced from 45s to 10s
+- Image paste: Cmd+V screenshots in both KikoChat and KikoFloat
+- Waveform dots removed from message footer
+- KikoFloat: same streaming buffer + react-markdown
+
+**LinkedIn Social Listening:**
+- cron-linkedin-social-listen.js: runs noon weekdays, max 25 profiles
+- getActivity() added to linkedinEngine.js: visits activity pages, multi-selector extraction
+- Dedup via kiko_linkedin_activity_log table (entity_name + post_hash unique index)
+- Events emit to kiko_events as 'linkedin_activity', processed by reasoning chain
+- VERIFIED: 9 posts from 3 prospects, 7 processed through full 5-step chain
+
+**Background:**
+- #FEFEFC replaced with #FFFFFF across all 22+ files
+- Morning intelligence, morning email, weekly report crons DISABLED (token savings)
+- Stale kiko-draft.js deleted from Hetzner
+- Old JS bundles cleaned (kept latest 5)
 
 ## 60 build sessions spanning April 7-26, 2026
 

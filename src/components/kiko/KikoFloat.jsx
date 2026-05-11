@@ -677,6 +677,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 : <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
             </button>
             <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
+              onPaste={e => { const items = e.clipboardData?.items; if (items) { for (const item of items) { if (item.type.startsWith('image/')) { e.preventDefault(); const file = item.getAsFile(); if (file) processFileForKiko(file); return } } } }}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && input.trim()) { e.preventDefault(); handleSubmit() } }}
               placeholder="Ask me anything...."
               rows={1}

@@ -1408,12 +1408,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             })()}
           </div>
         )}
-        {/* Kiko Waveform signature — below the action icons */}
-        {isKiko && !streaming && (
-          <div style={{ marginTop: 6, opacity: 0.7 }}>
-            <KikoAvatar size={14} state="idle" />
-          </div>
-        )}
+        {/* Kiko Waveform signature removed — was showing persistent dots below every response */}
       </div>
     )
   })
