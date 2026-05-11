@@ -326,7 +326,7 @@
    ═══════════════════════════════════════════════════════════════ */
 .legora-topnav {
   height: 60px;
-  background: #FEFEFC;
+  background: #FFFFFF;
   border-bottom: 1px solid rgba(0,0,0,0.05);
   padding: 0 32px;
   display: grid;
@@ -384,7 +384,7 @@
   min-width: 16px; height: 16px;
   border-radius: 9px;
   background: #b8643e;
-  box-shadow: 0 0 0 2px #FEFEFC;
+  box-shadow: 0 0 0 2px #FFFFFF;
   font-size: 9px; font-weight: 600; color: #FFFFFF;
   display: flex; align-items: center; justify-content: center;
   padding: 0 4px; line-height: 1;

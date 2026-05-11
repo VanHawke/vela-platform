@@ -161,6 +161,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const messages = sharedMessages || []
   const setMessages = setSharedMessages || (() => {})
   const [streaming, setStreaming] = useState(false)
+  const streamingRef = useRef(false)
   const [toolStatus, setToolStatus] = useState(null)
   const [streamText, setStreamText] = useState('')
   
@@ -173,7 +174,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
   }, [])
   const tickStreamBuffer = useCallback(() => {
-    if (streamBufferRef.current.length === 0) { streamRafRef.current = null; return }
+    if (streamBufferRef.current.length === 0 || !streamingRef.current) { streamRafRef.current = null; return }
     const batch = streamBufferRef.current.splice(0, 3).join('')
     streamDisplayRef.current += batch; setStreamText(streamDisplayRef.current)
     streamRafRef.current = requestAnimationFrame(tickStreamBuffer)
@@ -324,7 +325,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     if (!open) { setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }
     const userMsg = { role: 'user', content: msg }
     setMessages(prev => [...prev, userMsg])
-    setStreaming(true); setStreamText(''); setToolStatus(null)
+    setStreaming(true); streamingRef.current = true; setStreamText(''); setToolStatus(null)
     streamBufferRef.current = []; streamDisplayRef.current = ''; if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
     const controller = new AbortController()
     abortRef.current = controller
@@ -391,7 +392,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         return // Stop execution — page is reloading
       }
     } catch (err) { if (err.name !== 'AbortError') { setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }]); } setStreamText('') }
-    finally { flushStreamBuffer(); setStreaming(false); setStreamText(''); abortRef.current = null }
+    finally { flushStreamBuffer(); setStreaming(false); streamingRef.current = false; setStreamText(''); abortRef.current = null }
   }, [input, streaming, messages, user, convId, open])
 
   const processFileForKiko = async (file) => {

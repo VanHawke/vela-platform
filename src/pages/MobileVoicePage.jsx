@@ -167,7 +167,7 @@ export default function MobileVoicePage() {
   }, [])
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', display: 'flex', flexDirection: 'column', zIndex: 1 }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FFFFFF', display: 'flex', flexDirection: 'column', zIndex: 1 }}>
       {/* Header */}
       <div style={{ padding: '12px 20px', paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A' }}>Kiko</div>

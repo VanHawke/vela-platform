@@ -11,7 +11,7 @@ export default function MobileBottomNav() {
   return (
     <nav className="kiko-mobile-bottom-nav" style={{
       position: 'fixed', bottom: 0, left: 0, right: 0,
-      background: '#FEFEFC', borderTop: '1px solid rgba(0,0,0,0.05)',
+      background: '#FFFFFF', borderTop: '1px solid rgba(0,0,0,0.05)',
       display: 'none', alignItems: 'center', justifyContent: 'center',
       gap: 48,
       paddingTop: 6, paddingBottom: 'env(safe-area-inset-bottom, 4px)',

@@ -1486,7 +1486,7 @@ RULES:
       {/* LinkedIn test modal */}
       {liTestOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setLiTestOpen(false)}>
-          <div style={{ background: '#FEFEFC', borderRadius: 14, maxWidth: 420, width: '90%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#FFFFFF', borderRadius: 14, maxWidth: 420, width: '90%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
             <h3 style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A', margin: '0 0 6px', fontFamily: C.font }}>Test LinkedIn message</h3>
             <p style={{ fontSize: 12, color: '#6B6B6B', margin: '0 0 16px', fontFamily: C.font, lineHeight: 1.5 }}>Paste the recipient's LinkedIn profile URL. The test message will be queued and sent by the LinkedIn worker on its next run.</p>
             <input

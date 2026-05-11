@@ -276,7 +276,7 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
             )}
           </button>
           {tasksOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 340, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', zIndex: 200, maxHeight: 420, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 340, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', zIndex: 200, maxHeight: 420, display: 'flex', flexDirection: 'column' }}>
               <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontWeight: 500, fontSize: 13, color: '#0A0A0A' }}>Background Tasks</span>
                 {bgTasks.length > 0 && <button onClick={async () => { const ids = bgTasks.filter(t => t.status === 'completed' || t.status === 'failed' || t.status === 'cancelled').map(t => t.id); for (const id of ids) { await supabase.from('kiko_background_jobs').delete().eq('id', id) }; setBgTasks(prev => prev.filter(t => t.status === 'queued' || t.status === 'processing')) }} style={{ fontSize: 10, color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer' }}>Clear finished</button>}

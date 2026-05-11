@@ -314,7 +314,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
   }, [])
   const tickStreamBuffer = useCallback(() => {
-    if (streamBufferRef.current.length === 0) { streamRafRef.current = null; return }
+    if (streamBufferRef.current.length === 0 || !streamingRef.current) { streamRafRef.current = null; return }
     const batch = streamBufferRef.current.splice(0, 3).join('')
     streamDisplayRef.current += batch
     setStreamText(streamDisplayRef.current)
@@ -1436,7 +1436,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <button onClick={() => { if (voiceActive) stopVoice(); setMobileCommandOpen(!mobileCommandOpen); setMobileHistoryOpen(false); if (!mobileCommandOpen) loadCommandData() }}
           style={{ width: 44, height: 44, borderRadius: '50%', background: mobileCommandOpen ? '#0A0A0A' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={mobileCommandOpen ? '#FEFEFC' : '#6B6B6B'} strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          {alertCount > 0 && <div style={{ position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: '50%', background: '#B8643E', border: '1.5px solid #FEFEFC' }} />}
+          {alertCount > 0 && <div style={{ position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: '50%', background: '#B8643E', border: '1.5px solid #FFFFFF' }} />}
         </button>
       </div>
     </div>
@@ -1449,7 +1449,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const timeAgo = (d) => { if (!d) return ''; const s = Math.floor((Date.now() - new Date(d)) / 1000); if (s < 60) return 'just now'; if (s < 3600) return `${Math.floor(s/60)}m ago`; if (s < 86400) return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago` }
     const Sect = ({ label, icon }) => <div style={{ fontSize: 11, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 500, padding: '14px 0 8px', display: 'flex', alignItems: 'center', gap: 6 }}>{icon}{label}</div>
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column', overflow: 'hidden', overscrollBehavior: 'none' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FFFFFF', zIndex: 200, display: 'flex', flexDirection: 'column', overflow: 'hidden', overscrollBehavior: 'none' }}>
         <div style={{ padding: '10px 20px', paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div onClick={() => { setMobileCommandOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
           <div style={{ display: 'flex', gap: 10 }}>
@@ -1556,7 +1556,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + time
     }
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column', overflow: 'hidden', overscrollBehavior: 'none', touchAction: 'none' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FFFFFF', zIndex: 200, display: 'flex', flexDirection: 'column', overflow: 'hidden', overscrollBehavior: 'none', touchAction: 'none' }}>
         <div style={{ padding: '10px 20px', paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button onClick={() => setMobileHistoryOpen(false)}
@@ -1620,10 +1620,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── WELCOME STATE (no text messages, not in voice mode) ──
   if (!hasMessages && !compact) {
     return (
-      <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FEFEFC', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
+      <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
       <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', background: isMobile ? '#FEFEFC' : 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', background: isMobile ? '#FFFFFF' : 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
         {MobileHeader()}
         {MobileCommandCentre()}
         {MobileChatHistory()}
@@ -1763,7 +1763,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
       {/* All Chats overlay — fixed position, works in welcome state */}
       {allChatsData && (
-        <div style={{ position: 'fixed', top: isMobile ? 0 : 60, left: 0, right: 0, bottom: 0, zIndex: isMobile ? 300 : 260, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'fixed', top: isMobile ? 0 : 60, left: 0, right: 0, bottom: 0, zIndex: isMobile ? 300 : 260, background: '#FFFFFF', display: 'flex', flexDirection: 'column' }}>
           <AllChatsView
             convos={allChatsData.convos}
             userId={user?.id}
@@ -1779,10 +1779,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   // ── CONVERSATION STATE (text messages) ──
   return (
-    <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FEFEFC', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
+    <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
     <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
-      style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: isMobile ? '#FEFEFC' : 'transparent', position: 'relative', overflow: 'hidden' }}>
+      style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: isMobile ? '#FFFFFF' : 'transparent', position: 'relative', overflow: 'hidden' }}>
       {MobileHeader()}
       {MobileCommandCentre()}
       {MobileChatHistory()}
@@ -1989,7 +1989,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
       {/* All Chats overlay — fixed position, guaranteed to render on top */}
       {allChatsData && (
-        <div style={{ position: 'fixed', top: isMobile ? 0 : 60, left: 0, right: 0, bottom: 0, zIndex: isMobile ? 300 : 260, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'fixed', top: isMobile ? 0 : 60, left: 0, right: 0, bottom: 0, zIndex: isMobile ? 300 : 260, background: '#FFFFFF', display: 'flex', flexDirection: 'column' }}>
           <AllChatsView
             convos={allChatsData.convos}
             userId={user?.id}

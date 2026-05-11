@@ -919,7 +919,7 @@ export default function Campaigns({ user }) {
         const qRows = prospectQueue.filter(q => q.enrollment_id === p.id).sort((a, b) => (a.step_number || 0) - (b.step_number || 0))
         const campaignName = selectedCampaign?.name || 'Campaign'
         return (
-          <div style={{ width: 360, flexShrink: 0, borderLeft: `1px solid ${C.border}`, background: '#FEFEFC', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ width: 360, flexShrink: 0, borderLeft: `1px solid ${C.border}`, background: '#FFFFFF', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
             {/* Header */}
             <div style={{ padding: '16px 18px', borderBottom: `1px solid ${C.border}` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -1180,7 +1180,7 @@ export default function Campaigns({ user }) {
       {/* Delete confirmation modal */}
       {confirmDelete && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setConfirmDelete(null)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#FEFEFC', borderRadius: 14, maxWidth: 400, width: '100%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', borderRadius: 14, maxWidth: 400, width: '100%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
             <div style={{ fontSize: 16, fontWeight: 500, color: '#0A0A0A', marginBottom: 8, fontFamily: C.font }}>Delete campaign?</div>
             <div style={{ fontSize: 13, color: '#6B6B6B', lineHeight: 1.5, marginBottom: 20, fontFamily: C.font }}>
               This will permanently delete <strong>{campaigns.find(c => c.id === confirmDelete)?.name}</strong> and remove all {campaigns.find(c => c.id === confirmDelete)?.counts?.total || 0} enrolled prospects. This cannot be undone.
@@ -1197,7 +1197,7 @@ export default function Campaigns({ user }) {
       {/* Duplicate to campaign modal */}
       {moveModalOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setMoveModalOpen(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#FEFEFC', borderRadius: 14, maxWidth: 420, width: '100%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', borderRadius: 14, maxWidth: 420, width: '100%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
             <h3 style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A', margin: '0 0 6px', fontFamily: C.font }}>{moveMode === 'move' ? 'Move' : 'Duplicate'} {bulkSelected.size} prospects to campaign</h3>
             <p style={{ fontSize: 12, color: '#6B6B6B', margin: '0 0 16px', fontFamily: C.font }}>{moveMode === 'move' ? 'Prospects will be removed from this campaign and added to the target.' : 'Prospects will be copied into the target campaign at step 1.'}</p>
             <div style={{ maxHeight: 250, overflowY: 'auto', border: `1px solid rgba(0,0,0,0.06)`, borderRadius: 8, marginBottom: 16 }}>
@@ -1248,7 +1248,7 @@ export default function Campaigns({ user }) {
 
       {addProspectsOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle'); setAddProspectsError(null) }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#FEFEFC', borderRadius: 14, maxWidth: 520, width: '100%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', borderRadius: 14, maxWidth: 520, width: '100%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <div style={{ fontSize: 16, fontWeight: 500, color: '#0A0A0A', fontFamily: C.font }}>Add prospects to {selectedCampaign?.name}</div>
               <button onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0' }}><X size={18} /></button>

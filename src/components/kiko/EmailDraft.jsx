@@ -417,7 +417,7 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
             From: {displayName(selectedSender?.email)} <ChevronDown size={10} />
           </button>
           {senderDropdownOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 200, maxWidth: 'calc(100vw - 32px)', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 200, maxWidth: 'calc(100vw - 32px)', overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>Send as:</div>
               {teamMembers.map(m => (
                 <button key={m.id} onClick={() => { setSelectedSender(m); setSelectedMember(m); setSenderDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: selectedSender?.id === m.id ? 'rgba(0,0,0,0.04)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8 }}
@@ -473,7 +473,7 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
             </button>
           </div>
           {sendDropdownOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 220, maxWidth: 'calc(100vw - 32px)', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 220, maxWidth: 'calc(100vw - 32px)', overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>Send draft to:</div>
               {teamMembers.map(m => (
                 <button key={m.id} onClick={() => { setSelectedMember(m); setSendDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: selectedMember?.id === m.id ? 'rgba(0,0,0,0.04)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s' }}
@@ -502,7 +502,7 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
             <Clock size={11} /> {scheduled ? `Scheduled: ${scheduled.display}` : 'Schedule'}
           </button>
           {scheduleOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 270, overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 270, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>
                 Schedule from {displayName(selectedSender?.email)}
               </div>
@@ -559,7 +559,7 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
             <Mail size={11} /> {testSent || 'Send test'}
           </button>
           {testDropdownOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 220, overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 220, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>Send test email to:</div>
               {[
                 { label: 'Send to myself', email: 'sunny@vanhawke.agency' },
