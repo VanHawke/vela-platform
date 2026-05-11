@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-05-07T21:59:35.827Z",
+  "generated_at": "2026-05-11T10:15:36.189Z",
   "commits": [
+    {
+      "hash": "eda730b",
+      "subject": "Kiko self-monitors data quality — catches her own mistakes",
+      "when": "10 minutes ago"
+    },
+    {
+      "hash": "96d6d2f",
+      "subject": "CRITICAL: Name/email mismatch guardrails — 3 layers of protection",
+      "when": "13 minutes ago"
+    },
+    {
+      "hash": "7f790fc",
+      "subject": "Disable morning-intel, morning-email, weekly-report crons",
+      "when": "20 minutes ago"
+    },
+    {
+      "hash": "49f2005",
+      "subject": "Self-knowledge: closed-loop CRM automation documented + final field name fix",
+      "when": "3 days ago"
+    },
+    {
+      "hash": "3d30c92",
+      "subject": "FIX: Event processor contactInfo used snake_case (first_name, job_title)",
+      "when": "3 days ago"
+    },
+    {
+      "hash": "776f9ca",
+      "subject": "FIX: Task date correction — replace year, not offset recalculation",
+      "when": "3 days ago"
+    },
+    {
+      "hash": "0aa20ea",
+      "subject": "FIX: Action handlers now support model field placement flexibility",
+      "when": "3 days ago"
+    },
+    {
+      "hash": "603a156",
+      "subject": "Closed-loop CRM automation: notes, tasks, deal updates from cognitive engine",
+      "when": "3 days ago"
+    },
+    {
+      "hash": "4502f04",
+      "subject": "Post-send: auto-create contacts + fix data merge + full CRM updates",
+      "when": "3 days ago"
+    },
+    {
+      "hash": "57185cc",
+      "subject": "Post-send actions: dismiss alert, log activity, update contact, create task",
+      "when": "4 days ago"
+    },
+    {
+      "hash": "e49091a",
+      "subject": "EmailDraft: defaultTo prop for auto-populating recipient",
+      "when": "4 days ago"
+    },
     {
       "hash": "abc5d40",
       "subject": "FIX: Reasoning chain lookup timeout + error handling",
-      "when": "11 minutes ago"
+      "when": "4 days ago"
     },
     {
       "hash": "a52a0e1",
       "subject": "FIX: Strip double Re: from subject + fix outreach queue column name",
-      "when": "38 minutes ago"
+      "when": "4 days ago"
     },
     {
       "hash": "e33d6de",
       "subject": "FIX: Email subject line from actual thread, not alert title",
-      "when": "43 minutes ago"
+      "when": "4 days ago"
     },
     {
       "hash": "c052866",
       "subject": "CRITICAL FIX: Event processor used snake_case field names for camelCase CRM data",
-      "when": "57 minutes ago"
+      "when": "4 days ago"
     },
     {
       "hash": "dece7bd",
       "subject": "FIX: Draft fetch URL was /api/kiko-draft (404) — changed to /api/kiko",
-      "when": "65 minutes ago"
+      "when": "4 days ago"
     },
     {
       "hash": "706981d",
       "subject": "Add get_cognitive_analysis to EMAIL_TOOL_NAMES",
-      "when": "72 minutes ago"
+      "when": "4 days ago"
     },
     {
       "hash": "3c86384",
       "subject": "get_cognitive_analysis tool + self-knowledge sync + all session fixes",
-      "when": "75 minutes ago"
+      "when": "4 days ago"
     },
     {
       "hash": "3271954",
       "subject": "FIX: Two-step reasoning chain query fetches all 5 steps",
-      "when": "80 minutes ago"
+      "when": "4 days ago"
     },
     {
       "hash": "b5752e9",
       "subject": "FIX: Reasoning chain query — correct column names and JSONB filter",
-      "when": "2 hours ago"
-    },
-    {
-      "hash": "5fb87f3",
-      "subject": "FIX: Brief consistency — anchored to cognitive reasoning chains",
-      "when": "2 hours ago"
-    },
-    {
-      "hash": "e8751aa",
-      "subject": "Send Now button + AuroraCanvas removed from voice mode",
-      "when": "2 hours ago"
-    },
-    {
-      "hash": "51816ce",
-      "subject": "FIX: Remove duplicate CORS header from draftOnly path",
-      "when": "2 hours ago"
-    },
-    {
-      "hash": "3f3eb98",
-      "subject": "FIX: draftOnly fast path + separate AbortController for draft",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "e308033",
-      "subject": "VERIFIED: Separate draft generation working — complete 3-paragraph emails",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "b192233",
-      "subject": "FIX: Draft To: field uses real contact email from CRM lookup",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "23c7581",
-      "subject": "PROPER FIX: Draft email generated as SEPARATE API call — no more parsing from brief",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "8e578ea",
-      "subject": "FIX: EmailDraft key={brief.length} forces fresh mount on complete text",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "854899d",
-      "subject": "FIX: Command Centre max_tokens 8192 — complete briefs with full drafts",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "5b16589",
-      "subject": "FIX: stripToolCalls handles open-ended tags during streaming + raw JSON",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "49ea2f1",
-      "subject": "FIX: EmailDraft streaming sync — body was freezing mid-sentence",
-      "when": "4 hours ago"
+      "when": "4 days ago"
     }
   ]
 }

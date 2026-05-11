@@ -299,6 +299,31 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const streamTextRef = useRef('')
   const lastQueryRef = useRef('')
   const streamingRef = useRef(false)
+  
+  // ── Smooth streaming buffer — renders 3 chars per frame for fluid text flow ──
+  const streamBufferRef = useRef([])
+  const streamRafRef = useRef(null)
+  const streamDisplayRef = useRef('')
+  const flushStreamBuffer = useCallback(() => {
+    if (streamBufferRef.current.length > 0) {
+      streamDisplayRef.current += streamBufferRef.current.join('')
+      streamBufferRef.current = []
+      setStreamText(streamDisplayRef.current)
+    }
+    if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
+  }, [])
+  const tickStreamBuffer = useCallback(() => {
+    if (streamBufferRef.current.length === 0) { streamRafRef.current = null; return }
+    const batch = streamBufferRef.current.splice(0, 3).join('')
+    streamDisplayRef.current += batch
+    setStreamText(streamDisplayRef.current)
+    streamRafRef.current = requestAnimationFrame(tickStreamBuffer)
+  }, [])
+  const pushStreamChunk = useCallback((chunk) => {
+    if (!chunk) return
+    streamBufferRef.current.push(...chunk.split(''))
+    if (!streamRafRef.current) streamRafRef.current = requestAnimationFrame(tickStreamBuffer)
+  }, [tickStreamBuffer])
 
   // Background task state (Phase 3)
   const [bgTaskLoading, setBgTaskLoading] = useState(false)
@@ -775,6 +800,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     }
     setStreaming(true); setStreamText(''); setToolStatus(null); setThinkingSteps([]); setShowSteps(true)
     streamingRef.current = true; streamTextRef.current = ''; lastQueryRef.current = msg || ''
+    streamBufferRef.current = []; streamDisplayRef.current = ''; if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
 
     // AbortController for stop/halt
     const controller = new AbortController()
@@ -836,7 +862,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           const d = line.slice(6); if (d === '[DONE]') continue
           try {
             const j = JSON.parse(d)
-            if (j.delta) { full += j.delta; setStreamText(full); streamTextRef.current = full }
+            if (j.delta) { full += j.delta; pushStreamChunk(j.delta); streamTextRef.current = full }
             if (j.thinking) { setThinkingSteps(prev => prev.some(s => s.label === 'Reasoning...') ? prev : [...prev, { label: 'Reasoning...', time: Date.now() }]) }
             if (j.toolStatus !== undefined) { setToolStatus(j.toolStatus); if (j.toolStatus && j.toolStatus !== 'Connecting...' && j.toolStatus !== 'Composing response...') setThinkingSteps(prev => prev.some(s => s.label === j.toolStatus) ? prev : [...prev, { label: j.toolStatus, time: Date.now() }]) }
             if (j.navigate) pendingNav = j.navigate
@@ -875,7 +901,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }
       setStreamText('')
     }
-    finally { clearTimeout(hardTimeout); try { clearInterval(inactivityCheckId) } catch {}; setStreaming(false); streamingRef.current = false; setToolStatus(null); setStreamText('') }
+    finally { clearTimeout(hardTimeout); try { clearInterval(inactivityCheckId) } catch {}; flushStreamBuffer(); setStreaming(false); streamingRef.current = false; setToolStatus(null); setStreamText('') }
   }, [input, streaming, messages, user, activeConvId, pendingAttachments])
 
   const processFileForKiko = async (file) => {

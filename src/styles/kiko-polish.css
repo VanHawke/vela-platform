@@ -532,3 +532,13 @@
   font-weight: 500;
 }
 .lg-toolbar { display: flex; gap: 8px; align-items: center; }
+
+/* ── Kiko Chat UX ── */
+@keyframes kikoCursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes kikoDotPulse {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+  40% { transform: scale(1); opacity: 1; }
+}
