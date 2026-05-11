@@ -1916,13 +1916,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             </div>
           )}
           {/* Streaming response */}
-          {/* Thinking/tool status before any text arrives */}
-          {streaming && !streamText && (
-            <div style={{ marginBottom: 24, paddingLeft: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(90,100,112,0.55)', fontFamily: C.font, marginBottom: 6 }}>Kiko</div>
-              <KikoThinking status={toolStatus || 'thinking'} />
-            </div>
-          )}
           {streaming && streamText && (
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(90,100,112,0.55)', fontFamily: C.font, marginBottom: 6 }}>Kiko</div>

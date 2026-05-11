@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-11T10:40:10.515Z",
+  "generated_at": "2026-05-11T10:47:45.561Z",
   "commits": [
+    {
+      "hash": "bdfee15",
+      "subject": "Chat UX: react-markdown rendering + thinking indicator + smooth streaming",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "a005e54",
       "subject": "Smooth streaming: token buffer renders 3 chars/frame at 60fps",
-      "when": "24 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "eda730b",
       "subject": "Kiko self-monitors data quality — catches her own mistakes",
-      "when": "35 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "96d6d2f",
       "subject": "CRITICAL: Name/email mismatch guardrails — 3 layers of protection",
-      "when": "38 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "7f790fc",
       "subject": "Disable morning-intel, morning-email, weekly-report crons",
-      "when": "44 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "49f2005",
@@ -94,11 +99,6 @@
     {
       "hash": "3c86384",
       "subject": "get_cognitive_analysis tool + self-knowledge sync + all session fixes",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "3271954",
-      "subject": "FIX: Two-step reasoning chain query fetches all 5 steps",
       "when": "4 days ago"
     }
   ]
