@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-11T10:47:45.561Z",
+  "generated_at": "2026-05-11T10:52:16.911Z",
   "commits": [
+    {
+      "hash": "31841dc",
+      "subject": "FIX: Remove duplicate KikoThinking during streaming",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "bdfee15",
       "subject": "Chat UX: react-markdown rendering + thinking indicator + smooth streaming",
-      "when": "7 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "a005e54",
       "subject": "Smooth streaming: token buffer renders 3 chars/frame at 60fps",
-      "when": "32 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "eda730b",
       "subject": "Kiko self-monitors data quality — catches her own mistakes",
-      "when": "42 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "96d6d2f",
       "subject": "CRITICAL: Name/email mismatch guardrails — 3 layers of protection",
-      "when": "46 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "7f790fc",
       "subject": "Disable morning-intel, morning-email, weekly-report crons",
-      "when": "52 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "49f2005",
@@ -94,11 +99,6 @@
     {
       "hash": "706981d",
       "subject": "Add get_cognitive_analysis to EMAIL_TOOL_NAMES",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "3c86384",
-      "subject": "get_cognitive_analysis tool + self-knowledge sync + all session fixes",
       "when": "4 days ago"
     }
   ]
