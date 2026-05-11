@@ -706,11 +706,27 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
         const contactName = params?.contact_name || params?.name;
         const sequenceName = params?.sequence;
         if (!company || !contactEmail) return 'Please provide company and contact_email to start a sequence.';
+        
+        // GUARDRAIL 1: Validate name/email match — prevent "Dear Jennifer" going to rusty.wiley@
+        if (contactName && contactEmail) {
+          const nameParts = contactName.toLowerCase().split(/\s+/);
+          const emailLocal = contactEmail.split('@')[0].toLowerCase().replace(/[._\-]/g, ' ');
+          const nameMatchesEmail = nameParts.some(part => part.length > 2 && emailLocal.includes(part));
+          if (!nameMatchesEmail) {
+            return `⚠️ BLOCKED: Name "${contactName}" does not match email "${contactEmail}". The email local part "${emailLocal}" doesn't contain any part of the name. This likely means the wrong email was paired with this contact. Please verify the correct email for ${contactName} before enrolling.`;
+          }
+        }
+        
+        // GUARDRAIL 2: Prevent same email enrolled twice in same sequence — moved after seq lookup
         // Find best matching sequence
         const seqs = await sbFetch('kiko_sequences?is_active=eq.true&select=*');
         const allSeqs = Array.isArray(seqs) ? seqs : [];
         let seq = sequenceName ? allSeqs.find(s => s.name.toLowerCase().includes(sequenceName.toLowerCase())) : allSeqs[0];
         if (!seq) return 'No active sequences found.';
+        const dupeCheck = await sbFetch(`kiko_sequence_enrollments?contact_email=eq.${encodeURIComponent(contactEmail)}&sequence_id=eq.${seq.id}&limit=1`);
+        if (dupeCheck?.length) {
+          return `⚠️ BLOCKED: ${contactEmail} is already enrolled in "${seq.name}" (as "${dupeCheck[0].contact_name}"). Cannot enroll "${contactName}" with the same email.`;
+        }
         // Check duplicate enrollment
         const existing = await sbFetch(`kiko_sequence_enrollments?contact_email=eq.${encodeURIComponent(contactEmail)}&sequence_id=eq.${seq.id}&status=eq.active&limit=1`);
         if (existing?.length) return `${contactName || contactEmail} is already enrolled in "${seq.name}".`;
@@ -999,11 +1015,19 @@ Return ONLY a JSON array of exactly 50 entries with no other text: [{"company":"
           })).filter(c => c.email);
         }
         if (!contacts.length) return `No contacts found for "${company || category}" in CRM. Use source_contacts to find contacts first.`;
+        // GUARDRAIL: Filter out name/email mismatches before enrollment
+        const validContacts = contacts.filter(c => {
+          if (!c.name || !c.email) return false;
+          const nameParts = c.name.toLowerCase().split(/\s+/);
+          const emailLocal = c.email.split('@')[0].toLowerCase().replace(/[._\-]/g, ' ');
+          return nameParts.some(part => part.length > 2 && emailLocal.includes(part));
+        });
+        const blocked = contacts.length - validContacts.length;
         // Check for existing enrollments
         const existingEnr = await sbFetch(`kiko_sequence_enrollments?sequence_id=eq.${seq.id}&select=contact_email`);
         const enrolledEmails = new Set((Array.isArray(existingEnr) ? existingEnr : []).map(e => e.contact_email?.toLowerCase()));
-        const toEnroll = contacts.filter(c => !enrolledEmails.has(c.email.toLowerCase()));
-        if (!toEnroll.length) return `All ${contacts.length} contacts are already enrolled in "${seq.name}".`;
+        const toEnroll = validContacts.filter(c => !enrolledEmails.has(c.email.toLowerCase()));
+        if (!toEnroll.length) return `All ${validContacts.length} contacts are already enrolled in "${seq.name}".${blocked ? ` (${blocked} blocked for name/email mismatch)` : ''}`;
         // Enroll
         const firstStep = (seq.steps || [])[0];
         let enrolled = 0;

@@ -141,6 +141,24 @@ export default async function handler(req, res) {
             continue;
           }
         }
+        // GUARDRAIL: Name/email mismatch — prevent "Dear Jennifer" going to rusty.wiley@
+        const contactName = (email.contact_name || email.to_name || '').trim();
+        if (contactName && toEmail) {
+          const nameParts = contactName.toLowerCase().split(/\s+/);
+          const emailLocal = toEmail.split('@')[0].toLowerCase().replace(/[._\-]/g, ' ');
+          const nameMatchesEmail = nameParts.some(part => part.length > 2 && emailLocal.includes(part));
+          if (!nameMatchesEmail) {
+            console.log(`[seq-sender] ❌ BLOCKED: Name "${contactName}" does not match email "${toEmail}" — suspected data corruption`);
+            await sbFetch(`kiko_outreach_queue?id=eq.${email.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error: `Name/email mismatch: "${contactName}" vs "${toEmail}"` }) });
+            await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+              type: 'data_quality', severity: 'high',
+              title: `⚠️ Email blocked: ${contactName} / ${toEmail} mismatch`,
+              detail: `Campaign email to ${contactName} was blocked because the email address ${toEmail} does not match the contact name. This likely means the wrong email was paired during enrollment. Review and correct the enrollment data.`,
+              entity_name: contactName,
+            }) }).catch(() => {});
+            continue;
+          }
+        }
 
         // Resolve sequence config (cached)
         let seqConfig = null;
