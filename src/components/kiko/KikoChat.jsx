@@ -307,11 +307,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const streamRafRef = useRef(null)
   const streamDisplayRef = useRef('')
   const flushStreamBuffer = useCallback(() => {
-    if (streamBufferRef.current.length > 0) {
-      streamDisplayRef.current += streamBufferRef.current.join('')
-      streamBufferRef.current = []
-      setStreamText(streamDisplayRef.current)
-    }
+    // Just cancel the animation loop — don't re-set streamText
+    // The full response is already saved in messages array
+    streamBufferRef.current = []
+    streamDisplayRef.current = ''
     if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
   }, [])
   const tickStreamBuffer = useCallback(() => {
@@ -852,7 +851,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       let lastDataTime = Date.now()
       // Inactivity check — if no data received for 45s, abort
       inactivityCheckId = setInterval(() => {
-        if (Date.now() - lastDataTime > 45000) { clearInterval(inactivityCheckId); try { controller.abort() } catch {} }
+        if (Date.now() - lastDataTime > 10000) { clearInterval(inactivityCheckId); try { controller.abort() } catch {} }
       }, 5000)
       while (true) {
         const { done, value } = await reader.read(); if (done) break

@@ -1,35 +1,45 @@
 {
-  "generated_at": "2026-05-11T10:52:16.911Z",
+  "generated_at": "2026-05-11T11:00:33.721Z",
   "commits": [
+    {
+      "hash": "79b161d",
+      "subject": "Self-knowledge: chat UX capabilities documented",
+      "when": "6 minutes ago"
+    },
+    {
+      "hash": "4dbdd69",
+      "subject": "Image paste support: Cmd+V screenshots into Kiko chat",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "31841dc",
       "subject": "FIX: Remove duplicate KikoThinking during streaming",
-      "when": "2 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "bdfee15",
       "subject": "Chat UX: react-markdown rendering + thinking indicator + smooth streaming",
-      "when": "12 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "a005e54",
       "subject": "Smooth streaming: token buffer renders 3 chars/frame at 60fps",
-      "when": "36 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "eda730b",
       "subject": "Kiko self-monitors data quality — catches her own mistakes",
-      "when": "47 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "96d6d2f",
       "subject": "CRITICAL: Name/email mismatch guardrails — 3 layers of protection",
-      "when": "50 minutes ago"
+      "when": "58 minutes ago"
     },
     {
       "hash": "7f790fc",
       "subject": "Disable morning-intel, morning-email, weekly-report crons",
-      "when": "56 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "49f2005",
@@ -89,16 +99,6 @@
     {
       "hash": "c052866",
       "subject": "CRITICAL FIX: Event processor used snake_case field names for camelCase CRM data",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "dece7bd",
-      "subject": "FIX: Draft fetch URL was /api/kiko-draft (404) — changed to /api/kiko",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "706981d",
-      "subject": "Add get_cognitive_analysis to EMAIL_TOOL_NAMES",
       "when": "4 days ago"
     }
   ]
