@@ -3,6 +3,7 @@ import { X, ArrowUp, Mic } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
 import EmailDraft, { isEmailDraft } from './EmailDraft'
+import KikoMessage from './KikoMessage'
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
   bg: '#FFFFFF',
@@ -162,6 +163,26 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const [streaming, setStreaming] = useState(false)
   const [toolStatus, setToolStatus] = useState(null)
   const [streamText, setStreamText] = useState('')
+  
+  // ── Smooth streaming buffer ──
+  const streamBufferRef = useRef([])
+  const streamRafRef = useRef(null)
+  const streamDisplayRef = useRef('')
+  const flushStreamBuffer = useCallback(() => {
+    streamBufferRef.current = []; streamDisplayRef.current = ''
+    if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
+  }, [])
+  const tickStreamBuffer = useCallback(() => {
+    if (streamBufferRef.current.length === 0) { streamRafRef.current = null; return }
+    const batch = streamBufferRef.current.splice(0, 3).join('')
+    streamDisplayRef.current += batch; setStreamText(streamDisplayRef.current)
+    streamRafRef.current = requestAnimationFrame(tickStreamBuffer)
+  }, [])
+  const pushStreamChunk = useCallback((chunk) => {
+    if (!chunk) return
+    streamBufferRef.current.push(...chunk.split(''))
+    if (!streamRafRef.current) streamRafRef.current = requestAnimationFrame(tickStreamBuffer)
+  }, [tickStreamBuffer])
   const [transcribing, setTranscribing] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
   const { status: voiceStatus, speaking: voiceSpeaking } = useRealtimeVoice({
@@ -304,6 +325,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     const userMsg = { role: 'user', content: msg }
     setMessages(prev => [...prev, userMsg])
     setStreaming(true); setStreamText(''); setToolStatus(null)
+    streamBufferRef.current = []; streamDisplayRef.current = ''; if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
     const controller = new AbortController()
     abortRef.current = controller
     try {
@@ -334,7 +356,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           const d = line.slice(6); if (d === '[DONE]') continue
           try {
             const j = JSON.parse(d)
-            if (j.delta) { full += j.delta; setStreamText(full) }
+            if (j.delta) { full += j.delta; pushStreamChunk(j.delta) }
             if (j.navigate) {
               console.log('[KikoFloat] Navigate queued:', j.navigate)
               pendingNavRef.current = j.navigate
@@ -369,7 +391,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         return // Stop execution — page is reloading
       }
     } catch (err) { if (err.name !== 'AbortError') { setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }]); } setStreamText('') }
-    finally { setStreaming(false); abortRef.current = null }
+    finally { flushStreamBuffer(); setStreaming(false); setStreamText(''); abortRef.current = null }
   }, [input, streaming, messages, user, convId, open])
 
   const processFileForKiko = async (file) => {
@@ -537,7 +559,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                     </div>
                   )}
                   <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? C.purple : 'rgba(0,0,0,0.04)', color: msg.role === 'user' ? '#FFFFFF' : C.textSec, fontSize: 13, lineHeight: 1.55, fontFamily: C.font }}>
-                    {msg.role === 'user' ? msg.content : isEmailDraft(msg.content) ? <EmailDraft text={msg.content} /> : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
+                    {msg.role === 'user' ? msg.content : isEmailDraft(msg.content) ? <EmailDraft text={msg.content} /> : <KikoMessage content={msg.content} isStreaming={false} role="assistant" />}
                   </div>
                   </div>
                   {msg.role !== 'user' && !streaming && (
@@ -577,8 +599,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                       <KikoAvatar size={10} state="idle" />
                     </div>
                     <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: 'rgba(0,0,0,0.04)', fontSize: 13, color: C.textSec, lineHeight: 1.55, fontFamily: C.font }}>
-                      <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
-                      <span style={{ animation: 'kikoBreathe 1s infinite' }}>▍</span>
+                      <KikoMessage content={streamText} isStreaming={true} role="assistant" />
                     </div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}>
