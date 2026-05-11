@@ -37,8 +37,9 @@ const SCHEDULES = [
   { schedule: '*/10 7-22 * * 1-5', path: '/api/cron-event-processor',     name: 'event-processor' },
   { schedule: '0 23 * * 1-5',   path: '/api/cron-cognitive-synthesis',     name: 'cognitive-synthesis' },
   { schedule: '0 0 * * 2-6',    path: '/api/cron-personamail-loop',        name: 'personamail-loop' },
-  { schedule: '0 6 * * 1-5',    path: '/api/cron-morning-intelligence',    name: 'morning-intel' },
-  { schedule: '30 6 * * 1-5',   path: '/api/cron-morning-email',           name: 'morning-email' },
+  // DISABLED by Sunny — unnecessary token burn
+  // { schedule: '0 6 * * 1-5',    path: '/api/cron-morning-intelligence',    name: 'morning-intel' },
+  // { schedule: '30 6 * * 1-5',   path: '/api/cron-morning-email',           name: 'morning-email' },
   { schedule: '0 4 * * 1-5',    path: '/api/cron-inbox-triage',            name: 'inbox-triage' },
   { schedule: '0 5 * * 0',      path: '/api/cron-rule-promotion',          name: 'rule-promotion' },
   { schedule: '0 3 * * 0',      path: '/api/cron-contact-reenrich',        name: 'contact-reenrich' },
@@ -66,7 +67,8 @@ const SCHEDULES = [
   { schedule: '0 4 * * 0,3',    path: '/api/cron-email-voice-learning',    name: 'email-voice' },
   { schedule: '0 5 * * *',      path: '/api/cron-relationship-intel',      name: 'relationship-intel' },
   { schedule: '30 6 * * 0',     path: '/api/cron-pipeline-hygiene',        name: 'pipeline-hygiene' },
-  { schedule: '0 19 * * 0',     path: '/api/cron-weekly-report',           name: 'weekly-report' },
+  // DISABLED by Sunny — unnecessary token burn
+  // { schedule: '0 19 * * 0',     path: '/api/cron-weekly-report',           name: 'weekly-report' },
 
   // LinkedIn local — already handled correctly
   { schedule: '*/30 9-18 * * 1-5', path: '/linkedin-queue/process', name: 'linkedin-queue', local: true },
