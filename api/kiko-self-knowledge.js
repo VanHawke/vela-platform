@@ -726,6 +726,14 @@ When the event processor analyses a signal (reply, bounce, etc.), it now:
 5. Task dates are anchored to the psychology: if analysis says "6 weeks", task is due in 6 weeks
 
 Every interaction compounds — contact cards, deal cards, and org cards accumulate timestamped notes from every email, every reply, and every cognitive analysis. Nothing is lost.
+
+CHAT UX (Session 66):
+• Smooth streaming: token buffer renders 3 characters per frame at 60fps — text flows like Claude/ChatGPT instead of appearing in bursts
+• Markdown rendering: react-markdown with remark-gfm renders headers, bold, italic, lists, tables, code blocks with copy buttons, blockquotes, links
+• Image paste: Cmd+V screenshots into the chat input — processes through the file handler
+• File upload: drag-and-drop files into the chat area, or use the + button
+• Auto-expanding input: textarea grows with content up to 200px
+• No duplicate status indicators during streaming
 `;
 
 export async function generateSelfKnowledge(userId) {
