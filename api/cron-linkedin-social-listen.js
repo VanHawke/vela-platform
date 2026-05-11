@@ -108,10 +108,18 @@ export default async function handler(req, res) {
           // Emit to kiko_events
           const event = await sbFetch('kiko_events', { method: 'POST', body: JSON.stringify({
             event_type: 'linkedin_activity',
+            source: 'linkedin',
             entity_name: prospect.name,
             entity_type: 'contact',
-            detail: `LinkedIn post from ${prospect.name} (${prospect.company}): "${text.slice(0, 300)}"`,
-            payload: { platform: 'linkedin', post_text: text, profile_url: prospect.linkedin, detected_at: new Date().toISOString() },
+            payload: { 
+              platform: 'linkedin', 
+              post_text: text, 
+              post_time: post.time,
+              profile_url: prospect.linkedin, 
+              company: prospect.company,
+              detected_at: new Date().toISOString(),
+              detail: `LinkedIn post from ${prospect.name} (${prospect.company}): "${text.slice(0, 300)}"`,
+            },
             processed: false,
           }) }).catch(e => { console.warn('[linkedin-social-listen] Event emit failed:', e.message); return null; });
           

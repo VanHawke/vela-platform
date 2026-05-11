@@ -734,6 +734,19 @@ CHAT UX (Session 66):
 • File upload: drag-and-drop files into the chat area, or use the + button
 • Auto-expanding input: textarea grows with content up to 200px
 • No duplicate status indicators during streaming
+
+LINKEDIN SOCIAL LISTENING (cron-linkedin-social-listen.js):
+• Monitors LinkedIn activity of priority prospects daily at noon (weekdays)
+• Selects up to 25 prospects from active deals + contacts who replied recently
+• Visits each prospect's LinkedIn activity page via Playwright (Matt's session)
+• Extracts recent posts using multi-selector DOM scraping
+• New posts emit to kiko_events as 'linkedin_activity' — the cognitive reasoning chain processes them automatically
+• Enables re-engagement triggers: "CMO posted about brand strategy — your window is open"
+• Deduplication via kiko_linkedin_activity_log prevents repeat alerts
+• 20-40 second random delays between profiles for rate limit safety
+• Aborts entire run on authwall detection (session protection)
+• Read-only — never modifies LinkedIn data or sends messages
+• VERIFIED: 9 posts captured from 3 prospects, 7 processed through full 5-step reasoning chain
 `;
 
 export async function generateSelfKnowledge(userId) {
