@@ -96,6 +96,57 @@ export default async function handler(req, res) {
       }
     }
 
+    // ── DATA QUALITY SCAN — Kiko catches her own mistakes ──
+    let dqIssues = 0;
+    try {
+      // 1. Check outreach queue for name/email mismatches
+      const queued = await supabase.from('kiko_outreach_queue')
+        .select('id, to_name, to_email')
+        .in('status', ['queued', 'pending'])
+        .limit(100);
+      for (const row of (queued.data || [])) {
+        if (!row.to_name || !row.to_email) continue;
+        const nameParts = row.to_name.toLowerCase().split(/\s+/);
+        const emailLocal = row.to_email.split('@')[0].toLowerCase().replace(/[._\-]/g, ' ');
+        const matches = nameParts.some(part => part.length > 2 && emailLocal.includes(part));
+        if (!matches) {
+          dqIssues++;
+          // Auto-block and alert
+          await supabase.from('kiko_outreach_queue').update({ status: 'failed', error: `Name/email mismatch: "${row.to_name}" vs "${row.to_email}"` }).eq('id', row.id);
+          const existingAlert = await supabase.from('kiko_alerts').select('id').eq('type', 'data_quality').ilike('title', `%${row.to_name}%`).eq('dismissed', false).limit(1);
+          if (!existingAlert.data?.length) {
+            await supabase.from('kiko_alerts').insert({
+              type: 'data_quality', severity: 'high',
+              title: `⚠️ Kiko blocked: ${row.to_name} / ${row.to_email} mismatch`,
+              detail: `I caught a name/email mismatch in the outreach queue. "${row.to_name}" was about to receive an email at ${row.to_email} which belongs to someone else. I've blocked it. The enrollment data needs correcting.`,
+              entity_name: row.to_name,
+            });
+          }
+        }
+      }
+      // 2. Check for duplicate emails in active enrollments
+      const enrollments = await supabase.from('kiko_sequence_enrollments')
+        .select('contact_email, contact_name, sequence_id')
+        .eq('status', 'active');
+      const emailMap = {};
+      for (const e of (enrollments.data || [])) {
+        const key = `${e.contact_email}:${e.sequence_id}`;
+        if (emailMap[key] && emailMap[key] !== e.contact_name) {
+          dqIssues++;
+          const existingAlert = await supabase.from('kiko_alerts').select('id').eq('type', 'data_quality').ilike('title', `%${e.contact_email}%`).eq('dismissed', false).limit(1);
+          if (!existingAlert.data?.length) {
+            await supabase.from('kiko_alerts').insert({
+              type: 'data_quality', severity: 'high',
+              title: `⚠️ Duplicate email: ${e.contact_email} enrolled for multiple people`,
+              detail: `I found ${e.contact_email} enrolled for both "${emailMap[key]}" and "${e.contact_name}" in the same sequence. One of these is wrong.`,
+              entity_name: e.contact_name,
+            });
+          }
+        }
+        emailMap[key] = e.contact_name;
+      }
+    } catch (dqErr) { console.warn('[selfcheck] Data quality scan error:', dqErr.message); }
+
     const summary = {
       ok: true,
       duration_ms: Date.now() - startedAt,
@@ -104,6 +155,7 @@ export default async function handler(req, res) {
       checks_failed: failed.length,
       alerts_created: alertsCreated,
       alerts_resolved: alertsResolved,
+      data_quality_issues: dqIssues,
       failing_checks: failed.map(f => f.name),
       timestamp: new Date().toISOString(),
     };
