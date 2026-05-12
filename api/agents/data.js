@@ -824,7 +824,7 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
         const seqs = await sbFetch('kiko_sequences?order=created_at.desc&select=id,name,is_active,steps,created_at');
         const allSeqs = Array.isArray(seqs) ? seqs : [];
         if (!allSeqs.length) return 'No campaigns exist yet. Use create_campaign to generate one.';
-        const enr = await sbFetch('kiko_sequence_enrollments?select=sequence_id,status');
+        const enr = await sbFetch('kiko_sequence_enrollments?select=id,sequence_id,status');
         const allEnr = Array.isArray(enr) ? enr : [];
         const sent = await sbFetch('kiko_outreach_queue?status=eq.sent&select=enrollment_id');
         const allSent = Array.isArray(sent) ? sent : [];
@@ -838,7 +838,23 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
           const replied = e.filter(x => x.status === 'replied').length;
           const bounced = e.filter(x => x.status === 'bounced').length;
           out += `${s.is_active ? '🟢' : '⏸️'} ${s.name} — ${(s.steps||[]).length} steps\n`;
-          out += `   Enrolled: ${e.length} | Active: ${active} | Replied: ${replied} | Bounced: ${bounced}\n\n`;
+          out += `   Enrolled: ${e.length} | Active: ${active} | Replied: ${replied} | Bounced: ${bounced}\n`;
+          
+          // Engagement detail from outreach queue
+          const queueData = await sbFetch(`kiko_outreach_queue?select=to_name,to_email,company,opens_count,clicks_count,reply_received_at,status,sent_at&enrollment_id=in.(${e.map(x => x.id || '').filter(Boolean).join(',')})&order=opens_count.desc&limit=50`).catch(() => []);
+          if (queueData?.length) {
+            const totalSent = queueData.filter(q => q.status === 'sent').length;
+            const totalOpens = queueData.reduce((sum, q) => sum + (q.opens_count || 0), 0);
+            const totalClicks = queueData.reduce((sum, q) => sum + (q.clicks_count || 0), 0);
+            const replies = queueData.filter(q => q.reply_received_at);
+            const hot = queueData.filter(q => q.clicks_count > 0);
+            const warm = queueData.filter(q => q.opens_count > 0 && !q.clicks_count);
+            out += `   Sent: ${totalSent} | Opens: ${totalOpens} | Clicks: ${totalClicks} | Replies: ${replies.length}\n`;
+            if (hot.length) out += `   🔥 HOT (clicked): ${hot.map(h => `${h.to_name} (${h.company}, ${h.clicks_count} clicks)`).join(', ')}\n`;
+            if (warm.length) out += `   👀 WARM (opened): ${warm.map(w => `${w.to_name} (${w.opens_count} opens)`).join(', ')}\n`;
+            if (replies.length) out += `   ✅ REPLIED: ${replies.map(r => r.to_name).join(', ')}\n`;
+          }
+          out += '\n';
         }
         out += `\nOpen HIGH-priority categories with no campaigns: Banking/Financial Services, FinTech/Payments, Telecoms/Connectivity.`;
         return out;
