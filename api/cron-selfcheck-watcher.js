@@ -27,10 +27,8 @@ export default async function handler(req, res) {
   const startedAt = Date.now();
 
   try {
-    // 1. Call selfcheck — production alias is stable
-    const baseUrl = process.env.VERCEL_ENV === 'production'
-      ? 'https://kiko.vanhawke.agency'
-      : `https://${process.env.VERCEL_URL || 'kiko.vanhawke.agency'}`;
+    // 1. Call selfcheck — use localhost since we're on the same server
+    const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
 
     const selfRes = await fetch(`${baseUrl}/api/selfcheck`, { cache: 'no-store' });
     if (!selfRes.ok) throw new Error(`selfcheck returned ${selfRes.status}`);
