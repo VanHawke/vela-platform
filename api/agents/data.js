@@ -707,13 +707,27 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
         const sequenceName = params?.sequence;
         if (!company || !contactEmail) return 'Please provide company and contact_email to start a sequence.';
         
-        // GUARDRAIL 1: Validate name/email match — prevent "Dear Jennifer" going to rusty.wiley@
+        // GUARDRAIL 1: Validate name/email match
         if (contactName && contactEmail) {
           const nameParts = contactName.toLowerCase().split(/\s+/);
           const emailLocal = contactEmail.split('@')[0].toLowerCase().replace(/[._\-]/g, ' ');
           const nameMatchesEmail = nameParts.some(part => part.length > 2 && emailLocal.includes(part));
           if (!nameMatchesEmail) {
-            return `⚠️ BLOCKED: Name "${contactName}" does not match email "${contactEmail}". The email local part "${emailLocal}" doesn't contain any part of the name. This likely means the wrong email was paired with this contact. Please verify the correct email for ${contactName} before enrolling.`;
+            return `⚠️ BLOCKED: Name "${contactName}" does not match email "${contactEmail}". Verify the correct email before enrolling.`;
+          }
+        }
+        
+        // GUARDRAIL 2: LinkedIn URL validation — warn if missing, validate if present
+        const linkedinUrl = params?.linkedin_url || params?.linkedinUrl || '';
+        if (!linkedinUrl) {
+          console.warn(`[start_sequence] Warning: No LinkedIn URL for ${contactName} — LinkedIn steps will be skipped`);
+        }
+        if (linkedinUrl && contactName) {
+          const slug = linkedinUrl.replace(/.*linkedin\.com\/in\//i, '').replace(/\/$/, '').toLowerCase().replace(/[-_]/g, ' ');
+          const nameParts2 = contactName.toLowerCase().split(/\s+/);
+          const slugMatchesName = nameParts2.some(part => part.length > 2 && slug.includes(part));
+          if (!slugMatchesName) {
+            return `⚠️ BLOCKED: LinkedIn URL "${linkedinUrl}" (slug: ${slug}) does not match contact name "${contactName}". Verify the correct LinkedIn profile.`;
           }
         }
         
@@ -739,6 +753,7 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
         await sbFetch('kiko_sequence_enrollments', { method: 'POST', body: JSON.stringify({
           sequence_id: seq.id, contact_email: contactEmail, contact_name: contactName || null,
           company, company_intel: ci, current_step: 1, status: 'active', next_send_at: nextSendAt,
+          linkedin_url: linkedinUrl || null,
           personalisation: { revenue: ci.revenue_estimate, ceo: ci.ceo, cmo: ci.cmo, industry: ci.industry, sub_sector: ci.sub_sector }
         }) });
         return `✅ ENROLLED: ${contactName || contactEmail} at ${company} in "${seq.name}" (${steps.length} steps)\nFirst email scheduled for: ${new Date(nextSendAt).toLocaleDateString('en-GB')}\nSequence: ${steps.map(s => `Step ${s.step}: ${s.channel} (${s.approach})`).join(' → ')}`;
