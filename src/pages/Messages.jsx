@@ -435,7 +435,7 @@ export default function Messages({ user }) {
 
         {/* Reply bar */}
         {replyTo && (
-          <div style={{ padding: '6px 24px', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(232,112,10,0.04)', borderTop: `1px solid ${C.borderLight}` }}>
+          <div style={{ padding: '6px 24px', paddingRight: 90, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(232,112,10,0.04)', borderTop: `1px solid ${C.borderLight}` }}>
             <div style={{ flex: 1, fontSize: 12, color: C.sub, borderLeft: `2px solid ${C.accent}`, paddingLeft: 8 }}>Replying to <strong>{replyTo.from_name}</strong>: {replyTo.content?.slice(0, 60)}</div>
             <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14 }}>✕</button>
           </div>
@@ -466,8 +466,8 @@ export default function Messages({ user }) {
           </div>
         )}
 
-        {/* Input area */}
-        <div style={{ padding: '10px 24px 16px' }}>
+        {/* Input area — right padding avoids KikoFloat overlap */}
+        <div style={{ padding: '10px 24px 16px', paddingRight: 90 }}>
           <input ref={fileInputRef} type="file" accept="*/*" multiple onChange={handleFileInput} style={{ display: 'none' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 4px 4px 6px', borderRadius: 16, border: `1px solid ${C.border}`, background: C.bg, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', position: 'relative' }}>
             {/* @mention dropdown */}
@@ -485,7 +485,6 @@ export default function Messages({ user }) {
             <input ref={inputRef} value={input} onChange={handleInputChangeWithMention} onKeyDown={handleMentionKeyDown} onPaste={handlePaste}
               placeholder={stagedFiles.length ? `Add a message to ${stagedFiles.length} file${stagedFiles.length > 1 ? 's' : ''}...` : 'Type a message... @ to mention'}
               style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: C.text, fontSize: 13, fontFamily: C.font, padding: '6px 4px' }} />
-            <span style={{ fontSize: 11, color: C.muted, whiteSpace: 'nowrap', marginRight: 4 }}>@kiko for AI</span>
             <button onClick={sendMessage} disabled={(!input.trim() && stagedFiles.length === 0) || sending} style={{
               width: 30, height: 30, borderRadius: 9999, background: (input.trim() || stagedFiles.length) ? C.accent : 'rgba(0,0,0,0.04)',
               border: `1px solid ${(input.trim() || stagedFiles.length) ? C.accent : C.border}`, cursor: (input.trim() || stagedFiles.length) ? 'pointer' : 'default',
