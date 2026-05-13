@@ -300,7 +300,19 @@ export default function Messages({ user }) {
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontFamily: C.font, color: C.muted }}>Loading...</div>
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 52px)', fontFamily: C.font, color: C.text, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 52px)', fontFamily: C.font, color: C.text, overflow: 'hidden' }}>
+      {/* Breadcrumb + Title bar — matches Pipeline, Command Centre, etc. */}
+      <div style={{ padding: '16px 24px 12px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
+        <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '1.1px', textTransform: 'uppercase', color: C.sub, marginBottom: 6 }}>
+          <span style={{ fontWeight: 600, color: C.text }}>Today</span>
+          <span style={{ margin: '0 6px', color: C.muted }}>/</span>
+          <span>Messages</span>
+        </div>
+        <h1 style={{ fontSize: 36, fontWeight: 300, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', margin: 0, color: C.text }}>Messages</h1>
+      </div>
+
+      {/* Main layout: sidebar + chat */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
       {/* Contact Card Popup */}
       {contactCard && (
         <div onClick={() => setContactCard(null)} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -321,11 +333,7 @@ export default function Messages({ user }) {
       )}
       {/* Channel List */}
       <div style={{ width: 280, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0, background: C.surface }}>
-        <div style={{ padding: '16px 16px 12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '1.1px', textTransform: 'uppercase', color: C.sub }}>Messages</div>
-            <button style={{ width: 28, height: 28, borderRadius: 8, background: C.accent, border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="plus" size={14} color="#fff" /></button>
-          </div>
+        <div style={{ padding: '12px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: C.bg, border: `1px solid ${C.border}` }}>
             <span style={{ color: C.muted }}><Icon name="search" size={14} color={C.muted} /></span>
             <input placeholder="Search conversations..." style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 12, color: C.text, fontFamily: C.font }} />
@@ -632,6 +640,7 @@ export default function Messages({ user }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
