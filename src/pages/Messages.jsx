@@ -76,6 +76,13 @@ export default function Messages({ user }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Request notification permission on mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }, [])
+
   // Supabase Realtime subscription
   useEffect(() => {
     const channel = supabase.channel('team-messages')
@@ -88,6 +95,15 @@ export default function Messages({ user }) {
             if (hasReal) return prev
             const withoutTemp = prev.filter(m => !(m.id?.toString().startsWith('temp-') && m.content === newMsg.content && m.from_user_id === newMsg.from_user_id))
             return [...withoutTemp, newMsg]
+          })
+        }
+        // Desktop notification for messages from others
+        if (newMsg.from_user_id !== userId && 'Notification' in window && Notification.permission === 'granted') {
+          const chName = channels.find(c => c.id === newMsg.channel_id)?.name || 'Team Chat'
+          new Notification(`${newMsg.from_name} in ${chName}`, {
+            body: newMsg.content.slice(0, 100),
+            icon: '/kiko-icon.png',
+            tag: newMsg.id,
           })
         }
         loadChannels()

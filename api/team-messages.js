@@ -49,6 +49,42 @@ export default async function handler(req, res) {
         await sbFetch(`kiko_team_channels?id=eq.${channelId}`, {
           method: 'PATCH', body: JSON.stringify({ last_message_at: new Date().toISOString() })
         });
+
+        // @kiko bot detection — trigger AI response
+        if (content.toLowerCase().includes('@kiko')) {
+          const kikoQuestion = content.replace(/@kiko/gi, '').trim();
+          if (kikoQuestion) {
+            // Fire and forget — don't block the send response
+            (async () => {
+              try {
+                const Anthropic = (await import('@anthropic-ai/sdk')).default;
+                const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+                const selfKnowledge = (await import('./kiko-self-knowledge.js')).generateSelfKnowledge;
+                const knowledge = await selfKnowledge(fromUserId).catch(() => '');
+                
+                const response = await anthropic.messages.create({
+                  model: 'claude-sonnet-4-6', max_tokens: 800,
+                  system: `You are Kiko, the AI assistant for Van Hawke Group. You're responding in a team chat channel. Keep answers concise and direct — this is instant messaging, not a formal conversation. Use short paragraphs, not walls of text.\n\n${knowledge}`,
+                  messages: [{ role: 'user', content: `${fromName} asked in team chat: ${kikoQuestion}` }]
+                });
+                const kikoReply = response.content?.[0]?.text || 'Sorry, I couldn\'t process that.';
+                
+                await sbFetch('kiko_team_messages', { method: 'POST', body: JSON.stringify({
+                  channel_id: channelId,
+                  from_user_id: '00000000-0000-0000-0000-000000000000',
+                  from_name: 'Kiko',
+                  content: kikoReply,
+                  message_type: 'kiko_response',
+                  read_by: [],
+                }) });
+                await sbFetch(`kiko_team_channels?id=eq.${channelId}`, {
+                  method: 'PATCH', body: JSON.stringify({ last_message_at: new Date().toISOString() })
+                });
+              } catch (e) { console.error('[team-messages] Kiko bot error:', e.message); }
+            })();
+          }
+        }
+
         return res.json({ success: true });
       }
 
