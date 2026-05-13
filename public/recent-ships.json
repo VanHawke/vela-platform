@@ -1,35 +1,45 @@
 {
-  "generated_at": "2026-05-13T16:16:19.662Z",
+  "generated_at": "2026-05-13T16:23:29.012Z",
   "commits": [
+    {
+      "hash": "062c094",
+      "subject": "LinkedIn fix: re-queued 89 invites, added keepalive to scheduler",
+      "when": "2 minutes ago"
+    },
+    {
+      "hash": "27923e8",
+      "subject": "Messages Phase 4: shared files tab, channel settings, rename",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "6bc2672",
       "subject": "Messages Phase 4: pin messages, contact cards, @mention autocomplete",
-      "when": "3 minutes ago"
+      "when": "10 minutes ago"
     },
     {
       "hash": "dbd5e2d",
       "subject": "Messages: contact cards + clickable avatars",
-      "when": "4 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "b03a995",
       "subject": "Messages: @mention autocomplete with dropdown",
-      "when": "5 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "928813c",
       "subject": "Messages Phase 3: edit, delete, search, markdown, hover actions",
-      "when": "11 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "75132c5",
       "subject": "Messages Phase 1: presence, reactions, threading, Teams-quality file sharing",
-      "when": "18 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "d48cf15",
       "subject": "Messages Phase 4: reactions, reply threading, read receipts, drag & drop, paste, presence",
-      "when": "34 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "9512f42",
@@ -54,12 +64,12 @@
     {
       "hash": "f35c8f9",
       "subject": "FIX: Draft save — frontend blocked empty To + param name mismatch",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "fbfac99",
       "subject": "FIX: Gmail draft without recipient — uses sender email as fallback",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "9d9d10d",
@@ -89,16 +99,6 @@
     {
       "hash": "bd6caca",
       "subject": "LinkedIn campaign fully operational: 89 invites queued, sourcing pipeline fixed",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "8060850",
-      "subject": "LinkedIn campaign fix: cleaned URLs, queued 66 invites, added guardrails",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "86a35c1",
-      "subject": "Remove ALL Lemlist references — Kiko's native engine is the only campaign system",
       "when": "7 hours ago"
     }
   ]

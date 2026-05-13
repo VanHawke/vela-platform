@@ -81,6 +81,9 @@ export default function Messages({ user }) {
   const [showFilesPanel, setShowFilesPanel] = useState(false)
   const [showChannelSettings, setShowChannelSettings] = useState(false)
   const [channelRename, setChannelRename] = useState('')
+  const [mutedChannels, setMutedChannels] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('kiko_muted_channels') || '[]') } catch { return [] }
+  })
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -118,7 +121,7 @@ export default function Messages({ user }) {
       } else if (payload.eventType === 'UPDATE' && payload.new.channel_id === activeChannel) {
         setMessages(prev => prev.map(m => m.id === payload.new.id ? payload.new : m))
       }
-      if (payload.eventType === 'INSERT' && payload.new.from_user_id !== userId && 'Notification' in window && Notification.permission === 'granted') {
+      if (payload.eventType === 'INSERT' && payload.new.from_user_id !== userId && !mutedChannels.includes(payload.new.channel_id) && 'Notification' in window && Notification.permission === 'granted') {
         new Notification(`${payload.new.from_name}`, { body: payload.new.content?.slice(0, 100), tag: payload.new.id })
       }
       loadChannels()
@@ -287,7 +290,10 @@ export default function Messages({ user }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 13, fontWeight: ch.unreadCount ? 600 : 500 }}>{getChannelDisplayName(ch)}</span>
-                    {ch.lastMessage && <span style={{ fontSize: 10, color: C.muted }}>{new Date(ch.lastMessage.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {mutedChannels.includes(ch.id) && <span style={{ fontSize: 10 }} title="Muted">🔇</span>}
+                      {ch.lastMessage && <span style={{ fontSize: 10, color: C.muted }}>{new Date(ch.lastMessage.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>}
+                    </div>
                   </div>
                   {ch.lastMessage && <div style={{ fontSize: 12, color: C.sub, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.lastMessage.from_name}: {ch.lastMessage.content?.slice(0, 50)}</div>}
                 </div>
@@ -525,6 +531,13 @@ export default function Messages({ user }) {
               })}
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => {
+                const isMuted = mutedChannels.includes(activeChannel)
+                const newMuted = isMuted ? mutedChannels.filter(c => c !== activeChannel) : [...mutedChannels, activeChannel]
+                setMutedChannels(newMuted); localStorage.setItem('kiko_muted_channels', JSON.stringify(newMuted))
+              }} style={{ padding: '6px 16px', borderRadius: 8, background: mutedChannels.includes(activeChannel) ? 'rgba(220,38,38,0.06)' : C.card, border: `1px solid ${mutedChannels.includes(activeChannel) ? C.red : C.border}`, color: mutedChannels.includes(activeChannel) ? C.red : C.text, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, marginRight: 'auto' }}>
+                {mutedChannels.includes(activeChannel) ? '🔔 Unmute' : '🔇 Mute'}
+              </button>
               <button onClick={() => setShowChannelSettings(false)} style={{ padding: '6px 16px', borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
               <button onClick={async () => {
                 if (channelRename && channelRename !== getChannelDisplayName(activeChannelData)) {
