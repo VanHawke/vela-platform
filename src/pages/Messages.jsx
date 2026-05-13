@@ -1,6 +1,8 @@
 // src/pages/Messages.jsx — Team messaging: presence, reactions, threading, Teams-quality file sharing
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const API = 'https://api.vanhawke.agency'
 const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
@@ -72,6 +74,10 @@ export default function Messages({ user }) {
   const [dragOver, setDragOver] = useState(false)
   const [stagedFiles, setStagedFiles] = useState([]) // Files staged before sending
   const [uploadProgress, setUploadProgress] = useState({}) // {filename: 0-100}
+  const [editingMsg, setEditingMsg] = useState(null)
+  const [editText, setEditText] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -154,6 +160,21 @@ export default function Messages({ user }) {
     try { const res = await fetch(`${API}/api/team-messages?action=react`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messageId, userId, emoji }) }); const d = await res.json(); if (d.reactions) setMessages(prev => prev.map(m => m.id === messageId ? { ...m, reactions: d.reactions } : m)) } catch (e) {}
   }
 
+  const handleEdit = async (messageId) => {
+    if (!editText.trim()) return
+    try { await fetch(`${API}/api/team-messages?action=edit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messageId, userId, content: editText.trim() }) }) } catch (e) {}
+    setEditingMsg(null); setEditText('')
+  }
+
+  const handleDelete = async (messageId) => {
+    if (!confirm('Delete this message?')) return
+    try { await fetch(`${API}/api/team-messages?action=delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messageId, userId }) }) } catch (e) {}
+  }
+
+  const filteredMessages = searchQuery
+    ? messages.filter(m => m.content?.toLowerCase().includes(searchQuery.toLowerCase()) || m.from_name?.toLowerCase().includes(searchQuery.toLowerCase()))
+    : messages
+
   const handleInputChange = (e) => { setInput(e.target.value); if (activeChannel && !typingTimeoutRef.current) { supabase.channel(`typing-${activeChannel}`).send({ type: 'broadcast', event: 'typing', payload: { userId, name: userName } }).catch(() => {}); typingTimeoutRef.current = setTimeout(() => { typingTimeoutRef.current = null }, 2000) } }
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }
 
@@ -231,13 +252,22 @@ export default function Messages({ user }) {
               </div>
             </div>
             <button style={{ height: 32, padding: '0 12px', borderRadius: 8, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.12)', color: C.green, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}>📞 Call</button>
+            <button onClick={() => setSearchOpen(!searchOpen)} style={{ height: 32, width: 32, borderRadius: 8, background: searchOpen ? C.accentSoft : 'rgba(0,0,0,0.02)', border: `1px solid ${searchOpen ? C.accent : C.border}`, color: searchOpen ? C.accent : C.muted, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🔍</button>
+          </div>
+        )}
+
+        {/* Search bar */}
+        {searchOpen && (
+          <div style={{ padding: '8px 20px', borderBottom: `1px solid ${C.borderLight}`, background: C.surface }}>
+            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search messages..." autoFocus
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 10, border: `1px solid ${C.border}`, background: C.bg, fontSize: 13, fontFamily: C.font, color: C.text, outline: 'none' }} />
           </div>
         )}
 
         {/* Messages area */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {messages.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: C.muted, fontSize: 13 }}>No messages yet. Start the conversation!</div>}
-          {messages.map((msg, i) => {
+          {filteredMessages.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: C.muted, fontSize: 13 }}>{searchQuery ? 'No messages match your search.' : 'No messages yet. Start the conversation!'}</div>}
+          {filteredMessages.map((msg, i) => {
             const isMine = msg.from_user_id === userId
             const showAvatar = i === 0 || messages[i - 1].from_user_id !== msg.from_user_id
             const isBot = msg.message_type === 'kiko_response'
@@ -256,7 +286,22 @@ export default function Messages({ user }) {
                   {showAvatar && !isMine && <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 3, marginLeft: 2, color: isBot ? C.purple : C.sub }}>{msg.from_name}{isBot && <span style={{ background: 'rgba(124,58,237,0.08)', color: C.purple, padding: '1px 6px', borderRadius: 4, fontSize: 9, marginLeft: 5 }}>AI</span>}</div>}
                   {replyMsg && <div style={{ fontSize: 11, color: C.muted, padding: '4px 8px', borderLeft: `2px solid ${C.accent}`, marginBottom: 4, borderRadius: '0 4px 4px 0', background: 'rgba(0,0,0,0.02)' }}><span style={{ fontWeight: 600 }}>{replyMsg.from_name}:</span> {replyMsg.content?.slice(0, 60)}</div>}
                   <div style={{ padding: isFile ? '4px' : '9px 14px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isDeleted ? 'rgba(0,0,0,0.02)' : isMine ? C.accent : isBot ? 'rgba(124,58,237,0.04)' : C.card, border: isDeleted ? `1px solid ${C.borderLight}` : isMine ? 'none' : isBot ? '1px solid rgba(124,58,237,0.08)' : `1px solid ${C.borderLight}`, fontSize: 13, lineHeight: 1.6, color: isDeleted ? C.muted : isMine ? '#fff' : C.text, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontStyle: isDeleted ? 'italic' : 'normal', overflow: 'hidden' }}>
-                    {isDeleted ? 'This message was deleted' : isFile ? <FileCard content={msg.content} isMine={isMine} /> : msg.content}
+                    {isDeleted ? 'This message was deleted' : isFile ? <FileCard content={msg.content} isMine={isMine} /> :
+                      editingMsg === msg.id ? (
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                          <input value={editText} onChange={e => setEditText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleEdit(msg.id); if (e.key === 'Escape') { setEditingMsg(null); setEditText('') } }} autoFocus
+                            style={{ flex: 1, background: 'rgba(255,255,255,0.2)', border: 'none', outline: 'none', color: isMine ? '#fff' : C.text, fontSize: 13, fontFamily: C.font, padding: '2px 4px', borderRadius: 4 }} />
+                          <button onClick={() => handleEdit(msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: isMine ? '#fff' : C.green }}>✓</button>
+                          <button onClick={() => { setEditingMsg(null); setEditText('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: isMine ? 'rgba(255,255,255,0.6)' : C.muted }}>✕</button>
+                        </div>
+                      ) : (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+                          p: ({children}) => <span>{children}</span>,
+                          a: ({href, children}) => <a href={href} target="_blank" rel="noopener" style={{ color: isMine ? '#fff' : C.accent, textDecoration: 'underline' }}>{children}</a>,
+                          code: ({children}) => <code style={{ background: isMine ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.05)', padding: '1px 4px', borderRadius: 3, fontSize: 12 }}>{children}</code>,
+                          strong: ({children}) => <strong style={{ fontWeight: 700 }}>{children}</strong>,
+                        }}>{msg.content}</ReactMarkdown>
+                      )}
                   </div>
                   {msg.edited_at && !isDeleted && <span style={{ fontSize: 9, color: C.muted, marginLeft: 4 }}>(edited)</span>}
                   {Object.keys(reactions).length > 0 && <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>{Object.entries(reactions).map(([emoji, users]) => <button key={emoji} onClick={() => handleReact(msg.id, emoji)} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 6px', borderRadius: 10, fontSize: 12, cursor: 'pointer', background: users.includes(userId) ? C.accentSoft : 'rgba(0,0,0,0.03)', border: `1px solid ${users.includes(userId) ? C.accent : C.borderLight}` }}>{emoji} <span style={{ fontSize: 10, color: C.sub }}>{users.length}</span></button>)}</div>}
@@ -267,8 +312,10 @@ export default function Messages({ user }) {
                   </div>
                   {hoveredMsg === msg.id && !isDeleted && (
                     <div style={{ position: 'absolute', top: -4, [isMine ? 'left' : 'right']: 0, display: 'flex', gap: 2, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: '2px 4px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', zIndex: 10 }}>
-                      <button onClick={() => setShowReactions(showReactions === msg.id ? null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }}>😊</button>
-                      <button onClick={() => { setReplyTo(msg); inputRef.current?.focus() }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }}>↩️</button>
+                      <button onClick={() => setShowReactions(showReactions === msg.id ? null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="React">😊</button>
+                      <button onClick={() => { setReplyTo(msg); inputRef.current?.focus() }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="Reply">↩️</button>
+                      {isMine && <button onClick={() => { setEditingMsg(msg.id); setEditText(msg.content) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="Edit">✏️</button>}
+                      {isMine && <button onClick={() => handleDelete(msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="Delete">🗑️</button>}
                     </div>
                   )}
                   {showReactions === msg.id && <div style={{ position: 'absolute', top: -32, [isMine ? 'left' : 'right']: 0, zIndex: 20, display: 'flex', gap: 2, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 20, padding: '4px 6px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>{EMOJIS.map(e => <button key={e} onClick={() => { handleReact(msg.id, e); setShowReactions(null) }} style={{ background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', padding: '2px 4px', borderRadius: 6 }}>{e}</button>)}</div>}

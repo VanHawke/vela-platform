@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-05-13T15:57:27.066Z",
+  "generated_at": "2026-05-13T16:04:54.429Z",
   "commits": [
+    {
+      "hash": "75132c5",
+      "subject": "Messages Phase 1: presence, reactions, threading, Teams-quality file sharing",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "d48cf15",
       "subject": "Messages Phase 4: reactions, reply threading, read receipts, drag & drop, paste, presence",
-      "when": "15 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "9512f42",
@@ -14,12 +19,12 @@
     {
       "hash": "ddecef9",
       "subject": "Team Messages Phase 2: @kiko bot + desktop notifications",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "034d6fa",
       "subject": "Messages: fix duplicate messages + deploy missing linkedin-cookie-import",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6a1b07c",
@@ -49,12 +54,12 @@
     {
       "hash": "77ecf27",
       "subject": "Upload UI: spinning indicator while processing files",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "6648f46",
       "subject": "FIX: PDF extraction — downgraded pdf-parse to v1.1.1",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "f9fbd1b",
@@ -84,7 +89,7 @@
     {
       "hash": "db38af2",
       "subject": "CRITICAL FIX: selfcheck-watcher was broken since deployment",
-      "when": "29 hours ago"
+      "when": "30 hours ago"
     },
     {
       "hash": "f92f806",
@@ -94,11 +99,6 @@
     {
       "hash": "990aecc",
       "subject": "Session 66 final cleanup + documentation",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "27c256a",
-      "subject": "FULL SYSTEM AUDIT COMPLETE — all components verified",
       "when": "2 days ago"
     }
   ]
