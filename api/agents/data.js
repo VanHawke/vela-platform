@@ -1048,7 +1048,7 @@ Return ONLY a JSON array of exactly 50 entries with no other text: [{"company":"
           const crmContacts = await sbFetch(`contacts?select=id,data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=20`);
           contacts = (Array.isArray(crmContacts) ? crmContacts : []).map(c => ({
             email: c.data?.email, name: [c.data?.firstName, c.data?.lastName].filter(Boolean).join(' '),
-            company: c.data?.company, title: c.data?.title
+            company: c.data?.company, title: c.data?.title, linkedin: c.data?.linkedin || c.data?.linkedinUrl || null
           })).filter(c => c.email);
         } else if (category) {
           const catWords = category.toLowerCase().split(/[\s\/&]+/).filter(w => w.length > 3);
@@ -1056,7 +1056,7 @@ Return ONLY a JSON array of exactly 50 entries with no other text: [{"company":"
           const crmContacts = await sbFetch(`contacts?select=id,data&or=(${queries || `data->>company.ilike.%${category}%`})&limit=50`);
           contacts = (Array.isArray(crmContacts) ? crmContacts : []).map(c => ({
             email: c.data?.email, name: [c.data?.firstName, c.data?.lastName].filter(Boolean).join(' '),
-            company: c.data?.company, title: c.data?.title
+            company: c.data?.company, title: c.data?.title, linkedin: c.data?.linkedin || c.data?.linkedinUrl || null
           })).filter(c => c.email);
         }
         if (!contacts.length) return `No contacts found for "${company || category}" in CRM. Use source_contacts to find contacts first.`;
@@ -1081,6 +1081,7 @@ Return ONLY a JSON array of exactly 50 entries with no other text: [{"company":"
             await sbFetch('kiko_sequence_enrollments', { method: 'POST', body: JSON.stringify({
               sequence_id: seq.id, contact_email: c.email, contact_name: c.name || null,
               company: c.company || company, current_step: 1, status: 'active',
+              linkedin_url: c.linkedin || null,
               next_send_at: new Date(Date.now() + (firstStep?.delay_days || 0) * 86400000).toISOString()
             }) });
             enrolled++;
