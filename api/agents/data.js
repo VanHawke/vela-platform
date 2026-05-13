@@ -844,17 +844,31 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
           const queueData = await sbFetch(`kiko_outreach_queue?select=to_name,to_email,company,opens_count,clicks_count,reply_received_at,status,sent_at&enrollment_id=in.(${e.map(x => x.id || '').filter(Boolean).join(',')})&order=opens_count.desc&limit=50`).catch(() => []);
           if (queueData?.length) {
             const totalSent = queueData.filter(q => q.status === 'sent').length;
-            const totalOpens = queueData.reduce((sum, q) => sum + (q.opens_count || 0), 0);
-            const totalClicks = queueData.reduce((sum, q) => sum + (q.clicks_count || 0), 0);
+            const uniqueOpeners = queueData.filter(q => (q.opens_count || 0) > 0).length;
+            const uniqueClickers = queueData.filter(q => (q.clicks_count || 0) > 0).length;
             const replies = queueData.filter(q => q.reply_received_at);
             const hot = queueData.filter(q => q.clicks_count > 0);
             const warm = queueData.filter(q => q.opens_count > 0 && !q.clicks_count);
-            out += `   Sent: ${totalSent} | Opens: ${totalOpens} | Clicks: ${totalClicks} | Replies: ${replies.length}\n`;
+            const openRate = totalSent > 0 ? Math.round((uniqueOpeners / totalSent) * 100) : 0;
+            const clickRate = totalSent > 0 ? Math.round((uniqueClickers / totalSent) * 100) : 0;
+            out += `   Sent: ${totalSent} | Unique opens: ${uniqueOpeners} (${openRate}%) | Unique clicks: ${uniqueClickers} (${clickRate}%) | Replies: ${replies.length}\n`;
             if (hot.length) out += `   🔥 HOT (clicked): ${hot.map(h => `${h.to_name} (${h.company}, ${h.clicks_count} clicks)`).join(', ')}\n`;
             if (warm.length) out += `   👀 WARM (opened): ${warm.map(w => `${w.to_name} (${w.opens_count} opens)`).join(', ')}\n`;
             if (replies.length) out += `   ✅ REPLIED: ${replies.map(r => r.to_name).join(', ')}\n`;
           }
           out += '\n';
+        }
+        // LinkedIn outreach status
+        const liQueue = await sbFetch('kiko_linkedin_queue?select=contact_name,status,action&order=created_at.desc&limit=30').catch(() => []);
+        if (liQueue?.length) {
+          const liSent = liQueue.filter(l => l.status === 'sent' || l.status === 'completed').length;
+          const liPending = liQueue.filter(l => l.status === 'pending' || l.status === 'queued').length;
+          const liFailed = liQueue.filter(l => l.status === 'failed').length;
+          out += `\n📱 LINKEDIN OUTREACH:\n`;
+          out += `   Total: ${liQueue.length} | Sent: ${liSent} | Pending: ${liPending} | Failed: ${liFailed}\n`;
+          if (liSent > 0) out += `   Recent: ${liQueue.filter(l => l.status === 'sent' || l.status === 'completed').slice(0, 5).map(l => `${l.contact_name} (${l.action})`).join(', ')}\n`;
+        } else {
+          out += `\n📱 LINKEDIN OUTREACH: No messages in queue.\n`;
         }
         out += `\nOpen HIGH-priority categories with no campaigns: Banking/Financial Services, FinTech/Payments, Telecoms/Connectivity.`;
         return out;

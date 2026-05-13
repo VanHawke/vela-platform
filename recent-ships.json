@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-05-11T13:24:43.889Z",
+  "generated_at": "2026-05-13T08:27:13.534Z",
   "commits": [
+    {
+      "hash": "db38af2",
+      "subject": "CRITICAL FIX: selfcheck-watcher was broken since deployment",
+      "when": "22 hours ago"
+    },
+    {
+      "hash": "f92f806",
+      "subject": "Campaign overview: now shows engagement data (opens, clicks, hot/warm/replied leads)",
+      "when": "22 hours ago"
+    },
+    {
+      "hash": "990aecc",
+      "subject": "Session 66 final cleanup + documentation",
+      "when": "2 days ago"
+    },
     {
       "hash": "27c256a",
       "subject": "FULL SYSTEM AUDIT COMPLETE — all components verified",
-      "when": "26 minutes ago"
+      "when": "2 days ago"
     },
     {
       "hash": "66453cf",
       "subject": "LinkedIn: dedicated getActivity function + updated cron",
-      "when": "65 minutes ago"
+      "when": "2 days ago"
     },
     {
       "hash": "5c094e5",
       "subject": "LinkedIn Social Listening: cron-linkedin-social-listen.js",
-      "when": "80 minutes ago"
+      "when": "2 days ago"
     },
     {
       "hash": "7e0c2d4",
       "subject": "FIX: Streaming hang (tick checks streamingRef) + orange hue eliminated",
-      "when": "2 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "7936b6a",
       "subject": "KikoFloat: smooth streaming + react-markdown + streaming hang fix",
-      "when": "2 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "c1f3898",
       "subject": "FIX: Streaming hang — flush no longer re-sets streamText + 10s timeout",
-      "when": "2 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "79b161d",
       "subject": "Self-knowledge: chat UX capabilities documented",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "4dbdd69",
       "subject": "Image paste support: Cmd+V screenshots into Kiko chat",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "31841dc",
       "subject": "FIX: Remove duplicate KikoThinking during streaming",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "bdfee15",
       "subject": "Chat UX: react-markdown rendering + thinking indicator + smooth streaming",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "a005e54",
       "subject": "Smooth streaming: token buffer renders 3 chars/frame at 60fps",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "eda730b",
       "subject": "Kiko self-monitors data quality — catches her own mistakes",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "96d6d2f",
       "subject": "CRITICAL: Name/email mismatch guardrails — 3 layers of protection",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "7f790fc",
       "subject": "Disable morning-intel, morning-email, weekly-report crons",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "49f2005",
       "subject": "Self-knowledge: closed-loop CRM automation documented + final field name fix",
-      "when": "3 days ago"
+      "when": "5 days ago"
     },
     {
       "hash": "3d30c92",
       "subject": "FIX: Event processor contactInfo used snake_case (first_name, job_title)",
-      "when": "3 days ago"
+      "when": "5 days ago"
     },
     {
       "hash": "776f9ca",
       "subject": "FIX: Task date correction — replace year, not offset recalculation",
-      "when": "3 days ago"
-    },
-    {
-      "hash": "0aa20ea",
-      "subject": "FIX: Action handlers now support model field placement flexibility",
-      "when": "3 days ago"
-    },
-    {
-      "hash": "603a156",
-      "subject": "Closed-loop CRM automation: notes, tasks, deal updates from cognitive engine",
-      "when": "3 days ago"
-    },
-    {
-      "hash": "4502f04",
-      "subject": "Post-send: auto-create contacts + fix data merge + full CRM updates",
-      "when": "3 days ago"
+      "when": "5 days ago"
     }
   ]
 }

@@ -725,14 +725,14 @@ export default function Campaigns({ user }) {
             {/* Campaign performance stats bar */}
             {(() => {
               const total = prospects.length
-              const sent = prospects.reduce((s, p) => s + (p.sent_count || 0), 0)
-              const opens = prospects.reduce((s, p) => s + (p.opens_count || 0), 0)
-              const clicks = prospects.reduce((s, p) => s + (p.clicks_count || 0), 0)
+              const sent = prospects.filter(p => (p.sent_count || 0) > 0).length
+              const uniqueOpens = prospects.filter(p => (p.opens_count || 0) > 0).length
+              const uniqueClicks = prospects.filter(p => (p.clicks_count || 0) > 0).length
               const replied = prospects.filter(p => p.replied).length
               const bounced = prospects.filter(p => p.bounced).length
-              const openRate = sent > 0 ? Math.round((opens / sent) * 100) : 0
-              const replyRate = total > 0 ? Math.round((replied / total) * 100) : 0
-              const clickRate = sent > 0 ? Math.round((clicks / sent) * 100) : 0
+              const openRate = sent > 0 ? Math.round((uniqueOpens / sent) * 100) : 0
+              const replyRate = sent > 0 ? Math.round((replied / sent) * 100) : 0
+              const clickRate = sent > 0 ? Math.round((uniqueClicks / sent) * 100) : 0
               const bounceRate = total > 0 ? Math.round((bounced / total) * 100) : 0
               const stats = [
                 { label: 'Enrolled', value: total, color: '#0A0A0A' },
