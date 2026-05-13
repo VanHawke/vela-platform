@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-05-13T15:41:43.209Z",
+  "generated_at": "2026-05-13T15:57:27.066Z",
   "commits": [
+    {
+      "hash": "d48cf15",
+      "subject": "Messages Phase 4: reactions, reply threading, read receipts, drag & drop, paste, presence",
+      "when": "15 minutes ago"
+    },
     {
       "hash": "9512f42",
       "subject": "Messages Phase 3: typing indicators, file sharing, unread nav badge, nav promotion",
@@ -19,7 +24,7 @@
     {
       "hash": "6a1b07c",
       "subject": "Team Messaging v1: Messages page + Supabase Realtime",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f35c8f9",
@@ -54,12 +59,12 @@
     {
       "hash": "f9fbd1b",
       "subject": "FIX: File extraction — mammoth/pdf-parse/officeparser imports fixed",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "bd6caca",
       "subject": "LinkedIn campaign fully operational: 89 invites queued, sourcing pipeline fixed",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "8060850",
@@ -74,7 +79,7 @@
     {
       "hash": "2347517",
       "subject": "Stats fix: unique contacts not aggregate events + LinkedIn queue in campaign_overview",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "db38af2",
@@ -94,11 +99,6 @@
     {
       "hash": "27c256a",
       "subject": "FULL SYSTEM AUDIT COMPLETE — all components verified",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "66453cf",
-      "subject": "LinkedIn: dedicated getActivity function + updated cron",
       "when": "2 days ago"
     }
   ]

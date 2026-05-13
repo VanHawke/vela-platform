@@ -1,31 +1,59 @@
-// src/pages/Messages.jsx — Team messaging with real-time chat
+// src/pages/Messages.jsx — Team messaging: presence, reactions, threading, Teams-quality file sharing
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
 const API = 'https://api.vanhawke.agency'
 const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
+const EMOJIS = ['👍', '❤️', '😂', '🔥', '👀', '🎉']
+const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+const MAX_FILES = 10
 
 const C = {
   bg: '#FFFFFF', surface: '#FAFAFA', card: '#F5F5F5',
   border: 'rgba(0,0,0,0.06)', borderLight: 'rgba(0,0,0,0.04)',
   text: '#0A0A0A', sub: '#6B6B6B', muted: '#A0A0A0',
   accent: '#E8700A', accentSoft: 'rgba(232,112,10,0.08)',
-  green: '#16A34A', amber: '#F59E0B', red: '#DC2626',
+  green: '#16A34A', amber: '#D97706', red: '#DC2626', purple: '#7C3AED',
   font: "'Inter', system-ui, -apple-system, sans-serif",
 }
+const STATUS_COLORS = { online: C.green, away: C.amber, busy: C.red, offline: '#9CA3AF' }
 
-const REACTIONS = ['👍', '❤️', '😂', '😮', '🔥', '👏']
+const FILE_ICONS = { pdf: '📕', doc: '📝', docx: '📝', xls: '📊', xlsx: '📊', ppt: '📎', pptx: '📎', txt: '📄', csv: '📊', zip: '📦', default: '📄' }
+const getFileIcon = (name) => { const ext = name?.split('.').pop()?.toLowerCase(); return FILE_ICONS[ext] || FILE_ICONS.default }
+const formatFileSize = (bytes) => { if (bytes < 1024) return bytes + ' B'; if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'; return (bytes / 1048576).toFixed(1) + ' MB' }
 
 function Avatar({ name, size = 32, color, status }) {
   const initials = (name || '??').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   const hue = name ? name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 0
   const bg = color || `hsl(${hue}, 55%, 50%)`
-  const statusColor = status === 'online' ? C.green : status === 'away' ? C.amber : status === 'offline' ? C.red : null
   return (
     <div style={{ width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.36, fontWeight: 600, color: '#fff', fontFamily: C.font, position: 'relative', flexShrink: 0 }}>
       {initials}
-      {statusColor && <div style={{ position: 'absolute', bottom: 0, right: 0, width: size * 0.28, height: size * 0.28, borderRadius: '50%', background: statusColor, border: `2px solid ${C.bg}` }} />}
+      {status && <div style={{ position: 'absolute', bottom: 0, right: 0, width: size * 0.3, height: size * 0.3, borderRadius: '50%', background: STATUS_COLORS[status] || '#9CA3AF', border: `2px solid ${C.bg}` }} />}
     </div>
+  )
+}
+
+// File card in messages — rich preview like Teams
+function FileCard({ content, isMine }) {
+  const imgMatch = content?.match(/📎 \[Image: ([^\]]+)\]\((https?:\/\/[^)]+)\)/)
+  const fileMatch = content?.match(/📎 \[File: ([^\]]+)\|([^\]]*)\]\((https?:\/\/[^)]+)\)/)
+  const legacyFile = content?.match(/📎 \[File: ([^\]]+)\]\((https?:\/\/[^)]+)\)/)
+  if (imgMatch) return (
+    <div><img src={imgMatch[2]} alt="" style={{ maxWidth: 300, maxHeight: 220, borderRadius: 8, display: 'block', cursor: 'pointer' }} onClick={() => window.open(imgMatch[2], '_blank')} /><span style={{ fontSize: 11, opacity: 0.7, marginTop: 2, display: 'block' }}>{imgMatch[1]}</span></div>
+  )
+  const name = fileMatch?.[1] || legacyFile?.[1] || 'File'
+  const size = fileMatch?.[2] || ''
+  const url = fileMatch?.[3] || legacyFile?.[2] || '#'
+  return (
+    <a href={url} target="_blank" rel="noopener" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, background: isMine ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.03)', border: `1px solid ${isMine ? 'rgba(255,255,255,0.15)' : C.borderLight}`, textDecoration: 'none', minWidth: 180 }}>
+      <span style={{ fontSize: 24 }}>{getFileIcon(name)}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: isMine ? '#fff' : C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+        {size && <div style={{ fontSize: 10, color: isMine ? 'rgba(255,255,255,0.7)' : C.muted }}>{size}</div>}
+      </div>
+      <span style={{ fontSize: 14, color: isMine ? 'rgba(255,255,255,0.5)' : C.muted }}>↓</span>
+    </a>
   )
 }
 
@@ -37,208 +65,142 @@ export default function Messages({ user }) {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [typingUsers, setTypingUsers] = useState([])
+  const [presence, setPresence] = useState({})
   const [replyTo, setReplyTo] = useState(null)
   const [hoveredMsg, setHoveredMsg] = useState(null)
+  const [showReactions, setShowReactions] = useState(null)
   const [dragOver, setDragOver] = useState(false)
+  const [stagedFiles, setStagedFiles] = useState([]) // Files staged before sending
+  const [uploadProgress, setUploadProgress] = useState({}) // {filename: 0-100}
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
   const typingTimeoutRef = useRef(null)
+  const idleTimerRef = useRef(null)
 
   const userId = user?.id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Sunny'
 
-  // Load channels
   const loadChannels = useCallback(async () => {
-    try {
-      const res = await fetch(`${API}/api/team-messages?action=channels&userId=${userId}`)
-      const data = await res.json()
-      setChannels(data.channels || [])
-      if (!activeChannel && data.channels?.length) setActiveChannel(data.channels[0].id)
-    } catch (e) { console.error('[Messages] Load channels:', e) }
-    finally { setLoading(false) }
+    try { const res = await fetch(`${API}/api/team-messages?action=channels&userId=${userId}`); const d = await res.json(); setChannels(d.channels || []); if (!activeChannel && d.channels?.length) setActiveChannel(d.channels[0].id) } catch (e) {} finally { setLoading(false) }
   }, [userId, activeChannel])
-
-  // Load messages
   const loadMessages = useCallback(async () => {
     if (!activeChannel) return
-    try {
-      const res = await fetch(`${API}/api/team-messages?action=messages`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channelId: activeChannel })
-      })
-      const data = await res.json()
-      setMessages(data.messages || [])
-      fetch(`${API}/api/team-messages?action=read`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channelId: activeChannel, userId })
-      }).catch(() => {})
-    } catch (e) { console.error('[Messages] Load messages:', e) }
+    try { const res = await fetch(`${API}/api/team-messages?action=messages`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelId: activeChannel }) }); const d = await res.json(); setMessages(d.messages || []); fetch(`${API}/api/team-messages?action=read`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelId: activeChannel, userId }) }).catch(() => {}) } catch (e) {}
   }, [activeChannel, userId])
+  const loadPresence = useCallback(async () => {
+    try { const res = await fetch(`${API}/api/team-messages?action=presence`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId }) }); const d = await res.json(); const m = {}; (d.presence || []).forEach(p => { m[p.user_id] = p }); setPresence(m) } catch (e) {}
+  }, [userId])
 
+  // Effects: heartbeat, idle, data loading, realtime
+  useEffect(() => { const ping = () => fetch(`${API}/api/team-messages?action=presence`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, status: 'online' }) }).catch(() => {}); ping(); const hb = setInterval(ping, 60000); return () => clearInterval(hb) }, [userId])
+  useEffect(() => { const reset = () => { clearTimeout(idleTimerRef.current); idleTimerRef.current = setTimeout(() => { fetch(`${API}/api/team-messages?action=presence`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, status: 'away' }) }).catch(() => {}) }, 300000) }; ['mousemove','keydown','click'].forEach(e => window.addEventListener(e, reset)); reset(); return () => { ['mousemove','keydown','click'].forEach(e => window.removeEventListener(e, reset)); clearTimeout(idleTimerRef.current) } }, [userId])
   useEffect(() => { loadChannels() }, [loadChannels])
-  useEffect(() => { loadMessages() }, [loadMessages])
+  useEffect(() => { loadMessages(); setReplyTo(null); setStagedFiles([]) }, [loadMessages])
+  useEffect(() => { loadPresence(); const i = setInterval(loadPresence, 30000); return () => clearInterval(i) }, [loadPresence])
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+  useEffect(() => { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission() }, [])
 
-  // Notification permission
+  // Realtime: INSERT + UPDATE on messages
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission()
-  }, [])
-
-  // Realtime subscription
-  useEffect(() => {
-    const channel = supabase.channel('team-messages')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'kiko_team_messages' }, payload => {
-        if (payload.eventType === 'INSERT') {
-          const m = payload.new
-          if (m.channel_id === activeChannel) {
-            setMessages(prev => {
-              if (prev.some(x => x.id === m.id)) return prev
-              return [...prev.filter(x => !(x.id?.toString().startsWith('temp-') && x.content === m.content && x.from_user_id === m.from_user_id)), m]
-            })
-          }
-          if (m.from_user_id !== userId && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification(`${m.from_name}`, { body: m.content.slice(0, 80), tag: m.id })
-          }
-        } else if (payload.eventType === 'UPDATE' && payload.new.channel_id === activeChannel) {
-          setMessages(prev => prev.map(x => x.id === payload.new.id ? payload.new : x))
-        }
-        loadChannels()
-      }).subscribe()
-    return () => supabase.removeChannel(channel)
-  }, [activeChannel, loadChannels, userId])
+    const ch = supabase.channel('team-messages').on('postgres_changes', { event: '*', schema: 'public', table: 'kiko_team_messages' }, payload => {
+      if (payload.eventType === 'INSERT' && payload.new.channel_id === activeChannel) {
+        setMessages(prev => { if (prev.some(m => m.id === payload.new.id)) return prev; return [...prev.filter(m => !(m.id?.toString().startsWith('temp-') && m.content === payload.new.content && m.from_user_id === payload.new.from_user_id)), payload.new] })
+      } else if (payload.eventType === 'UPDATE' && payload.new.channel_id === activeChannel) {
+        setMessages(prev => prev.map(m => m.id === payload.new.id ? payload.new : m))
+      }
+      if (payload.eventType === 'INSERT' && payload.new.from_user_id !== userId && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(`${payload.new.from_name}`, { body: payload.new.content?.slice(0, 100), tag: payload.new.id })
+      }
+      loadChannels()
+    }).subscribe(); return () => supabase.removeChannel(ch)
+  }, [activeChannel, channels, userId, loadChannels])
 
   // Typing indicator
-  useEffect(() => {
-    if (!activeChannel) return
-    const ch = supabase.channel(`typing-${activeChannel}`)
-      .on('broadcast', { event: 'typing' }, ({ payload }) => {
-        if (payload.userId !== userId) {
-          setTypingUsers(prev => prev.find(u => u.userId === payload.userId) ? prev : [...prev, { userId: payload.userId, name: payload.name }])
-          setTimeout(() => setTypingUsers(prev => prev.filter(u => u.userId !== payload.userId)), 3000)
-        }
-      }).subscribe()
-    return () => supabase.removeChannel(ch)
-  }, [activeChannel, userId])
+  useEffect(() => { if (!activeChannel) return; const ch = supabase.channel(`typing-${activeChannel}`).on('broadcast', { event: 'typing' }, ({ payload }) => { if (payload.userId !== userId) { setTypingUsers(prev => prev.find(u => u.userId === payload.userId) ? prev : [...prev, { userId: payload.userId, name: payload.name }]); setTimeout(() => setTypingUsers(prev => prev.filter(u => u.userId !== payload.userId)), 3000) } }).subscribe(); return () => supabase.removeChannel(ch) }, [activeChannel, userId])
+  useEffect(() => { const t = channels.reduce((s, ch) => s + (ch.unreadCount || 0), 0); window.dispatchEvent(new CustomEvent('kiko_unread_messages', { detail: { count: t } })) }, [channels])
 
-  // Unread badge dispatch
-  useEffect(() => {
-    const total = channels.reduce((s, c) => s + (c.unreadCount || 0), 0)
-    window.dispatchEvent(new CustomEvent('kiko_unread_messages', { detail: { count: total } }))
-  }, [channels])
-
-  // Send message
+  // Send message (text + any staged files)
   const sendMessage = async () => {
-    if (!input.trim() || sending || !activeChannel) return
-    setSending(true)
-    const content = input.trim()
-    setInput('')
-    const replyId = replyTo?.id || null
-    setReplyTo(null)
-    const optimistic = { id: 'temp-' + Date.now(), channel_id: activeChannel, from_user_id: userId, from_name: userName, content, message_type: 'text', reply_to: replyId, reactions: {}, created_at: new Date().toISOString() }
-    setMessages(prev => [...prev, optimistic])
-    try {
-      await fetch(`${API}/api/team-messages?action=send`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channelId: activeChannel, fromUserId: userId, fromName: userName, content, replyTo: replyId })
-      })
-    } catch (e) { console.error('[Messages] Send:', e) }
+    const text = input.trim()
+    if ((!text && stagedFiles.length === 0) || sending || !activeChannel) return
+    setSending(true); setInput('')
+    // Upload staged files first
+    const fileContents = []
+    for (const sf of stagedFiles) {
+      setUploadProgress(prev => ({ ...prev, [sf.file.name]: 10 }))
+      const ext = sf.file.name.split('.').pop()
+      const path = `team-chat/${activeChannel}/${Date.now()}-${sf.file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+      const { error } = await supabase.storage.from('vela-assets').upload(path, sf.file, { contentType: sf.file.type })
+      setUploadProgress(prev => ({ ...prev, [sf.file.name]: error ? -1 : 100 }))
+      if (!error) {
+        const { data: urlData } = supabase.storage.from('vela-assets').getPublicUrl(path)
+        const isImg = sf.file.type.startsWith('image/')
+        fileContents.push(isImg ? `📎 [Image: ${sf.file.name}](${urlData?.publicUrl})` : `📎 [File: ${sf.file.name}|${formatFileSize(sf.file.size)}](${urlData?.publicUrl})`)
+      }
+    }
+    setStagedFiles([]); setUploadProgress({})
+    // Build full message content
+    const parts = []; if (text) parts.push(text); parts.push(...fileContents)
+    const content = parts.join('\n')
+    if (!content) { setSending(false); return }
+    const optimistic = { id: 'temp-' + Date.now(), channel_id: activeChannel, from_user_id: userId, from_name: userName, content, message_type: 'text', created_at: new Date().toISOString(), reply_to: replyTo?.id || null, reactions: {}, read_by: [userId] }
+    setMessages(prev => [...prev, optimistic]); setReplyTo(null)
+    try { await fetch(`${API}/api/team-messages?action=send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelId: activeChannel, fromUserId: userId, fromName: userName, content, replyTo: replyTo?.id }) }) } catch (e) {}
     finally { setSending(false); inputRef.current?.focus() }
   }
 
+  const handleReact = async (messageId, emoji) => {
+    try { const res = await fetch(`${API}/api/team-messages?action=react`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messageId, userId, emoji }) }); const d = await res.json(); if (d.reactions) setMessages(prev => prev.map(m => m.id === messageId ? { ...m, reactions: d.reactions } : m)) } catch (e) {}
+  }
+
+  const handleInputChange = (e) => { setInput(e.target.value); if (activeChannel && !typingTimeoutRef.current) { supabase.channel(`typing-${activeChannel}`).send({ type: 'broadcast', event: 'typing', payload: { userId, name: userName } }).catch(() => {}); typingTimeoutRef.current = setTimeout(() => { typingTimeoutRef.current = null }, 2000) } }
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }
 
-  const handleInputChange = (e) => {
-    setInput(e.target.value)
-    if (!activeChannel || typingTimeoutRef.current) return
-    supabase.channel(`typing-${activeChannel}`).send({ type: 'broadcast', event: 'typing', payload: { userId, name: userName } }).catch(() => {})
-    typingTimeoutRef.current = setTimeout(() => { typingTimeoutRef.current = null }, 2000)
+  // File staging: add files to compose area before sending
+  const stageFiles = (files) => {
+    const newFiles = Array.from(files).slice(0, MAX_FILES - stagedFiles.length).filter(f => {
+      if (f.size > MAX_FILE_SIZE) { alert(`${f.name} exceeds 50MB limit`); return false }
+      return true
+    }).map(f => ({ file: f, preview: f.type.startsWith('image/') ? URL.createObjectURL(f) : null, id: Date.now() + '-' + f.name }))
+    setStagedFiles(prev => [...prev, ...newFiles].slice(0, MAX_FILES))
   }
+  const removeStagedFile = (id) => { setStagedFiles(prev => { const f = prev.find(s => s.id === id); if (f?.preview) URL.revokeObjectURL(f.preview); return prev.filter(s => s.id !== id) }) }
 
-  // File upload
-  const uploadAndSend = async (file) => {
-    if (!file || !activeChannel) return
-    if (file.size > 5 * 1024 * 1024) { alert('Max 5MB'); return }
-    const ext = file.name.split('.').pop()
-    const path = `team-chat/${activeChannel}/${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('vela-assets').upload(path, file, { contentType: file.type })
-    if (error) { console.error('[Messages] Upload:', error); return }
-    const { data: urlData } = supabase.storage.from('vela-assets').getPublicUrl(path)
-    const content = file.type.startsWith('image/') ? `📎 [Image: ${file.name}](${urlData?.publicUrl})` : `📎 [File: ${file.name}](${urlData?.publicUrl})`
-    const optimistic = { id: 'temp-' + Date.now(), channel_id: activeChannel, from_user_id: userId, from_name: userName, content, message_type: 'text', reactions: {}, created_at: new Date().toISOString() }
-    setMessages(prev => [...prev, optimistic])
-    await fetch(`${API}/api/team-messages?action=send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelId: activeChannel, fromUserId: userId, fromName: userName, content }) }).catch(() => {})
-  }
-
-  const handleFileInput = (e) => { if (e.target.files?.[0]) { uploadAndSend(e.target.files[0]); e.target.value = '' } }
-
-  // Drag & drop
-  const handleDrop = (e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.[0]) uploadAndSend(e.dataTransfer.files[0]) }
+  const handleFileInput = (e) => { if (e.target.files?.length) stageFiles(e.target.files); e.target.value = '' }
+  const handleDrop = (e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.length) stageFiles(e.dataTransfer.files) }
   const handleDragOver = (e) => { e.preventDefault(); setDragOver(true) }
-  const handleDragLeave = () => setDragOver(false)
-
-  // Clipboard paste (screenshots)
-  const handlePaste = (e) => {
-    const items = e.clipboardData?.items
-    if (!items) return
-    for (const item of items) {
-      if (item.type.startsWith('image/')) {
-        e.preventDefault()
-        const file = item.getAsFile()
-        if (file) uploadAndSend(new File([file], `screenshot-${Date.now()}.png`, { type: file.type }))
-        break
-      }
-    }
-  }
-
-  // Reactions
-  const toggleReaction = async (msgId, emoji) => {
-    setMessages(prev => prev.map(m => {
-      if (m.id !== msgId) return m
-      const reactions = { ...(m.reactions || {}) }
-      const users = reactions[emoji] || []
-      reactions[emoji] = users.includes(userId) ? users.filter(u => u !== userId) : [...users, userId]
-      if (reactions[emoji].length === 0) delete reactions[emoji]
-      return { ...m, reactions }
-    }))
-    setShowReactions(null)
-    await fetch(`${API}/api/team-messages?action=react`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messageId: msgId, userId, emoji }) }).catch(() => {})
-  }
+  const handleDragLeave = (e) => { if (e.currentTarget.contains(e.relatedTarget)) return; setDragOver(false) }
+  const handlePaste = (e) => { const items = e.clipboardData?.items; if (!items) return; for (const item of items) { if (item.type.startsWith('image/')) { e.preventDefault(); const f = item.getAsFile(); if (f) stageFiles([f]); return } } }
 
   const activeChannelData = channels.find(c => c.id === activeChannel)
-  const getDisplayName = (ch) => ch?.name || 'Chat'
-  const getReplyMsg = (id) => messages.find(m => m.id === id)
+  const getChannelDisplayName = (ch) => ch?.name || 'Direct Message'
+  const getPresenceStatus = (ch) => { if (!ch || ch.channel_type === 'group') return null; const other = ch.members?.find(m => m !== userId); return presence[other]?.status || 'offline' }
 
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontFamily: C.font, color: C.muted }}>Loading...</div>
 
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 52px)', fontFamily: C.font, color: C.text, overflow: 'hidden' }}>
-      {/* Channel list */}
+      {/* Channel List */}
       <div style={{ width: 280, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '16px 16px 12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>Messages</h2>
             <button style={{ width: 28, height: 28, borderRadius: 8, background: C.accentSoft, border: 'none', color: C.accent, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>+</button>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 12, background: 'rgba(0,0,0,0.02)', border: `1px solid ${C.borderLight}` }}>
-            <span style={{ fontSize: 13, color: C.muted }}>🔍</span>
-            <input placeholder="Search messages..." style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 12, color: C.text, fontFamily: C.font }} />
-          </div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 8px' }}>
           {channels.map(ch => {
-            const isActive = ch.id === activeChannel
+            const isActive = ch.id === activeChannel; const st = getPresenceStatus(ch)
             return (
-              <div key={ch.id} onClick={() => { setActiveChannel(ch.id); setReplyTo(null) }} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px', borderRadius: 12, cursor: 'pointer', marginBottom: 1, background: isActive ? C.accentSoft : 'transparent' }}>
-                {ch.channel_type === 'group'
-                  ? <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(124,58,237,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>👥</div>
-                  : <Avatar name={getDisplayName(ch)} size={38} status="online" />}
+              <div key={ch.id} onClick={() => setActiveChannel(ch.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 12, cursor: 'pointer', marginBottom: 1, background: isActive ? C.accentSoft : 'transparent' }}>
+                {ch.channel_type === 'group' ? <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(124,58,237,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>👥</div> : <Avatar name={getChannelDisplayName(ch)} size={38} status={st} />}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 13, fontWeight: ch.unreadCount ? 600 : 500 }}>{getDisplayName(ch)}</span>
+                    <span style={{ fontSize: 13, fontWeight: ch.unreadCount ? 600 : 500 }}>{getChannelDisplayName(ch)}</span>
                     {ch.lastMessage && <span style={{ fontSize: 10, color: C.muted }}>{new Date(ch.lastMessage.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>}
                   </div>
-                  {ch.lastMessage && <div style={{ fontSize: 12, color: C.sub, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.lastMessage.from_name}: {ch.lastMessage.content.slice(0, 50)}</div>}
+                  {ch.lastMessage && <div style={{ fontSize: 12, color: C.sub, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.lastMessage.from_name}: {ch.lastMessage.content?.slice(0, 50)}</div>}
                 </div>
                 {ch.unreadCount > 0 && <div style={{ minWidth: 18, height: 18, borderRadius: 9, background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', padding: '0 5px', flexShrink: 0 }}>{ch.unreadCount}</div>}
               </div>
@@ -247,91 +209,70 @@ export default function Messages({ user }) {
         </div>
       </div>
 
-      {/* Chat area */}
+      {/* Chat Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
-        {/* Drag overlay */}
-        {dragOver && <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(232,112,10,0.06)', border: '2px dashed #E8700A', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: C.accent, fontWeight: 600, pointerEvents: 'none' }}>Drop file to share</div>}
+        {/* Teams-style drag overlay — full translucent with centered icon */}
+        {dragOver && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(232,112,10,0.04)', backdropFilter: 'blur(2px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, pointerEvents: 'none' }}>
+            <div style={{ width: 64, height: 64, borderRadius: 16, background: C.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>📁</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: C.accent }}>Drop files to share</div>
+            <div style={{ fontSize: 12, color: C.sub }}>Up to {MAX_FILES} files, max 50MB each</div>
+          </div>
+        )}
 
         {/* Header */}
         {activeChannelData && (
           <div style={{ padding: '10px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {activeChannelData.channel_type === 'group'
-                ? <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(124,58,237,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>👥</div>
-                : <Avatar name={getDisplayName(activeChannelData)} size={32} status="online" />}
+              {activeChannelData.channel_type === 'group' ? <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(124,58,237,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>👥</div> : <Avatar name={getChannelDisplayName(activeChannelData)} size={32} status={getPresenceStatus(activeChannelData)} />}
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>{getDisplayName(activeChannelData)}</div>
-                <div style={{ fontSize: 11, color: C.green, display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.green }} /> Online
-                </div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{getChannelDisplayName(activeChannelData)}</div>
+                {(() => { const st = getPresenceStatus(activeChannelData); if (!st) return <div style={{ fontSize: 11, color: C.muted }}>{activeChannelData.members?.length || 0} members</div>; return <div style={{ fontSize: 11, color: STATUS_COLORS[st], display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: STATUS_COLORS[st] }} />{st === 'online' ? 'Online' : st === 'away' ? 'Away' : st === 'busy' ? 'Do Not Disturb' : 'Offline'}</div> })()}
               </div>
             </div>
             <button style={{ height: 32, padding: '0 12px', borderRadius: 8, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.12)', color: C.green, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}>📞 Call</button>
           </div>
         )}
 
-        {/* Messages */}
+        {/* Messages area */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {messages.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: C.muted, fontSize: 13 }}>No messages yet. Start the conversation!</div>}
           {messages.map((msg, i) => {
             const isMine = msg.from_user_id === userId
             const showAvatar = i === 0 || messages[i - 1].from_user_id !== msg.from_user_id
             const isBot = msg.message_type === 'kiko_response'
-            const isHovered = hoveredMsg === msg.id
-            const replyMsg = msg.reply_to ? getReplyMsg(msg.reply_to) : null
+            const isDeleted = !!msg.deleted_at
             const reactions = msg.reactions || {}
-            const hasReactions = Object.keys(reactions).length > 0
-            const isImage = msg.content.match(/📎 \[Image: [^\]]+\]\((https?:\/\/[^)]+)\)/)
-            const isFile = msg.content.match(/📎 \[File: [^\]]+\]\((https?:\/\/[^)]+)\)/)
+            const replyMsg = msg.reply_to ? messages.find(m => m.id === msg.reply_to) : null
+            const isLastFromMe = isMine && (i === messages.length - 1 || messages[i + 1]?.from_user_id !== userId)
+            const allRead = isMine && msg.read_by && msg.read_by.length > 1
+            const isFile = msg.content?.includes('📎 [')
 
             return (
-              <div key={msg.id} onMouseEnter={() => setHoveredMsg(msg.id)} onMouseLeave={() => setHoveredMsg(null)} style={{ display: 'flex', flexDirection: isMine ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 8, marginTop: showAvatar ? 14 : 1, position: 'relative' }}>
-                <div style={{ width: 26, flexShrink: 0 }}>
-                  {showAvatar && !isMine && <Avatar name={msg.from_name} size={26} color={isBot ? '#7C3AED' : undefined} status={isBot ? 'online' : undefined} />}
-                </div>
-                <div style={{ maxWidth: '60%' }}>
-                  {showAvatar && !isMine && (
-                    <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 3, marginLeft: 2, color: isBot ? '#7C3AED' : C.sub }}>
-                      {msg.from_name}{isBot && <span style={{ background: 'rgba(124,58,237,0.08)', color: '#7C3AED', padding: '1px 6px', borderRadius: 4, fontSize: 9, marginLeft: 5 }}>AI</span>}
-                    </div>
-                  )}
-                  {/* Reply quote */}
-                  {replyMsg && (
-                    <div style={{ fontSize: 11, color: C.sub, padding: '4px 8px', marginBottom: 2, borderLeft: `2px solid ${C.accent}`, borderRadius: '0 6px 6px 0', background: 'rgba(0,0,0,0.02)' }}>
-                      <span style={{ fontWeight: 600 }}>{replyMsg.from_name}:</span> {replyMsg.content.slice(0, 60)}
-                    </div>
-                  )}
-                  {/* Message bubble */}
-                  <div style={{ padding: isImage ? '4px' : '9px 14px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isMine ? C.accent : isBot ? 'rgba(124,58,237,0.04)' : C.card, border: isMine ? 'none' : isBot ? '1px solid rgba(124,58,237,0.08)' : `1px solid ${C.borderLight}`, fontSize: 13, lineHeight: 1.6, color: isMine ? '#fff' : C.text, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                    {isImage ? (
-                      <div><img src={msg.content.match(/\((https?:\/\/[^)]+)\)/)[1]} alt="" style={{ maxWidth: 280, maxHeight: 200, borderRadius: 10, display: 'block' }} /><span style={{ fontSize: 10, opacity: 0.7, padding: '2px 6px', display: 'block' }}>{msg.content.match(/\[Image: ([^\]]+)\]/)?.[1]}</span></div>
-                    ) : isFile ? (
-                      <a href={msg.content.match(/\((https?:\/\/[^)]+)\)/)[1]} target="_blank" rel="noopener" style={{ color: isMine ? '#fff' : C.accent, textDecoration: 'underline' }}>📎 {msg.content.match(/\[File: ([^\]]+)\]/)?.[1]}</a>
-                    ) : msg.content}
+              <div key={msg.id} style={{ display: 'flex', flexDirection: isMine ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 8, marginTop: showAvatar ? 14 : 1 }}
+                onMouseEnter={() => setHoveredMsg(msg.id)} onMouseLeave={() => { setHoveredMsg(null); setShowReactions(null) }}>
+                <div style={{ width: 26, flexShrink: 0 }}>{showAvatar && !isMine && <Avatar name={msg.from_name} size={26} color={isBot ? C.purple : undefined} status={presence[msg.from_user_id]?.status} />}</div>
+                <div style={{ maxWidth: '60%', position: 'relative' }}>
+                  {showAvatar && !isMine && <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 3, marginLeft: 2, color: isBot ? C.purple : C.sub }}>{msg.from_name}{isBot && <span style={{ background: 'rgba(124,58,237,0.08)', color: C.purple, padding: '1px 6px', borderRadius: 4, fontSize: 9, marginLeft: 5 }}>AI</span>}</div>}
+                  {replyMsg && <div style={{ fontSize: 11, color: C.muted, padding: '4px 8px', borderLeft: `2px solid ${C.accent}`, marginBottom: 4, borderRadius: '0 4px 4px 0', background: 'rgba(0,0,0,0.02)' }}><span style={{ fontWeight: 600 }}>{replyMsg.from_name}:</span> {replyMsg.content?.slice(0, 60)}</div>}
+                  <div style={{ padding: isFile ? '4px' : '9px 14px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isDeleted ? 'rgba(0,0,0,0.02)' : isMine ? C.accent : isBot ? 'rgba(124,58,237,0.04)' : C.card, border: isDeleted ? `1px solid ${C.borderLight}` : isMine ? 'none' : isBot ? '1px solid rgba(124,58,237,0.08)' : `1px solid ${C.borderLight}`, fontSize: 13, lineHeight: 1.6, color: isDeleted ? C.muted : isMine ? '#fff' : C.text, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontStyle: isDeleted ? 'italic' : 'normal', overflow: 'hidden' }}>
+                    {isDeleted ? 'This message was deleted' : isFile ? <FileCard content={msg.content} isMine={isMine} /> : msg.content}
                   </div>
-                  {/* Reactions display */}
-                  {hasReactions && (
-                    <div style={{ display: 'flex', gap: 4, marginTop: 3, flexWrap: 'wrap' }}>
-                      {Object.entries(reactions).map(([emoji, users]) => (
-                        <button key={emoji} onClick={() => toggleReaction(msg.id, emoji)} style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '1px 6px', borderRadius: 10, border: users.includes(userId) ? `1px solid ${C.accent}` : `1px solid ${C.borderLight}`, background: users.includes(userId) ? C.accentSoft : 'rgba(0,0,0,0.02)', fontSize: 12, cursor: 'pointer' }}>
-                          {emoji} <span style={{ fontSize: 10, color: C.sub }}>{users.length}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {/* Timestamp + read receipt */}
-                  <div style={{ fontSize: 10, color: C.muted, marginTop: 3, textAlign: isMine ? 'right' : 'left', paddingLeft: 2, paddingRight: 2 }}>
+                  {msg.edited_at && !isDeleted && <span style={{ fontSize: 9, color: C.muted, marginLeft: 4 }}>(edited)</span>}
+                  {Object.keys(reactions).length > 0 && <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>{Object.entries(reactions).map(([emoji, users]) => <button key={emoji} onClick={() => handleReact(msg.id, emoji)} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 6px', borderRadius: 10, fontSize: 12, cursor: 'pointer', background: users.includes(userId) ? C.accentSoft : 'rgba(0,0,0,0.03)', border: `1px solid ${users.includes(userId) ? C.accent : C.borderLight}` }}>{emoji} <span style={{ fontSize: 10, color: C.sub }}>{users.length}</span></button>)}</div>}
+                  <div style={{ fontSize: 10, color: C.muted, marginTop: 3, textAlign: isMine ? 'right' : 'left', display: 'flex', alignItems: 'center', gap: 4, justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
                     {new Date(msg.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                    {isMine && msg.read_by?.length > 1 && <span style={{ marginLeft: 4, color: C.green }}>✓✓</span>}
+                    {isLastFromMe && allRead && <span style={{ color: C.green, fontSize: 9 }}>✓✓ Seen</span>}
+                    {isLastFromMe && !allRead && !msg.id?.toString().startsWith('temp-') && <span style={{ fontSize: 9 }}>✓</span>}
                   </div>
+                  {hoveredMsg === msg.id && !isDeleted && (
+                    <div style={{ position: 'absolute', top: -4, [isMine ? 'left' : 'right']: 0, display: 'flex', gap: 2, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: '2px 4px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', zIndex: 10 }}>
+                      <button onClick={() => setShowReactions(showReactions === msg.id ? null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }}>😊</button>
+                      <button onClick={() => { setReplyTo(msg); inputRef.current?.focus() }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }}>↩️</button>
+                    </div>
+                  )}
+                  {showReactions === msg.id && <div style={{ position: 'absolute', top: -32, [isMine ? 'left' : 'right']: 0, zIndex: 20, display: 'flex', gap: 2, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 20, padding: '4px 6px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>{EMOJIS.map(e => <button key={e} onClick={() => { handleReact(msg.id, e); setShowReactions(null) }} style={{ background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', padding: '2px 4px', borderRadius: 6 }}>{e}</button>)}</div>}
                 </div>
-                {/* Hover actions */}
-                {isHovered && !msg.id?.toString().startsWith('temp-') && (
-                  <div style={{ display: 'flex', gap: 2, position: 'absolute', top: -8, [isMine ? 'left' : 'right']: 40, background: C.bg, borderRadius: 8, border: `1px solid ${C.border}`, padding: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', zIndex: 10 }}>
-                    {REACTIONS.slice(0, 3).map(e => <button key={e} onClick={() => toggleReaction(msg.id, e)} style={{ width: 26, height: 26, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, borderRadius: 4 }}>{e}</button>)}
-                    <button onClick={() => { setReplyTo(msg); inputRef.current?.focus() }} style={{ width: 26, height: 26, border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, borderRadius: 4 }}>↩️</button>
-                  </div>
-                )}
               </div>
             )
           })}
@@ -343,23 +284,52 @@ export default function Messages({ user }) {
 
         {/* Reply bar */}
         {replyTo && (
-          <div style={{ padding: '6px 24px', display: 'flex', alignItems: 'center', gap: 8, borderTop: `1px solid ${C.borderLight}`, background: 'rgba(232,112,10,0.03)' }}>
-            <div style={{ flex: 1, fontSize: 12, color: C.sub, borderLeft: `2px solid ${C.accent}`, paddingLeft: 8 }}>
-              Replying to <b>{replyTo.from_name}</b>: {replyTo.content.slice(0, 60)}
-            </div>
-            <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: C.muted }}>✕</button>
+          <div style={{ padding: '6px 24px', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(232,112,10,0.04)', borderTop: `1px solid ${C.borderLight}` }}>
+            <div style={{ flex: 1, fontSize: 12, color: C.sub, borderLeft: `2px solid ${C.accent}`, paddingLeft: 8 }}>Replying to <strong>{replyTo.from_name}</strong>: {replyTo.content?.slice(0, 60)}</div>
+            <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14 }}>✕</button>
           </div>
         )}
 
-        {/* Input */}
+        {/* Staged files preview — Teams-style compose area */}
+        {stagedFiles.length > 0 && (
+          <div style={{ padding: '8px 24px 0', display: 'flex', gap: 8, flexWrap: 'wrap', borderTop: `1px solid ${C.borderLight}` }}>
+            {stagedFiles.map(sf => (
+              <div key={sf.id} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 10, background: C.card, border: `1px solid ${C.border}`, maxWidth: 220 }}>
+                {sf.preview ? (
+                  <img src={sf.preview} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+                ) : (
+                  <span style={{ fontSize: 22, flexShrink: 0 }}>{getFileIcon(sf.file.name)}</span>
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sf.file.name}</div>
+                  <div style={{ fontSize: 10, color: C.muted }}>{formatFileSize(sf.file.size)}</div>
+                </div>
+                {uploadProgress[sf.file.name] > 0 && uploadProgress[sf.file.name] < 100 && (
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: C.borderLight, borderRadius: '0 0 10px 10px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: C.accent, width: `${uploadProgress[sf.file.name]}%`, transition: 'width 200ms' }} />
+                  </div>
+                )}
+                <button onClick={() => removeStagedFile(sf.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 12, padding: 0, flexShrink: 0 }}>✕</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Input area */}
         <div style={{ padding: '10px 24px 16px' }}>
-          <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx,.xlsx,.txt" onChange={handleFileInput} style={{ display: 'none' }} />
+          <input ref={fileInputRef} type="file" accept="*/*" multiple onChange={handleFileInput} style={{ display: 'none' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 4px 4px 6px', borderRadius: 16, border: `1px solid ${C.border}`, background: C.bg, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <button onClick={() => fileInputRef.current?.click()} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, color: C.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 13 }}>+</button>
-            <input ref={inputRef} value={input} onChange={handleInputChange} onKeyDown={handleKeyDown} onPaste={handlePaste} placeholder="Type a message..." style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: C.text, fontSize: 13, fontFamily: C.font, padding: '6px 4px' }} />
+            <input ref={inputRef} value={input} onChange={handleInputChange} onKeyDown={handleKeyDown} onPaste={handlePaste}
+              placeholder={stagedFiles.length ? `Add a message to ${stagedFiles.length} file${stagedFiles.length > 1 ? 's' : ''}...` : 'Type a message...'}
+              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: C.text, fontSize: 13, fontFamily: C.font, padding: '6px 4px' }} />
             <span style={{ fontSize: 11, color: C.muted, whiteSpace: 'nowrap', marginRight: 4 }}>@kiko for AI</span>
-            <button onClick={sendMessage} disabled={!input.trim() || sending} style={{ width: 30, height: 30, borderRadius: 9999, background: input.trim() ? C.accent : 'rgba(0,0,0,0.04)', border: `1px solid ${input.trim() ? C.accent : C.border}`, cursor: input.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke={input.trim() ? '#fff' : C.muted} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+            <button onClick={sendMessage} disabled={(!input.trim() && stagedFiles.length === 0) || sending} style={{
+              width: 30, height: 30, borderRadius: 9999, background: (input.trim() || stagedFiles.length) ? C.accent : 'rgba(0,0,0,0.04)',
+              border: `1px solid ${(input.trim() || stagedFiles.length) ? C.accent : C.border}`, cursor: (input.trim() || stagedFiles.length) ? 'pointer' : 'default',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 200ms ease',
+            }}>
+              <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke={(input.trim() || stagedFiles.length) ? '#fff' : C.muted} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
             </button>
           </div>
         </div>
