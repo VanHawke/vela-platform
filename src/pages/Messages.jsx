@@ -24,6 +24,31 @@ const FILE_ICONS = { pdf: '📕', doc: '📝', docx: '📝', xls: '📊', xlsx: 
 const getFileIcon = (name) => { const ext = name?.split('.').pop()?.toLowerCase(); return FILE_ICONS[ext] || FILE_ICONS.default }
 const formatFileSize = (bytes) => { if (bytes < 1024) return bytes + ' B'; if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'; return (bytes / 1048576).toFixed(1) + ' MB' }
 
+// Clean SVG icons — no emojis
+const Icon = ({ name, size = 16, color = 'currentColor', strokeWidth = 1.8 }) => {
+  const s = { width: size, height: size, flexShrink: 0, display: 'inline-block', verticalAlign: 'middle' }
+  const p = { fill: 'none', stroke: color, strokeWidth, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  const icons = {
+    phone: <svg style={s} viewBox="0 0 24 24" {...p}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>,
+    folder: <svg style={s} viewBox="0 0 24 24" {...p}><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>,
+    search: <svg style={s} viewBox="0 0 24 24" {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+    settings: <svg style={s} viewBox="0 0 24 24" {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>,
+    plus: <svg style={s} viewBox="0 0 24 24" {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+    send: <svg style={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+    smile: <svg style={s} viewBox="0 0 24 24" {...p}><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>,
+    reply: <svg style={s} viewBox="0 0 24 24" {...p}><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>,
+    edit: <svg style={s} viewBox="0 0 24 24" {...p}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+    trash: <svg style={s} viewBox="0 0 24 24" {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>,
+    pin: <svg style={s} viewBox="0 0 24 24" {...p}><path d="M12 17v5"/><path d="M9 2h6l-1 7h4l-6 7h-1l2-7H6l3-7z"/></svg>,
+    hash: <svg style={s} viewBox="0 0 24 24" {...p}><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>,
+    x: <svg style={s} viewBox="0 0 24 24" {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+    check: <svg style={s} viewBox="0 0 24 24" {...p}><polyline points="20 6 9 17 4 12"/></svg>,
+    muted: <svg style={s} viewBox="0 0 24 24" {...p}><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>,
+    download: <svg style={s} viewBox="0 0 24 24" {...p}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+  }
+  return icons[name] || null
+}
+
 function Avatar({ name, size = 32, color, status }) {
   const initials = (name || '??').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   const hue = name ? name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 0
@@ -204,8 +229,8 @@ export default function Messages({ user }) {
 
   // @mention autocomplete
   const TEAM_MEMBERS = [
-    { id: '9f486437-4bf5-4111-abfe-fe19bfa76063', name: 'Sunny Sidhu', role: 'CEO' },
-    { id: 'e818b670-e3e0-4956-b681-e1a42e8bd85c', name: 'Matt Smith', role: 'Campaign Manager' },
+    { id: '9f486437-4bf5-4111-abfe-fe19bfa76063', name: 'Sunny Sidhu', role: 'Principal' },
+    { id: 'e818b670-e3e0-4956-b681-e1a42e8bd85c', name: 'Matt Smith', role: 'Head of Commercial Partnerships' },
     { id: '00000000-0000-0000-0000-000000000000', name: 'Kiko', role: 'AI Assistant' },
   ]
   const [mentionQuery, setMentionQuery] = useState('')
@@ -289,7 +314,7 @@ export default function Messages({ user }) {
             {presence[contactCard.id]?.status_message && <div style={{ fontSize: 11, color: C.muted, marginTop: 4, fontStyle: 'italic' }}>{presence[contactCard.id].status_message}</div>}
             <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'center' }}>
               <button onClick={() => setContactCard(null)} style={{ padding: '6px 16px', borderRadius: 8, background: C.accent, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: C.font }}>Message</button>
-              <button style={{ padding: '6px 16px', borderRadius: 8, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.12)', color: C.green, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: C.font }}>📞 Call</button>
+              <button style={{ padding: '6px 16px', borderRadius: 8, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.12)', color: C.green, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: C.font }}><Icon name="phone" size={14} color="#fff" /> Call</button>
             </div>
           </div>
         </div>
@@ -299,10 +324,10 @@ export default function Messages({ user }) {
         <div style={{ padding: '16px 16px 12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>Messages</h2>
-            <button style={{ width: 28, height: 28, borderRadius: 8, background: C.accent, border: 'none', color: '#fff', fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>+</button>
+            <button style={{ width: 28, height: 28, borderRadius: 8, background: C.accent, border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="plus" size={14} color="#fff" /></button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: C.bg, border: `1px solid ${C.border}` }}>
-            <span style={{ fontSize: 13, color: C.muted }}>🔍</span>
+            <span style={{ color: C.muted }}><Icon name="search" size={14} color={C.muted} /></span>
             <input placeholder="Search conversations..." style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 12, color: C.text, fontFamily: C.font }} />
           </div>
         </div>
@@ -319,7 +344,7 @@ export default function Messages({ user }) {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 13, fontWeight: ch.unreadCount ? 600 : 500 }}>{getChannelDisplayName(ch)}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      {mutedChannels.includes(ch.id) && <span style={{ fontSize: 10 }}>🔇</span>}
+                      {mutedChannels.includes(ch.id) && <span style={{ color: C.muted }}><Icon name="muted" size={12} color={C.muted} /></span>}
                       {ch.lastMessage && <span style={{ fontSize: 10, color: C.muted }}>{new Date(ch.lastMessage.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>}
                     </div>
                   </div>
@@ -341,7 +366,7 @@ export default function Messages({ user }) {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 13, fontWeight: ch.unreadCount ? 600 : 500 }}>{getChannelDisplayName(ch)}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      {mutedChannels.includes(ch.id) && <span style={{ fontSize: 10 }}>🔇</span>}
+                      {mutedChannels.includes(ch.id) && <span style={{ color: C.muted }}><Icon name="muted" size={12} color={C.muted} /></span>}
                       {ch.lastMessage && <span style={{ fontSize: 10, color: C.muted }}>{new Date(ch.lastMessage.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>}
                     </div>
                   </div>
@@ -376,10 +401,10 @@ export default function Messages({ user }) {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              <button style={{ height: 32, padding: '0 14px', borderRadius: 8, background: C.green, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}>📞 Call</button>
-              <button onClick={() => setShowFilesPanel(!showFilesPanel)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: showFilesPanel ? C.accentSoft : C.card, border: `1px solid ${showFilesPanel ? C.accent : C.border}`, color: showFilesPanel ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}>📁 Files</button>
-              <button onClick={() => setSearchOpen(!searchOpen)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: searchOpen ? C.accentSoft : C.card, border: `1px solid ${searchOpen ? C.accent : C.border}`, color: searchOpen ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}>🔍</button>
-              <button onClick={() => { setShowChannelSettings(true); setChannelRename(getChannelDisplayName(activeChannelData)) }} style={{ height: 32, width: 32, borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.sub, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⚙️</button>
+              <button style={{ height: 32, padding: '0 14px', borderRadius: 8, background: C.green, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}><Icon name="phone" size={14} color="#fff" /> Call</button>
+              <button onClick={() => setShowFilesPanel(!showFilesPanel)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: showFilesPanel ? C.accentSoft : C.card, border: `1px solid ${showFilesPanel ? C.accent : C.border}`, color: showFilesPanel ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}><Icon name="folder" size={14} /> Files</button>
+              <button onClick={() => setSearchOpen(!searchOpen)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: searchOpen ? C.accentSoft : C.card, border: `1px solid ${searchOpen ? C.accent : C.border}`, color: searchOpen ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}><Icon name="search" size={14} /></button>
+              <button onClick={() => { setShowChannelSettings(true); setChannelRename(getChannelDisplayName(activeChannelData)) }} style={{ height: 32, width: 32, borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.sub, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="settings" size={14} /></button>
             </div>
           </div>
         )}
@@ -419,7 +444,7 @@ export default function Messages({ user }) {
                   {showAvatar && !isMine && <Avatar name={msg.from_name} size={26} color={isBot ? C.purple : undefined} status={presence[msg.from_user_id]?.status} />}</div>
                 <div style={{ maxWidth: '52%', position: 'relative' }}>
                   {showAvatar && !isMine && <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 3, marginLeft: 2, color: isBot ? C.purple : C.sub }}>{msg.from_name}{isBot && <span style={{ background: 'rgba(124,58,237,0.12)', color: C.purple, padding: '1px 6px', borderRadius: 4, fontSize: 9, marginLeft: 5 }}>AI</span>}</div>}
-                  {msg.pinned && <div style={{ fontSize: 10, color: C.accent, marginBottom: 3, display: 'flex', alignItems: 'center', gap: 3 }}>📌 Pinned</div>}
+                  {msg.pinned && <div style={{ fontSize: 10, color: C.accent, marginBottom: 3, display: 'flex', alignItems: 'center', gap: 3 }}><Icon name="pin" size={12} color={C.accent} /> Pinned</div>}
                   {replyMsg && <div style={{ fontSize: 11, color: C.muted, padding: '4px 8px', borderLeft: `2px solid ${C.accent}`, marginBottom: 4, borderRadius: '0 4px 4px 0', background: 'rgba(0,0,0,0.02)' }}><span style={{ fontWeight: 600 }}>{replyMsg.from_name}:</span> {replyMsg.content?.slice(0, 60)}</div>}
                   <div style={{ padding: isFile ? '4px' : '9px 14px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isDeleted ? 'rgba(0,0,0,0.02)' : isMine ? C.accent : isBot ? 'rgba(124,58,237,0.07)' : C.card, border: isDeleted ? `1px solid ${C.borderLight}` : isMine ? 'none' : isBot ? '1px solid rgba(124,58,237,0.12)' : `1px solid ${C.borderLight}`, fontSize: 13, lineHeight: 1.6, color: isDeleted ? C.muted : isMine ? '#fff' : C.text, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontStyle: isDeleted ? 'italic' : 'normal', overflow: 'hidden' }}>
                     {isDeleted ? 'This message was deleted' : isFile ? <FileCard content={msg.content} isMine={isMine} /> :
@@ -427,8 +452,8 @@ export default function Messages({ user }) {
                         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                           <input value={editText} onChange={e => setEditText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleEdit(msg.id); if (e.key === 'Escape') { setEditingMsg(null); setEditText('') } }} autoFocus
                             style={{ flex: 1, background: 'rgba(255,255,255,0.2)', border: 'none', outline: 'none', color: isMine ? '#fff' : C.text, fontSize: 13, fontFamily: C.font, padding: '2px 4px', borderRadius: 4 }} />
-                          <button onClick={() => handleEdit(msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: isMine ? '#fff' : C.green }}>✓</button>
-                          <button onClick={() => { setEditingMsg(null); setEditText('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: isMine ? 'rgba(255,255,255,0.6)' : C.muted }}>✕</button>
+                          <button onClick={() => handleEdit(msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: isMine ? '#fff' : C.green }}><Icon name="check" size={12} /></button>
+                          <button onClick={() => { setEditingMsg(null); setEditText('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: isMine ? 'rgba(255,255,255,0.6)' : C.muted }}><Icon name="x" size={12} /></button>
                         </div>
                       ) : (
                         <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
@@ -446,14 +471,14 @@ export default function Messages({ user }) {
                   <div style={{ fontSize: 10, color: C.muted, marginTop: 3, textAlign: isMine ? 'right' : 'left', display: 'flex', alignItems: 'center', gap: 4, justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
                     {new Date(msg.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     {isLastFromMe && allRead && <span style={{ color: C.green, fontSize: 9 }}>✓✓ Seen</span>}
-                    {isLastFromMe && !allRead && !msg.id?.toString().startsWith('temp-') && <span style={{ fontSize: 9 }}>✓</span>}
+                    {isLastFromMe && !allRead && !msg.id?.toString().startsWith('temp-') && <span style={{ fontSize: 9 }}><Icon name="check" size={12} /></span>}
                   </div>
                   {hoveredMsg === msg.id && !isDeleted && (
                     <div style={{ position: 'absolute', top: -4, [isMine ? 'left' : 'right']: 0, display: 'flex', gap: 2, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: '2px 4px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', zIndex: 10 }}>
-                      <button onClick={() => setShowReactions(showReactions === msg.id ? null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="React">😊</button>
-                      <button onClick={() => { setReplyTo(msg); inputRef.current?.focus() }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="Reply">↩️</button>
-                      {isMine && <button onClick={() => { setEditingMsg(msg.id); setEditText(msg.content) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="Edit">✏️</button>}
-                      {isMine && <button onClick={() => handleDelete(msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="Delete">🗑️</button>}
+                      <button onClick={() => setShowReactions(showReactions === msg.id ? null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="React"><Icon name="smile" size={14} /></button>
+                      <button onClick={() => { setReplyTo(msg); inputRef.current?.focus() }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="Reply"><Icon name="reply" size={14} /></button>
+                      {isMine && <button onClick={() => { setEditingMsg(msg.id); setEditText(msg.content) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="Edit"><Icon name="edit" size={14} /></button>}
+                      {isMine && <button onClick={() => handleDelete(msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="Delete"><Icon name="trash" size={14} /></button>}
                       <button onClick={async () => { await fetch(`${API}/api/team-messages?action=pin`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messageId: msg.id, pinned: !msg.pinned }) }); loadMessages() }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title={msg.pinned ? 'Unpin' : 'Pin'}>📌</button>
                     </div>
                   )}
@@ -472,7 +497,7 @@ export default function Messages({ user }) {
         {replyTo && (
           <div style={{ padding: '6px 24px', paddingRight: 90, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(232,112,10,0.04)', borderTop: `1px solid ${C.borderLight}` }}>
             <div style={{ flex: 1, fontSize: 12, color: C.sub, borderLeft: `2px solid ${C.accent}`, paddingLeft: 8 }}>Replying to <strong>{replyTo.from_name}</strong>: {replyTo.content?.slice(0, 60)}</div>
-            <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14 }}>✕</button>
+            <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14 }}><Icon name="x" size={12} /></button>
           </div>
         )}
 
@@ -495,7 +520,7 @@ export default function Messages({ user }) {
                     <div style={{ height: '100%', background: C.accent, width: `${uploadProgress[sf.file.name]}%`, transition: 'width 200ms' }} />
                   </div>
                 )}
-                <button onClick={() => removeStagedFile(sf.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 12, padding: 0, flexShrink: 0 }}>✕</button>
+                <button onClick={() => removeStagedFile(sf.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 12, padding: 0, flexShrink: 0 }}><Icon name="x" size={12} /></button>
               </div>
             ))}
           </div>
@@ -516,7 +541,7 @@ export default function Messages({ user }) {
                 ))}
               </div>
             )}
-            <button onClick={() => fileInputRef.current?.click()} style={{ width: 32, height: 32, borderRadius: 9999, background: C.card, border: `1px solid ${C.border}`, color: C.sub, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 14, fontWeight: 600 }}>+</button>
+            <button onClick={() => fileInputRef.current?.click()} style={{ width: 32, height: 32, borderRadius: 9999, background: C.card, border: `1px solid ${C.border}`, color: C.sub, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: C.sub }}><Icon name="plus" size={14} color={C.sub} /></button>
             <input ref={inputRef} value={input} onChange={handleInputChangeWithMention} onKeyDown={handleMentionKeyDown} onPaste={handlePaste}
               placeholder={stagedFiles.length ? `Add a message to ${stagedFiles.length} file${stagedFiles.length > 1 ? 's' : ''}...` : 'Type a message... @ to mention'}
               style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: C.text, fontSize: 13, fontFamily: C.font, padding: '6px 4px' }} />
@@ -536,7 +561,7 @@ export default function Messages({ user }) {
         <div style={{ width: 280, borderLeft: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0, background: C.bg }}>
           <div style={{ padding: '14px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Shared Files</h3>
-            <button onClick={() => setShowFilesPanel(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14 }}>✕</button>
+            <button onClick={() => setShowFilesPanel(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14 }}><Icon name="x" size={12} /></button>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: 8 }}>
             {messages.filter(m => m.content?.includes('📎 [')).length === 0 && (
