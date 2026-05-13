@@ -174,7 +174,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
       callIdRef.current = data.callId; setCallId(data.callId)
 
       // Broadcast offer
-      ch.send({ type: 'broadcast', event: 'offer', payload: { offer, from: userId, callerName: userName, callId: data.callId } })
+      ch.send({ type: 'broadcast', event: 'offer', payload: { offer, from: userId, callerName: userName, callId: data.callId, timestamp: Date.now() } })
 
       // Auto-end after 30s if no answer
       setTimeout(() => { if (callState === 'calling') endCall('missed') }, 30000)
@@ -228,10 +228,12 @@ export function useVoiceCall({ userId, userName, channelId }) {
 
   // End call
   const endCall = useCallback((reason = 'ended') => {
-    // Play appropriate tone based on reason
-    if (reason === 'missed' || reason === 'declined') tones.busy()
-    else if (reason === 'ended') tones.ended()
-    else tones.stop()
+    // Only play tones if we were actually in a call
+    if (callState !== 'idle') {
+      if (reason === 'missed' || reason === 'declined') tones.busy()
+      else if (reason === 'ended' && callState === 'connected') tones.ended()
+      else tones.stop()
+    }
     if (pcRef.current) { pcRef.current.close(); pcRef.current = null }
     if (localStreamRef.current) { localStreamRef.current.getTracks().forEach(t => t.stop()); localStreamRef.current = null }
     if (signalingRef.current) {
@@ -261,24 +263,37 @@ export function useVoiceCall({ userId, userName, channelId }) {
     const ch = supabase.channel(`call-${channelId}`)
     ch.on('broadcast', { event: 'offer' }, ({ payload }) => {
       if (payload.from !== userId && callState === 'idle') {
+        // Verify this is a recent offer (within last 30 seconds)
+        const offerAge = Date.now() - (payload.timestamp || 0)
+        if (offerAge > 30000) return // Ignore stale offers
         signalingRef.current = ch
         setCallState('ringing')
         setRemoteName(payload.callerName || 'Unknown')
-        tones.ringIncoming() // Play incoming ringtone
+        tones.ringIncoming()
         callIdRef.current = payload.callId
         setCallId(payload.callId)
-        // Store offer for answering
         window.__incomingOffer = payload.offer
         window.__incomingCallerName = payload.callerName
         window.__incomingCallId = payload.callId
       }
     })
     ch.subscribe()
-    return () => { if (callState === 'idle') supabase.removeChannel(ch) }
+    return () => { 
+      supabase.removeChannel(ch)
+      tones.stop() // Always stop tones on cleanup
+    }
   }, [channelId, userId, callState])
 
-  // Cleanup on unmount
-  useEffect(() => { return () => { endCall() } }, [])
+  // Cleanup on unmount — stop everything
+  useEffect(() => { 
+    return () => { 
+      tones.stop()
+      if (pcRef.current) { pcRef.current.close(); pcRef.current = null }
+      if (localStreamRef.current) { localStreamRef.current.getTracks().forEach(t => t.stop()); localStreamRef.current = null }
+      if (signalingRef.current) { supabase.removeChannel(signalingRef.current); signalingRef.current = null }
+      if (durationTimerRef.current) { clearInterval(durationTimerRef.current) }
+    }
+  }, [])
 
   return {
     callState, callDuration, remoteName, isMuted, callId,

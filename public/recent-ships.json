@@ -1,75 +1,80 @@
 {
-  "generated_at": "2026-05-13T17:40:12.233Z",
+  "generated_at": "2026-05-13T17:45:20.570Z",
   "commits": [
+    {
+      "hash": "a85a3d0",
+      "subject": "Document Operations Phase 1: database + API + templates",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "79e5a0c",
       "subject": "Voice calling: add call tones (ringing, connected, ended, busy)",
-      "when": "25 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "a49ed3b",
       "subject": "WebRTC Voice Calling — full implementation",
-      "when": "32 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "80c0c53",
       "subject": "Messages: match platform page structure (breadcrumb + serif title)",
-      "when": "41 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "05c86b1",
       "subject": "Messages: fix header font + add messaging icon to global nav",
-      "when": "49 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "8c2d81f",
       "subject": "Messages: replace all emoji icons with clean SVG + update roles",
-      "when": "59 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "d957193",
       "subject": "Messages UI polish: 15 improvements for Teams-quality UX",
-      "when": "63 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "bc35087",
       "subject": "Messages: fix input bar overlap with KikoFloat",
-      "when": "70 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "e8db0a3",
       "subject": "Messages final: link previews (Open Graph) + all remaining features",
-      "when": "74 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "b751cf9",
       "subject": "Messages: notification preferences (mute channels) + muted indicator",
-      "when": "77 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "062c094",
       "subject": "LinkedIn fix: re-queued 89 invites, added keepalive to scheduler",
-      "when": "79 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "27923e8",
       "subject": "Messages Phase 4: shared files tab, channel settings, rename",
-      "when": "84 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "6bc2672",
       "subject": "Messages Phase 4: pin messages, contact cards, @mention autocomplete",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "dbd5e2d",
       "subject": "Messages: contact cards + clickable avatars",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b03a995",
       "subject": "Messages: @mention autocomplete with dropdown",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "928813c",
@@ -94,11 +99,6 @@
     {
       "hash": "ddecef9",
       "subject": "Team Messages Phase 2: @kiko bot + desktop notifications",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "034d6fa",
-      "subject": "Messages: fix duplicate messages + deploy missing linkedin-cookie-import",
       "when": "4 hours ago"
     }
   ]
