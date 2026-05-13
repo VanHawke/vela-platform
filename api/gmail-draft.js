@@ -32,7 +32,7 @@ function buildRawEmail({ from, to, subject, htmlBody, plainBody }) {
   const boundary = 'boundary_' + Date.now()
   const lines = [
     `From: ${from}`,
-    `To: ${to}`,
+    ...(to ? [`To: ${to}`] : []),
     `Subject: ${encodedSubject}`,
     `MIME-Version: 1.0`,
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
