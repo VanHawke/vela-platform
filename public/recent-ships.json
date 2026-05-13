@@ -1,85 +1,90 @@
 {
-  "generated_at": "2026-05-13T17:07:57.267Z",
+  "generated_at": "2026-05-13T17:13:41.995Z",
   "commits": [
+    {
+      "hash": "a49ed3b",
+      "subject": "WebRTC Voice Calling — full implementation",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "80c0c53",
       "subject": "Messages: match platform page structure (breadcrumb + serif title)",
-      "when": "9 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "05c86b1",
       "subject": "Messages: fix header font + add messaging icon to global nav",
-      "when": "17 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "8c2d81f",
       "subject": "Messages: replace all emoji icons with clean SVG + update roles",
-      "when": "26 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "d957193",
       "subject": "Messages UI polish: 15 improvements for Teams-quality UX",
-      "when": "31 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "bc35087",
       "subject": "Messages: fix input bar overlap with KikoFloat",
-      "when": "38 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "e8db0a3",
       "subject": "Messages final: link previews (Open Graph) + all remaining features",
-      "when": "42 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "b751cf9",
       "subject": "Messages: notification preferences (mute channels) + muted indicator",
-      "when": "44 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "062c094",
       "subject": "LinkedIn fix: re-queued 89 invites, added keepalive to scheduler",
-      "when": "47 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "27923e8",
       "subject": "Messages Phase 4: shared files tab, channel settings, rename",
-      "when": "51 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "6bc2672",
       "subject": "Messages Phase 4: pin messages, contact cards, @mention autocomplete",
-      "when": "55 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "dbd5e2d",
       "subject": "Messages: contact cards + clickable avatars",
-      "when": "56 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "b03a995",
       "subject": "Messages: @mention autocomplete with dropdown",
-      "when": "57 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "928813c",
       "subject": "Messages Phase 3: edit, delete, search, markdown, hover actions",
-      "when": "63 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "75132c5",
       "subject": "Messages Phase 1: presence, reactions, threading, Teams-quality file sharing",
-      "when": "70 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "d48cf15",
       "subject": "Messages Phase 4: reactions, reply threading, read receipts, drag & drop, paste, presence",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "9512f42",
       "subject": "Messages Phase 3: typing indicators, file sharing, unread nav badge, nav promotion",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "ddecef9",
@@ -95,11 +100,6 @@
       "hash": "6a1b07c",
       "subject": "Team Messaging v1: Messages page + Supabase Realtime",
       "when": "4 hours ago"
-    },
-    {
-      "hash": "f35c8f9",
-      "subject": "FIX: Draft save — frontend blocked empty To + param name mismatch",
-      "when": "5 hours ago"
     }
   ]
 }

@@ -4,6 +4,80 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 const API = 'https://api.vanhawke.agency'
+
+// Call tones — Web Audio API (no external files)
+class CallTones {
+  constructor() { this.ctx = null; this.activeOsc = []; this.loopTimer = null }
+  
+  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); return this.ctx }
+  
+  stop() {
+    this.activeOsc.forEach(o => { try { o.stop(); o.disconnect() } catch(e) {} })
+    this.activeOsc = []
+    if (this.loopTimer) { clearInterval(this.loopTimer); this.loopTimer = null }
+  }
+  
+  _tone(freq, duration, vol = 0.15) {
+    const ctx = this.init()
+    const osc = ctx.createOscillator(); const gain = ctx.createGain()
+    osc.type = 'sine'; osc.frequency.value = freq
+    gain.gain.value = vol
+    osc.connect(gain); gain.connect(ctx.destination)
+    osc.start(); this.activeOsc.push(osc)
+    gain.gain.setValueAtTime(vol, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration)
+    osc.stop(ctx.currentTime + duration)
+    setTimeout(() => { this.activeOsc = this.activeOsc.filter(o => o !== osc) }, duration * 1000 + 50)
+  }
+
+  // Outgoing ring — UK-style double ring: brr-brr... pause... brr-brr...
+  ringOutgoing() {
+    this.stop()
+    const play = () => {
+      this._tone(440, 0.4, 0.12); this._tone(480, 0.4, 0.12)
+      setTimeout(() => { this._tone(440, 0.4, 0.12); this._tone(480, 0.4, 0.12) }, 500)
+    }
+    play()
+    this.loopTimer = setInterval(play, 3000)
+  }
+
+  // Incoming ring — ascending two-tone chime
+  ringIncoming() {
+    this.stop()
+    const play = () => {
+      this._tone(523, 0.3, 0.18)
+      setTimeout(() => this._tone(659, 0.3, 0.18), 200)
+      setTimeout(() => this._tone(784, 0.4, 0.15), 400)
+    }
+    play()
+    this.loopTimer = setInterval(play, 2500)
+  }
+
+  // Connected — brief rising pip
+  connected() {
+    this.stop()
+    this._tone(440, 0.1, 0.1)
+    setTimeout(() => this._tone(660, 0.15, 0.1), 100)
+  }
+
+  // Ended/hangup — three descending tones
+  ended() {
+    this.stop()
+    this._tone(480, 0.2, 0.12)
+    setTimeout(() => this._tone(400, 0.2, 0.12), 250)
+    setTimeout(() => this._tone(320, 0.35, 0.1), 500)
+  }
+
+  // Busy/declined — fast repetitive beeps
+  busy() {
+    this.stop()
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => this._tone(480, 0.15, 0.1), i * 300)
+    }
+  }
+}
+
+const tones = new CallTones()
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
@@ -37,6 +111,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === 'connected') {
         setCallState('connected')
+        tones.connected() // Brief pip sound on connect
         durationTimerRef.current = setInterval(() => setCallDuration(d => d + 1), 1000)
         // Update call history
         if (callIdRef.current) {
@@ -60,6 +135,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
   const startCall = useCallback(async (recipientId, recipientName) => {
     if (callState !== 'idle') return
     setCallState('calling'); setRemoteName(recipientName); setCallDuration(0)
+    tones.ringOutgoing() // Caller hears ringing sound
     try {
       const stream = await getMicrophone()
       const pc = createPC()
@@ -108,6 +184,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
   // Answer call (recipient side)
   const answerCall = useCallback(async (offer, callerName, incomingCallId) => {
     setCallState('connected'); setRemoteName(callerName); setCallDuration(0)
+    tones.connected() // Stop ringing, play connect pip
     callIdRef.current = incomingCallId; setCallId(incomingCallId)
     try {
       const stream = await getMicrophone()
@@ -139,6 +216,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
 
   // Decline call
   const declineCall = useCallback(() => {
+    tones.busy() // Busy/declined beeps
     if (signalingRef.current) {
       signalingRef.current.send({ type: 'broadcast', event: 'hangup', payload: { from: userId, reason: 'declined' } })
     }
@@ -150,6 +228,10 @@ export function useVoiceCall({ userId, userName, channelId }) {
 
   // End call
   const endCall = useCallback((reason = 'ended') => {
+    // Play appropriate tone based on reason
+    if (reason === 'missed' || reason === 'declined') tones.busy()
+    else if (reason === 'ended') tones.ended()
+    else tones.stop()
     if (pcRef.current) { pcRef.current.close(); pcRef.current = null }
     if (localStreamRef.current) { localStreamRef.current.getTracks().forEach(t => t.stop()); localStreamRef.current = null }
     if (signalingRef.current) {
@@ -182,6 +264,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
         signalingRef.current = ch
         setCallState('ringing')
         setRemoteName(payload.callerName || 'Unknown')
+        tones.ringIncoming() // Play incoming ringtone
         callIdRef.current = payload.callId
         setCallId(payload.callId)
         // Store offer for answering
