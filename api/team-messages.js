@@ -91,7 +91,6 @@ export default async function handler(req, res) {
       case 'read': {
         const { channelId, userId } = req.body || {};
         if (!channelId || !userId) return res.status(400).json({ error: 'Missing channelId or userId' });
-        // Mark all messages in channel as read by this user
         const unread = await sbFetch(`kiko_team_messages?channel_id=eq.${channelId}&read_by=not.cs.{${userId}}&select=id,read_by`);
         for (const msg of (unread || [])) {
           const newReadBy = [...(msg.read_by || []), userId];
@@ -100,6 +99,78 @@ export default async function handler(req, res) {
           });
         }
         return res.json({ success: true, marked: unread?.length || 0 });
+      }
+
+      case 'presence': {
+        const { userId, status, statusMessage } = req.body || {};
+        if (!userId) return res.status(400).json({ error: 'Missing userId' });
+        if (status) {
+          await sbFetch(`kiko_user_presence?user_id=eq.${userId}`, {
+            method: 'PATCH', body: JSON.stringify({ status, status_message: statusMessage || null, last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+          });
+        }
+        const all = await sbFetch('kiko_user_presence?select=user_id,status,status_message,last_seen_at');
+        return res.json({ presence: all || [] });
+      }
+
+      case 'react': {
+        const { messageId, userId, emoji } = req.body || {};
+        if (!messageId || !userId || !emoji) return res.status(400).json({ error: 'Missing messageId, userId, or emoji' });
+        const msgs = await sbFetch(`kiko_team_messages?id=eq.${messageId}&select=reactions`);
+        const msg = msgs?.[0];
+        if (!msg) return res.status(404).json({ error: 'Message not found' });
+        const reactions = msg.reactions || {};
+        const users = reactions[emoji] || [];
+        if (users.includes(userId)) {
+          reactions[emoji] = users.filter(u => u !== userId);
+          if (reactions[emoji].length === 0) delete reactions[emoji];
+        } else {
+          reactions[emoji] = [...users, userId];
+        }
+        await sbFetch(`kiko_team_messages?id=eq.${messageId}`, {
+          method: 'PATCH', body: JSON.stringify({ reactions })
+        });
+        return res.json({ success: true, reactions });
+      }
+
+      case 'edit': {
+        const { messageId, userId, content } = req.body || {};
+        if (!messageId || !userId || !content) return res.status(400).json({ error: 'Missing fields' });
+        const msgs = await sbFetch(`kiko_team_messages?id=eq.${messageId}&from_user_id=eq.${userId}&select=id`);
+        if (!msgs?.length) return res.status(403).json({ error: 'Cannot edit this message' });
+        await sbFetch(`kiko_team_messages?id=eq.${messageId}`, {
+          method: 'PATCH', body: JSON.stringify({ content, edited_at: new Date().toISOString() })
+        });
+        return res.json({ success: true });
+      }
+
+      case 'delete': {
+        const { messageId, userId } = req.body || {};
+        if (!messageId || !userId) return res.status(400).json({ error: 'Missing fields' });
+        const msgs = await sbFetch(`kiko_team_messages?id=eq.${messageId}&from_user_id=eq.${userId}&select=id`);
+        if (!msgs?.length) return res.status(403).json({ error: 'Cannot delete this message' });
+        await sbFetch(`kiko_team_messages?id=eq.${messageId}`, {
+          method: 'PATCH', body: JSON.stringify({ deleted_at: new Date().toISOString(), content: 'This message was deleted' })
+        });
+        return res.json({ success: true });
+      }
+
+      case 'react': {
+        const { messageId, userId, emoji } = req.body || {};
+        if (!messageId || !userId || !emoji) return res.status(400).json({ error: 'Missing fields' });
+        const msgs = await sbFetch(`kiko_team_messages?id=eq.${messageId}&select=reactions`);
+        const msg = msgs?.[0];
+        if (!msg) return res.status(404).json({ error: 'Message not found' });
+        const reactions = msg.reactions || {};
+        const users = reactions[emoji] || [];
+        if (users.includes(userId)) {
+          reactions[emoji] = users.filter(u => u !== userId);
+          if (reactions[emoji].length === 0) delete reactions[emoji];
+        } else {
+          reactions[emoji] = [...users, userId];
+        }
+        await sbFetch(`kiko_team_messages?id=eq.${messageId}`, { method: 'PATCH', body: JSON.stringify({ reactions }) });
+        return res.json({ success: true });
       }
 
       default:
