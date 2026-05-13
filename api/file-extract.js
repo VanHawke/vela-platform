@@ -1,12 +1,13 @@
-import mammoth from 'mammoth';
-import { parseOffice } from 'officeparser';
-import { createRequire } from 'module';
+import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const pdfParse = require('pdf-parse');
-
+const mammoth = require("mammoth");
+const { parseOffice } = require("officeparser");
+const pdfParseModule = require("pdf-parse");
+const pdfParse = typeof pdfParseModule === "function" ? pdfParseModule : (pdfParseModule.default || pdfParseModule);
 const SB_URL = () => process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SB_KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
+export const config = { maxDuration: 30, api: { bodyParser: { sizeLimit: '12mb' } } };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
