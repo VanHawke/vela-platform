@@ -180,6 +180,27 @@ export default async function handler(req, res) {
         return res.json({ success: true });
       }
 
+      case 'unfurl': {
+        const { url } = req.body || {};
+        if (!url) return res.status(400).json({ error: 'Missing url' });
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 5000);
+          const r = await fetch(url, { signal: controller.signal, headers: { 'User-Agent': 'Mozilla/5.0 (compatible; KikoBot/1.0)' } });
+          clearTimeout(timeout);
+          const html = await r.text();
+          const getOG = (prop) => { const m = html.match(new RegExp(`<meta[^>]*property=["']og:${prop}["'][^>]*content=["']([^"']+)["']`, 'i')) || html.match(new RegExp(`<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:${prop}["']`, 'i')); return m?.[1] || '' }
+          const title = getOG('title') || (html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '').trim()
+          const description = getOG('description') || (html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)?.[1] || '')
+          const image = getOG('image')
+          const siteName = getOG('site_name')
+          if (!title && !description) return res.json({ preview: null })
+          return res.json({ preview: { title, description: description.slice(0, 200), image, siteName, url } })
+        } catch (e) {
+          return res.json({ preview: null })
+        }
+      }
+
       case 'react': {
         const { messageId, userId, emoji } = req.body || {};
         if (!messageId || !userId || !emoji) return res.status(400).json({ error: 'Missing fields' });

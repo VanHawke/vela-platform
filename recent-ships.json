@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-05-13T16:23:29.012Z",
+  "generated_at": "2026-05-13T16:25:31.135Z",
   "commits": [
+    {
+      "hash": "b751cf9",
+      "subject": "Messages: notification preferences (mute channels) + muted indicator",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "062c094",
       "subject": "LinkedIn fix: re-queued 89 invites, added keepalive to scheduler",
-      "when": "2 minutes ago"
+      "when": "4 minutes ago"
     },
     {
       "hash": "27923e8",
       "subject": "Messages Phase 4: shared files tab, channel settings, rename",
-      "when": "7 minutes ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "6bc2672",
       "subject": "Messages Phase 4: pin messages, contact cards, @mention autocomplete",
-      "when": "10 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "dbd5e2d",
       "subject": "Messages: contact cards + clickable avatars",
-      "when": "11 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "b03a995",
       "subject": "Messages: @mention autocomplete with dropdown",
-      "when": "12 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "928813c",
       "subject": "Messages Phase 3: edit, delete, search, markdown, hover actions",
-      "when": "18 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "75132c5",
       "subject": "Messages Phase 1: presence, reactions, threading, Teams-quality file sharing",
-      "when": "25 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "d48cf15",
       "subject": "Messages Phase 4: reactions, reply threading, read receipts, drag & drop, paste, presence",
-      "when": "41 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "9512f42",
@@ -95,11 +100,6 @@
       "hash": "f9fbd1b",
       "subject": "FIX: File extraction — mammoth/pdf-parse/officeparser imports fixed",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "bd6caca",
-      "subject": "LinkedIn campaign fully operational: 89 invites queued, sourcing pipeline fixed",
-      "when": "7 hours ago"
     }
   ]
 }

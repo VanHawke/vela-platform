@@ -59,6 +59,27 @@ function FileCard({ content, isMine }) {
   )
 }
 
+// Link preview — auto-unfurl URLs in messages
+function LinkPreview({ url, isMine }) {
+  const [preview, setPreview] = useState(null)
+  useEffect(() => {
+    if (!url) return
+    fetch(`${API}/api/team-messages?action=unfurl`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) })
+      .then(r => r.json()).then(d => { if (d.preview) setPreview(d.preview) }).catch(() => {})
+  }, [url])
+  if (!preview) return null
+  return (
+    <a href={preview.url} target="_blank" rel="noopener" style={{ display: 'block', marginTop: 6, borderRadius: 10, overflow: 'hidden', border: `1px solid ${isMine ? 'rgba(255,255,255,0.15)' : C.borderLight}`, textDecoration: 'none', maxWidth: 320 }}>
+      {preview.image && <img src={preview.image} alt="" style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block' }} onError={e => e.target.style.display = 'none'} />}
+      <div style={{ padding: '8px 10px', background: isMine ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.02)' }}>
+        {preview.siteName && <div style={{ fontSize: 10, color: isMine ? 'rgba(255,255,255,0.6)' : C.muted, marginBottom: 2 }}>{preview.siteName}</div>}
+        <div style={{ fontSize: 12, fontWeight: 600, color: isMine ? '#fff' : C.text, lineHeight: 1.3 }}>{preview.title}</div>
+        {preview.description && <div style={{ fontSize: 11, color: isMine ? 'rgba(255,255,255,0.7)' : C.sub, marginTop: 3, lineHeight: 1.4 }}>{preview.description.slice(0, 120)}{preview.description.length > 120 ? '...' : ''}</div>}
+      </div>
+    </a>
+  )
+}
+
 export default function Messages({ user }) {
   const [channels, setChannels] = useState([])
   const [activeChannel, setActiveChannel] = useState(null)
@@ -384,6 +405,8 @@ export default function Messages({ user }) {
                       )}
                   </div>
                   {msg.edited_at && !isDeleted && <span style={{ fontSize: 9, color: C.muted, marginLeft: 4 }}>(edited)</span>}
+                  {/* Link preview for URLs in messages */}
+                  {!isDeleted && !isFile && (() => { const urlMatch = msg.content?.match(/(https?:\/\/[^\s]+)/); return urlMatch ? <LinkPreview url={urlMatch[1]} isMine={isMine} /> : null })()}
                   {Object.keys(reactions).length > 0 && <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>{Object.entries(reactions).map(([emoji, users]) => <button key={emoji} onClick={() => handleReact(msg.id, emoji)} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 6px', borderRadius: 10, fontSize: 12, cursor: 'pointer', background: users.includes(userId) ? C.accentSoft : 'rgba(0,0,0,0.03)', border: `1px solid ${users.includes(userId) ? C.accent : C.borderLight}` }}>{emoji} <span style={{ fontSize: 10, color: C.sub }}>{users.length}</span></button>)}</div>}
                   <div style={{ fontSize: 10, color: C.muted, marginTop: 3, textAlign: isMine ? 'right' : 'left', display: 'flex', alignItems: 'center', gap: 4, justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
                     {new Date(msg.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
