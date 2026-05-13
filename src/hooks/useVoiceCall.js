@@ -175,8 +175,13 @@ export function useVoiceCall({ userId, userName, channelId }) {
       const data = await res.json()
       callIdRef.current = data.callId; setCallId(data.callId)
 
-      // Broadcast offer
-      ch.send({ type: 'broadcast', event: 'offer', payload: { offer, from: userId, callerName: userName, callId: data.callId, timestamp: Date.now() } })
+      // Broadcast offer on channel-specific AND recipient-specific channels
+      ch.send({ type: 'broadcast', event: 'offer', payload: { offer, from: userId, callerName: userName, callId: data.callId, channelId, timestamp: Date.now() } })
+      // Also notify recipient globally (for when they're not on Messages page)
+      const globalCh = supabase.channel(`call-notify-${recipientId}`)
+      await globalCh.subscribe()
+      globalCh.send({ type: 'broadcast', event: 'incoming-call', payload: { from: userId, callerName: userName, callId: data.callId, channelId, timestamp: Date.now() } })
+      setTimeout(() => supabase.removeChannel(globalCh), 2000)
 
       // Auto-end after 30s if no answer
       setTimeout(() => { if (callState === 'calling') endCall('missed') }, 30000)
