@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-05-13T13:31:33.456Z",
+  "generated_at": "2026-05-13T13:39:15.016Z",
   "commits": [
+    {
+      "hash": "ddecef9",
+      "subject": "Team Messages Phase 2: @kiko bot + desktop notifications",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "034d6fa",
       "subject": "Messages: fix duplicate messages + deploy missing linkedin-cookie-import",
-      "when": "2 minutes ago"
+      "when": "10 minutes ago"
     },
     {
       "hash": "6a1b07c",
       "subject": "Team Messaging v1: Messages page + Supabase Realtime",
-      "when": "7 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "f35c8f9",
@@ -74,7 +79,7 @@
     {
       "hash": "f92f806",
       "subject": "Campaign overview: now shows engagement data (opens, clicks, hot/warm/replied leads)",
-      "when": "27 hours ago"
+      "when": "28 hours ago"
     },
     {
       "hash": "990aecc",
@@ -94,11 +99,6 @@
     {
       "hash": "5c094e5",
       "subject": "LinkedIn Social Listening: cron-linkedin-social-listen.js",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "7e0c2d4",
-      "subject": "FIX: Streaming hang (tick checks streamingRef) + orange hue eliminated",
       "when": "2 days ago"
     }
   ]

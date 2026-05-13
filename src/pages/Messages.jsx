@@ -33,8 +33,12 @@ export default function Messages({ user }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [typingUsers, setTypingUsers] = useState([])
+  const [totalUnread, setTotalUnread] = useState(0)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  const fileInputRef = useRef(null)
+  const typingTimeoutRef = useRef(null)
 
   const userId = user?.id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Sunny'
@@ -110,7 +114,36 @@ export default function Messages({ user }) {
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [activeChannel, loadChannels])
+  }, [activeChannel, loadChannels, channels, userId])
+
+  // Typing indicator via Realtime broadcast
+  useEffect(() => {
+    if (!activeChannel) return
+    const typingChannel = supabase.channel(`typing-${activeChannel}`)
+      .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        if (payload.userId !== userId) {
+          setTypingUsers(prev => {
+            const exists = prev.find(u => u.userId === payload.userId)
+            if (exists) return prev
+            return [...prev, { userId: payload.userId, name: payload.name }]
+          })
+          // Clear after 3 seconds
+          setTimeout(() => {
+            setTypingUsers(prev => prev.filter(u => u.userId !== payload.userId))
+          }, 3000)
+        }
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(typingChannel) }
+  }, [activeChannel, userId])
+
+  // Broadcast total unread to nav bar
+  useEffect(() => {
+    const total = channels.reduce((sum, ch) => sum + (ch.unreadCount || 0), 0)
+    setTotalUnread(total)
+    // Dispatch custom event for nav badge
+    window.dispatchEvent(new CustomEvent('kiko_unread_messages', { detail: { count: total } }))
+  }, [channels])
 
   // Send message
   const sendMessage = async () => {
@@ -132,6 +165,51 @@ export default function Messages({ user }) {
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+  }
+
+  // Broadcast typing on input change
+  const handleInputChange = (e) => {
+    setInput(e.target.value)
+    if (!activeChannel) return
+    // Throttle: only broadcast every 2 seconds
+    if (!typingTimeoutRef.current) {
+      supabase.channel(`typing-${activeChannel}`).send({ type: 'broadcast', event: 'typing', payload: { userId, name: userName } }).catch(() => {})
+      typingTimeoutRef.current = setTimeout(() => { typingTimeoutRef.current = null }, 2000)
+    }
+  }
+
+  // File upload handler
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !activeChannel) return
+    e.target.value = ''
+    const isImage = file.type.startsWith('image/')
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) { alert('File too large (max 5MB)'); return }
+    
+    // Upload to Supabase Storage
+    const ext = file.name.split('.').pop()
+    const path = `team-chat/${activeChannel}/${Date.now()}.${ext}`
+    const { data, error } = await supabase.storage.from('vela-assets').upload(path, file, { contentType: file.type })
+    if (error) { console.error('[Messages] Upload failed:', error); return }
+    
+    const { data: urlData } = supabase.storage.from('vela-assets').getPublicUrl(path)
+    const publicUrl = urlData?.publicUrl
+    
+    // Send as message with attachment info
+    const content = isImage
+      ? `📎 [Image: ${file.name}](${publicUrl})`
+      : `📎 [File: ${file.name}](${publicUrl})`
+    
+    const optimistic = { id: 'temp-' + Date.now(), channel_id: activeChannel, from_user_id: userId, from_name: userName, content, message_type: 'text', created_at: new Date().toISOString() }
+    setMessages(prev => [...prev, optimistic])
+    
+    try {
+      await fetch(`${API}/api/team-messages?action=send`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channelId: activeChannel, fromUserId: userId, fromName: userName, content })
+      })
+    } catch (e) { console.error('[Messages] File send failed:', e) }
   }
 
   const activeChannelData = channels.find(c => c.id === activeChannel)
@@ -256,7 +334,17 @@ export default function Messages({ user }) {
                     color: isMine ? '#FFFFFF' : C.text,
                     whiteSpace: 'pre-wrap', wordBreak: 'break-word',
                   }}>
-                    {msg.content}
+                    {/* Render images inline */}
+                    {msg.content.match(/📎 \[Image: [^\]]+\]\((https?:\/\/[^)]+)\)/) ? (
+                      <div>
+                        <img src={msg.content.match(/\((https?:\/\/[^)]+)\)/)[1]} alt="" style={{ maxWidth: 280, maxHeight: 200, borderRadius: 8, display: 'block', marginBottom: 4 }} />
+                        <span style={{ fontSize: 11, opacity: 0.7 }}>{msg.content.match(/\[Image: ([^\]]+)\]/)?.[1]}</span>
+                      </div>
+                    ) : msg.content.match(/📎 \[File: [^\]]+\]\((https?:\/\/[^)]+)\)/) ? (
+                      <a href={msg.content.match(/\((https?:\/\/[^)]+)\)/)[1]} target="_blank" rel="noopener" style={{ color: isMine ? '#fff' : C.accent, textDecoration: 'underline' }}>
+                        📎 {msg.content.match(/\[File: ([^\]]+)\]/)?.[1]}
+                      </a>
+                    ) : msg.content}
                   </div>
                   <div style={{ fontSize: 10, color: C.muted, marginTop: 3, textAlign: isMine ? 'right' : 'left', paddingLeft: 2, paddingRight: 2 }}>
                     {new Date(msg.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
@@ -268,17 +356,25 @@ export default function Messages({ user }) {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Typing indicator */}
+        {typingUsers.length > 0 && (
+          <div style={{ padding: '2px 24px 0', fontSize: 11, color: C.muted, fontFamily: C.font, fontStyle: 'italic' }}>
+            {typingUsers.map(u => u.name).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+          </div>
+        )}
+
         {/* Input */}
         <div style={{ padding: '10px 24px 16px' }}>
+          <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx,.xlsx,.txt" onChange={handleFileUpload} style={{ display: 'none' }} />
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '4px 4px 4px 6px',
             borderRadius: 16, border: `1px solid ${C.border}`, background: C.bg,
             boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}>
-            <button style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, color: C.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 13 }}>+</button>
+            <button onClick={() => fileInputRef.current?.click()} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, color: C.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 13 }}>+</button>
             <input
               ref={inputRef}
-              value={input} onChange={e => setInput(e.target.value)}
+              value={input} onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: C.text, fontSize: 13, fontFamily: C.font, padding: '6px 4px' }}

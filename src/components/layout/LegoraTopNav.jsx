@@ -165,6 +165,14 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
     }
   }, [])
 
+  // Unread messages badge
+  const [unreadMessages, setUnreadMessages] = useState(0)
+  useEffect(() => {
+    const handler = (e) => setUnreadMessages(e.detail?.count || 0)
+    window.addEventListener('kiko_unread_messages', handler)
+    return () => window.removeEventListener('kiko_unread_messages', handler)
+  }, [])
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     window.location.href = '/login'
@@ -226,6 +234,9 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
             }}
           >
             {tab.label}
+            {tab.id === 'messages' && unreadMessages > 0 && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 16, height: 16, borderRadius: 8, background: '#E8700A', color: '#fff', fontSize: 9, fontWeight: 700, padding: '0 4px', marginLeft: 5 }}>{unreadMessages}</span>
+            )}
             {tab.showPlus && <span className="ltn-plus">+</span>}
           </button>
         ))}
