@@ -356,7 +356,7 @@ export function buildMimeWithInlineImages({ from, to, subject, htmlBody, plainBo
   const boundaryRel = `b_rel_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   let mime = '';
-  if (to) mime += `To: ${to}\r\n`;
+  mime += `To: ${to}\r\n`;
   mime += `From: ${from}\r\n`;
   mime += `Subject: ${subject}\r\n`;
   if (threadId) mime += `In-Reply-To: <${threadId}>\r\nReferences: <${threadId}>\r\n`;

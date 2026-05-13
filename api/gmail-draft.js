@@ -32,7 +32,7 @@ function buildRawEmail({ from, to, subject, htmlBody, plainBody }) {
   const boundary = 'boundary_' + Date.now()
   const lines = [
     `From: ${from}`,
-    ...(to ? [`To: ${to}`] : []),
+    ...[`To: ${to || 'undisclosed-recipients:;'}`],
     `Subject: ${encodedSubject}`,
     `MIME-Version: 1.0`,
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
 
     const raw = buildMimeWithInlineImages({
       from: `${senderDisplayName} <${fromAddress}>`,
-      to: to || '',
+      to: to || fromAddress,
       subject: encodedSubject,
       htmlBody,
       plainBody,
