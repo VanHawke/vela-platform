@@ -2,8 +2,7 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const mammoth = require("mammoth");
 const { parseOffice } = require("officeparser");
-const pdfParseModule = require("pdf-parse");
-const pdfParse = typeof pdfParseModule === "function" ? pdfParseModule : (pdfParseModule.default || pdfParseModule);
+const pdfParse = require("pdf-parse");
 const SB_URL = () => process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SB_KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
