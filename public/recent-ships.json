@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-13T16:04:54.429Z",
+  "generated_at": "2026-05-13T16:10:48.433Z",
   "commits": [
+    {
+      "hash": "928813c",
+      "subject": "Messages Phase 3: edit, delete, search, markdown, hover actions",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "75132c5",
       "subject": "Messages Phase 1: presence, reactions, threading, Teams-quality file sharing",
-      "when": "7 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "d48cf15",
       "subject": "Messages Phase 4: reactions, reply threading, read receipts, drag & drop, paste, presence",
-      "when": "23 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "9512f42",
       "subject": "Messages Phase 3: typing indicators, file sharing, unread nav badge, nav promotion",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ddecef9",
@@ -49,7 +54,7 @@
     {
       "hash": "483f18b",
       "subject": "FIX: Gmail draft allows empty To field",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "77ecf27",
@@ -95,11 +100,6 @@
       "hash": "f92f806",
       "subject": "Campaign overview: now shows engagement data (opens, clicks, hot/warm/replied leads)",
       "when": "30 hours ago"
-    },
-    {
-      "hash": "990aecc",
-      "subject": "Session 66 final cleanup + documentation",
-      "when": "2 days ago"
     }
   ]
 }

@@ -175,6 +175,53 @@ export default function Messages({ user }) {
     ? messages.filter(m => m.content?.toLowerCase().includes(searchQuery.toLowerCase()) || m.from_name?.toLowerCase().includes(searchQuery.toLowerCase()))
     : messages
 
+  // @mention autocomplete
+  const TEAM_MEMBERS = [
+    { id: '9f486437-4bf5-4111-abfe-fe19bfa76063', name: 'Sunny Sidhu', role: 'CEO' },
+    { id: 'e818b670-e3e0-4956-b681-e1a42e8bd85c', name: 'Matt Smith', role: 'Campaign Manager' },
+    { id: '00000000-0000-0000-0000-000000000000', name: 'Kiko', role: 'AI Assistant' },
+  ]
+  const [mentionQuery, setMentionQuery] = useState('')
+  const [showMentions, setShowMentions] = useState(false)
+  const [mentionIdx, setMentionIdx] = useState(0)
+  const [contactCard, setContactCard] = useState(null)
+
+  const mentionMatches = TEAM_MEMBERS.filter(m => m.name.toLowerCase().includes(mentionQuery.toLowerCase()))
+
+  const handleInputChangeWithMention = (e) => {
+    const val = e.target.value; setInput(val)
+    // Detect @ trigger
+    const cursorPos = e.target.selectionStart
+    const textBefore = val.slice(0, cursorPos)
+    const atIdx = textBefore.lastIndexOf('@')
+    if (atIdx >= 0 && (atIdx === 0 || textBefore[atIdx - 1] === ' ')) {
+      const query = textBefore.slice(atIdx + 1)
+      if (!query.includes(' ') && query.length < 20) { setMentionQuery(query); setShowMentions(true); setMentionIdx(0); return }
+    }
+    setShowMentions(false)
+    // Typing broadcast
+    if (activeChannel && !typingTimeoutRef.current) { supabase.channel(`typing-${activeChannel}`).send({ type: 'broadcast', event: 'typing', payload: { userId, name: userName } }).catch(() => {}); typingTimeoutRef.current = setTimeout(() => { typingTimeoutRef.current = null }, 2000) }
+  }
+
+  const insertMention = (member) => {
+    const cursorPos = inputRef.current?.selectionStart || input.length
+    const textBefore = input.slice(0, cursorPos)
+    const atIdx = textBefore.lastIndexOf('@')
+    const newInput = input.slice(0, atIdx) + `@${member.name} ` + input.slice(cursorPos)
+    setInput(newInput); setShowMentions(false)
+    setTimeout(() => inputRef.current?.focus(), 0)
+  }
+
+  const handleMentionKeyDown = (e) => {
+    if (showMentions && mentionMatches.length > 0) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setMentionIdx(i => Math.min(i + 1, mentionMatches.length - 1)) }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setMentionIdx(i => Math.max(i - 1, 0)) }
+      else if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); insertMention(mentionMatches[mentionIdx]); return }
+      else if (e.key === 'Escape') { setShowMentions(false); return }
+    }
+    if (e.key === 'Enter' && !e.shiftKey && !showMentions) { e.preventDefault(); sendMessage() }
+  }
+
   const handleInputChange = (e) => { setInput(e.target.value); if (activeChannel && !typingTimeoutRef.current) { supabase.channel(`typing-${activeChannel}`).send({ type: 'broadcast', event: 'typing', payload: { userId, name: userName } }).catch(() => {}); typingTimeoutRef.current = setTimeout(() => { typingTimeoutRef.current = null }, 2000) } }
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }
 
@@ -365,10 +412,21 @@ export default function Messages({ user }) {
         {/* Input area */}
         <div style={{ padding: '10px 24px 16px' }}>
           <input ref={fileInputRef} type="file" accept="*/*" multiple onChange={handleFileInput} style={{ display: 'none' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 4px 4px 6px', borderRadius: 16, border: `1px solid ${C.border}`, background: C.bg, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 4px 4px 6px', borderRadius: 16, border: `1px solid ${C.border}`, background: C.bg, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', position: 'relative' }}>
+            {/* @mention dropdown */}
+            {showMentions && mentionMatches.length > 0 && (
+              <div style={{ position: 'absolute', bottom: '100%', left: 6, marginBottom: 4, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.1)', overflow: 'hidden', minWidth: 200, zIndex: 20 }}>
+                {mentionMatches.map((m, idx) => (
+                  <div key={m.id} onClick={() => insertMention(m)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', cursor: 'pointer', background: idx === mentionIdx ? C.accentSoft : 'transparent', borderBottom: idx < mentionMatches.length - 1 ? `1px solid ${C.borderLight}` : 'none' }}>
+                    <Avatar name={m.name} size={24} color={m.name === 'Kiko' ? C.purple : undefined} />
+                    <div><div style={{ fontSize: 12, fontWeight: 600 }}>{m.name}</div><div style={{ fontSize: 10, color: C.muted }}>{m.role}</div></div>
+                  </div>
+                ))}
+              </div>
+            )}
             <button onClick={() => fileInputRef.current?.click()} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, color: C.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 13 }}>+</button>
-            <input ref={inputRef} value={input} onChange={handleInputChange} onKeyDown={handleKeyDown} onPaste={handlePaste}
-              placeholder={stagedFiles.length ? `Add a message to ${stagedFiles.length} file${stagedFiles.length > 1 ? 's' : ''}...` : 'Type a message...'}
+            <input ref={inputRef} value={input} onChange={handleInputChangeWithMention} onKeyDown={handleMentionKeyDown} onPaste={handlePaste}
+              placeholder={stagedFiles.length ? `Add a message to ${stagedFiles.length} file${stagedFiles.length > 1 ? 's' : ''}...` : 'Type a message... @ to mention'}
               style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: C.text, fontSize: 13, fontFamily: C.font, padding: '6px 4px' }} />
             <span style={{ fontSize: 11, color: C.muted, whiteSpace: 'nowrap', marginRight: 4 }}>@kiko for AI</span>
             <button onClick={sendMessage} disabled={(!input.trim() && stagedFiles.length === 0) || sending} style={{
