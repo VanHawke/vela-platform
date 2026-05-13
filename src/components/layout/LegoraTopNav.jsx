@@ -278,6 +278,15 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
             <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
         </button>
+        {/* Messages shortcut */}
+        <button className="ltn-icon" onClick={() => nav('/messages')} title="Messages" style={{ position: 'relative' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+          </svg>
+          {unreadMessages > 0 && (
+            <span className="ltn-dot" style={{ background: '#E8700A' }}>{unreadMessages > 9 ? '9+' : unreadMessages}</span>
+          )}
+        </button>
         <div ref={tasksRef} style={{ position: 'relative' }}>
           <button className="ltn-icon" onClick={() => setTasksOpen(!tasksOpen)} title="Background tasks">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: bgTasks.filter(t => t.status === 'queued' || t.status === 'processing').length > 0 ? 1 : 0.6 }}>

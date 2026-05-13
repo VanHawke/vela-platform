@@ -323,7 +323,7 @@ export default function Messages({ user }) {
       <div style={{ width: 280, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0, background: C.surface }}>
         <div style={{ padding: '16px 16px 12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>Messages</h2>
+            <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '1.1px', textTransform: 'uppercase', color: C.sub }}>Messages</div>
             <button style={{ width: 28, height: 28, borderRadius: 8, background: C.accent, border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="plus" size={14} color="#fff" /></button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: C.bg, border: `1px solid ${C.border}` }}>
