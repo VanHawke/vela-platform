@@ -1052,6 +1052,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             ))}
           </div>
         )}
+        {/* File processing indicator */}
+        {fileUploading && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', marginBottom: 6, borderRadius: 8, background: 'rgba(180,90,40,0.04)', border: '1px solid rgba(180,90,40,0.1)' }}>
+            <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(180,90,40,0.2)', borderTopColor: '#B45A28', animation: 'kikoSpin 0.8s linear infinite' }} />
+            <span style={{ fontSize: 12, color: '#B45A28', fontFamily: C.font }}>Processing file...</span>
+          </div>
+        )}
         <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" multiple onChange={e => { const files = e.target.files; if (files) { for (const f of files) processFileForKiko(f) }; e.target.value = '' }} style={{ display: 'none' }} />
 
         {welcome ? (
