@@ -155,6 +155,22 @@ export default async function handler(req, res) {
         return res.json({ success: true });
       }
 
+      case 'pin': {
+        const { messageId, pinned } = req.body || {};
+        if (!messageId) return res.status(400).json({ error: 'Missing messageId' });
+        await sbFetch(`kiko_team_messages?id=eq.${messageId}`, {
+          method: 'PATCH', body: JSON.stringify({ pinned: pinned !== false })
+        });
+        return res.json({ success: true });
+      }
+
+      case 'pinned': {
+        const { channelId } = req.body || {};
+        if (!channelId) return res.status(400).json({ error: 'Missing channelId' });
+        const pinned = await sbFetch(`kiko_team_messages?channel_id=eq.${channelId}&pinned=eq.true&order=created_at.desc&limit=5&select=id,content,from_name,created_at`);
+        return res.json({ pinned: pinned || [] });
+      }
+
       case 'react': {
         const { messageId, userId, emoji } = req.body || {};
         if (!messageId || !userId || !emoji) return res.status(400).json({ error: 'Missing fields' });

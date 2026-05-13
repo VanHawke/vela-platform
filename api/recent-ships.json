@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-13T16:11:52.201Z",
+  "generated_at": "2026-05-13T16:13:07.989Z",
   "commits": [
+    {
+      "hash": "dbd5e2d",
+      "subject": "Messages: contact cards + clickable avatars",
+      "when": "63 seconds ago"
+    },
     {
       "hash": "b03a995",
       "subject": "Messages: @mention autocomplete with dropdown",
-      "when": "42 seconds ago"
+      "when": "2 minutes ago"
     },
     {
       "hash": "928813c",
       "subject": "Messages Phase 3: edit, delete, search, markdown, hover actions",
-      "when": "7 minutes ago"
+      "when": "8 minutes ago"
     },
     {
       "hash": "75132c5",
       "subject": "Messages Phase 1: presence, reactions, threading, Teams-quality file sharing",
-      "when": "14 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "d48cf15",
       "subject": "Messages Phase 4: reactions, reply threading, read receipts, drag & drop, paste, presence",
-      "when": "30 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "9512f42",
@@ -95,11 +100,6 @@
       "hash": "2347517",
       "subject": "Stats fix: unique contacts not aggregate events + LinkedIn queue in campaign_overview",
       "when": "8 hours ago"
-    },
-    {
-      "hash": "db38af2",
-      "subject": "CRITICAL FIX: selfcheck-watcher was broken since deployment",
-      "when": "30 hours ago"
     }
   ]
 }
