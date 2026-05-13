@@ -55,12 +55,13 @@ function buildRawEmail({ from, to, subject, htmlBody, plainBody }) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
-  const { to, subject, body, send = false, contactStatus = 'cold', senderEmail } = req.body || {}
-  if (!subject || !body) return res.status(400).json({ error: 'Missing subject or body' })
+  const { to, subject, body, send = false, contactStatus = 'cold', senderEmail, sender, draftFor } = req.body || {}
+  const resolvedSenderEmail = senderEmail || sender || draftFor
+  if (!subject && !body) return res.status(400).json({ error: 'Missing subject or body' })
 
   try {
-    // Resolve sender — use senderEmail if provided, otherwise default to Sunny
-    const resolvedSender = senderEmail || 'sunny@vanhawke.agency'
+    // Resolve sender — use senderEmail/sender/draftFor, otherwise default to Sunny
+    const resolvedSender = resolvedSenderEmail || 'sunny@vanhawke.agency'
     // Token lookup must use .com (how Google tokens are stored)
     const tokenLookupEmail = resolvedSender.replace('@vanhawke.agency', '@vanhawke.com')
     const accessToken = await getGoogleToken(tokenLookupEmail)

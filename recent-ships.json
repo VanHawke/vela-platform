@@ -1,20 +1,40 @@
 {
-  "generated_at": "2026-05-13T11:34:32.347Z",
+  "generated_at": "2026-05-13T11:51:38.359Z",
   "commits": [
+    {
+      "hash": "fbfac99",
+      "subject": "FIX: Gmail draft without recipient — uses sender email as fallback",
+      "when": "5 minutes ago"
+    },
+    {
+      "hash": "9d9d10d",
+      "subject": "FIX: Gmail draft with empty To — fixed in buildMimeWithInlineImages",
+      "when": "8 minutes ago"
+    },
+    {
+      "hash": "483f18b",
+      "subject": "FIX: Gmail draft allows empty To field",
+      "when": "11 minutes ago"
+    },
+    {
+      "hash": "77ecf27",
+      "subject": "Upload UI: spinning indicator while processing files",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "6648f46",
       "subject": "FIX: PDF extraction — downgraded pdf-parse to v1.1.1",
-      "when": "3 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "f9fbd1b",
       "subject": "FIX: File extraction — mammoth/pdf-parse/officeparser imports fixed",
-      "when": "9 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "bd6caca",
       "subject": "LinkedIn campaign fully operational: 89 invites queued, sourcing pipeline fixed",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "8060850",
@@ -39,7 +59,7 @@
     {
       "hash": "f92f806",
       "subject": "Campaign overview: now shows engagement data (opens, clicks, hot/warm/replied leads)",
-      "when": "25 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "990aecc",
@@ -79,26 +99,6 @@
     {
       "hash": "79b161d",
       "subject": "Self-knowledge: chat UX capabilities documented",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "4dbdd69",
-      "subject": "Image paste support: Cmd+V screenshots into Kiko chat",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "31841dc",
-      "subject": "FIX: Remove duplicate KikoThinking during streaming",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "bdfee15",
-      "subject": "Chat UX: react-markdown rendering + thinking indicator + smooth streaming",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "a005e54",
-      "subject": "Smooth streaming: token buffer renders 3 chars/frame at 60fps",
       "when": "2 days ago"
     }
   ]

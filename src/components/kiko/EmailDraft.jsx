@@ -273,7 +273,7 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
   const handleSendGmail = async (member) => {
     const targetEmail = member?.email || selectedMember?.email || 'sunny@vanhawke.agency'
     const senderEmail = selectedSender?.email || 'sunny@vanhawke.agency'
-    if (!currentTo || !currentSubject) { setSent('error'); setTimeout(() => setSent(false), 3000); return }
+    if (!currentSubject && !currentBody) { setSent('error'); setTimeout(() => setSent(false), 3000); return }
     setSent('sending')
     setSendDropdownOpen(false)
     try {
