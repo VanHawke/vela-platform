@@ -295,28 +295,57 @@ export default function Messages({ user }) {
         </div>
       )}
       {/* Channel List */}
-      <div style={{ width: 280, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+      <div style={{ width: 280, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0, background: C.surface }}>
         <div style={{ padding: '16px 16px 12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>Messages</h2>
-            <button style={{ width: 28, height: 28, borderRadius: 8, background: C.accentSoft, border: 'none', color: C.accent, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>+</button>
+            <button style={{ width: 28, height: 28, borderRadius: 8, background: C.accent, border: 'none', color: '#fff', fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>+</button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: C.bg, border: `1px solid ${C.border}` }}>
+            <span style={{ fontSize: 13, color: C.muted }}>🔍</span>
+            <input placeholder="Search conversations..." style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 12, color: C.text, fontFamily: C.font }} />
           </div>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 8px' }}>
-          {channels.map(ch => {
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px' }}>
+          {/* Section: Direct Messages */}
+          <div style={{ padding: '8px 8px 4px', fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Direct Messages</div>
+          {channels.filter(ch => ch.channel_type === 'dm').map(ch => {
             const isActive = ch.id === activeChannel; const st = getPresenceStatus(ch)
             return (
-              <div key={ch.id} onClick={() => setActiveChannel(ch.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 12, cursor: 'pointer', marginBottom: 1, background: isActive ? C.accentSoft : 'transparent' }}>
-                {ch.channel_type === 'group' ? <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(124,58,237,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>👥</div> : <Avatar name={getChannelDisplayName(ch)} size={38} status={st} />}
+              <div key={ch.id} onClick={() => setActiveChannel(ch.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', borderRadius: 10, cursor: 'pointer', marginBottom: 1, background: isActive ? C.accentSoft : 'transparent', transition: 'background 100ms' }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }} onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
+                <Avatar name={getChannelDisplayName(ch)} size={36} status={st} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 13, fontWeight: ch.unreadCount ? 600 : 500 }}>{getChannelDisplayName(ch)}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      {mutedChannels.includes(ch.id) && <span style={{ fontSize: 10 }} title="Muted">🔇</span>}
+                      {mutedChannels.includes(ch.id) && <span style={{ fontSize: 10 }}>🔇</span>}
                       {ch.lastMessage && <span style={{ fontSize: 10, color: C.muted }}>{new Date(ch.lastMessage.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>}
                     </div>
                   </div>
-                  {ch.lastMessage && <div style={{ fontSize: 12, color: C.sub, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.lastMessage.from_name}: {ch.lastMessage.content?.slice(0, 50)}</div>}
+                  <div style={{ fontSize: 11, color: C.sub, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.lastMessage ? `${ch.lastMessage.from_name}: ${ch.lastMessage.content?.slice(0, 40)}` : 'No messages yet'}</div>
+                </div>
+                {ch.unreadCount > 0 && <div style={{ minWidth: 18, height: 18, borderRadius: 9, background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', padding: '0 5px', flexShrink: 0 }}>{ch.unreadCount}</div>}
+              </div>
+            )
+          })}
+          {/* Section: Channels */}
+          <div style={{ padding: '12px 8px 4px', fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Channels</div>
+          {channels.filter(ch => ch.channel_type === 'group').map(ch => {
+            const isActive = ch.id === activeChannel
+            return (
+              <div key={ch.id} onClick={() => setActiveChannel(ch.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', borderRadius: 10, cursor: 'pointer', marginBottom: 1, background: isActive ? C.accentSoft : 'transparent', transition: 'background 100ms' }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }} onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,58,237,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: C.purple, flexShrink: 0 }}>#</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 13, fontWeight: ch.unreadCount ? 600 : 500 }}>{getChannelDisplayName(ch)}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {mutedChannels.includes(ch.id) && <span style={{ fontSize: 10 }}>🔇</span>}
+                      {ch.lastMessage && <span style={{ fontSize: 10, color: C.muted }}>{new Date(ch.lastMessage.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 11, color: C.sub, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.lastMessage ? `${ch.lastMessage.from_name}: ${ch.lastMessage.content?.slice(0, 40)}` : 'Start a conversation'}</div>
                 </div>
                 {ch.unreadCount > 0 && <div style={{ minWidth: 18, height: 18, borderRadius: 9, background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', padding: '0 5px', flexShrink: 0 }}>{ch.unreadCount}</div>}
               </div>
@@ -340,17 +369,17 @@ export default function Messages({ user }) {
         {activeChannelData && (
           <div style={{ padding: '10px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {activeChannelData.channel_type === 'group' ? <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(124,58,237,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>👥</div> : <Avatar name={getChannelDisplayName(activeChannelData)} size={32} status={getPresenceStatus(activeChannelData)} />}
+              {activeChannelData.channel_type === 'group' ? <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(124,58,237,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>👥</div> : <Avatar name={getChannelDisplayName(activeChannelData)} size={32} status={getPresenceStatus(activeChannelData)} />}
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>{getChannelDisplayName(activeChannelData)}</div>
                 {(() => { const st = getPresenceStatus(activeChannelData); if (!st) return <div style={{ fontSize: 11, color: C.muted }}>{activeChannelData.members?.length || 0} members</div>; return <div style={{ fontSize: 11, color: STATUS_COLORS[st], display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: STATUS_COLORS[st] }} />{st === 'online' ? 'Online' : st === 'away' ? 'Away' : st === 'busy' ? 'Do Not Disturb' : 'Offline'}</div> })()}
               </div>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              <button style={{ height: 32, padding: '0 12px', borderRadius: 8, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.12)', color: C.green, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}>📞 Call</button>
-              <button onClick={() => setShowFilesPanel(!showFilesPanel)} style={{ height: 32, width: 32, borderRadius: 8, background: showFilesPanel ? C.accentSoft : 'rgba(0,0,0,0.02)', border: `1px solid ${showFilesPanel ? C.accent : C.border}`, color: showFilesPanel ? C.accent : C.muted, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Shared files">📁</button>
-              <button onClick={() => setSearchOpen(!searchOpen)} style={{ height: 32, width: 32, borderRadius: 8, background: searchOpen ? C.accentSoft : 'rgba(0,0,0,0.02)', border: `1px solid ${searchOpen ? C.accent : C.border}`, color: searchOpen ? C.accent : C.muted, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🔍</button>
-              <button onClick={() => { setShowChannelSettings(true); setChannelRename(getChannelDisplayName(activeChannelData)) }} style={{ height: 32, width: 32, borderRadius: 8, background: 'rgba(0,0,0,0.02)', border: `1px solid ${C.border}`, color: C.muted, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Channel settings">⚙️</button>
+              <button style={{ height: 32, padding: '0 14px', borderRadius: 8, background: C.green, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}>📞 Call</button>
+              <button onClick={() => setShowFilesPanel(!showFilesPanel)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: showFilesPanel ? C.accentSoft : C.card, border: `1px solid ${showFilesPanel ? C.accent : C.border}`, color: showFilesPanel ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}>📁 Files</button>
+              <button onClick={() => setSearchOpen(!searchOpen)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: searchOpen ? C.accentSoft : C.card, border: `1px solid ${searchOpen ? C.accent : C.border}`, color: searchOpen ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}>🔍</button>
+              <button onClick={() => { setShowChannelSettings(true); setChannelRename(getChannelDisplayName(activeChannelData)) }} style={{ height: 32, width: 32, borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.sub, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⚙️</button>
             </div>
           </div>
         )}
@@ -366,6 +395,12 @@ export default function Messages({ user }) {
         {/* Messages area */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {filteredMessages.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: C.muted, fontSize: 13 }}>{searchQuery ? 'No messages match your search.' : 'No messages yet. Start the conversation!'}</div>}
+          {/* Date separator */}
+          {filteredMessages.length > 0 && (
+            <div style={{ textAlign: 'center', padding: '4px 0 12px' }}>
+              <span style={{ fontSize: 11, color: C.muted, background: C.card, padding: '4px 14px', borderRadius: 20, fontWeight: 500 }}>Today</span>
+            </div>
+          )}
           {filteredMessages.map((msg, i) => {
             const isMine = msg.from_user_id === userId
             const showAvatar = i === 0 || messages[i - 1].from_user_id !== msg.from_user_id
@@ -382,11 +417,11 @@ export default function Messages({ user }) {
                 onMouseEnter={() => setHoveredMsg(msg.id)} onMouseLeave={() => { setHoveredMsg(null); setShowReactions(null) }}>
                 <div style={{ width: 26, flexShrink: 0, cursor: showAvatar && !isMine ? 'pointer' : 'default' }} onClick={() => { if (showAvatar && !isMine) { const member = TEAM_MEMBERS.find(m => m.name === msg.from_name); if (member) setContactCard(member) } }}>
                   {showAvatar && !isMine && <Avatar name={msg.from_name} size={26} color={isBot ? C.purple : undefined} status={presence[msg.from_user_id]?.status} />}</div>
-                <div style={{ maxWidth: '60%', position: 'relative' }}>
-                  {showAvatar && !isMine && <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 3, marginLeft: 2, color: isBot ? C.purple : C.sub }}>{msg.from_name}{isBot && <span style={{ background: 'rgba(124,58,237,0.08)', color: C.purple, padding: '1px 6px', borderRadius: 4, fontSize: 9, marginLeft: 5 }}>AI</span>}</div>}
+                <div style={{ maxWidth: '52%', position: 'relative' }}>
+                  {showAvatar && !isMine && <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 3, marginLeft: 2, color: isBot ? C.purple : C.sub }}>{msg.from_name}{isBot && <span style={{ background: 'rgba(124,58,237,0.12)', color: C.purple, padding: '1px 6px', borderRadius: 4, fontSize: 9, marginLeft: 5 }}>AI</span>}</div>}
                   {msg.pinned && <div style={{ fontSize: 10, color: C.accent, marginBottom: 3, display: 'flex', alignItems: 'center', gap: 3 }}>📌 Pinned</div>}
                   {replyMsg && <div style={{ fontSize: 11, color: C.muted, padding: '4px 8px', borderLeft: `2px solid ${C.accent}`, marginBottom: 4, borderRadius: '0 4px 4px 0', background: 'rgba(0,0,0,0.02)' }}><span style={{ fontWeight: 600 }}>{replyMsg.from_name}:</span> {replyMsg.content?.slice(0, 60)}</div>}
-                  <div style={{ padding: isFile ? '4px' : '9px 14px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isDeleted ? 'rgba(0,0,0,0.02)' : isMine ? C.accent : isBot ? 'rgba(124,58,237,0.04)' : C.card, border: isDeleted ? `1px solid ${C.borderLight}` : isMine ? 'none' : isBot ? '1px solid rgba(124,58,237,0.08)' : `1px solid ${C.borderLight}`, fontSize: 13, lineHeight: 1.6, color: isDeleted ? C.muted : isMine ? '#fff' : C.text, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontStyle: isDeleted ? 'italic' : 'normal', overflow: 'hidden' }}>
+                  <div style={{ padding: isFile ? '4px' : '9px 14px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isDeleted ? 'rgba(0,0,0,0.02)' : isMine ? C.accent : isBot ? 'rgba(124,58,237,0.07)' : C.card, border: isDeleted ? `1px solid ${C.borderLight}` : isMine ? 'none' : isBot ? '1px solid rgba(124,58,237,0.12)' : `1px solid ${C.borderLight}`, fontSize: 13, lineHeight: 1.6, color: isDeleted ? C.muted : isMine ? '#fff' : C.text, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontStyle: isDeleted ? 'italic' : 'normal', overflow: 'hidden' }}>
                     {isDeleted ? 'This message was deleted' : isFile ? <FileCard content={msg.content} isMine={isMine} /> :
                       editingMsg === msg.id ? (
                         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
@@ -469,7 +504,7 @@ export default function Messages({ user }) {
         {/* Input area — right padding avoids KikoFloat overlap */}
         <div style={{ padding: '10px 24px 16px', paddingRight: 90 }}>
           <input ref={fileInputRef} type="file" accept="*/*" multiple onChange={handleFileInput} style={{ display: 'none' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 4px 4px 6px', borderRadius: 16, border: `1px solid ${C.border}`, background: C.bg, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 4px 4px 6px', borderRadius: 14, border: `1.5px solid ${C.border}`, background: C.bg, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', position: 'relative' }}>
             {/* @mention dropdown */}
             {showMentions && mentionMatches.length > 0 && (
               <div style={{ position: 'absolute', bottom: '100%', left: 6, marginBottom: 4, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.1)', overflow: 'hidden', minWidth: 200, zIndex: 20 }}>
@@ -481,7 +516,7 @@ export default function Messages({ user }) {
                 ))}
               </div>
             )}
-            <button onClick={() => fileInputRef.current?.click()} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, color: C.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 13 }}>+</button>
+            <button onClick={() => fileInputRef.current?.click()} style={{ width: 32, height: 32, borderRadius: 9999, background: C.card, border: `1px solid ${C.border}`, color: C.sub, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 14, fontWeight: 600 }}>+</button>
             <input ref={inputRef} value={input} onChange={handleInputChangeWithMention} onKeyDown={handleMentionKeyDown} onPaste={handlePaste}
               placeholder={stagedFiles.length ? `Add a message to ${stagedFiles.length} file${stagedFiles.length > 1 ? 's' : ''}...` : 'Type a message... @ to mention'}
               style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: C.text, fontSize: 13, fontFamily: C.font, padding: '6px 4px' }} />
