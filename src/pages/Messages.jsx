@@ -82,9 +82,14 @@ export default function Messages({ user }) {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'kiko_team_messages' }, payload => {
         const newMsg = payload.new
         if (newMsg.channel_id === activeChannel) {
-          setMessages(prev => [...prev, newMsg])
+          // Deduplicate: replace optimistic temp message or skip if already present
+          setMessages(prev => {
+            const hasReal = prev.some(m => m.id === newMsg.id)
+            if (hasReal) return prev
+            const withoutTemp = prev.filter(m => !(m.id?.toString().startsWith('temp-') && m.content === newMsg.content && m.from_user_id === newMsg.from_user_id))
+            return [...withoutTemp, newMsg]
+          })
         }
-        // Refresh channel list for unread counts
         loadChannels()
       })
       .subscribe()

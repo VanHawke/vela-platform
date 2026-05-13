@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-05-13T13:22:17.594Z",
+  "generated_at": "2026-05-13T13:29:01.575Z",
   "commits": [
+    {
+      "hash": "6a1b07c",
+      "subject": "Team Messaging v1: Messages page + Supabase Realtime",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "f35c8f9",
       "subject": "FIX: Draft save — frontend blocked empty To + param name mismatch",
@@ -44,7 +49,7 @@
     {
       "hash": "8060850",
       "subject": "LinkedIn campaign fix: cleaned URLs, queued 66 invites, added guardrails",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "86a35c1",
@@ -94,11 +99,6 @@
     {
       "hash": "7936b6a",
       "subject": "KikoFloat: smooth streaming + react-markdown + streaming hang fix",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "c1f3898",
-      "subject": "FIX: Streaming hang — flush no longer re-sets streamText + 10s timeout",
       "when": "2 days ago"
     }
   ]
