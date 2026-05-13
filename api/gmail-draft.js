@@ -99,6 +99,7 @@ export default async function handler(req, res) {
       plainBody,
       inlineImages: signatures.inlineImages || [],
     })
+    console.log('[gmail-draft] MIME built:', { to, fromAddress, resolvedTo: to || fromAddress, send })
 
     // Send OR Draft depending on `send` flag
     const endpoint = send

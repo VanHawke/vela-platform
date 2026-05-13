@@ -27,6 +27,7 @@ import captureCorrection from "./api/capture-correction.js";
 import proactiveRecs from "./api/cron-proactive-recommendations.js";
 import contactReenrich from "./api/cron-contact-reenrich.js";
 import linkedinCookieImport from "./api/linkedin-cookie-import.js";
+import teamMessages from "./api/team-messages.js";
 import { startMonitors } from "./monitors/scheduler.js";
 import { startScheduler } from "./src/cron-scheduler.js";
 
@@ -87,6 +88,7 @@ app.use("/linkedin-queue", linkedinQueueRoutes);
 app.post("/linkedin-connect", linkedinConnect);
 app.post("/api/linkedin-trigger", linkedinTrigger);
 app.post("/api/enrich-linkedin-urls", enrichLinkedinUrls);
+app.all("/api/team-messages", teamMessages);
 app.use("/email-intel", emailIntelRoutes);
 
 // Error handler

@@ -26,6 +26,7 @@ const Campaigns = lazy(() => import('@/pages/Campaigns'))
 const KnowledgeBrowser = lazy(() => import('@/pages/KnowledgeBrowser'))
 
 const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
+const Messages = lazy(() => import('@/pages/Messages'))
 const MobileVoicePage = lazy(() => import('@/pages/MobileVoicePage'))
 const DocumentLibrary = lazy(() => import('@/pages/DocumentLibrary'))
 
@@ -147,6 +148,7 @@ export default function App() {
           <Route path="campaigns" element={<PermissionGate pageKey="campaigns" user={user}><Campaigns user={user} /></PermissionGate>} />
           <Route path="sequences" element={<Navigate to="/campaigns" replace />} />
           <Route path="campaigns/:id" element={<SequenceDetail user={user} />} />
+          <Route path="messages" element={<Messages user={user} />} />
           <Route path="sequences/:id" element={<SequenceDetail user={user} />} />
           {/* LinkedIn page removed — handled by campaign prospect detail panel */}
           <Route path="knowledge" element={<KnowledgeBrowser />} />
