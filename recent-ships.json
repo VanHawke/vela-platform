@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-13T16:10:48.433Z",
+  "generated_at": "2026-05-13T16:11:52.201Z",
   "commits": [
+    {
+      "hash": "b03a995",
+      "subject": "Messages: @mention autocomplete with dropdown",
+      "when": "42 seconds ago"
+    },
     {
       "hash": "928813c",
       "subject": "Messages Phase 3: edit, delete, search, markdown, hover actions",
-      "when": "5 minutes ago"
+      "when": "7 minutes ago"
     },
     {
       "hash": "75132c5",
       "subject": "Messages Phase 1: presence, reactions, threading, Teams-quality file sharing",
-      "when": "13 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "d48cf15",
       "subject": "Messages Phase 4: reactions, reply threading, read receipts, drag & drop, paste, presence",
-      "when": "28 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "9512f42",
@@ -94,11 +99,6 @@
     {
       "hash": "db38af2",
       "subject": "CRITICAL FIX: selfcheck-watcher was broken since deployment",
-      "when": "30 hours ago"
-    },
-    {
-      "hash": "f92f806",
-      "subject": "Campaign overview: now shows engagement data (opens, clicks, hot/warm/replied leads)",
       "when": "30 hours ago"
     }
   ]

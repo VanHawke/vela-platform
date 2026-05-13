@@ -249,6 +249,24 @@ export default function Messages({ user }) {
 
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 52px)', fontFamily: C.font, color: C.text, overflow: 'hidden' }}>
+      {/* Contact Card Popup */}
+      {contactCard && (
+        <div onClick={() => setContactCard(null)} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: C.bg, borderRadius: 16, padding: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.15)', width: 280, textAlign: 'center' }}>
+            <Avatar name={contactCard.name} size={56} color={contactCard.name === 'Kiko' ? C.purple : undefined} status={presence[contactCard.id]?.status} />
+            <div style={{ fontSize: 16, fontWeight: 700, marginTop: 12 }}>{contactCard.name}</div>
+            <div style={{ fontSize: 12, color: C.sub, marginTop: 2 }}>{contactCard.role}</div>
+            <div style={{ fontSize: 11, color: STATUS_COLORS[presence[contactCard.id]?.status] || '#9CA3AF', marginTop: 6, fontWeight: 500 }}>
+              {presence[contactCard.id]?.status === 'online' ? '🟢 Online' : presence[contactCard.id]?.status === 'away' ? '🟡 Away' : presence[contactCard.id]?.status === 'busy' ? '🔴 Do Not Disturb' : '⚫ Offline'}
+            </div>
+            {presence[contactCard.id]?.status_message && <div style={{ fontSize: 11, color: C.muted, marginTop: 4, fontStyle: 'italic' }}>{presence[contactCard.id].status_message}</div>}
+            <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'center' }}>
+              <button onClick={() => setContactCard(null)} style={{ padding: '6px 16px', borderRadius: 8, background: C.accent, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: C.font }}>Message</button>
+              <button style={{ padding: '6px 16px', borderRadius: 8, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.12)', color: C.green, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: C.font }}>📞 Call</button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Channel List */}
       <div style={{ width: 280, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '16px 16px 12px' }}>
@@ -328,7 +346,8 @@ export default function Messages({ user }) {
             return (
               <div key={msg.id} style={{ display: 'flex', flexDirection: isMine ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 8, marginTop: showAvatar ? 14 : 1 }}
                 onMouseEnter={() => setHoveredMsg(msg.id)} onMouseLeave={() => { setHoveredMsg(null); setShowReactions(null) }}>
-                <div style={{ width: 26, flexShrink: 0 }}>{showAvatar && !isMine && <Avatar name={msg.from_name} size={26} color={isBot ? C.purple : undefined} status={presence[msg.from_user_id]?.status} />}</div>
+                <div style={{ width: 26, flexShrink: 0, cursor: showAvatar && !isMine ? 'pointer' : 'default' }} onClick={() => { if (showAvatar && !isMine) { const member = TEAM_MEMBERS.find(m => m.name === msg.from_name); if (member) setContactCard(member) } }}>
+                  {showAvatar && !isMine && <Avatar name={msg.from_name} size={26} color={isBot ? C.purple : undefined} status={presence[msg.from_user_id]?.status} />}</div>
                 <div style={{ maxWidth: '60%', position: 'relative' }}>
                   {showAvatar && !isMine && <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 3, marginLeft: 2, color: isBot ? C.purple : C.sub }}>{msg.from_name}{isBot && <span style={{ background: 'rgba(124,58,237,0.08)', color: C.purple, padding: '1px 6px', borderRadius: 4, fontSize: 9, marginLeft: 5 }}>AI</span>}</div>}
                   {replyMsg && <div style={{ fontSize: 11, color: C.muted, padding: '4px 8px', borderLeft: `2px solid ${C.accent}`, marginBottom: 4, borderRadius: '0 4px 4px 0', background: 'rgba(0,0,0,0.02)' }}><span style={{ fontWeight: 600 }}>{replyMsg.from_name}:</span> {replyMsg.content?.slice(0, 60)}</div>}
