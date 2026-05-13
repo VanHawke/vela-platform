@@ -284,7 +284,7 @@ ask_navigator → screen/page questions, navigation ("go to", "show me", "where 
 ask_deal_agent → CRM writes (move deal, create task, add reminder, follow up)
 ask_data_agent → CRM reads + CAMPAIGN ENGINE: search contacts/deals/companies, pipeline stats, AND campaign_overview (all campaigns + stats), create_campaign (generate full outreach sequence for a category), source_companies (web-search for target companies in a sector), source_contacts (find decision-makers at a company), bulk_enroll (add CRM contacts to campaign), start_sequence (enroll single contact), sequence_status, company_intel, enrich_company, stale contacts, warm paths, win/loss, past conversations
 ask_outreach_agent → email drafting (Gmail drafts, follow-ups, outreach)
-ask_lemlist_live → Lemlist stats (campaigns, open rates, warm leads, bounced)
+ask_data_agent → CRM data, pipeline, contacts, deals, companies, campaign stats, outreach analytics, LinkedIn queue
 ask_document_agent → file creation (docx/xlsx/pptx/csv, images, QR codes)
 ask_strategy_agent → strategy ("should we pursue X", "where is leverage", "prioritise")
 ask_negotiation_agent → negotiations (counter-offers, pricing pushback, walk-away)
@@ -664,7 +664,7 @@ const PAGE_ROLES = {
   'partnership-matrix': '\nROLE: Strategic Advisor. Partnership Detection Engine auto-scans F1 team websites daily. Analyse gaps, competitive positioning, new partner announcements, target recommendations.',
   organisations: '\nROLE: Due Diligence. Assess profiles, funding, sponsorship readiness.',
   home: '\nROLE: Strategic Partner. Brief on top 3 priorities across pipeline, email, calendar.',
-  lemlist: '\nROLE: Outreach Analyst. Use ask_lemlist_live for campaign stats, warm leads, deliverability. Use ask_outreach_agent for drafting emails and adding leads.',
+  campaign: '\nROLE: Campaign Analyst. Use ask_data_agent with operation campaign_overview for campaign stats, open rates, click rates, hot leads, LinkedIn queue status. Never reference Lemlist — all campaigns run through Kiko\'s native outreach engine.',
   campaigns: '\nROLE: Campaign Commander. Manage outreach sequences. Use ask_data_agent operations: campaign_overview (stats), create_campaign (new sequence), start_sequence (enroll contact), sequence_status (check progress), pause_sequence, cancel_sequence. Reference kiko_sequence_conditions for conditional branching (opened/clicked/replied paths).',
   sequences: '\nROLE: Campaign Commander. Same as campaigns role.',
   // linkedin page removed — LinkedIn tools still available via campaigns
@@ -763,7 +763,7 @@ const TOOL_LABELS = {
   log_activity: 'Logging activity...',
   web_search: 'Searching web for current intel...',
   memory: 'Retrieving past decisions and context...',
-  ask_lemlist_live: 'Querying Lemlist campaign data...',
+  ask_data_agent: 'Checking campaign data...',
   search_conversations: 'Searching conversation history...',
   trigger_triage: 'Running inbox triage...',
   ask_code_review: 'Analysing platform code...',

@@ -76,10 +76,10 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'ask_outreach_agent',
-    description: 'Email drafting + campaigns. Use for: drafting emails, Gmail drafts, follow-ups, recipient style analysis, Lemlist campaigns, adding leads to campaigns, campaign activities.',
+    description: 'Email drafting + outreach. Use for: drafting emails, Gmail drafts, follow-ups, recipient style analysis, campaign emails.',
     input_schema: { type: 'object', properties: {
-      operation: { type: 'string', enum: ['draft_email', 'recipient_style', 'generate_followup', 'get_followup_queue', 'lemlist_campaigns', 'lemlist_add_lead', 'lemlist_activities'], description: 'Which outreach operation' },
-      params: { type: 'object', description: 'Operation params. draft_email: to, subject, body, cc. recipient_style: email, name. lemlist_add_lead: campaign_id, email, first_name.' },
+      operation: { type: 'string', enum: ['draft_email', 'recipient_style', 'generate_followup', 'get_followup_queue'], description: 'Which outreach operation' },
+      params: { type: 'object', description: 'Operation params. draft_email: to, subject, body, cc. recipient_style: email, name.' },
     }, required: ['operation'] },
   },
   {
