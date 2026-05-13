@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { useVoiceCall } from '../hooks/useVoiceCall'
 
 const API = 'https://api.vanhawke.agency'
 const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
@@ -138,6 +139,9 @@ export default function Messages({ user }) {
 
   const userId = user?.id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Sunny'
+
+  // Voice calling
+  const voice = useVoiceCall({ userId, userName, channelId: activeChannel })
 
   const loadChannels = useCallback(async () => {
     try { const res = await fetch(`${API}/api/team-messages?action=channels&userId=${userId}`); const d = await res.json(); setChannels(d.channels || []); if (!activeChannel && d.channels?.length) setActiveChannel(d.channels[0].id) } catch (e) {} finally { setLoading(false) }
@@ -409,7 +413,11 @@ export default function Messages({ user }) {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              <button style={{ height: 32, padding: '0 14px', borderRadius: 8, background: C.green, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}><Icon name="phone" size={14} color="#fff" /> Call</button>
+              <button onClick={() => {
+                const otherMember = activeChannelData.members?.find(m => m !== userId)
+                const member = TEAM_MEMBERS.find(m => m.id === otherMember)
+                voice.startCall(otherMember, member?.name || getChannelDisplayName(activeChannelData))
+              }} style={{ height: 32, padding: '0 14px', borderRadius: 8, background: C.green, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}><Icon name="phone" size={14} color="#fff" /> Call</button>
               <button onClick={() => setShowFilesPanel(!showFilesPanel)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: showFilesPanel ? C.accentSoft : C.card, border: `1px solid ${showFilesPanel ? C.accent : C.border}`, color: showFilesPanel ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}><Icon name="folder" size={14} /> Files</button>
               <button onClick={() => setSearchOpen(!searchOpen)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: searchOpen ? C.accentSoft : C.card, border: `1px solid ${searchOpen ? C.accent : C.border}`, color: searchOpen ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}><Icon name="search" size={14} /></button>
               <button onClick={() => { setShowChannelSettings(true); setChannelRename(getChannelDisplayName(activeChannelData)) }} style={{ height: 32, width: 32, borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.sub, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="settings" size={14} /></button>
@@ -422,6 +430,56 @@ export default function Messages({ user }) {
           <div style={{ padding: '8px 20px', borderBottom: `1px solid ${C.borderLight}`, background: C.surface }}>
             <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search messages..." autoFocus
               style={{ width: '100%', padding: '8px 12px', borderRadius: 10, border: `1px solid ${C.border}`, background: C.bg, fontSize: 13, fontFamily: C.font, color: C.text, outline: 'none' }} />
+          </div>
+        )}
+
+        {/* Remote audio (hidden) */}
+        <audio ref={voice.remoteAudioRef} autoPlay style={{ display: 'none' }} />
+
+        {/* Incoming call overlay */}
+        {voice.callState === 'ringing' && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: `linear-gradient(135deg, ${C.green}, #059669)`, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'callPulse 2s ease-in-out infinite', boxShadow: `0 8px 32px rgba(22,163,74,0.2)` }}>
+              <Icon name="phone" size={28} color="#fff" />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 18, fontWeight: 600 }}>{voice.remoteName}</div>
+              <div style={{ fontSize: 13, color: C.green, fontWeight: 500, marginTop: 4 }}>Incoming call...</div>
+            </div>
+            <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+              <button onClick={() => voice.answerCall(window.__incomingOffer, window.__incomingCallerName, window.__incomingCallId)} style={{ width: 56, height: 56, borderRadius: '50%', background: C.green, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 16px rgba(22,163,74,0.3)` }}>
+                <Icon name="phone" size={22} color="#fff" />
+              </button>
+              <button onClick={() => voice.declineCall()} style={{ width: 56, height: 56, borderRadius: '50%', background: C.red, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 16px rgba(220,38,38,0.3)` }}>
+                <Icon name="x" size={22} color="#fff" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Active call overlay (calling or connected) */}
+        {(voice.callState === 'calling' || voice.callState === 'connected') && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+            <style>{`@keyframes callPulse { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(22,163,74,0.2)} 50%{transform:scale(1.04);box-shadow:0 0 0 12px rgba(22,163,74,0)} }`}</style>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: voice.callState === 'connected' ? `linear-gradient(135deg, ${C.green}, #059669)` : C.card, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: voice.callState === 'calling' ? 'callPulse 2s ease-in-out infinite' : 'none' }}>
+              <Icon name="phone" size={28} color={voice.callState === 'connected' ? '#fff' : C.sub} />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 18, fontWeight: 600 }}>{voice.remoteName}</div>
+              <div style={{ fontSize: 13, color: voice.callState === 'connected' ? C.green : C.muted, fontWeight: 500, marginTop: 4 }}>
+                {voice.callState === 'calling' ? 'Calling...' : `${String(Math.floor(voice.callDuration / 60)).padStart(2, '0')}:${String(voice.callDuration % 60).padStart(2, '0')}`}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+              <button onClick={() => voice.toggleMute()} style={{ width: 48, height: 48, borderRadius: 14, background: voice.isMuted ? C.accentSoft : C.card, border: `1px solid ${voice.isMuted ? C.accent : C.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                <Icon name={voice.isMuted ? 'muted' : 'phone'} size={18} color={voice.isMuted ? C.accent : C.sub} />
+                <span style={{ fontSize: 9, color: C.sub }}>{voice.isMuted ? 'Unmute' : 'Mute'}</span>
+              </button>
+              <button onClick={() => voice.endCall()} style={{ width: 48, height: 48, borderRadius: 14, background: C.red, border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, boxShadow: `0 4px 12px rgba(220,38,38,0.2)` }}>
+                <Icon name="phone" size={18} color="#fff" />
+                <span style={{ fontSize: 9, color: '#fff' }}>End</span>
+              </button>
+            </div>
           </div>
         )}
 

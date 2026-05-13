@@ -1,75 +1,80 @@
 {
-  "generated_at": "2026-05-13T16:58:19.277Z",
+  "generated_at": "2026-05-13T17:07:57.267Z",
   "commits": [
+    {
+      "hash": "80c0c53",
+      "subject": "Messages: match platform page structure (breadcrumb + serif title)",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "05c86b1",
       "subject": "Messages: fix header font + add messaging icon to global nav",
-      "when": "8 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "8c2d81f",
       "subject": "Messages: replace all emoji icons with clean SVG + update roles",
-      "when": "17 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "d957193",
       "subject": "Messages UI polish: 15 improvements for Teams-quality UX",
-      "when": "21 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "bc35087",
       "subject": "Messages: fix input bar overlap with KikoFloat",
-      "when": "28 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "e8db0a3",
       "subject": "Messages final: link previews (Open Graph) + all remaining features",
-      "when": "33 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "b751cf9",
       "subject": "Messages: notification preferences (mute channels) + muted indicator",
-      "when": "35 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "062c094",
       "subject": "LinkedIn fix: re-queued 89 invites, added keepalive to scheduler",
-      "when": "37 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "27923e8",
       "subject": "Messages Phase 4: shared files tab, channel settings, rename",
-      "when": "42 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "6bc2672",
       "subject": "Messages Phase 4: pin messages, contact cards, @mention autocomplete",
-      "when": "45 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "dbd5e2d",
       "subject": "Messages: contact cards + clickable avatars",
-      "when": "46 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "b03a995",
       "subject": "Messages: @mention autocomplete with dropdown",
-      "when": "47 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "928813c",
       "subject": "Messages Phase 3: edit, delete, search, markdown, hover actions",
-      "when": "53 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "75132c5",
       "subject": "Messages Phase 1: presence, reactions, threading, Teams-quality file sharing",
-      "when": "60 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "d48cf15",
       "subject": "Messages Phase 4: reactions, reply threading, read receipts, drag & drop, paste, presence",
-      "when": "76 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "9512f42",
@@ -79,12 +84,12 @@
     {
       "hash": "ddecef9",
       "subject": "Team Messages Phase 2: @kiko bot + desktop notifications",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "034d6fa",
       "subject": "Messages: fix duplicate messages + deploy missing linkedin-cookie-import",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "6a1b07c",
@@ -94,11 +99,6 @@
     {
       "hash": "f35c8f9",
       "subject": "FIX: Draft save — frontend blocked empty To + param name mismatch",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "fbfac99",
-      "subject": "FIX: Gmail draft without recipient — uses sender email as fallback",
       "when": "5 hours ago"
     }
   ]

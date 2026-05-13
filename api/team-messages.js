@@ -174,9 +174,28 @@ export default async function handler(req, res) {
       case 'rename': {
         const { channelId, name } = req.body || {};
         if (!channelId || !name) return res.status(400).json({ error: 'Missing channelId or name' });
-        await sbFetch(`kiko_team_channels?id=eq.${channelId}`, {
-          method: 'PATCH', body: JSON.stringify({ name })
-        });
+        await sbFetch(`kiko_team_channels?id=eq.${channelId}`, { method: 'PATCH', body: JSON.stringify({ name }) });
+        return res.json({ success: true });
+      }
+
+      case 'call-start': {
+        const { channelId, callerId, callerName, recipientId, recipientName } = req.body || {};
+        const row = { channel_id: channelId, caller_id: callerId, caller_name: callerName, recipient_id: recipientId || null, recipient_name: recipientName || null, status: 'ringing' };
+        const result = await sbFetch('kiko_call_history', { method: 'POST', body: JSON.stringify(row) });
+        return res.json({ callId: result?.[0]?.id || null });
+      }
+
+      case 'call-connected': {
+        const { callId } = req.body || {};
+        if (!callId) return res.json({ success: false });
+        await sbFetch(`kiko_call_history?id=eq.${callId}`, { method: 'PATCH', body: JSON.stringify({ status: 'connected', connected_at: new Date().toISOString() }) });
+        return res.json({ success: true });
+      }
+
+      case 'call-end': {
+        const { callId, status, duration } = req.body || {};
+        if (!callId) return res.json({ success: false });
+        await sbFetch(`kiko_call_history?id=eq.${callId}`, { method: 'PATCH', body: JSON.stringify({ status: status || 'ended', ended_at: new Date().toISOString(), duration_seconds: duration || 0 }) });
         return res.json({ success: true });
       }
 
