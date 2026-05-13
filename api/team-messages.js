@@ -171,6 +171,15 @@ export default async function handler(req, res) {
         return res.json({ pinned: pinned || [] });
       }
 
+      case 'rename': {
+        const { channelId, name } = req.body || {};
+        if (!channelId || !name) return res.status(400).json({ error: 'Missing channelId or name' });
+        await sbFetch(`kiko_team_channels?id=eq.${channelId}`, {
+          method: 'PATCH', body: JSON.stringify({ name })
+        });
+        return res.json({ success: true });
+      }
+
       case 'react': {
         const { messageId, userId, emoji } = req.body || {};
         if (!messageId || !userId || !emoji) return res.status(400).json({ error: 'Missing fields' });

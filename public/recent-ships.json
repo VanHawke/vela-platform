@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-13T16:13:07.989Z",
+  "generated_at": "2026-05-13T16:16:19.662Z",
   "commits": [
+    {
+      "hash": "6bc2672",
+      "subject": "Messages Phase 4: pin messages, contact cards, @mention autocomplete",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "dbd5e2d",
       "subject": "Messages: contact cards + clickable avatars",
-      "when": "63 seconds ago"
+      "when": "4 minutes ago"
     },
     {
       "hash": "b03a995",
       "subject": "Messages: @mention autocomplete with dropdown",
-      "when": "2 minutes ago"
+      "when": "5 minutes ago"
     },
     {
       "hash": "928813c",
       "subject": "Messages Phase 3: edit, delete, search, markdown, hover actions",
-      "when": "8 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "75132c5",
       "subject": "Messages Phase 1: presence, reactions, threading, Teams-quality file sharing",
-      "when": "15 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "d48cf15",
       "subject": "Messages Phase 4: reactions, reply threading, read receipts, drag & drop, paste, presence",
-      "when": "31 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "9512f42",
@@ -59,7 +64,7 @@
     {
       "hash": "9d9d10d",
       "subject": "FIX: Gmail draft with empty To — fixed in buildMimeWithInlineImages",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "483f18b",
@@ -95,11 +100,6 @@
       "hash": "86a35c1",
       "subject": "Remove ALL Lemlist references — Kiko's native engine is the only campaign system",
       "when": "7 hours ago"
-    },
-    {
-      "hash": "2347517",
-      "subject": "Stats fix: unique contacts not aggregate events + LinkedIn queue in campaign_overview",
-      "when": "8 hours ago"
     }
   ]
 }

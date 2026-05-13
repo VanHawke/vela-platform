@@ -78,6 +78,9 @@ export default function Messages({ user }) {
   const [editText, setEditText] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
+  const [showFilesPanel, setShowFilesPanel] = useState(false)
+  const [showChannelSettings, setShowChannelSettings] = useState(false)
+  const [channelRename, setChannelRename] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -316,8 +319,12 @@ export default function Messages({ user }) {
                 {(() => { const st = getPresenceStatus(activeChannelData); if (!st) return <div style={{ fontSize: 11, color: C.muted }}>{activeChannelData.members?.length || 0} members</div>; return <div style={{ fontSize: 11, color: STATUS_COLORS[st], display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: STATUS_COLORS[st] }} />{st === 'online' ? 'Online' : st === 'away' ? 'Away' : st === 'busy' ? 'Do Not Disturb' : 'Offline'}</div> })()}
               </div>
             </div>
-            <button style={{ height: 32, padding: '0 12px', borderRadius: 8, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.12)', color: C.green, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}>📞 Call</button>
-            <button onClick={() => setSearchOpen(!searchOpen)} style={{ height: 32, width: 32, borderRadius: 8, background: searchOpen ? C.accentSoft : 'rgba(0,0,0,0.02)', border: `1px solid ${searchOpen ? C.accent : C.border}`, color: searchOpen ? C.accent : C.muted, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🔍</button>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button style={{ height: 32, padding: '0 12px', borderRadius: 8, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.12)', color: C.green, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}>📞 Call</button>
+              <button onClick={() => setShowFilesPanel(!showFilesPanel)} style={{ height: 32, width: 32, borderRadius: 8, background: showFilesPanel ? C.accentSoft : 'rgba(0,0,0,0.02)', border: `1px solid ${showFilesPanel ? C.accent : C.border}`, color: showFilesPanel ? C.accent : C.muted, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Shared files">📁</button>
+              <button onClick={() => setSearchOpen(!searchOpen)} style={{ height: 32, width: 32, borderRadius: 8, background: searchOpen ? C.accentSoft : 'rgba(0,0,0,0.02)', border: `1px solid ${searchOpen ? C.accent : C.border}`, color: searchOpen ? C.accent : C.muted, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🔍</button>
+              <button onClick={() => { setShowChannelSettings(true); setChannelRename(getChannelDisplayName(activeChannelData)) }} style={{ height: 32, width: 32, borderRadius: 8, background: 'rgba(0,0,0,0.02)', border: `1px solid ${C.border}`, color: C.muted, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Channel settings">⚙️</button>
+            </div>
           </div>
         )}
 
@@ -460,6 +467,76 @@ export default function Messages({ user }) {
           </div>
         </div>
       </div>
+
+      {/* Shared Files Panel — slides in from right */}
+      {showFilesPanel && (
+        <div style={{ width: 280, borderLeft: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0, background: C.bg }}>
+          <div style={{ padding: '14px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Shared Files</h3>
+            <button onClick={() => setShowFilesPanel(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14 }}>✕</button>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: 8 }}>
+            {messages.filter(m => m.content?.includes('📎 [')).length === 0 && (
+              <div style={{ textAlign: 'center', padding: '24px 0', color: C.muted, fontSize: 12 }}>No files shared yet</div>
+            )}
+            {messages.filter(m => m.content?.includes('📎 [')).map(m => {
+              const imgMatch = m.content?.match(/📎 \[Image: ([^\]]+)\]\((https?:\/\/[^)]+)\)/)
+              const fileMatch = m.content?.match(/📎 \[File: ([^\|^\]]+)\|?([^\]]*)\]\((https?:\/\/[^)]+)\)/)
+              const name = imgMatch?.[1] || fileMatch?.[1] || 'File'
+              const url = imgMatch?.[2] || fileMatch?.[3] || '#'
+              const size = fileMatch?.[2] || ''
+              const isImg = !!imgMatch
+              return (
+                <a key={m.id} href={url} target="_blank" rel="noopener" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 10, textDecoration: 'none', marginBottom: 2, background: 'rgba(0,0,0,0.02)', border: `1px solid ${C.borderLight}` }}>
+                  {isImg ? <img src={url} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} /> : <span style={{ fontSize: 22 }}>{getFileIcon(name)}</span>}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                    <div style={{ fontSize: 10, color: C.muted }}>{m.from_name} · {new Date(m.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}{size ? ` · ${size}` : ''}</div>
+                  </div>
+                  <span style={{ fontSize: 12, color: C.muted }}>↓</span>
+                </a>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Channel Settings Modal */}
+      {showChannelSettings && activeChannelData && (
+        <div onClick={() => setShowChannelSettings(false)} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: C.bg, borderRadius: 16, padding: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.15)', width: 320 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 16px' }}>Channel Settings</h3>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: C.sub, display: 'block', marginBottom: 4 }}>Channel Name</label>
+              <input value={channelRename} onChange={e => setChannelRename(e.target.value)}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 10, border: `1px solid ${C.border}`, fontSize: 13, fontFamily: C.font, color: C.text, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: C.sub, display: 'block', marginBottom: 6 }}>Members</label>
+              {(activeChannelData.members || []).map((mid, idx) => {
+                const member = TEAM_MEMBERS.find(m => m.id === mid)
+                return member ? (
+                  <div key={mid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0' }}>
+                    <Avatar name={member.name} size={24} color={member.name === 'Kiko' ? C.purple : undefined} status={presence[mid]?.status} />
+                    <span style={{ fontSize: 12, flex: 1 }}>{member.name}</span>
+                    <span style={{ fontSize: 10, color: C.muted }}>{member.role}</span>
+                  </div>
+                ) : null
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setShowChannelSettings(false)} style={{ padding: '6px 16px', borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
+              <button onClick={async () => {
+                if (channelRename && channelRename !== getChannelDisplayName(activeChannelData)) {
+                  await fetch(`${API}/api/team-messages?action=rename`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelId: activeChannel, name: channelRename }) }).catch(() => {})
+                  loadChannels()
+                }
+                setShowChannelSettings(false)
+              }} style={{ padding: '6px 16px', borderRadius: 8, background: C.accent, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: C.font }}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
