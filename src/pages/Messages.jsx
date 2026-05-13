@@ -436,6 +436,14 @@ export default function Messages({ user }) {
         {/* Remote audio (hidden) */}
         <audio ref={voice.remoteAudioRef} autoPlay style={{ display: 'none' }} />
 
+        {/* Call error toast */}
+        {voice.callError && (
+          <div style={{ position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 70, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 12, padding: '12px 20px', maxWidth: 440, boxShadow: '0 4px 16px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Icon name="phone" size={18} color={C.red} />
+            <div style={{ fontSize: 13, color: '#991B1B' }}>{voice.callError}</div>
+          </div>
+        )}
+
         {/* Incoming call overlay */}
         {voice.callState === 'ringing' && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>

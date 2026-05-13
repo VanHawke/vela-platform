@@ -57,7 +57,7 @@ app.use((req, res, next) => {
 // Auth middleware — /api/* routes are PUBLIC (browser calls them directly)
 // /linkedin/* routes require shared secret
 app.use((req, res, next) => {
-  if (req.path === "/health" || req.path === "/" || req.path.startsWith("/api/") || req.path.startsWith("/docs/")) return next();
+  if (req.path === "/health" || req.path === "/" || req.path.startsWith("/api/") || req.path.startsWith("/docs/") || req.path.startsWith("/linkedin-queue/") || req.path.startsWith("/email-intel/")) return next();
   const auth = req.headers["authorization"] || "";
   const token = auth.replace(/^Bearer\s+/i, "");
   if (token !== SHARED_SECRET) {

@@ -89,6 +89,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
   const [remoteName, setRemoteName] = useState('')
   const [isMuted, setIsMuted] = useState(false)
   const [callId, setCallId] = useState(null)
+  const [callError, setCallError] = useState(null)
 
   const pcRef = useRef(null)
   const localStreamRef = useRef(null)
@@ -134,10 +135,11 @@ export function useVoiceCall({ userId, userName, channelId }) {
   // Start call (caller side)
   const startCall = useCallback(async (recipientId, recipientName) => {
     if (callState !== 'idle') return
-    setCallState('calling'); setRemoteName(recipientName); setCallDuration(0)
+    setCallState('calling'); setRemoteName(recipientName); setCallDuration(0); setCallError(null)
     tones.ringOutgoing() // Caller hears ringing sound
     try {
       const stream = await getMicrophone()
+      console.log('[VoiceCall] Microphone acquired successfully')
       const pc = createPC()
       stream.getTracks().forEach(t => pc.addTrack(t, stream))
 
@@ -178,7 +180,18 @@ export function useVoiceCall({ userId, userName, channelId }) {
 
       // Auto-end after 30s if no answer
       setTimeout(() => { if (callState === 'calling') endCall('missed') }, 30000)
-    } catch (e) { console.error('[VoiceCall] Start failed:', e); endCall() }
+    } catch (e) { 
+      console.error('[VoiceCall] Start failed:', e)
+      tones.stop()
+      if (e.name === 'NotAllowedError') {
+        setCallError('Microphone access denied. Click the lock icon in your browser address bar → Site Settings → Microphone → Allow')
+      } else if (e.name === 'NotFoundError') {
+        setCallError('No microphone found. Please connect a microphone and try again.')
+      } else {
+        setCallError(`Call failed: ${e.message}`)
+      }
+      setCallState('idle')
+    }
   }, [callState, channelId, userId, userName, createPC, getMicrophone])
 
   // Answer call (recipient side)
@@ -296,7 +309,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
   }, [])
 
   return {
-    callState, callDuration, remoteName, isMuted, callId,
+    callState, callDuration, remoteName, isMuted, callId, callError,
     startCall, answerCall, declineCall, endCall, toggleMute,
     remoteAudioRef,
   }

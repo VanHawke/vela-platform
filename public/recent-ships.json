@@ -1,65 +1,70 @@
 {
-  "generated_at": "2026-05-13T17:45:20.570Z",
+  "generated_at": "2026-05-13T18:17:06.488Z",
   "commits": [
+    {
+      "hash": "bdb7b4a",
+      "subject": "Fix: ringing sound on navigation + stale offer protection",
+      "when": "31 minutes ago"
+    },
     {
       "hash": "a85a3d0",
       "subject": "Document Operations Phase 1: database + API + templates",
-      "when": "5 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "79e5a0c",
       "subject": "Voice calling: add call tones (ringing, connected, ended, busy)",
-      "when": "30 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "a49ed3b",
       "subject": "WebRTC Voice Calling — full implementation",
-      "when": "37 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "80c0c53",
       "subject": "Messages: match platform page structure (breadcrumb + serif title)",
-      "when": "47 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "05c86b1",
       "subject": "Messages: fix header font + add messaging icon to global nav",
-      "when": "55 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "8c2d81f",
       "subject": "Messages: replace all emoji icons with clean SVG + update roles",
-      "when": "64 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "d957193",
       "subject": "Messages UI polish: 15 improvements for Teams-quality UX",
-      "when": "68 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "bc35087",
       "subject": "Messages: fix input bar overlap with KikoFloat",
-      "when": "75 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e8db0a3",
       "subject": "Messages final: link previews (Open Graph) + all remaining features",
-      "when": "80 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b751cf9",
       "subject": "Messages: notification preferences (mute channels) + muted indicator",
-      "when": "82 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "062c094",
       "subject": "LinkedIn fix: re-queued 89 invites, added keepalive to scheduler",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "27923e8",
       "subject": "Messages Phase 4: shared files tab, channel settings, rename",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6bc2672",
@@ -89,17 +94,12 @@
     {
       "hash": "d48cf15",
       "subject": "Messages Phase 4: reactions, reply threading, read receipts, drag & drop, paste, presence",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "9512f42",
       "subject": "Messages Phase 3: typing indicators, file sharing, unread nav badge, nav promotion",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "ddecef9",
-      "subject": "Team Messages Phase 2: @kiko bot + desktop notifications",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     }
   ]
 }
