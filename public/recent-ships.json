@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-14T12:49:22.375Z",
+  "generated_at": "2026-05-14T12:54:56.333Z",
   "commits": [
+    {
+      "hash": "903cb34",
+      "subject": "Knowledge Library + Documents page update + nav settings",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "cdb9ff6",
       "subject": "Document Operations: Kiko tool integration (Phase 3)",
-      "when": "6 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "aa0daaa",
       "subject": "Fix nav settings: add Messages + persist from Supabase",
-      "when": "11 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "de310cc",
       "subject": "Decline with quick message + call history complete",
-      "when": "18 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "c4cc20b",
       "subject": "Fix: escaped backtick in team-messages call-history action",
-      "when": "20 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "bb2d182",
       "subject": "Call history panel + sidebar tabs (Chats/Calls)",
-      "when": "73 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "72845e1",
       "subject": "Voice calling: explicit if/else for offline check + debug cleanup",
-      "when": "77 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "bf0d263",
@@ -49,12 +54,12 @@
     {
       "hash": "ab84786",
       "subject": "Fix: offline check template literal syntax",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "43b58cc",
       "subject": "Voice calling: 6 Teams-parity fixes",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ac507db",
@@ -94,11 +99,6 @@
     {
       "hash": "80c0c53",
       "subject": "Messages: match platform page structure (breadcrumb + serif title)",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "05c86b1",
-      "subject": "Messages: fix header font + add messaging icon to global nav",
       "when": "20 hours ago"
     }
   ]

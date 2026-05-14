@@ -27,6 +27,7 @@ const TABS = [
   { id: 'heatmap', label: 'Heatmap', icon: Grid3X3, desc: 'Team × category overview' },
   { id: 'teams', label: 'Team Cards', icon: Users, desc: 'Deep dive per team' },
   { id: 'gaps', label: 'Gap Targeting', icon: Target, desc: 'Categories ranked by opportunity' },
+  { id: 'alerts', label: 'Alerts', icon: AlertTriangle, desc: 'Partnership detection alerts' },
 ]
 
 function TeamLogo({ team, size = 20 }) {
@@ -55,8 +56,24 @@ export default function PartnershipMatrix({ user }) {
   const [selectedTeam, setSelectedTeam] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
   const [addForm, setAddForm] = useState({ team_id: '', partner_name: '', category_id: '', tier: 'partner' })
+  const [alerts, setAlerts] = useState([])
+
+  const fetchAlerts = useCallback(async () => {
+    try {
+      const { createClient } = await import('@supabase/supabase-js')
+      const sb = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
+      const { data } = await sb.from('kiko_alerts')
+        .select('*')
+        .in('type', ['category_recommendation', 'convergence', 'partnership_gap', 'proactive_intel'])
+        .eq('dismissed', false)
+        .order('created_at', { ascending: false })
+        .limit(30)
+      setAlerts(data || [])
+    } catch {}
+  }, [])
 
   useEffect(() => { if (user?.id) fetchMatrix() }, [user?.id])
+  useEffect(() => { if (tab === 'alerts') fetchAlerts() }, [tab, fetchAlerts])
 
   const fetchMatrix = async () => {
     setLoading(true)
@@ -370,6 +387,49 @@ export default function PartnershipMatrix({ user }) {
               ))
             })()}
           </div>
+        </div>
+      )}
+
+      {/* ── ALERTS TAB ── */}
+      {tab === 'alerts' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {alerts.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontSize: 13, fontFamily: T.font }}>No active partnership alerts. Kiko scans for opportunities daily.</div>
+          ) : alerts.map(a => {
+            const typeColors = {
+              category_recommendation: { bg: 'rgba(184,156,92,0.08)', border: 'rgba(184,156,92,0.20)', icon: '🎯', label: 'Category Gap' },
+              convergence: { bg: 'rgba(90,100,112,0.08)', border: 'rgba(90,100,112,0.20)', icon: '🔗', label: 'Convergence' },
+              partnership_gap: { bg: 'rgba(184,100,62,0.08)', border: 'rgba(184,100,62,0.20)', icon: '📊', label: 'Gap Detected' },
+              proactive_intel: { bg: 'rgba(125,138,100,0.08)', border: 'rgba(125,138,100,0.20)', icon: '💡', label: 'Intelligence' },
+            }
+            const tc = typeColors[a.type] || typeColors.proactive_intel
+            const age = Math.floor((Date.now() - new Date(a.created_at).getTime()) / 3600000)
+            const ageStr = age < 1 ? 'Just now' : age < 24 ? `${age}h ago` : `${Math.floor(age / 24)}d ago`
+            return (
+              <div key={a.id} style={{ border: `1px solid ${tc.border}`, borderRadius: 10, background: tc.bg, padding: '14px 18px', fontFamily: T.font }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <span style={{ fontSize: 18 }}>{tc.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{a.title}</span>
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', color: T.textSecondary }}>{tc.label}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5 }}>{a.detail}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
+                      <span style={{ fontSize: 10, color: T.textTertiary }}>{ageStr}</span>
+                      {a.entity_name && <span style={{ fontSize: 10, color: T.textSecondary, fontWeight: 500 }}>{a.entity_name}</span>}
+                      <button onClick={async () => {
+                        const { createClient } = await import('@supabase/supabase-js')
+                        const sb = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
+                        await sb.from('kiko_alerts').update({ dismissed: true }).eq('id', a.id)
+                        setAlerts(prev => prev.filter(x => x.id !== a.id))
+                      }} style={{ fontSize: 10, color: T.textTertiary, background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto', fontFamily: T.font }}>Dismiss</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
