@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-14T14:11:29.227Z",
+  "generated_at": "2026-05-14T14:16:29.526Z",
   "commits": [
+    {
+      "hash": "3ba96c6",
+      "subject": "Mobile responsive: Messages page sidebar collapse",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "ebfe439",
       "subject": "Video calling: WebRTC video streams + UI",
-      "when": "12 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "15c7b84",
       "subject": "Document Ops Phase 2+4: template editor + versioning",
-      "when": "15 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "69674e2",
       "subject": "Document Ops Phase 4: versioning + versions API",
-      "when": "49 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "87c5c38",
       "subject": "Partnership Detection alerts tab + Knowledge Library + Documents update",
-      "when": "76 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "903cb34",
       "subject": "Knowledge Library + Documents page update + nav settings",
-      "when": "82 minutes ago"
+      "when": "87 minutes ago"
     },
     {
       "hash": "cdb9ff6",
       "subject": "Document Operations: Kiko tool integration (Phase 3)",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "aa0daaa",
@@ -94,11 +99,6 @@
     {
       "hash": "719df67",
       "subject": "Microphone error handling + LinkedIn nav bar fix",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "bdb7b4a",
-      "subject": "Fix: ringing sound on navigation + stale offer protection",
       "when": "20 hours ago"
     }
   ]
