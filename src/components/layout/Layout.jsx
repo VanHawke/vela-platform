@@ -435,6 +435,20 @@ export default function Layout({ user }) {
     ch.on('broadcast', { event: 'incoming-call' }, ({ payload }) => {
       if (payload.from !== user.id && (Date.now() - (payload.timestamp || 0)) < 30000) {
         setIncomingCall(payload)
+        // Play ringtone for global incoming call
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)()
+          const playRing = () => {
+            const o1 = ctx.createOscillator(); const g1 = ctx.createGain()
+            o1.frequency.value = 523; g1.gain.value = 0.25
+            o1.connect(g1); g1.connect(ctx.destination); o1.start()
+            g1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5); o1.stop(ctx.currentTime + 0.5)
+            setTimeout(() => { const o2 = ctx.createOscillator(); const g2 = ctx.createGain(); o2.frequency.value = 659; g2.gain.value = 0.25; o2.connect(g2); g2.connect(ctx.destination); o2.start(); g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5); o2.stop(ctx.currentTime + 0.5) }, 300)
+            setTimeout(() => { const o3 = ctx.createOscillator(); const g3 = ctx.createGain(); o3.frequency.value = 784; g3.gain.value = 0.2; o3.connect(g3); g3.connect(ctx.destination); o3.start(); g3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6); o3.stop(ctx.currentTime + 0.6) }, 600)
+          }
+          playRing()
+          window.__globalCallRingTimer = setInterval(playRing, 2500)
+        } catch(e) {}
       }
     })
     ch.subscribe()
@@ -454,8 +468,8 @@ export default function Layout({ user }) {
             <div style={{ fontSize: 14, fontWeight: 600 }}>{incomingCall.callerName}</div>
             <div style={{ fontSize: 12, color: '#16A34A', fontWeight: 500 }}>Incoming call...</div>
           </div>
-          <button onClick={() => { setIncomingCall(null); nav('/messages') }} style={{ padding: '8px 14px', borderRadius: 10, background: '#16A34A', border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Answer</button>
-          <button onClick={() => setIncomingCall(null)} style={{ padding: '8px 10px', borderRadius: 10, background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>✕</button>
+          <button onClick={() => { if (window.__globalCallRingTimer) { clearInterval(window.__globalCallRingTimer); window.__globalCallRingTimer = null }; setIncomingCall(null); nav('/messages') }} style={{ padding: '8px 14px', borderRadius: 10, background: '#16A34A', border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Answer</button>
+          <button onClick={() => { if (window.__globalCallRingTimer) { clearInterval(window.__globalCallRingTimer); window.__globalCallRingTimer = null }; setIncomingCall(null) }} style={{ padding: '8px 10px', borderRadius: 10, background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>✕</button>
         </div>
       )}
       {/* Aurora gradient orbs */}

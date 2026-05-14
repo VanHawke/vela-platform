@@ -30,24 +30,28 @@ class CallTones {
     setTimeout(() => { this.activeOsc = this.activeOsc.filter(o => o !== osc) }, duration * 1000 + 50)
   }
 
-  // Outgoing ring — UK-style double ring: brr-brr... pause... brr-brr...
+  // Outgoing ring — UK-style double ring: ring-ring... pause... ring-ring...
   ringOutgoing() {
     this.stop()
     const play = () => {
-      this._tone(440, 0.4, 0.12); this._tone(480, 0.4, 0.12)
-      setTimeout(() => { this._tone(440, 0.4, 0.12); this._tone(480, 0.4, 0.12) }, 500)
+      const ctx = this.init()
+      if (ctx.state === 'suspended') ctx.resume()
+      this._tone(440, 0.8, 0.25); this._tone(480, 0.8, 0.22)
+      setTimeout(() => { this._tone(440, 0.8, 0.25); this._tone(480, 0.8, 0.22) }, 1000)
     }
     play()
-    this.loopTimer = setInterval(play, 3000)
+    this.loopTimer = setInterval(play, 4000)
   }
 
-  // Incoming ring — ascending two-tone chime
+  // Incoming ring — ascending three-tone chime (louder)
   ringIncoming() {
     this.stop()
     const play = () => {
-      this._tone(523, 0.3, 0.18)
-      setTimeout(() => this._tone(659, 0.3, 0.18), 200)
-      setTimeout(() => this._tone(784, 0.4, 0.15), 400)
+      const ctx = this.init()
+      if (ctx.state === 'suspended') ctx.resume()
+      this._tone(523, 0.5, 0.3)
+      setTimeout(() => this._tone(659, 0.5, 0.3), 300)
+      setTimeout(() => this._tone(784, 0.6, 0.25), 600)
     }
     play()
     this.loopTimer = setInterval(play, 2500)
@@ -275,15 +279,17 @@ export function useVoiceCall({ userId, userName, channelId }) {
     }
   }, [])
 
-  // Listen for incoming calls
+  // Listen for incoming calls — DO NOT include callState in deps (cleanup kills tones)
+  const callStateRef = useRef(callState)
+  callStateRef.current = callState
+
   useEffect(() => {
     if (!channelId) return
     const ch = supabase.channel(`call-${channelId}`)
     ch.on('broadcast', { event: 'offer' }, ({ payload }) => {
-      if (payload.from !== userId && callState === 'idle') {
-        // Verify this is a recent offer (within last 30 seconds)
+      if (payload.from !== userId && callStateRef.current === 'idle') {
         const offerAge = Date.now() - (payload.timestamp || 0)
-        if (offerAge > 30000) return // Ignore stale offers
+        if (offerAge > 30000) return
         signalingRef.current = ch
         setCallState('ringing')
         setRemoteName(payload.callerName || 'Unknown')
@@ -298,9 +304,8 @@ export function useVoiceCall({ userId, userName, channelId }) {
     ch.subscribe()
     return () => { 
       supabase.removeChannel(ch)
-      tones.stop() // Always stop tones on cleanup
     }
-  }, [channelId, userId, callState])
+  }, [channelId, userId]) // NO callState — cleanup would kill tones
 
   // Cleanup on unmount — stop everything
   useEffect(() => { 
