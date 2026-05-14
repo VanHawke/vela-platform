@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-14T12:43:28.380Z",
+  "generated_at": "2026-05-14T12:49:22.375Z",
   "commits": [
+    {
+      "hash": "cdb9ff6",
+      "subject": "Document Operations: Kiko tool integration (Phase 3)",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "aa0daaa",
       "subject": "Fix nav settings: add Messages + persist from Supabase",
-      "when": "5 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "de310cc",
       "subject": "Decline with quick message + call history complete",
-      "when": "12 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "c4cc20b",
       "subject": "Fix: escaped backtick in team-messages call-history action",
-      "when": "14 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "bb2d182",
       "subject": "Call history panel + sidebar tabs (Chats/Calls)",
-      "when": "67 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "72845e1",
       "subject": "Voice calling: explicit if/else for offline check + debug cleanup",
-      "when": "71 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "bf0d263",
@@ -59,12 +64,12 @@
     {
       "hash": "a3e8d76",
       "subject": "Global call overlay + LinkedIn engine fix + background tasks fix",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "719df67",
       "subject": "Microphone error handling + LinkedIn nav bar fix",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "bdb7b4a",
@@ -79,7 +84,7 @@
     {
       "hash": "79e5a0c",
       "subject": "Voice calling: add call tones (ringing, connected, ended, busy)",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "a49ed3b",
@@ -94,11 +99,6 @@
     {
       "hash": "05c86b1",
       "subject": "Messages: fix header font + add messaging icon to global nav",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "8c2d81f",
-      "subject": "Messages: replace all emoji icons with clean SVG + update roles",
       "when": "20 hours ago"
     }
   ]
