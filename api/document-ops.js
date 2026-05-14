@@ -116,10 +116,10 @@ export default async function handler(req, res) {
         if (!documentId) return res.status(400).json({ error: 'Missing documentId' });
         // Get the root document (follow parent_id chain to first version)
         let rootId = documentId;
-        let doc = (await sbFetch(\`kiko_documents?id=eq.\${documentId}&limit=1\`))?.[0];
-        while (doc?.parent_id) { rootId = doc.parent_id; doc = (await sbFetch(\`kiko_documents?id=eq.\${doc.parent_id}&limit=1\`))?.[0]; }
+        let doc = (await sbFetch(`kiko_documents?id=eq.${documentId}&limit=1`))?.[0];
+        while (doc?.parent_id) { rootId = doc.parent_id; doc = (await sbFetch(`kiko_documents?id=eq.${doc.parent_id}&limit=1`))?.[0]; }
         // Get all versions in this chain
-        const versions = await sbFetch(\`kiko_documents?or=(id.eq.\${rootId},parent_id.eq.\${rootId})&order=version.asc\`);
+        const versions = await sbFetch(`kiko_documents?or=(id.eq.${rootId},parent_id.eq.${rootId})&order=version.asc`);
         return res.json({ versions: versions || [] });
       }
 
