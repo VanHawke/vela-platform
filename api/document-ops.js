@@ -84,9 +84,16 @@ export default async function handler(req, res) {
 
         const { data: urlData } = supabase.storage.from('vela-assets').getPublicUrl(storagePath);
 
+        // Version check - if regenerating same template+entity, create new version
+        let version = 1, parentId = null;
+        if (entityType && entityId) {
+          const existing = await sbFetch(`kiko_documents?template_id=eq.${templateId}&entity_type=eq.${entityType}&entity_id=eq.${entityId}&order=version.desc&limit=1`);
+          if (existing?.[0]) { version = (existing[0].version || 1) + 1; parentId = existing[0].id; }
+        }
+
         // Save document record
         const doc = {
-          name: `${template.name} — ${mergedData.company || 'Document'}`,
+          name: `${template.name} — ${mergedData.company || 'Document'}${version > 1 ? ' (v' + version + ')' : ''}`,
           doc_type: template.doc_type,
           template_id: templateId,
           entity_type: entityType || null,
@@ -97,9 +104,23 @@ export default async function handler(req, res) {
           generated_by: 'kiko',
           generated_data: mergedData,
           created_by: userId || null,
+          version,
+          parent_id: parentId,
         };
         const result = await sbFetch('kiko_documents', { method: 'POST', body: JSON.stringify(doc) });
         return res.json({ document: result?.[0] || null, html: htmlContent });
+      }
+
+      case 'versions': {
+        const { documentId } = req.body || {};
+        if (!documentId) return res.status(400).json({ error: 'Missing documentId' });
+        // Get the root document (follow parent_id chain to first version)
+        let rootId = documentId;
+        let doc = (await sbFetch(\`kiko_documents?id=eq.\${documentId}&limit=1\`))?.[0];
+        while (doc?.parent_id) { rootId = doc.parent_id; doc = (await sbFetch(\`kiko_documents?id=eq.\${doc.parent_id}&limit=1\`))?.[0]; }
+        // Get all versions in this chain
+        const versions = await sbFetch(\`kiko_documents?or=(id.eq.\${rootId},parent_id.eq.\${rootId})&order=version.asc\`);
+        return res.json({ versions: versions || [] });
       }
 
       case 'delete': {

@@ -1,55 +1,60 @@
 {
-  "generated_at": "2026-05-14T12:54:56.333Z",
+  "generated_at": "2026-05-14T13:22:34.061Z",
   "commits": [
+    {
+      "hash": "87c5c38",
+      "subject": "Partnership Detection alerts tab + Knowledge Library + Documents update",
+      "when": "27 minutes ago"
+    },
     {
       "hash": "903cb34",
       "subject": "Knowledge Library + Documents page update + nav settings",
-      "when": "5 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "cdb9ff6",
       "subject": "Document Operations: Kiko tool integration (Phase 3)",
-      "when": "11 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "aa0daaa",
       "subject": "Fix nav settings: add Messages + persist from Supabase",
-      "when": "17 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "de310cc",
       "subject": "Decline with quick message + call history complete",
-      "when": "24 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "c4cc20b",
       "subject": "Fix: escaped backtick in team-messages call-history action",
-      "when": "25 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "bb2d182",
       "subject": "Call history panel + sidebar tabs (Chats/Calls)",
-      "when": "78 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "72845e1",
       "subject": "Voice calling: explicit if/else for offline check + debug cleanup",
-      "when": "82 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "bf0d263",
       "subject": "Voice calling: in-app offline modal + all Teams-parity fixes complete",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e838b52",
       "subject": "Voice calling: missed call messages in chat",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "54d3980",
       "subject": "Voice calling: call ended summary + no answer timeout",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ab84786",
@@ -79,12 +84,12 @@
     {
       "hash": "bdb7b4a",
       "subject": "Fix: ringing sound on navigation + stale offer protection",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "a85a3d0",
       "subject": "Document Operations Phase 1: database + API + templates",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "79e5a0c",
@@ -94,11 +99,6 @@
     {
       "hash": "a49ed3b",
       "subject": "WebRTC Voice Calling — full implementation",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "80c0c53",
-      "subject": "Messages: match platform page structure (breadcrumb + serif title)",
       "when": "20 hours ago"
     }
   ]
