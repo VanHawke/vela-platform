@@ -419,9 +419,10 @@ export default function Messages({ user }) {
                 const member = TEAM_MEMBERS.find(m => m.id === otherMember)
                 const otherPresence = presence[otherMember]?.status
                 if (!otherPresence || otherPresence === 'offline') {
-                  setOfflineCallConfirm({ recipientId: otherMember, recipientName: member?.name || getChannelDisplayName(activeChannelData) }); return
+                  setOfflineCallConfirm({ recipientId: otherMember, recipientName: member?.name || getChannelDisplayName(activeChannelData) })
+                } else {
+                  voice.startCall(otherMember, member?.name || getChannelDisplayName(activeChannelData))
                 }
-                voice.startCall(otherMember, member?.name || getChannelDisplayName(activeChannelData))
               }} style={{ height: 32, padding: '0 14px', borderRadius: 8, background: C.green, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}><Icon name="phone" size={14} color="#fff" /> Call</button>
               <button onClick={() => setShowFilesPanel(!showFilesPanel)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: showFilesPanel ? C.accentSoft : C.card, border: `1px solid ${showFilesPanel ? C.accent : C.border}`, color: showFilesPanel ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}><Icon name="folder" size={14} /> Files</button>
               <button onClick={() => setSearchOpen(!searchOpen)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: searchOpen ? C.accentSoft : C.card, border: `1px solid ${searchOpen ? C.accent : C.border}`, color: searchOpen ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}><Icon name="search" size={14} /></button>
