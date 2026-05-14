@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-14T12:37:56.592Z",
+  "generated_at": "2026-05-14T12:43:28.380Z",
   "commits": [
+    {
+      "hash": "aa0daaa",
+      "subject": "Fix nav settings: add Messages + persist from Supabase",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "de310cc",
       "subject": "Decline with quick message + call history complete",
-      "when": "7 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "c4cc20b",
       "subject": "Fix: escaped backtick in team-messages call-history action",
-      "when": "8 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "bb2d182",
       "subject": "Call history panel + sidebar tabs (Chats/Calls)",
-      "when": "61 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "72845e1",
       "subject": "Voice calling: explicit if/else for offline check + debug cleanup",
-      "when": "65 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "bf0d263",
@@ -79,7 +84,7 @@
     {
       "hash": "a49ed3b",
       "subject": "WebRTC Voice Calling — full implementation",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "80c0c53",
@@ -94,11 +99,6 @@
     {
       "hash": "8c2d81f",
       "subject": "Messages: replace all emoji icons with clean SVG + update roles",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "d957193",
-      "subject": "Messages UI polish: 15 improvements for Teams-quality UX",
       "when": "20 hours ago"
     }
   ]

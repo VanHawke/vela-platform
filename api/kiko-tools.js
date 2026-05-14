@@ -84,10 +84,10 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'ask_document_agent',
-    description: 'File generation + exports. Use for: creating Word docs, spreadsheets, presentations, CSVs, images (DALL-E), QR codes, reading URLs, exporting pipeline or contacts.',
+    description: 'File generation + exports + TEMPLATE DOCUMENTS. Use for: creating Word docs, spreadsheets, presentations, CSVs, images (DALL-E), QR codes, reading URLs, exporting pipeline or contacts. TEMPLATES: generate_from_template (create a pitch deck, proposal, NDA, meeting brief, or campaign report from CRM data). list_templates (show available document templates).',
     input_schema: { type: 'object', properties: {
-      operation: { type: 'string', enum: ['generate_docx', 'generate_xlsx', 'generate_pptx', 'generate_csv', 'generate_image', 'generate_qr', 'read_url', 'export_pipeline', 'export_contacts'], description: 'Which document operation' },
-      params: { type: 'object', description: 'Operation params. generate_docx: filename, content. generate_xlsx: filename, sheets. generate_image: prompt, size. export_pipeline: pipeline.' },
+      operation: { type: 'string', enum: ['generate_docx', 'generate_xlsx', 'generate_pptx', 'generate_csv', 'generate_image', 'generate_qr', 'read_url', 'export_pipeline', 'export_contacts', 'generate_from_template', 'list_templates'], description: 'Which document operation. generate_from_template: create a document from a template using CRM data. list_templates: show available templates.' },
+      params: { type: 'object', description: 'Operation params. generate_docx: filename, content. generate_from_template: template_name (pitch_deck, proposal, nda, brief, report), entity_type (deal, contact, company), entity_id, additional_fields. list_templates: no params needed.' },
     }, required: ['operation'] },
   },
   {

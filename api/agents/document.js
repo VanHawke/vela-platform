@@ -106,9 +106,72 @@ export async function callDocumentAgent(operation, params = {}, userId = null) {
       case 'read_url': return await readUrl(params);
       case 'export_pipeline': return await exportPipeline(params);
       case 'export_contacts': return await exportContacts(params);
+      case 'list_templates': return await listDocTemplates();
+      case 'generate_from_template': return await generateFromTemplate(params, userId);
       default: return `Unknown document operation: ${operation}. Available: generate_docx, generate_xlsx, generate_pptx, generate_csv, generate_image, generate_qr, read_url, export_pipeline, export_contacts`;
     }
   } catch (err) {
     return `Document Agent error (${operation}): ${err.message}`;
   }
+}
+
+// ── Document Templates ──
+async function listDocTemplates() {
+  const res = await fetch(`${process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL}/rest/v1/kiko_doc_templates?order=doc_type.asc,name.asc`, {
+    headers: { apikey: process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY}` }
+  })
+  const templates = await res.json()
+  if (!templates?.length) return 'No document templates available yet.'
+  let result = '📄 **Available Document Templates:**\n\n'
+  templates.forEach(t => {
+    const fields = (t.field_schema || []).map(f => f.label || f.name).join(', ')
+    result += `**${t.name}** (${t.doc_type})\n${t.description || ''}\nFields: ${fields}\nOutput: ${t.output_format}\n\n`
+  })
+  result += '_Use "create a [template name] for [deal/company]" to generate._'
+  return result
+}
+
+async function generateFromTemplate(params, userId) {
+  const { template_name, entity_type, entity_id, additional_fields } = params
+  const SB_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+  const SB_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+  const headers = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' }
+  
+  // Find template by name or doc_type
+  const tRes = await fetch(`${SB_URL}/rest/v1/kiko_doc_templates?order=name.asc`, { headers })
+  const templates = await tRes.json()
+  const template = templates?.find(t => 
+    t.name.toLowerCase().includes((template_name || '').toLowerCase()) ||
+    t.doc_type === template_name ||
+    t.doc_type.replace('_', ' ') === (template_name || '').toLowerCase()
+  )
+  if (!template) return `Template "${template_name}" not found. Available: ${(templates || []).map(t => t.name).join(', ')}`
+
+  // Resolve entity data
+  let entityData = {}
+  if (entity_type === 'deal' && entity_id) {
+    const dRes = await fetch(`${SB_URL}/rest/v1/kiko_deals?id=eq.${entity_id}&limit=1`, { headers })
+    const deals = await dRes.json()
+    if (deals?.[0]) entityData = { company: deals[0].company_name, deal_value: deals[0].deal_value ? `$${(deals[0].deal_value / 1000000).toFixed(1)}m` : '', deal_stage: deals[0].stage, contact_name: deals[0].contact_name, team: deals[0].team || '', ...deals[0] }
+  } else if (entity_type === 'deal') {
+    // Search by company name in entity_id
+    const dRes = await fetch(`${SB_URL}/rest/v1/kiko_deals?company_name=ilike.*${encodeURIComponent(entity_id || '')}*&limit=1`, { headers })
+    const deals = await dRes.json()
+    if (deals?.[0]) entityData = { company: deals[0].company_name, deal_value: deals[0].deal_value ? `$${(deals[0].deal_value / 1000000).toFixed(1)}m` : '', deal_stage: deals[0].stage, contact_name: deals[0].contact_name, team: deals[0].team || '', ...deals[0] }
+  }
+
+  // Merge with additional fields
+  const mergedData = { ...entityData, ...(additional_fields || {}) }
+
+  // Generate via Document Ops API
+  const genRes = await fetch(`${SB_URL.replace('supabase.co', 'vanhawke.agency').includes('vanhawke') ? 'https://api.vanhawke.agency' : SB_URL}/api/document-ops?action=generate`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ templateId: template.id, entityType: entity_type || 'deal', entityId: entity_id || '', data: mergedData, userId })
+  })
+  const result = await genRes.json()
+  
+  if (result.document) {
+    return `✅ **Document Generated**\n\n**${result.document.name}**\nType: ${template.name}\nFormat: ${template.output_format}\n${result.document.file_url ? `\n[📥 View Document](${result.document.file_url})` : ''}\n\nThe document has been saved to the Document Library.`
+  }
+  return `Document generation failed: ${result.error || 'Unknown error'}`
 }
