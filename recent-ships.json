@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-14T13:22:34.061Z",
+  "generated_at": "2026-05-14T13:51:10.504Z",
   "commits": [
+    {
+      "hash": "69674e2",
+      "subject": "Document Ops Phase 4: versioning + versions API",
+      "when": "28 minutes ago"
+    },
     {
       "hash": "87c5c38",
       "subject": "Partnership Detection alerts tab + Knowledge Library + Documents update",
-      "when": "27 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "903cb34",
       "subject": "Knowledge Library + Documents page update + nav settings",
-      "when": "33 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "cdb9ff6",
       "subject": "Document Operations: Kiko tool integration (Phase 3)",
-      "when": "39 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "aa0daaa",
       "subject": "Fix nav settings: add Messages + persist from Supabase",
-      "when": "44 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "de310cc",
       "subject": "Decline with quick message + call history complete",
-      "when": "51 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "c4cc20b",
       "subject": "Fix: escaped backtick in team-messages call-history action",
-      "when": "53 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "bb2d182",
@@ -69,17 +74,17 @@
     {
       "hash": "ac507db",
       "subject": "Scale email + LinkedIn for 20+ simultaneous campaigns",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "a3e8d76",
       "subject": "Global call overlay + LinkedIn engine fix + background tasks fix",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "719df67",
       "subject": "Microphone error handling + LinkedIn nav bar fix",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "bdb7b4a",
@@ -94,12 +99,7 @@
     {
       "hash": "79e5a0c",
       "subject": "Voice calling: add call tones (ringing, connected, ended, busy)",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "a49ed3b",
-      "subject": "WebRTC Voice Calling — full implementation",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     }
   ]
 }

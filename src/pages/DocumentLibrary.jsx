@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import T from '@/lib/theme'
+import TemplateEditorModal from '@/components/TemplateEditorModal'
 import { ChevronRight, Download, X, Lock, Users } from 'lucide-react'
 
 const CATEGORY_LABELS = {
@@ -34,6 +35,10 @@ export default function DocumentLibrary() {
   const [selectedType, setSelectedType] = useState(null)
   const [selectedDoc, setSelectedDoc] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false)
+  const [templates, setTemplates] = useState([])
+  const [editingTemplate, setEditingTemplate] = useState(null)
+  const [templateForm, setTemplateForm] = useState({ name: '', doc_type: 'other', description: '', output_format: 'pdf', field_schema: [] })
   const [expandedSports, setExpandedSports] = useState({})
 
   const C = T
@@ -61,6 +66,28 @@ export default function DocumentLibrary() {
     }
     load()
   }, [])
+
+  useEffect(() => {
+    supabase.from('kiko_doc_templates').select('*').order('name').then(({ data }) => setTemplates(data || []))
+  }, [showTemplateEditor])
+
+  const saveTemplate = async () => {
+    const { name, doc_type, description, output_format, field_schema } = templateForm
+    if (!name) return
+    if (editingTemplate) {
+      await supabase.from('kiko_doc_templates').update({ name, doc_type, description, output_format, field_schema, updated_at: new Date().toISOString() }).eq('id', editingTemplate.id)
+    } else {
+      await supabase.from('kiko_doc_templates').insert({ name, doc_type, description, output_format, field_schema })
+    }
+    setShowTemplateEditor(false); setEditingTemplate(null); setTemplateForm({ name: '', doc_type: 'other', description: '', output_format: 'pdf', field_schema: [] })
+    supabase.from('kiko_doc_templates').select('*').order('name').then(({ data }) => setTemplates(data || []))
+  }
+
+  const deleteTemplate = async (id) => {
+    if (!window.confirm('Delete this template?')) return
+    await supabase.from('kiko_doc_templates').delete().eq('id', id)
+    setTemplates(prev => prev.filter(t => t.id !== id))
+  }
 
   // Filter docs by access level
   const visibleDocs = docs.filter(d => {
@@ -133,6 +160,7 @@ export default function DocumentLibrary() {
               <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>Document Library</div>
               <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{visibleDocs.length} document{visibleDocs.length !== 1 ? 's' : ''}</div>
             </div>
+            <button onClick={() => setShowTemplateEditor(true)} style={{ padding: "5px 10px", borderRadius: 6, background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)", fontSize: 11, color: "#6B6B6B", cursor: "pointer" }}>Templates</button>
           </div>
 
           <div style={{ padding: '0 12px 8px' }}>
@@ -303,6 +331,7 @@ export default function DocumentLibrary() {
           </div>
         </div>
       )}
+      {showTemplateEditor && <TemplateEditorModal onClose={() => setShowTemplateEditor(false)} />}
     </div>
   )
 }
