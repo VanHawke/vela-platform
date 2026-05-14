@@ -178,6 +178,27 @@ export default async function handler(req, res) {
         return res.json({ success: true });
       }
 
+      case 'complete-followup': {
+        const { recipientEmail, recipientName, subject } = req.body || {};
+        // 1. Dismiss email tracking follow-ups for this recipient
+        if (recipientEmail) {
+          await sbFetch(`kiko_email_tracking?recipient_email=eq.${encodeURIComponent(recipientEmail)}&follow_up_dismissed=eq.false`, {
+            method: 'PATCH', body: JSON.stringify({ follow_up_dismissed: true })
+          });
+        }
+        // 2. Mark related tasks as completed
+        if (recipientName) {
+          const tasks = await sbFetch('tasks?select=id,data&limit=50');
+          for (const t of (tasks || [])) {
+            const contactMatch = (t.data?.contact || '').toLowerCase().includes(recipientName.toLowerCase());
+            if (contactMatch && t.data?.completed === false) {
+              await sbFetch(`tasks?id=eq.${t.id}`, { method: 'PATCH', body: JSON.stringify({ data: { ...t.data, completed: true, completedAt: new Date().toISOString() } }) });
+            }
+          }
+        }
+        return res.json({ ok: true });
+      }
+
       case 'call-history': {
         const { userId } = req.body || {};
         const calls = await sbFetch(`kiko_call_history?order=started_at.desc&limit=30`);

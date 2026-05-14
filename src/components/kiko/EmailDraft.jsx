@@ -323,6 +323,11 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
       const data = await res.json()
       if (data.ok || data.success || data.messageId) {
         setSendNowState('sent')
+        // Auto-dismiss follow-up tracking and mark tasks complete
+        fetch('https://api.vanhawke.agency/api/team-messages?action=complete-followup', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recipientEmail: currentTo, recipientName: currentTo.split('@')[0], subject: currentSubject })
+        }).catch(() => {})
         // Capture correction if user edited the draft
         if (originalBodyRef.current && currentBody !== originalBodyRef.current) {
           fetch('https://api.vanhawke.agency/api/capture-correction', {

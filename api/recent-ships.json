@@ -1,35 +1,50 @@
 {
-  "generated_at": "2026-05-14T14:16:29.526Z",
+  "generated_at": "2026-05-14T14:37:10.677Z",
   "commits": [
+    {
+      "hash": "790f509",
+      "subject": "Kiko knowledge sync: KIKO_BIBLE.md + self-knowledge updated",
+      "when": "13 minutes ago"
+    },
+    {
+      "hash": "8c57331",
+      "subject": "CRITICAL FIX: escaped backticks in document-ops.js crashing server",
+      "when": "18 minutes ago"
+    },
+    {
+      "hash": "1ae542c",
+      "subject": "Mobile responsive: all pages now mobile-ready",
+      "when": "20 minutes ago"
+    },
     {
       "hash": "3ba96c6",
       "subject": "Mobile responsive: Messages page sidebar collapse",
-      "when": "5 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "ebfe439",
       "subject": "Video calling: WebRTC video streams + UI",
-      "when": "17 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "15c7b84",
       "subject": "Document Ops Phase 2+4: template editor + versioning",
-      "when": "20 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "69674e2",
       "subject": "Document Ops Phase 4: versioning + versions API",
-      "when": "54 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "87c5c38",
       "subject": "Partnership Detection alerts tab + Knowledge Library + Documents update",
-      "when": "81 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "903cb34",
       "subject": "Knowledge Library + Documents page update + nav settings",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "cdb9ff6",
@@ -85,21 +100,6 @@
       "hash": "43b58cc",
       "subject": "Voice calling: 6 Teams-parity fixes",
       "when": "4 hours ago"
-    },
-    {
-      "hash": "ac507db",
-      "subject": "Scale email + LinkedIn for 20+ simultaneous campaigns",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "a3e8d76",
-      "subject": "Global call overlay + LinkedIn engine fix + background tasks fix",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "719df67",
-      "subject": "Microphone error handling + LinkedIn nav bar fix",
-      "when": "20 hours ago"
     }
   ]
 }

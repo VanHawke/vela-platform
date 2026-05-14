@@ -149,8 +149,19 @@ export default async function handler(req, res) {
               body: JSON.stringify({
                 replied_at: new Date().toISOString(),
                 reply_snippet: replyMsg.snippet || '',
+                follow_up_dismissed: true, // Auto-dismiss: reply received = follow-up no longer needed
               }),
             });
+            // Also mark any related tasks as completed
+            try {
+              const tasks = await sbFetch(`tasks?select=id,data&limit=5`);
+              for (const t of (tasks || [])) {
+                if (t.data?.contact?.toLowerCase()?.includes(tracked_email.recipient_name?.toLowerCase()) && t.data?.completed === false) {
+                  await sbFetch(`tasks?id=eq.${t.id}`, { method: 'PATCH', body: JSON.stringify({ data: { ...t.data, completed: true, completedAt: new Date().toISOString() } }) });
+                }
+              }
+            } catch {}
+
 
             await sbFetch('kiko_alerts', {
               method: 'POST',
