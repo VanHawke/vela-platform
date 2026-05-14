@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-14T12:31:08.745Z",
+  "generated_at": "2026-05-14T12:37:56.592Z",
   "commits": [
+    {
+      "hash": "de310cc",
+      "subject": "Decline with quick message + call history complete",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "c4cc20b",
       "subject": "Fix: escaped backtick in team-messages call-history action",
-      "when": "86 seconds ago"
+      "when": "8 minutes ago"
     },
     {
       "hash": "bb2d182",
       "subject": "Call history panel + sidebar tabs (Chats/Calls)",
-      "when": "54 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "72845e1",
       "subject": "Voice calling: explicit if/else for offline check + debug cleanup",
-      "when": "58 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "bf0d263",
@@ -94,11 +99,6 @@
     {
       "hash": "d957193",
       "subject": "Messages UI polish: 15 improvements for Teams-quality UX",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "bc35087",
-      "subject": "Messages: fix input bar overlap with KikoFloat",
       "when": "20 hours ago"
     }
   ]
