@@ -269,6 +269,11 @@ export function useVoiceCall({ userId, userName, channelId }) {
       fetch(`${API}/api/team-messages?action=call-end`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ callId: callIdRef.current, status: reason, duration: callDuration }) }).catch(() => {})
       callIdRef.current = null
     }
+    // Post missed/ended call message in chat
+    if (channelId && (reason === 'missed' || reason === 'declined' || (reason === 'ended' && callDuration > 0))) {
+      const callMsg = reason === 'missed' ? `📞 Missed call` : reason === 'declined' ? `📞 Call declined` : `📞 Call ended · ${Math.floor(callDuration / 60)}:${String(callDuration % 60).padStart(2, '0')}`
+      fetch(`${API}/api/team-messages?action=send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelId, fromUserId: userId, fromName: userName, content: callMsg, messageType: 'system' }) }).catch(() => {})
+    }
     // Show "call ended" summary for 3 seconds before returning to idle
     setCallEndReason(reason)
     setCallState('ended')

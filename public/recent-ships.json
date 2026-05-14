@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-14T10:32:06.780Z",
+  "generated_at": "2026-05-14T10:33:01.265Z",
   "commits": [
+    {
+      "hash": "54d3980",
+      "subject": "Voice calling: call ended summary + no answer timeout",
+      "when": "30 seconds ago"
+    },
     {
       "hash": "ab84786",
       "subject": "Fix: offline check template literal syntax",
-      "when": "8 minutes ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "43b58cc",
       "subject": "Voice calling: 6 Teams-parity fixes",
-      "when": "8 minutes ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "ac507db",
       "subject": "Scale email + LinkedIn for 20+ simultaneous campaigns",
-      "when": "33 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "a3e8d76",
@@ -94,11 +99,6 @@
     {
       "hash": "6bc2672",
       "subject": "Messages Phase 4: pin messages, contact cards, @mention autocomplete",
-      "when": "18 hours ago"
-    },
-    {
-      "hash": "dbd5e2d",
-      "subject": "Messages: contact cards + clickable avatars",
       "when": "18 hours ago"
     }
   ]
