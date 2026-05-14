@@ -107,6 +107,8 @@ function LinkPreview({ url, isMine }) {
 }
 
 export default function Messages({ user }) {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const [showMobileSidebar, setShowMobileSidebar] = useState(true)
   const [channels, setChannels] = useState([])
   const [activeChannel, setActiveChannel] = useState(null)
   const [messages, setMessages] = useState([])
@@ -342,7 +344,7 @@ export default function Messages({ user }) {
         </div>
       )}
       {/* Channel List */}
-      <div style={{ width: 280, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0, background: C.surface }}>
+      <div style={{ width: isMobile ? '100%' : 280, borderRight: isMobile ? 'none' : `1px solid ${C.border}`, display: isMobile && !showMobileSidebar ? 'none' : 'flex', flexDirection: 'column', flexShrink: 0, background: C.surface }}>
         <div style={{ padding: '12px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: C.bg, border: `1px solid ${C.border}` }}>
             <span style={{ color: C.muted }}><Icon name="search" size={14} color={C.muted} /></span>
@@ -384,7 +386,7 @@ export default function Messages({ user }) {
           {channels.filter(ch => ch.channel_type === 'dm').map(ch => {
             const isActive = ch.id === activeChannel; const st = getPresenceStatus(ch)
             return (
-              <div key={ch.id} onClick={() => setActiveChannel(ch.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', borderRadius: 10, cursor: 'pointer', marginBottom: 1, background: isActive ? C.accentSoft : 'transparent', transition: 'background 100ms' }}
+              <div key={ch.id} onClick={() => { setActiveChannel(ch.id); if (window.innerWidth < 768) setShowMobileSidebar(false) }} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', borderRadius: 10, cursor: 'pointer', marginBottom: 1, background: isActive ? C.accentSoft : 'transparent', transition: 'background 100ms' }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }} onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
                 <Avatar name={getChannelDisplayName(ch)} size={36} status={st} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -406,7 +408,7 @@ export default function Messages({ user }) {
           {channels.filter(ch => ch.channel_type === 'group').map(ch => {
             const isActive = ch.id === activeChannel
             return (
-              <div key={ch.id} onClick={() => setActiveChannel(ch.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', borderRadius: 10, cursor: 'pointer', marginBottom: 1, background: isActive ? C.accentSoft : 'transparent', transition: 'background 100ms' }}
+              <div key={ch.id} onClick={() => { setActiveChannel(ch.id); if (window.innerWidth < 768) setShowMobileSidebar(false) }} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', borderRadius: 10, cursor: 'pointer', marginBottom: 1, background: isActive ? C.accentSoft : 'transparent', transition: 'background 100ms' }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }} onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,58,237,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: C.purple, flexShrink: 0 }}>#</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -429,7 +431,7 @@ export default function Messages({ user }) {
       </div>
 
       {/* Chat Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
+      <div style={{ flex: 1, display: isMobile && showMobileSidebar ? 'none' : 'flex', flexDirection: 'column', position: 'relative' }} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
         {/* Teams-style drag overlay — full translucent with centered icon */}
         {dragOver && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(232,112,10,0.04)', backdropFilter: 'blur(2px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, pointerEvents: 'none' }}>
