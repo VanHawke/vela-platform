@@ -470,19 +470,19 @@ export default function Messages({ user }) {
         )}
 
         {/* Active call overlay (calling or connected) */}
-        {(voice.callState === 'calling' || voice.callState === 'connected') && (
+        {(voice.callState === 'calling' || voice.callState === 'connected' || voice.callState === 'ended') && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
             <style>{`@keyframes callPulse { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(22,163,74,0.2)} 50%{transform:scale(1.04);box-shadow:0 0 0 12px rgba(22,163,74,0)} }`}</style>
-            <div style={{ width: 72, height: 72, borderRadius: '50%', background: voice.callState === 'connected' ? `linear-gradient(135deg, ${C.green}, #059669)` : C.card, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: voice.callState === 'calling' ? 'callPulse 2s ease-in-out infinite' : 'none' }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: voice.callState === 'ended' ? (voice.callEndReason === 'missed' ? C.card : `linear-gradient(135deg, ${C.green}, #059669)`) : voice.callState === 'connected' ? `linear-gradient(135deg, ${C.green}, #059669)` : C.card, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: voice.callState === 'calling' ? 'callPulse 2s ease-in-out infinite' : 'none' }}>
               <Icon name="phone" size={28} color={voice.callState === 'connected' ? '#fff' : C.sub} />
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 18, fontWeight: 600 }}>{voice.remoteName}</div>
               <div style={{ fontSize: 13, color: voice.callState === 'connected' ? C.green : C.muted, fontWeight: 500, marginTop: 4 }}>
-                {voice.callState === 'calling' ? 'Calling...' : `${String(Math.floor(voice.callDuration / 60)).padStart(2, '0')}:${String(voice.callDuration % 60).padStart(2, '0')}`}
+                {voice.callState === 'ended' ? (voice.callEndReason === 'missed' ? 'No answer' : `Call ended${voice.callDuration > 0 ? ' \u00B7 ' + String(Math.floor(voice.callDuration / 60)).padStart(2, '0') + ':' + String(voice.callDuration % 60).padStart(2, '0') : ''}`) : voice.callState === 'calling' ? 'Calling...' : `${String(Math.floor(voice.callDuration / 60)).padStart(2, '0')}:${String(voice.callDuration % 60).padStart(2, '0')}`}
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+            {voice.callState !== 'ended' && <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
               <button onClick={() => voice.toggleMute()} style={{ width: 48, height: 48, borderRadius: 14, background: voice.isMuted ? C.accentSoft : C.card, border: `1px solid ${voice.isMuted ? C.accent : C.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
                 <Icon name={voice.isMuted ? 'muted' : 'phone'} size={18} color={voice.isMuted ? C.accent : C.sub} />
                 <span style={{ fontSize: 9, color: C.sub }}>{voice.isMuted ? 'Unmute' : 'Mute'}</span>
@@ -491,7 +491,7 @@ export default function Messages({ user }) {
                 <Icon name="phone" size={18} color="#fff" />
                 <span style={{ fontSize: 9, color: '#fff' }}>End</span>
               </button>
-            </div>
+            </div>}
           </div>
         )}
 

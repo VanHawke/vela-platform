@@ -94,6 +94,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
   const [isMuted, setIsMuted] = useState(false)
   const [callId, setCallId] = useState(null)
   const [callError, setCallError] = useState(null)
+  const [callEndReason, setCallEndReason] = useState(null) // ended, missed, declined, no_answer
 
   const pcRef = useRef(null)
   const localStreamRef = useRef(null)
@@ -268,7 +269,11 @@ export function useVoiceCall({ userId, userName, channelId }) {
       fetch(`${API}/api/team-messages?action=call-end`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ callId: callIdRef.current, status: reason, duration: callDuration }) }).catch(() => {})
       callIdRef.current = null
     }
-    setCallState('idle'); setCallDuration(0); setIsMuted(false); setCallId(null)
+    // Show "call ended" summary for 3 seconds before returning to idle
+    setCallEndReason(reason)
+    setCallState('ended')
+    setIsMuted(false); setCallId(null)
+    setTimeout(() => { setCallState('idle'); setCallDuration(0); setCallEndReason(null) }, 3000)
   }, [userId, callDuration])
 
   // Toggle mute
@@ -319,7 +324,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
   }, [])
 
   return {
-    callState, callDuration, remoteName, isMuted, callId, callError,
+    callState, callDuration, remoteName, isMuted, callId, callError, callEndReason,
     startCall, answerCall, declineCall, endCall, toggleMute,
     remoteAudioRef,
   }
