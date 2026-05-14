@@ -460,6 +460,11 @@ export default function Messages({ user }) {
                   voice.startCall(otherMember, member?.name || getChannelDisplayName(activeChannelData))
                 }
               }} style={{ height: 32, padding: '0 14px', borderRadius: 8, background: C.green, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}><Icon name="phone" size={14} color="#fff" /> Call</button>
+              <button onClick={() => {
+                const otherMember = activeChannelData.members?.find(m => m !== userId)
+                const member = TEAM_MEMBERS.find(m => m.id === otherMember)
+                voice.startCall(otherMember, member?.name || getChannelDisplayName(activeChannelData), true)
+              }} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m16 2 5 5-5 5"/><path d="M21 7H9"/><rect x="2" y="9" width="14" height="10" rx="2"/></svg></button>
               <button onClick={() => setShowFilesPanel(!showFilesPanel)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: showFilesPanel ? C.accentSoft : C.card, border: `1px solid ${showFilesPanel ? C.accent : C.border}`, color: showFilesPanel ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}><Icon name="folder" size={14} /> Files</button>
               <button onClick={() => setSearchOpen(!searchOpen)} style={{ height: 32, padding: '0 10px', borderRadius: 8, background: searchOpen ? C.accentSoft : C.card, border: `1px solid ${searchOpen ? C.accent : C.border}`, color: searchOpen ? C.accent : C.sub, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: C.font }}><Icon name="search" size={14} /></button>
               <button onClick={() => { setShowChannelSettings(true); setChannelRename(getChannelDisplayName(activeChannelData)) }} style={{ height: 32, width: 32, borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.sub, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="settings" size={14} /></button>
@@ -522,10 +527,18 @@ export default function Messages({ user }) {
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 18, fontWeight: 600 }}>{voice.remoteName}</div>
               <div style={{ fontSize: 13, color: voice.callState === 'connected' ? C.green : C.muted, fontWeight: 500, marginTop: 4 }}>
+                {/* Video elements */}
+                {voice.isVideoCall && voice.callState === 'connected' && (
+                  <div style={{ position: 'relative', width: '100%', maxWidth: 500, margin: '0 auto 12px', borderRadius: 12, overflow: 'hidden', background: '#000' }}>
+                    <video ref={voice.remoteVideoRef} autoPlay playsInline style={{ width: '100%', borderRadius: 12 }} />
+                    <video ref={voice.localVideoRef} autoPlay playsInline muted style={{ position: 'absolute', bottom: 8, right: 8, width: 120, borderRadius: 8, border: '2px solid rgba(255,255,255,0.3)' }} />
+                  </div>
+                )}
                 {voice.callState === 'ended' ? (voice.callEndReason === 'missed' ? 'No answer' : `Call ended${voice.callDuration > 0 ? ' \u00B7 ' + String(Math.floor(voice.callDuration / 60)).padStart(2, '0') + ':' + String(voice.callDuration % 60).padStart(2, '0') : ''}`) : voice.callState === 'calling' ? 'Calling...' : `${String(Math.floor(voice.callDuration / 60)).padStart(2, '0')}:${String(voice.callDuration % 60).padStart(2, '0')}`}
               </div>
             </div>
             {voice.callState !== 'ended' && <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+              {voice.isVideoCall && <button onClick={() => voice.toggleVideo()} style={{ width: 48, height: 48, borderRadius: '50%', background: voice.isVideoEnabled ? C.card : 'rgba(220,38,38,0.1)', border: `1px solid ${voice.isVideoEnabled ? C.border : 'rgba(220,38,38,0.3)'}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={voice.isVideoEnabled ? C.sub : C.red} strokeWidth="2"><rect x="2" y="6" width="14" height="12" rx="2"/><path d={voice.isVideoEnabled ? "m16 10 5-3v10l-5-3" : "m16 10 5-3v10l-5-3M2 2l20 20"}/></svg><span style={{ fontSize: 9, color: voice.isVideoEnabled ? C.sub : C.red }}>{voice.isVideoEnabled ? 'Cam' : 'Off'}</span></button>}
               <button onClick={() => voice.toggleMute()} style={{ width: 48, height: 48, borderRadius: 14, background: voice.isMuted ? C.accentSoft : C.card, border: `1px solid ${voice.isMuted ? C.accent : C.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
                 <Icon name={voice.isMuted ? 'muted' : 'phone'} size={18} color={voice.isMuted ? C.accent : C.sub} />
                 <span style={{ fontSize: 9, color: C.sub }}>{voice.isMuted ? 'Unmute' : 'Mute'}</span>

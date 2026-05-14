@@ -95,10 +95,14 @@ export function useVoiceCall({ userId, userName, channelId }) {
   const [callId, setCallId] = useState(null)
   const [callError, setCallError] = useState(null)
   const [callEndReason, setCallEndReason] = useState(null) // ended, missed, declined, no_answer
+  const [isVideoCall, setIsVideoCall] = useState(false)
+  const [isVideoEnabled, setIsVideoEnabled] = useState(false)
 
   const pcRef = useRef(null)
   const localStreamRef = useRef(null)
   const remoteAudioRef = useRef(null)
+  const localVideoRef = useRef(null)
+  const remoteVideoRef = useRef(null)
   const signalingRef = useRef(null)
   const durationTimerRef = useRef(null)
   const callIdRef = useRef(null)
@@ -112,7 +116,11 @@ export function useVoiceCall({ userId, userName, channelId }) {
       }
     }
     pc.ontrack = (e) => {
-      if (remoteAudioRef.current) { remoteAudioRef.current.srcObject = e.streams[0] }
+      if (e.track.kind === 'video' && remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = e.streams[0]
+      } else if (e.track.kind === 'audio' && remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = e.streams[0]
+      }
     }
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === 'connected') {
@@ -130,21 +138,23 @@ export function useVoiceCall({ userId, userName, channelId }) {
     return pc
   }, [userId])
 
-  // Get microphone
-  const getMicrophone = useCallback(async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+  // Get media (audio + optional video)
+  const getMedia = useCallback(async (withVideo = false) => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: withVideo ? { width: 640, height: 480, facingMode: 'user' } : false })
     localStreamRef.current = stream
+    if (withVideo && localVideoRef.current) { localVideoRef.current.srcObject = stream }
     return stream
   }, [])
 
-  // Start call (caller side)
-  const startCall = useCallback(async (recipientId, recipientName) => {
+  // Start call (caller side) — pass video=true for video call
+  const startCall = useCallback(async (recipientId, recipientName, video = false) => {
     if (callState !== 'idle') return
     setCallState('calling'); setRemoteName(recipientName); setCallDuration(0); setCallError(null)
-    tones.ringOutgoing() // Caller hears ringing sound
+    setIsVideoCall(video); setIsVideoEnabled(video)
+    tones.ringOutgoing()
     try {
-      const stream = await getMicrophone()
-      console.log('[VoiceCall] Microphone acquired successfully')
+      const stream = await getMedia(video)
+      console.log(`[VoiceCall] Media acquired (video=${video})`)
       const pc = createPC()
       stream.getTracks().forEach(t => pc.addTrack(t, stream))
 
@@ -202,7 +212,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
       }
       setCallState('idle')
     }
-  }, [callState, channelId, userId, userName, createPC, getMicrophone])
+  }, [callState, channelId, userId, userName, createPC, getMedia])
 
   // Answer call (recipient side)
   const answerCall = useCallback(async (offer, callerName, incomingCallId) => {
@@ -210,7 +220,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
     tones.connected() // Stop ringing, play connect pip
     callIdRef.current = incomingCallId; setCallId(incomingCallId)
     try {
-      const stream = await getMicrophone()
+      const stream = await getMedia(isVideoCall)
       const pc = createPC()
       stream.getTracks().forEach(t => pc.addTrack(t, stream))
 
@@ -235,7 +245,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
       await pc.setLocalDescription(answer)
       ch.send({ type: 'broadcast', event: 'answer', payload: { answer, from: userId } })
     } catch (e) { console.error('[VoiceCall] Answer failed:', e); endCall() }
-  }, [channelId, userId, createPC, getMicrophone])
+  }, [channelId, userId, createPC, getMedia])
 
   // Decline call
   const declineCall = useCallback(() => {
@@ -289,6 +299,26 @@ export function useVoiceCall({ userId, userName, channelId }) {
     }
   }, [])
 
+  // Toggle video on/off during call
+  const toggleVideo = useCallback(async () => {
+    if (!localStreamRef.current) return
+    const videoTrack = localStreamRef.current.getVideoTracks()[0]
+    if (videoTrack) {
+      videoTrack.enabled = !videoTrack.enabled
+      setIsVideoEnabled(videoTrack.enabled)
+    } else if (pcRef.current) {
+      // No video track yet — add one
+      try {
+        const videoStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } })
+        const newTrack = videoStream.getVideoTracks()[0]
+        localStreamRef.current.addTrack(newTrack)
+        pcRef.current.addTrack(newTrack, localStreamRef.current)
+        if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current
+        setIsVideoEnabled(true); setIsVideoCall(true)
+      } catch (e) { console.error('[VoiceCall] Failed to enable video:', e.message) }
+    }
+  }, [])
+
   // Listen for incoming calls — DO NOT include callState in deps (cleanup kills tones)
   const callStateRef = useRef(callState)
   callStateRef.current = callState
@@ -330,7 +360,8 @@ export function useVoiceCall({ userId, userName, channelId }) {
 
   return {
     callState, callDuration, remoteName, isMuted, callId, callError, callEndReason,
-    startCall, answerCall, declineCall, endCall, toggleMute,
-    remoteAudioRef,
+    isVideoCall, isVideoEnabled,
+    startCall, answerCall, declineCall, endCall, toggleMute, toggleVideo,
+    remoteAudioRef, localVideoRef, remoteVideoRef,
   }
 }

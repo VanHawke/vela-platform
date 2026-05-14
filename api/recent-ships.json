@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-05-14T13:51:10.504Z",
+  "generated_at": "2026-05-14T13:59:31.994Z",
   "commits": [
+    {
+      "hash": "15c7b84",
+      "subject": "Document Ops Phase 2+4: template editor + versioning",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "69674e2",
       "subject": "Document Ops Phase 4: versioning + versions API",
-      "when": "28 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "87c5c38",
       "subject": "Partnership Detection alerts tab + Knowledge Library + Documents update",
-      "when": "56 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "903cb34",
       "subject": "Knowledge Library + Documents page update + nav settings",
-      "when": "62 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "cdb9ff6",
       "subject": "Document Operations: Kiko tool integration (Phase 3)",
-      "when": "67 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "aa0daaa",
       "subject": "Fix nav settings: add Messages + persist from Supabase",
-      "when": "73 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "de310cc",
       "subject": "Decline with quick message + call history complete",
-      "when": "80 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "c4cc20b",
       "subject": "Fix: escaped backtick in team-messages call-history action",
-      "when": "81 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "bb2d182",
@@ -64,12 +69,12 @@
     {
       "hash": "ab84786",
       "subject": "Fix: offline check template literal syntax",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "43b58cc",
       "subject": "Voice calling: 6 Teams-parity fixes",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "ac507db",
@@ -95,11 +100,6 @@
       "hash": "a85a3d0",
       "subject": "Document Operations Phase 1: database + API + templates",
       "when": "20 hours ago"
-    },
-    {
-      "hash": "79e5a0c",
-      "subject": "Voice calling: add call tones (ringing, connected, ended, busy)",
-      "when": "21 hours ago"
     }
   ]
 }
