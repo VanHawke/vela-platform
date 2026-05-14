@@ -243,3 +243,68 @@ Floating Kiko panel on every page except home. Features:
 - "Cultural Performance Eyewear" for Van Hawke Maison
 - No pricing in early-stage outreach unless requested
 - All email display names use DISPLAY_NAMES mapping
+---
+
+## SESSION 66 UPDATE (May 14, 2026)
+
+### DEPLOY MODEL CHANGE
+Vercel is CANCELLED. All frontend deploys go to Hetzner: `scp -r dist/* root@178.104.73.22:/var/www/kiko/`. API via scp + `pm2 restart kiko-worker`. NEVER run `npx vercel`.
+
+### PLATFORM STATS (May 2026)
+- 138 API files, 25 agent modules, 26 crons
+- Frontend: React/Vite on Hetzner nginx (kiko.vanhawke.agency)
+- Email capacity: 1,500/day (Google Workspace cap 2,000, 500 buffer)
+- Email sender: every 30 minutes, 6 AM–10 PM weekdays
+- LinkedIn capacity: 8 per 30 minutes (144/day), 9 AM–6 PM weekdays
+- Timezone-aware sending: TZ_MAP with 100+ cities, sends during prospect's 9-5
+
+### MESSAGES & CALLING (NEW)
+- Full team messaging: DMs + group channels, presence, reactions, threads, file sharing
+- Voice calling: WebRTC peer-to-peer via Supabase Realtime signaling
+- Video calling: WebRTC video streams, toggle camera mid-call, PiP layout
+- 13 Teams-parity features: continuous ringing, offline check modal, call ended summary, missed call messages, call history panel (Chats/Calls tabs), decline with quick message, global incoming call overlay with ringtone on any page
+- Call history logged to kiko_call_history table
+
+### DOCUMENT OPERATIONS (NEW — 5 PHASES COMPLETE)
+- kiko_doc_templates table: 5 templates (Pitch Deck, Proposal, NDA, Meeting Brief, Campaign Report)
+- kiko_documents table: AI-generated documents with entity linking, versioning
+- Template editor: create/edit/delete templates with dynamic field schemas
+- Kiko tool: "create a pitch deck for Haas F1" → resolves template, pulls CRM data, generates HTML, saves to Storage
+- Versioning: auto-increment, parent_id linking, "Pitch Deck — Haas F1 (v2)"
+- Documents page shows both legacy documents AND AI-generated kiko_documents
+- API: /api/document-ops (templates, documents, upload, generate, delete, versions)
+
+### CAMPAIGN SEQUENCE ENGINE
+- Native outreach engine (replaced Lemlist, saving ~$1,800–2,400/year)
+- 7-touch sequences: 4 emails + 3 LinkedIn over 14 days
+- AI campaign wizard generates sequences from category + team
+- Timezone-aware: emails only sent during prospect's 9-5 local time
+- LinkedIn automation: Playwright sends connection requests via Matt's cookies
+- Connection acceptance monitoring: 3x daily profile checks
+- Follow-up DMs: auto-queue after connection accepted
+- Reply/bounce detection: every 2 hours via Gmail API
+- Alpine campaign: 71/89 LinkedIn invites sent successfully (80% rate)
+
+### KNOWLEDGE LIBRARY
+- 26 nightly research domains: F1, Formula E, motorsport beyond F1, US sports, global football, cricket/rugby, combat sports, media rights, sports business, brand/sports/entertainment licensing, fashion licensing, plus legal and financial
+- Search bar filters domains and content
+- Available at /knowledge
+
+### PARTNERSHIP DETECTION
+- Alerts tab in Partnership Matrix (4th tab)
+- Shows: category gaps, convergence signals, partnership gaps, proactive intelligence
+- Color-coded cards with icons, dismissable
+- Loads from kiko_alerts table filtered to partnership types
+
+### NAV SETTINGS
+- Messages and Knowledge Base in Settings → Navigation
+- Nav settings persist from Supabase (fixed: was querying without user_id filter)
+- Both localStorage and Supabase synced
+
+### MOBILE RESPONSIVE
+- Messages: sidebar collapse, back button, full-width on mobile
+- Pipeline: vertical card stack, fullscreen deal panel
+- Command Centre: tighter layout, fullscreen panels
+- Calendar: vertical timeline, compact chips
+- Contacts: horizontal scroll table, column hiding
+- All pages mobile-ready via mobile.css (309 lines)

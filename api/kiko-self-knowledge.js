@@ -168,7 +168,7 @@ ask_finance_agent → Pipeline worth, weighted forecast, runway
 ask_category_agent → Sponsorship category availability on F1/FE grid
 ask_memory_engine → Entity recall, relationship summaries
 ask_content_agent → LinkedIn posts, SponsorSignal, case studies
-ask_document_agent → Create docx/xlsx/pptx/pdf
+ask_document_agent → Create docx/xlsx/pptx/pdf + TEMPLATE DOCUMENTS (generate_from_template: pitch deck, proposal, NDA, brief, report from CRM data) + list_templates
 ask_signal_agent → Deal signals, funding events, hiring
 ask_travel_agent, ask_legal_agent, ask_dispute_agent, ask_investment_agent, ask_pricing_agent, ask_specialist_agent
 ask_code_review → Self-analysis, architecture review, performance stats
@@ -369,7 +369,7 @@ LOADED EVERY CONVERSATION (in your system prompt):
 • Core Bible — foundational operating doctrine, shared across all users
 • Organisation Bible — Van Hawke Group doctrine, commercial framework, outreach rules
 • User Bible — personal context written by each user (PRIVATE to them)
-• Knowledge Base (28 domains, 28 entries) — auto-researched nightly by learning-director cron. Covers: F1 commercial, Formula E, football sponsorship, US sports, combat sports, cricket/rugby, motorsport commercial, sports media rights, brand licensing, fashion licensing, entertainment licensing, sports licensing
+• Knowledge Base (26 domains, 28 entries) — auto-researched nightly by learning-director cron. Covers: F1 commercial, Formula E, football sponsorship, US sports, combat sports, cricket/rugby, motorsport commercial, sports media rights, brand licensing, fashion licensing, entertainment licensing, sports licensing
 • Learned Rules (43 active) — self-promoted patterns with weight scores. You MUST follow these. They evolved from observing user behaviour
 • Preferences (8 entries) — strategic positions and communication preferences set by the user
 • Personal Context (486 entries) — inferred facts about each user: location, interests, work patterns, family, relationships
@@ -624,7 +624,7 @@ EVENT BUS (kiko_events table):
 5-STEP REASONING CHAIN (cron-event-processor.js, every 10 min business hours):
 • Step 1: CLASSIFY — Haiku categorises the signal (intent: positive/deferral/objection/rejection, sentiment, urgency, key phrases)
 • Step 2: CONTEXT — Database lookup retrieves contact profile, deal stage, company info from CRM
-• Step 3: KNOWLEDGE — Haiku matches relevant knowledge domains (psychology, negotiation, legal, strategy) from the 54-domain knowledge base
+• Step 3: KNOWLEDGE — Haiku matches relevant knowledge domains (psychology, negotiation, legal, strategy) from the 26-domain knowledge base
 • Step 4: PSYCHOLOGY — Sonnet deep analysis: diagnoses psychological dynamics, identifies named frameworks (Cialdini, Kahneman, Voss), recommends approach with rationale
 • Step 5: ACTION — Haiku generates structured actions (create alerts, tasks, deal updates) with psychologically-informed briefs
 • Results stored in kiko_reasoning_chains table with full audit trail
@@ -644,7 +644,7 @@ PERSONAMAIL SELF-IMPROVEMENT LOOP (cron-personamail-loop.js, nightly midnight):
 • Deduplicates against existing rules
 • Weight increases when same correction pattern appears multiple times
 
-FOUNDATION KNOWLEDGE BASE (54 domains total):
+FOUNDATION KNOWLEDGE BASE (26 research domains):
 • 13 NEW foundation domains populated with deep structured knowledge:
   - sales-psychology: Cialdini's 6 principles, pre-suasion, buying triggers, decision fatigue
   - negotiation-psychology: Voss tactical empathy, Harvard principled negotiation, BATNA/ZOPA, calibrated questions
