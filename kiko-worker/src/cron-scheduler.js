@@ -26,6 +26,7 @@ const SCHEDULES = [
   // Sequence engine (previously pg_cron — verified empty 2026-04-25)
   { schedule: '*/30 6-22 * * 1-5', path: '/api/cron-sequence-sender',         name: 'seq-sender' },
   { schedule: '0 8-20/2 * * 1-5', path: '/api/cron-sequence-reply-detect', name: 'seq-reply' },
+  { schedule: '*/30 7-22 * * *', path: '/api/cron-gmail-sync', name: 'gmail-sync' },
   { schedule: '0 6 * * 1-5',    path: '/api/cron-sequence-enqueue',        name: 'seq-enqueue' },
 
   // Intelligence (previously pg_cron)
