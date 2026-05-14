@@ -395,3 +395,21 @@ Direct Tools:
 
 **Platform pages:**
 Today, Command Centre, Pipeline, Campaigns, Messages (with voice/video calling), Calendar, Contacts, Organisations, Partnership Matrix (with Alerts tab), Knowledge Base, Document Library, Settings
+
+### SUPABASE TABLE CREATION RULE (PERMANENT — from May 14, 2026)
+
+Every new table MUST include explicit grants. Without them, supabase-js and the REST API cannot access the table (returns 42501 error).
+
+Standard migration template for any new table:
+
+```sql
+CREATE TABLE public.new_table ( ... );
+ALTER TABLE public.new_table ENABLE ROW LEVEL SECURITY;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.new_table TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.new_table TO authenticated;
+GRANT SELECT ON public.new_table TO anon;
+CREATE POLICY "service_full_access" ON public.new_table FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "authenticated_full_access" ON public.new_table FOR ALL TO authenticated USING (true) WITH CHECK (true);
+```
+
+This is mandatory from Supabase's Data API change (enforced Oct 30, 2026). All 125 existing tables were fixed on May 14, 2026.
