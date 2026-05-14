@@ -418,7 +418,7 @@ export default function Messages({ user }) {
                 const member = TEAM_MEMBERS.find(m => m.id === otherMember)
                 const otherPresence = presence[otherMember]?.status
                 if (!otherPresence || otherPresence === 'offline') {
-                  if (!window.confirm(\`\${member?.name || 'This user'} is currently offline. Do you still want to call?\`)) return
+                  if (!window.confirm(`${member?.name || 'This user'} is currently offline. Do you still want to call?`)) return
                 }
                 voice.startCall(otherMember, member?.name || getChannelDisplayName(activeChannelData))
               }} style={{ height: 32, padding: '0 14px', borderRadius: 8, background: C.green, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}><Icon name="phone" size={14} color="#fff" /> Call</button>
