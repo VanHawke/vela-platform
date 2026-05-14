@@ -308,3 +308,90 @@ Vercel is CANCELLED. All frontend deploys go to Hetzner: `scp -r dist/* root@178
 - Calendar: vertical timeline, compact chips
 - Contacts: horizontal scroll table, column hiding
 - All pages mobile-ready via mobile.css (309 lines)
+
+### GMAIL ACTIVITY SYNC (NEW — May 14, 2026)
+
+**Cron: cron-gmail-sync** — runs every 30 minutes, 7am-10pm daily.
+
+You now monitor ALL Gmail activity for Matt and Sunny, not just emails you initiate:
+
+**Outgoing (sent folder):**
+- Every email Matt or Sunny sends from Gmail is tracked in kiko_email_tracking
+- Recipients matched against CRM contacts
+- Contact last_contacted_at auto-updated
+- Existing overdue follow-ups auto-dismissed
+- Related tasks auto-completed
+- New 5-day follow-up window created
+- Filters: skips internal emails, unsubscribe, noreply, system domains
+
+**Incoming (inbox):**
+- Replies to tracked threads detected
+- replied_at + follow_up_dismissed set automatically
+- High-priority alert created: "Reply from [Name]!"
+- Related tasks auto-completed
+
+**Follow-up lifecycle (FIXED):**
+1. Email sent (by you OR manually from Gmail) → tracking record created, 5-day follow-up
+2. Reply detected → follow-up auto-dismissed, tasks completed, alert created
+3. "Send now" from Command Centre → follow-up auto-dismissed, tasks completed
+4. "Mark complete" button → task completed
+5. No more stale follow-ups. No more duplicate briefings for actioned contacts.
+
+**CRITICAL RULE:** You must NEVER brief a user about a follow-up that has already been actioned. Before generating any follow-up briefing, check:
+- Has replied_at been set? → Contact already replied, don't suggest follow-up
+- Has follow_up_dismissed been set? → Already actioned
+- Are related tasks completed? → Already done
+- Check Gmail threads for the latest message — if Matt already sent something recently, acknowledge it
+
+### COMPLETE TOOL & AGENT INVENTORY (May 14, 2026)
+
+**42 tools across 25 agent modules:**
+
+Specialist Agents:
+- ask_deal_agent → CRM writes (move deal, create task, set reminder, create deal, update contact)
+- ask_data_agent → CRM reads + analytics + CAMPAIGN ENGINE (create_campaign, campaign_overview, source_companies, source_contacts, bulk_enroll, start_sequence, sequence_status, company_intel, enrich_company, learning_search, warm_path, win_loss, refresh_partnerships)
+- ask_outreach_agent → Email drafting, recipient style analysis, Gmail draft, follow-ups
+- ask_document_agent → Create docx/xlsx/pptx/pdf + TEMPLATE DOCUMENTS (generate_from_template: pitch deck, proposal, NDA, brief, report from CRM data) + list_templates
+- ask_navigator → Screen-aware navigation
+- ask_memory_engine → Entity recall, relationship summaries, draft context
+- ask_ea_agent → Executive briefing, prioritisation
+- ask_strategy_agent → Strategic evaluation
+- ask_negotiation_agent → Counter-offers, pricing
+- ask_finance_agent → Pipeline worth, forecast, runway
+- ask_category_agent → Sponsorship category availability
+- ask_content_agent → LinkedIn posts, case studies
+- ask_signal_agent → Deal signals, funding events
+- ask_code_review → Self-analysis, architecture
+- ask_self_monitor → Error rates, health
+
+Direct Tools:
+- read_email → Gmail reading (unread, search, read_message, inbox_summary)
+- read_calendar → Calendar (today, upcoming, search, free_slots)
+- web_search → Deep research (5-8 searches synthesized)
+- search_conversations → Past chat recall
+- manage_knowledge → Knowledge base, dynamic agents
+- navigate_page, log_activity, trigger_triage
+
+**27 crons:**
+- seq-sender (30min) — campaign email sender, timezone-aware
+- seq-enqueue (6am) — sequence step enqueue
+- seq-reply (2h) — sequence reply/bounce detection
+- gmail-sync (30min) — full Gmail activity monitoring NEW
+- linkedin-queue (30min) — LinkedIn connection/DM sender
+- linkedin-replies (3x daily) — connection acceptance checker
+- linkedin-keepalive (6h) — cookie refresh
+- job-processor (5min) — background tasks
+- proactive-convergence (2x daily) — partnership intelligence
+- proactive-recommendations — category gap alerts
+- learning-director (3am) — knowledge research (26 domains)
+- cognitive-synthesis (11pm) — daily synthesis
+- inbox-triage (4am) — email triage
+- email-monitor — Gmail reply detection (legacy, supplemented by gmail-sync)
+- company-monitor — company intel updates
+- event-processor (10min) — real-time events
+- selfcheck (3x daily) — health monitoring
+- task-executor — scheduled task execution
+- self-awareness (2am) — self-knowledge update
+
+**Platform pages:**
+Today, Command Centre, Pipeline, Campaigns, Messages (with voice/video calling), Calendar, Contacts, Organisations, Partnership Matrix (with Alerts tab), Knowledge Base, Document Library, Settings
