@@ -180,7 +180,7 @@ export default async function handler(req, res) {
 
       case 'call-history': {
         const { userId } = req.body || {};
-        const calls = await sbFetch(\`kiko_call_history?order=started_at.desc&limit=30\`);
+        const calls = await sbFetch(`kiko_call_history?order=started_at.desc&limit=30`);
         return res.json({ calls: calls || [] });
       }
 
