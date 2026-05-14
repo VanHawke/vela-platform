@@ -142,7 +142,9 @@ export default function Messages({ user }) {
 
   // Voice calling
   const voice = useVoiceCall({ userId, userName, channelId: activeChannel })
-  const [offlineCallConfirm, setOfflineCallConfirm] = useState(null) // { recipientId, recipientName }
+  const [offlineCallConfirm, setOfflineCallConfirm] = useState(null)
+  const [sidebarTab, setSidebarTab] = useState('chats') // chats, calls
+  const [callHistory, setCallHistory] = useState([]) // { recipientId, recipientName }
 
   const loadChannels = useCallback(async () => {
     try { const res = await fetch(`${API}/api/team-messages?action=channels&userId=${userId}`); const d = await res.json(); setChannels(d.channels || []); if (!activeChannel && d.channels?.length) setActiveChannel(d.channels[0].id) } catch (e) {} finally { setLoading(false) }
@@ -153,6 +155,9 @@ export default function Messages({ user }) {
   }, [activeChannel, userId])
   const loadPresence = useCallback(async () => {
     try { const res = await fetch(`${API}/api/team-messages?action=presence`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId }) }); const d = await res.json(); const m = {}; (d.presence || []).forEach(p => { m[p.user_id] = p }); setPresence(m) } catch (e) {}
+  }, [userId])
+  const loadCallHistory = useCallback(async () => {
+    try { const res = await fetch(`${API}/api/team-messages?action=call-history`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId }) }); const d = await res.json(); setCallHistory(d.calls || []) } catch (e) {}
   }, [userId])
 
   // Effects: heartbeat, idle, data loading, realtime
@@ -345,6 +350,35 @@ export default function Messages({ user }) {
           </div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px' }}>
+          {/* Sidebar tabs: Chats / Calls */}
+          <div style={{ display: 'flex', gap: 0, padding: '4px 8px 8px', borderBottom: `1px solid ${C.borderLight}`, marginBottom: 4 }}>
+            <button onClick={() => setSidebarTab('chats')} style={{ flex: 1, padding: '6px 0', fontSize: 11, fontWeight: sidebarTab === 'chats' ? 600 : 400, color: sidebarTab === 'chats' ? C.accent : C.muted, background: 'none', border: 'none', borderBottom: sidebarTab === 'chats' ? `2px solid ${C.accent}` : '2px solid transparent', cursor: 'pointer', fontFamily: C.font }}>Chats</button>
+            <button onClick={() => { setSidebarTab('calls'); loadCallHistory() }} style={{ flex: 1, padding: '6px 0', fontSize: 11, fontWeight: sidebarTab === 'calls' ? 600 : 400, color: sidebarTab === 'calls' ? C.accent : C.muted, background: 'none', border: 'none', borderBottom: sidebarTab === 'calls' ? `2px solid ${C.accent}` : '2px solid transparent', cursor: 'pointer', fontFamily: C.font }}>Calls</button>
+          </div>
+
+          {sidebarTab === 'calls' ? (
+            <div style={{ padding: '4px 0' }}>
+              {callHistory.length === 0 && <div style={{ textAlign: 'center', padding: '20px 0', color: C.muted, fontSize: 12 }}>No calls yet</div>}
+              {callHistory.map(call => (
+                <div key={call.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, cursor: 'pointer' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: call.status === 'missed' ? 'rgba(220,38,38,0.08)' : call.status === 'connected' || call.status === 'ended' ? 'rgba(22,163,74,0.08)' : C.card, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon name="phone" size={16} color={call.status === 'missed' ? C.red : call.status === 'connected' || call.status === 'ended' ? C.green : C.sub} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500 }}>{call.caller_id === userId ? call.recipient_name || 'Unknown' : call.caller_name}</div>
+                    <div style={{ fontSize: 11, color: call.status === 'missed' ? C.red : C.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span>{call.caller_id === userId ? 'Outgoing' : 'Incoming'}</span>
+                      <span>·</span>
+                      <span>{call.status === 'missed' ? 'Missed' : call.status === 'declined' ? 'Declined' : call.duration_seconds > 0 ? `${Math.floor(call.duration_seconds / 60)}:${String(call.duration_seconds % 60).padStart(2, '0')}` : call.status}</span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 10, color: C.muted }}>{new Date(call.started_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+          <>
           {/* Section: Direct Messages */}
           <div style={{ padding: '8px 8px 4px', fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Direct Messages</div>
           {channels.filter(ch => ch.channel_type === 'dm').map(ch => {
@@ -389,6 +423,8 @@ export default function Messages({ user }) {
               </div>
             )
           })}
+          </>
+          )}
         </div>
       </div>
 

@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-14T11:04:54.105Z",
+  "generated_at": "2026-05-14T11:36:08.740Z",
   "commits": [
+    {
+      "hash": "72845e1",
+      "subject": "Voice calling: explicit if/else for offline check + debug cleanup",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "bf0d263",
       "subject": "Voice calling: in-app offline modal + all Teams-parity fixes complete",
-      "when": "30 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "e838b52",
       "subject": "Voice calling: missed call messages in chat",
-      "when": "32 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "54d3980",
       "subject": "Voice calling: call ended summary + no answer timeout",
-      "when": "32 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "ab84786",
       "subject": "Fix: offline check template literal syntax",
-      "when": "40 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "43b58cc",
       "subject": "Voice calling: 6 Teams-parity fixes",
-      "when": "41 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "ac507db",
       "subject": "Scale email + LinkedIn for 20+ simultaneous campaigns",
-      "when": "66 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a3e8d76",
@@ -44,12 +49,12 @@
     {
       "hash": "bdb7b4a",
       "subject": "Fix: ringing sound on navigation + stale offer protection",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "a85a3d0",
       "subject": "Document Operations Phase 1: database + API + templates",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "79e5a0c",
@@ -64,22 +69,22 @@
     {
       "hash": "80c0c53",
       "subject": "Messages: match platform page structure (breadcrumb + serif title)",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "05c86b1",
       "subject": "Messages: fix header font + add messaging icon to global nav",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "8c2d81f",
       "subject": "Messages: replace all emoji icons with clean SVG + update roles",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "d957193",
       "subject": "Messages UI polish: 15 improvements for Teams-quality UX",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "bc35087",
@@ -94,11 +99,6 @@
     {
       "hash": "b751cf9",
       "subject": "Messages: notification preferences (mute channels) + muted indicator",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "062c094",
-      "subject": "LinkedIn fix: re-queued 89 invites, added keepalive to scheduler",
       "when": "19 hours ago"
     }
   ]

@@ -178,6 +178,12 @@ export default async function handler(req, res) {
         return res.json({ success: true });
       }
 
+      case 'call-history': {
+        const { userId } = req.body || {};
+        const calls = await sbFetch(\`kiko_call_history?order=started_at.desc&limit=30\`);
+        return res.json({ calls: calls || [] });
+      }
+
       case 'call-start': {
         const { channelId, callerId, callerName, recipientId, recipientName } = req.body || {};
         const row = { channel_id: channelId, caller_id: callerId, caller_name: callerName, recipient_id: recipientId || null, recipient_name: recipientName || null, status: 'ringing' };
