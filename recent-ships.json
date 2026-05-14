@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-05-14T11:36:08.740Z",
+  "generated_at": "2026-05-14T12:31:08.745Z",
   "commits": [
+    {
+      "hash": "c4cc20b",
+      "subject": "Fix: escaped backtick in team-messages call-history action",
+      "when": "86 seconds ago"
+    },
+    {
+      "hash": "bb2d182",
+      "subject": "Call history panel + sidebar tabs (Chats/Calls)",
+      "when": "54 minutes ago"
+    },
     {
       "hash": "72845e1",
       "subject": "Voice calling: explicit if/else for offline check + debug cleanup",
-      "when": "3 minutes ago"
+      "when": "58 minutes ago"
     },
     {
       "hash": "bf0d263",
       "subject": "Voice calling: in-app offline modal + all Teams-parity fixes complete",
-      "when": "61 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e838b52",
       "subject": "Voice calling: missed call messages in chat",
-      "when": "63 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "54d3980",
       "subject": "Voice calling: call ended summary + no answer timeout",
-      "when": "64 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "ab84786",
       "subject": "Fix: offline check template literal syntax",
-      "when": "72 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "43b58cc",
       "subject": "Voice calling: 6 Teams-parity fixes",
-      "when": "72 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "ac507db",
       "subject": "Scale email + LinkedIn for 20+ simultaneous campaigns",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a3e8d76",
       "subject": "Global call overlay + LinkedIn engine fix + background tasks fix",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "719df67",
       "subject": "Microphone error handling + LinkedIn nav bar fix",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "bdb7b4a",
       "subject": "Fix: ringing sound on navigation + stale offer protection",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "a85a3d0",
       "subject": "Document Operations Phase 1: database + API + templates",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "79e5a0c",
       "subject": "Voice calling: add call tones (ringing, connected, ended, busy)",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "a49ed3b",
       "subject": "WebRTC Voice Calling — full implementation",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "80c0c53",
       "subject": "Messages: match platform page structure (breadcrumb + serif title)",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "05c86b1",
       "subject": "Messages: fix header font + add messaging icon to global nav",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "8c2d81f",
       "subject": "Messages: replace all emoji icons with clean SVG + update roles",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "d957193",
       "subject": "Messages UI polish: 15 improvements for Teams-quality UX",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "bc35087",
       "subject": "Messages: fix input bar overlap with KikoFloat",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "e8db0a3",
-      "subject": "Messages final: link previews (Open Graph) + all remaining features",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "b751cf9",
-      "subject": "Messages: notification preferences (mute channels) + muted indicator",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     }
   ]
 }

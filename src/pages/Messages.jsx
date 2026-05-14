@@ -504,6 +504,11 @@ export default function Messages({ user }) {
                 <Icon name="x" size={22} color="#fff" />
               </button>
             </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              {["I'll call back", "In a meeting", "Can't talk now"].map(msg => (
+                <button key={msg} onClick={() => { voice.declineCall(); sendMessage(null, msg) }} style={{ padding: '6px 14px', borderRadius: 20, background: C.card, border: `1px solid ${C.border}`, color: C.sub, fontSize: 11, cursor: 'pointer', fontFamily: C.font, fontWeight: 500 }}>{msg}</button>
+              ))}
+            </div>
           </div>
         )}
 
