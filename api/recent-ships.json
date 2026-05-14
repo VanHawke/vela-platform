@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-14T10:33:01.265Z",
+  "generated_at": "2026-05-14T10:34:28.735Z",
   "commits": [
+    {
+      "hash": "e838b52",
+      "subject": "Voice calling: missed call messages in chat",
+      "when": "73 seconds ago"
+    },
     {
       "hash": "54d3980",
       "subject": "Voice calling: call ended summary + no answer timeout",
-      "when": "30 seconds ago"
+      "when": "2 minutes ago"
     },
     {
       "hash": "ab84786",
       "subject": "Fix: offline check template literal syntax",
-      "when": "9 minutes ago"
+      "when": "10 minutes ago"
     },
     {
       "hash": "43b58cc",
       "subject": "Voice calling: 6 Teams-parity fixes",
-      "when": "9 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "ac507db",
       "subject": "Scale email + LinkedIn for 20+ simultaneous campaigns",
-      "when": "34 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "a3e8d76",
@@ -94,11 +99,6 @@
     {
       "hash": "27923e8",
       "subject": "Messages Phase 4: shared files tab, channel settings, rename",
-      "when": "18 hours ago"
-    },
-    {
-      "hash": "6bc2672",
-      "subject": "Messages Phase 4: pin messages, contact cards, @mention autocomplete",
       "when": "18 hours ago"
     }
   ]

@@ -142,6 +142,7 @@ export default function Messages({ user }) {
 
   // Voice calling
   const voice = useVoiceCall({ userId, userName, channelId: activeChannel })
+  const [offlineCallConfirm, setOfflineCallConfirm] = useState(null) // { recipientId, recipientName }
 
   const loadChannels = useCallback(async () => {
     try { const res = await fetch(`${API}/api/team-messages?action=channels&userId=${userId}`); const d = await res.json(); setChannels(d.channels || []); if (!activeChannel && d.channels?.length) setActiveChannel(d.channels[0].id) } catch (e) {} finally { setLoading(false) }
@@ -418,7 +419,7 @@ export default function Messages({ user }) {
                 const member = TEAM_MEMBERS.find(m => m.id === otherMember)
                 const otherPresence = presence[otherMember]?.status
                 if (!otherPresence || otherPresence === 'offline') {
-                  if (!window.confirm(`${member?.name || 'This user'} is currently offline. Do you still want to call?`)) return
+                  setOfflineCallConfirm({ recipientId: otherMember, recipientName: member?.name || getChannelDisplayName(activeChannelData) }); return
                 }
                 voice.startCall(otherMember, member?.name || getChannelDisplayName(activeChannelData))
               }} style={{ height: 32, padding: '0 14px', borderRadius: 8, background: C.green, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: C.font }}><Icon name="phone" size={14} color="#fff" /> Call</button>
@@ -668,6 +669,20 @@ export default function Messages({ user }) {
       )}
 
       {/* Channel Settings Modal */}
+      {/* Offline call confirm modal */}
+      {offlineCallConfirm && (
+        <div onClick={() => setOfflineCallConfirm(null)} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: C.bg, borderRadius: 16, padding: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.15)', width: 320, textAlign: 'center' }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: C.card, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="phone" size={24} color={C.sub} /></div>
+            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{offlineCallConfirm.recipientName}</div>
+            <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>is currently offline. Do you still want to call?</div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button onClick={() => setOfflineCallConfirm(null)} style={{ padding: '8px 20px', borderRadius: 10, background: C.card, border: 'none', color: C.text, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
+              <button onClick={() => { voice.startCall(offlineCallConfirm.recipientId, offlineCallConfirm.recipientName); setOfflineCallConfirm(null) }} style={{ padding: '8px 20px', borderRadius: 10, background: C.green, border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: C.font }}>Call anyway</button>
+            </div>
+          </div>
+        </div>
+      )}
       {showChannelSettings && activeChannelData && (
         <div onClick={() => setShowChannelSettings(false)} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div onClick={e => e.stopPropagation()} style={{ background: C.bg, borderRadius: 16, padding: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.15)', width: 320 }}>
