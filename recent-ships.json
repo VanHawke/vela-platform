@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-05-14T14:48:21.222Z",
+  "generated_at": "2026-05-15T10:19:40.746Z",
   "commits": [
+    {
+      "hash": "238f876",
+      "subject": "FIX: Command Centre briefings must look up contact before drafting",
+      "when": "5 minutes ago"
+    },
+    {
+      "hash": "3444012",
+      "subject": "CRITICAL FIX: Bounce detection — bounces no longer treated as replies",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "43f2b44",
+      "subject": "Permanent rule: Supabase table creation must include grants + RLS",
+      "when": "15 hours ago"
+    },
+    {
+      "hash": "3fc9467",
+      "subject": "Kiko full knowledge sync: Gmail sync + follow-up lifecycle rules",
+      "when": "19 hours ago"
+    },
+    {
+      "hash": "9c7eef8",
+      "subject": "Gmail Activity Sync — full email monitoring cron",
+      "when": "20 hours ago"
+    },
     {
       "hash": "c329071",
       "subject": "CRITICAL FIX: Follow-up lifecycle — auto-complete on reply + send",
-      "when": "11 minutes ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "790f509",
       "subject": "Kiko knowledge sync: KIKO_BIBLE.md + self-knowledge updated",
-      "when": "24 minutes ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "8c57331",
       "subject": "CRITICAL FIX: escaped backticks in document-ops.js crashing server",
-      "when": "29 minutes ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "1ae542c",
       "subject": "Mobile responsive: all pages now mobile-ready",
-      "when": "32 minutes ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "3ba96c6",
       "subject": "Mobile responsive: Messages page sidebar collapse",
-      "when": "37 minutes ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "ebfe439",
       "subject": "Video calling: WebRTC video streams + UI",
-      "when": "49 minutes ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "15c7b84",
       "subject": "Document Ops Phase 2+4: template editor + versioning",
-      "when": "52 minutes ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "69674e2",
       "subject": "Document Ops Phase 4: versioning + versions API",
-      "when": "86 minutes ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "87c5c38",
       "subject": "Partnership Detection alerts tab + Knowledge Library + Documents update",
-      "when": "2 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "903cb34",
       "subject": "Knowledge Library + Documents page update + nav settings",
-      "when": "2 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "cdb9ff6",
       "subject": "Document Operations: Kiko tool integration (Phase 3)",
-      "when": "2 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "aa0daaa",
       "subject": "Fix nav settings: add Messages + persist from Supabase",
-      "when": "2 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "de310cc",
       "subject": "Decline with quick message + call history complete",
-      "when": "2 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "c4cc20b",
       "subject": "Fix: escaped backtick in team-messages call-history action",
-      "when": "2 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "bb2d182",
       "subject": "Call history panel + sidebar tabs (Chats/Calls)",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "72845e1",
-      "subject": "Voice calling: explicit if/else for offline check + debug cleanup",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "bf0d263",
-      "subject": "Voice calling: in-app offline modal + all Teams-parity fixes complete",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "e838b52",
-      "subject": "Voice calling: missed call messages in chat",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "54d3980",
-      "subject": "Voice calling: call ended summary + no answer timeout",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "ab84786",
-      "subject": "Fix: offline check template literal syntax",
-      "when": "4 hours ago"
+      "when": "23 hours ago"
     }
   ]
 }
