@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-05-15T10:19:40.746Z",
+  "generated_at": "2026-05-15T10:26:10.330Z",
   "commits": [
+    {
+      "hash": "9734fd0",
+      "subject": "FIX: Briefing prompt now explicitly names the person, not company",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "238f876",
       "subject": "FIX: Command Centre briefings must look up contact before drafting",
-      "when": "5 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "3444012",
       "subject": "CRITICAL FIX: Bounce detection — bounces no longer treated as replies",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "43f2b44",
@@ -69,7 +74,7 @@
     {
       "hash": "87c5c38",
       "subject": "Partnership Detection alerts tab + Knowledge Library + Documents update",
-      "when": "21 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "903cb34",
@@ -95,11 +100,6 @@
       "hash": "c4cc20b",
       "subject": "Fix: escaped backtick in team-messages call-history action",
       "when": "22 hours ago"
-    },
-    {
-      "hash": "bb2d182",
-      "subject": "Call history panel + sidebar tabs (Chats/Calls)",
-      "when": "23 hours ago"
     }
   ]
 }

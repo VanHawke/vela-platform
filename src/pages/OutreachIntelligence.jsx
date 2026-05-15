@@ -371,6 +371,7 @@ export default function OutreachIntelligence({ user }) {
   const [draftTone, setDraftTone] = useState('advisory')
   const [separateDraft, setSeparateDraft] = useState('')
   const [draftGenerating, setDraftGenerating] = useState(false)
+  const [resolvedEmail, setResolvedEmail] = useState('')
 
   const isSuperAdmin = user?.app_metadata?.role === 'super_admin'
 
@@ -599,10 +600,28 @@ export default function OutreachIntelligence({ user }) {
         // Small delay to ensure brief SSE connection is fully closed before draft fetch
         await new Promise(r => setTimeout(r, 500))
         const p = selected.payload || {}
-        const entityName = p.entity_name || selected.title?.split('—')?.[1]?.trim() || ''
+        const taskData = p.data || {}
+        // For tasks: contact info is in payload.data, not in top-level payload
+        const entityName = taskData.contact || p.entity_name || selected.title?.split('—')?.[1]?.trim() || ''
+        const companyName = taskData.company || p.company || ''
         const firstName = entityName.split(' ')[0] || 'there'
         const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
-        const prospectEmail = p.prospect_email || p.email || p.metadata?.from || ''
+        let prospectEmail = p.prospect_email || p.email || p.metadata?.from || ''; if (prospectEmail) setResolvedEmail(prospectEmail)
+        
+        // For tasks: look up contact email from CRM if not in payload
+        if (!prospectEmail && entityName) {
+          try {
+            const { data: contacts } = await supabase.from('contacts').select('id, data').limit(20)
+            const match = (contacts || []).find(c => {
+              const fn = (c.data?.firstName || '').toLowerCase()
+              const ln = (c.data?.lastName || '').toLowerCase()
+              const full = `${fn} ${ln}`.trim()
+              const co = (c.data?.company || '').toLowerCase()
+              return (fn && entityName.toLowerCase().includes(fn) && (co === companyName.toLowerCase() || !companyName)) || full === entityName.toLowerCase()
+            })
+            if (match?.data?.email) { prospectEmail = match.data.email; setResolvedEmail(match.data.email) }
+          } catch {}
+        }
         
         // Get the REAL email subject from the thread — not the alert title
         let subjectLine = (p.metadata?.subject || '').replace(/^Re:\s*/gi, '').trim()
@@ -1089,7 +1108,7 @@ Write the email now. Start with "Subject: Re: ${subjectLine}" then "To:" then gr
                   )}
                   {!draftGenerating && separateDraft && isEmailDraft(separateDraft) && (
                     <div style={{ marginTop: 14 }}>
-                      <EmailDraft key={'draft-' + separateDraft.length} text={separateDraft} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} defaultTo={selected?.payload?.metadata?.from || selected?.payload?.prospect_email || selected?.payload?.email || ''} />
+                      <EmailDraft key={'draft-' + separateDraft.length} text={separateDraft} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} defaultTo={resolvedEmail || selected?.payload?.metadata?.from || selected?.payload?.prospect_email || selected?.payload?.email || selected?.payload?.data?.email || ''} />
                     </div>
                   )}
 
