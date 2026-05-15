@@ -596,7 +596,7 @@ export default function OutreachIntelligence({ user }) {
       }
       setBriefLoading(false)
       
-      // ── SEPARATE DRAFT GENERATION — lightweight draftOnly path, no tools ──
+      // ── DRAFT GENERATION — uses brief context for fully informed drafts ──
       if (selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup') {
         // Small delay to ensure brief SSE connection is fully closed before draft fetch
         await new Promise(r => setTimeout(r, 500))

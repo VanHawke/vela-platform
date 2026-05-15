@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-15T10:41:59.611Z",
+  "generated_at": "2026-05-15T10:47:20.940Z",
   "commits": [
+    {
+      "hash": "45c7953",
+      "subject": "FIX: Follow-up drafts — wrong item kind, wrong field names",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "eb5e904",
       "subject": "FIX: Command Centre task → email draft pipeline broken for tasks",
-      "when": "16 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "9734fd0",
       "subject": "FIX: Briefing prompt now explicitly names the person, not company",
-      "when": "22 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "238f876",
       "subject": "FIX: Command Centre briefings must look up contact before drafting",
-      "when": "27 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "3444012",
@@ -54,7 +59,7 @@
     {
       "hash": "1ae542c",
       "subject": "Mobile responsive: all pages now mobile-ready",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "3ba96c6",
@@ -94,11 +99,6 @@
     {
       "hash": "aa0daaa",
       "subject": "Fix nav settings: add Messages + persist from Supabase",
-      "when": "22 hours ago"
-    },
-    {
-      "hash": "de310cc",
-      "subject": "Decline with quick message + call history complete",
       "when": "22 hours ago"
     }
   ]
