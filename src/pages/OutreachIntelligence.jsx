@@ -641,7 +641,7 @@ export default function OutreachIntelligence({ user }) {
         }
         
         // Get the REAL email subject from the thread — not the alert title
-        let subjectLine = (p.metadata?.subject || '').replace(/^Re:\s*/gi, '').trim()
+        let subjectLine = (p.subject || p.metadata?.subject || '').replace(/^Re:\s*/gi, '').trim()
         if (!subjectLine) {
           // Look up from email tracking (most recent sent email to this entity)
           try {
@@ -669,19 +669,41 @@ export default function OutreachIntelligence({ user }) {
         if (!subjectLine) subjectLine = (selected.title || '').replace(/^Re:\s*/i, '').replace(/^Reply from\s+/i, '').replace(/[!.]+$/, '')
         // Use the brief we just generated as context for the draft
         const briefRef = document.querySelector('.cc-detail-section-body')
-        const briefContext = briefRef ? briefRef.innerText.slice(0, 1500) : ''
+        const briefContext = briefRef ? briefRef.innerText.slice(0, 3000) : ''
         setSeparateDraft('')
         setDraftGenerating(true)
         const draftController = new AbortController()
-        console.log('[CC] Starting draft generation for', entityName, 'draftOnly=true')
+        console.log('[CC] Starting draft generation for', entityName, 'email:', prospectEmail, 'subject:', subjectLine)
         try {
-          const safeContext = (briefContext || '').replace(/[^\x20-\x7E\n]/g, ' ').slice(0, 800)
+          const safeContext = (briefContext || '').replace(/[^\x20-\x7E\n]/g, ' ').slice(0, 2500)
+          const isFollowUp = selected.kind === 'followup'
           const draftRes = await fetch('https://api.vanhawke.agency/api/kiko', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               draftOnly: true,
-              message: `Write a reply email to ${entityName}${prospectEmail ? ` (${prospectEmail})` : ''}.
+              message: isFollowUp
+                ? `Write a follow-up email to ${entityName} at ${companyName} (${prospectEmail || 'email unknown'}).
+
+WE sent the original email and got NO REPLY. This is OUR follow-up to THEM. Do NOT say "thank you for reaching out" or "thank you for getting in touch" — THEY did not reach out, WE did.
+
+Original email subject: "${subjectLine}"
+Recipient: ${entityName} (${prospectEmail})
+Company: ${companyName}
+
+ANALYSIS FROM BRIEF:
+${safeContext}
+
+Write the follow-up email now. Format:
+Subject: Re: ${subjectLine}
+To: ${prospectEmail}
+
+Hi ${firstName},
+
+[2-3 paragraphs using a NEW ANGLE based on the brief analysis above. Reference specific details about their company. Do NOT just "check in" or "follow up on my last email."]
+
+Best,`
+                : `Write a reply email to ${entityName}${prospectEmail ? ` (${prospectEmail})` : ''}.
 
 Subject: Re: ${subjectLine}
 ${prospectEmail ? `To: ${prospectEmail}` : `To: [use their email if you know it]`}

@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-05-15T10:47:20.940Z",
+  "generated_at": "2026-05-15T10:55:35.565Z",
   "commits": [
+    {
+      "hash": "8df26ce",
+      "subject": "FIX: Draft now gets 2000 chars of brief context, not 800",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "45c7953",
       "subject": "FIX: Follow-up drafts — wrong item kind, wrong field names",
-      "when": "5 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "eb5e904",
       "subject": "FIX: Command Centre task → email draft pipeline broken for tasks",
-      "when": "21 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "9734fd0",
       "subject": "FIX: Briefing prompt now explicitly names the person, not company",
-      "when": "27 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "238f876",
       "subject": "FIX: Command Centre briefings must look up contact before drafting",
-      "when": "33 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "3444012",
@@ -34,7 +39,7 @@
     {
       "hash": "3fc9467",
       "subject": "Kiko full knowledge sync: Gmail sync + follow-up lifecycle rules",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "9c7eef8",
@@ -49,12 +54,12 @@
     {
       "hash": "790f509",
       "subject": "Kiko knowledge sync: KIKO_BIBLE.md + self-knowledge updated",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "8c57331",
       "subject": "CRITICAL FIX: escaped backticks in document-ops.js crashing server",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "1ae542c",
@@ -79,7 +84,7 @@
     {
       "hash": "69674e2",
       "subject": "Document Ops Phase 4: versioning + versions API",
-      "when": "21 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "87c5c38",
@@ -94,11 +99,6 @@
     {
       "hash": "cdb9ff6",
       "subject": "Document Operations: Kiko tool integration (Phase 3)",
-      "when": "22 hours ago"
-    },
-    {
-      "hash": "aa0daaa",
-      "subject": "Fix nav settings: add Messages + persist from Supabase",
       "when": "22 hours ago"
     }
   ]
