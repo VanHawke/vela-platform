@@ -685,6 +685,8 @@ export default function OutreachIntelligence({ user }) {
               message: isFollowUp
                 ? `Write a follow-up email to ${entityName} at ${companyName} (${prospectEmail || 'email unknown'}).
 
+TODAY'S DATE: ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}. The current F1 season is 2026, NOT 2025.
+
 WE sent the original email and got NO REPLY. This is OUR follow-up to THEM. Do NOT say "thank you for reaching out" or "thank you for getting in touch" — THEY did not reach out, WE did.
 
 Original email subject: "${subjectLine}"
@@ -1147,7 +1149,7 @@ Write the email now. Start with "Subject: Re: ${subjectLine}" then "To:" then gr
                   )}
                   {!draftGenerating && separateDraft && isEmailDraft(separateDraft) && (
                     <div style={{ marginTop: 14 }}>
-                      <EmailDraft key={'draft-' + separateDraft.length} text={separateDraft} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} defaultTo={resolvedEmail || selected?.payload?.metadata?.from || selected?.payload?.prospect_email || selected?.payload?.email || selected?.payload?.data?.email || ''} />
+                      <EmailDraft key={'draft-' + separateDraft.length} text={separateDraft} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} defaultTo={resolvedEmail || selected?.payload?.recipient_email || selected?.payload?.metadata?.from || selected?.payload?.prospect_email || selected?.payload?.email || selected?.payload?.data?.email || ''} />
                     </div>
                   )}
 

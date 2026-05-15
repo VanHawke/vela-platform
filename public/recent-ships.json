@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-15T10:55:35.565Z",
+  "generated_at": "2026-05-15T10:58:41.089Z",
   "commits": [
+    {
+      "hash": "22b9af2",
+      "subject": "FIX: Follow-up drafts now context-aware with correct direction",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "8df26ce",
       "subject": "FIX: Draft now gets 2000 chars of brief context, not 800",
-      "when": "8 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "45c7953",
       "subject": "FIX: Follow-up drafts — wrong item kind, wrong field names",
-      "when": "13 minutes ago"
+      "when": "16 minutes ago"
     },
     {
       "hash": "eb5e904",
       "subject": "FIX: Command Centre task → email draft pipeline broken for tasks",
-      "when": "29 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "9734fd0",
       "subject": "FIX: Briefing prompt now explicitly names the person, not company",
-      "when": "36 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "238f876",
       "subject": "FIX: Command Centre briefings must look up contact before drafting",
-      "when": "41 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "3444012",
@@ -94,11 +99,6 @@
     {
       "hash": "903cb34",
       "subject": "Knowledge Library + Documents page update + nav settings",
-      "when": "22 hours ago"
-    },
-    {
-      "hash": "cdb9ff6",
-      "subject": "Document Operations: Kiko tool integration (Phase 3)",
       "when": "22 hours ago"
     }
   ]
