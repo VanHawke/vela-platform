@@ -124,8 +124,46 @@ export default async function handler(req, res) {
           // Check if this is a reply to a tracked thread
           const tracked = await sbFetch(`kiko_email_tracking?gmail_thread_id=eq.${full.threadId}&replied_at=is.null&limit=1`);
           if (tracked?.length > 0) {
-            // This is a reply to a tracked email!
             const t = tracked[0];
+            
+            // ── BOUNCE DETECTION ──
+            const snippet = (full.snippet || '').toLowerCase();
+            const fromLower = fromHeader.toLowerCase();
+            const bounceSignals = ['mailer-daemon', 'postmaster', 'delivery status', 'mail delivery', 'undeliverable'];
+            const bounceSnippets = ['address not found', 'delivery failed', 'undeliverable', 'user unknown', 'mailbox not found', 'does not exist', 'unable to receive', 'rejected', 'permanent failure', 'hard bounce', 'address rejected'];
+            const isBounce = bounceSignals.some(s => fromLower.includes(s)) || bounceSnippets.some(s => snippet.includes(s));
+
+            if (isBounce) {
+              // Mark as BOUNCED, not replied
+              await sbFetch(`kiko_email_tracking?id=eq.${t.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ bounced_at: new Date().toISOString(), bounce_reason: snippet.slice(0, 500), follow_up_dismissed: true }),
+              });
+              // Pause the sequence enrollment
+              if (t.contact_id || t.recipient_email) {
+                const enrollments = await sbFetch(`kiko_sequence_enrollments?contact_email=eq.${encodeURIComponent(t.recipient_email)}&status=eq.active&limit=1`);
+                if (enrollments?.[0]) {
+                  await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollments[0].id}`, {
+                    method: 'PATCH', body: JSON.stringify({ status: 'bounced', paused_reason: 'Email address bounced' }),
+                  });
+                }
+              }
+              // Create bounce alert (not reply alert)
+              await sbFetch('kiko_alerts', {
+                method: 'POST',
+                body: JSON.stringify({
+                  type: 'email_bounce', severity: 'medium',
+                  title: `Email bounced: ${t.recipient_name}`,
+                  detail: `Email to ${t.recipient_name} (${t.recipient_email}) bounced. ${snippet.slice(0, 200)}`,
+                  entity_type: 'contact', entity_name: t.recipient_name, dismissed: false,
+                }),
+              }).catch(() => {});
+              totalSynced++;
+              console.log(`[gmail-sync] BOUNCE detected: ${t.recipient_email} — ${snippet.slice(0, 80)}`);
+              continue; // Skip reply processing
+            }
+
+            // This is a REAL reply to a tracked email
             await sbFetch(`kiko_email_tracking?id=eq.${t.id}`, {
               method: 'PATCH',
               body: JSON.stringify({
