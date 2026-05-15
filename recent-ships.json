@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-05-15T10:26:10.330Z",
+  "generated_at": "2026-05-15T10:41:59.611Z",
   "commits": [
+    {
+      "hash": "eb5e904",
+      "subject": "FIX: Command Centre task → email draft pipeline broken for tasks",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "9734fd0",
       "subject": "FIX: Briefing prompt now explicitly names the person, not company",
-      "when": "6 minutes ago"
+      "when": "22 minutes ago"
     },
     {
       "hash": "238f876",
       "subject": "FIX: Command Centre briefings must look up contact before drafting",
-      "when": "12 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "3444012",
@@ -54,17 +59,17 @@
     {
       "hash": "3ba96c6",
       "subject": "Mobile responsive: Messages page sidebar collapse",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "ebfe439",
       "subject": "Video calling: WebRTC video streams + UI",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "15c7b84",
       "subject": "Document Ops Phase 2+4: template editor + versioning",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "69674e2",
@@ -94,11 +99,6 @@
     {
       "hash": "de310cc",
       "subject": "Decline with quick message + call history complete",
-      "when": "22 hours ago"
-    },
-    {
-      "hash": "c4cc20b",
-      "subject": "Fix: escaped backtick in team-messages call-history action",
       "when": "22 hours ago"
     }
   ]

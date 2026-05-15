@@ -332,7 +332,8 @@ Give me:
 4. DRAFT OUTREACH — if there's an opportunity, a draft email to the relevant contact`
   }
   if (sel.kind === 'followup') {
-    return `I need a re-engagement brief for ${p.recipient_name || p.recipient_email} at ${p.company || 'their company'}.\n\nOriginal email subject: "${p.subject || ''}"\nSent: ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : 'unknown'}\nFollow-up due: ${p.follow_up_due_at ? new Date(p.follow_up_due_at).toLocaleDateString('en-GB') : 'unknown'}\nStatus: ${p.status}\n\nGive me:\n1. LAST CORRESPONDENCE — search Gmail for our full email thread with ${p.recipient_name || p.recipient_email}. Show the last email WE sent (full text) and any reply received. Include dates.\n2. WHY NO REPLY — psychological analysis of why they haven't responded, based on their role, company stage, and timing\n3. DEFINITIVE NEXT STEP — tell me EXACTLY what to do: when to send, what angle to use, what channel. One clear action. No hedging.\n4. DRAFT FOLLOW-UP EMAIL — Subject: line, Dear [Name], body, Kind regards. Use a completely different angle from the original — don't just "check in."\n\n${VH_EMAIL_VOICE}`
+    const contactFirstName = (p.recipient_name || '').split(' ')[0] || 'there'
+    return `I need a re-engagement brief for ${p.recipient_name || p.recipient_email} at ${p.company || 'their company'}.\n\nCRITICAL: "${p.recipient_name}" is the PERSON'S NAME. "${p.company}" is the COMPANY. Address the email "Hi ${contactFirstName}," — NEVER "Hi ${p.company || ''},". The contact is a PERSON, not a company.\n\nOriginal email subject: "${p.subject || ''}"\nRecipient email: ${p.recipient_email || 'unknown'}\nSent: ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : 'unknown'}\nFollow-up due: ${p.follow_up_due_at ? new Date(p.follow_up_due_at).toLocaleDateString('en-GB') : 'unknown'}\nStatus: ${p.status}\n\nGive me:\n1. LAST CORRESPONDENCE — search Gmail for our full email thread with ${p.recipient_name || p.recipient_email}. Show the last email WE sent (full text) and any reply received. Include dates.\n2. WHY NO REPLY — psychological analysis of why they haven't responded, based on their role, company stage, and timing\n3. DEFINITIVE NEXT STEP — tell me EXACTLY what to do: when to send, what angle to use, what channel. One clear action. No hedging.\n4. DRAFT FOLLOW-UP EMAIL — Subject: Re: ${p.subject || ''}, To: ${p.recipient_email || ''}, then greeting "Hi ${contactFirstName}," then body then "Best," sign-off. Use a completely different angle from the original — don't just "check in."\n\n${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'campaign') {
     return `Brief me on campaign prospect: ${p.contact_name || 'Unknown'} at ${p.company || 'their company'}.\n\nCurrent step: ${p.current_step}\nNext send scheduled: ${p.next_send_at ? new Date(p.next_send_at).toLocaleDateString('en-GB') : 'pending'}\n\nGive me: (1) company background, (2) where they are in the sequence, (3) whether we should continue, pause, or escalate this prospect.`
@@ -601,12 +602,28 @@ export default function OutreachIntelligence({ user }) {
         await new Promise(r => setTimeout(r, 500))
         const p = selected.payload || {}
         const taskData = p.data || {}
-        // For tasks: contact info is in payload.data, not in top-level payload
-        const entityName = taskData.contact || p.entity_name || selected.title?.split('—')?.[1]?.trim() || ''
-        const companyName = taskData.company || p.company || ''
-        const firstName = entityName.split(' ')[0] || 'there'
+        // Resolve contact info depending on item kind
+        let entityName, companyName, firstName, prospectEmail
+        if (selected.kind === 'followup') {
+          // Follow-ups come from kiko_email_tracking — fields: recipient_name, recipient_email, company, subject
+          entityName = p.recipient_name || ''
+          companyName = p.company || ''
+          prospectEmail = p.recipient_email || ''
+        } else if (selected.kind === 'task') {
+          // Tasks have data in payload.data — fields: contact, company
+          entityName = taskData.contact || ''
+          companyName = taskData.company || ''
+          prospectEmail = ''
+        } else {
+          // Replies, signals — fields: entity_name, prospect_email
+          entityName = p.entity_name || ''
+          companyName = p.company || ''
+          prospectEmail = p.prospect_email || p.email || p.metadata?.from || ''
+        }
+        if (!entityName) entityName = selected.title?.split('—')?.[1]?.trim() || selected.title?.split('-')?.[0]?.trim() || ''
+        firstName = entityName.split(' ')[0] || 'there'
+        if (prospectEmail) setResolvedEmail(prospectEmail)
         const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
-        let prospectEmail = p.prospect_email || p.email || p.metadata?.from || ''; if (prospectEmail) setResolvedEmail(prospectEmail)
         
         // For tasks: look up contact email from CRM if not in payload
         if (!prospectEmail && entityName) {
