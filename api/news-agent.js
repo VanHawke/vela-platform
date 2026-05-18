@@ -350,7 +350,7 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const action = req.body?.action || req.query?.action;
+  const action = req.body?.action || req.query?.action || 'fetch'; // Default to fetch for cron calls
 
   // FETCH — pull RSS feeds and store new articles
   if (action === 'fetch') {

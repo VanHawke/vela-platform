@@ -36,7 +36,8 @@ If no F1 team partnerships found, respond: []`,
       messages: [{ role: 'user', content: text.slice(0, 2000) }]
     });
     const raw = resp.content[0]?.text?.trim();
-    const parsed = JSON.parse(raw);
+    const cleaned = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    const parsed = JSON.parse(cleaned);
     return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
     console.error('[PartnerScan] Classification error:', e.message);

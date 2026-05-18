@@ -23,6 +23,17 @@ function stripDraftFromBrief(text) {
   return text.replace(/\n*(?:#{1,4}\s*)?(?:\d+\.\s*)?(?:DRAFT\s*(?:REPLY|EMAIL|OUTREACH|FOLLOW.?UP))[:\s—\-]*[\s\S]*/i, '\n').trim()
 }
 
+function extractDraftFromBrief(text) {
+  if (!text) return ''
+  const match = text.match(/(?:#{1,4}\s*)?(?:\d+\.\s*)?(?:DRAFT\s*(?:REPLY|EMAIL|OUTREACH|FOLLOW.?UP))[:\s—\-]*([\s\S]*)/i)
+  if (!match?.[1]) return ''
+  // Clean the draft text — remove markdown headers and excess formatting
+  let draft = match[1].trim()
+  // Remove "Subject:" prefix line if it's on its own line and re-add it properly for EmailDraft parsing
+  draft = draft.replace(/^\s*#+\s*/gm, '') // Remove markdown headers
+  return draft
+}
+
 // Strip tool calls, tool responses, Kiko's internal narration, and em dashes from brief text
 function stripToolCalls(text) {
   if (!text) return text
@@ -366,6 +377,7 @@ export default function OutreachIntelligence({ user }) {
   const [brief, setBrief] = useState('')
   const [briefLoading, setBriefLoading] = useState(false)
   const briefAbortRef = useRef(null)
+  const rawBriefRef = useRef('')
   const [showDraft, setShowDraft] = useState(false)
   const [draftSubject, setDraftSubject] = useState('')
   const [draftBody, setDraftBody] = useState('')
@@ -544,6 +556,8 @@ export default function OutreachIntelligence({ user }) {
     const controller = new AbortController()
     briefAbortRef.current = controller
     setBrief('')
+    rawBriefRef.current = ''
+    setSeparateDraft('')
     setBriefLoading(true)
     ;(async () => {
       try {
@@ -588,7 +602,11 @@ export default function OutreachIntelligence({ user }) {
                     setBrief('Kiko is temporarily busy. Click the item again to retry.')
                     return
                   }
-                  setBrief(prev => prev + chunk)
+                  setBrief(prev => {
+                    const updated = prev + chunk
+                    rawBriefRef.current = updated
+                    return updated
+                  })
                 }
               } catch {}
             })
@@ -602,155 +620,22 @@ export default function OutreachIntelligence({ user }) {
       const detailPanel = document.querySelector('.cc-detail-scroll')
       if (detailPanel) detailPanel.scrollTop = 0
       
-      // ── DRAFT GENERATION — uses brief context for fully informed drafts ──
+      // ── DRAFT EXTRACTION — extract section 4 from the brief (which has full tool context) ──
       if (selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup') {
-        // Small delay to ensure brief SSE connection is fully closed before draft fetch
-        await new Promise(r => setTimeout(r, 500))
-        const p = selected.payload || {}
-        const taskData = p.data || {}
-        // Resolve contact info depending on item kind
-        let entityName, companyName, firstName, prospectEmail
-        if (selected.kind === 'followup') {
-          // Follow-ups come from kiko_email_tracking — fields: recipient_name, recipient_email, company, subject
-          entityName = p.recipient_name || ''
-          companyName = p.company || ''
-          prospectEmail = p.recipient_email || ''
-        } else if (selected.kind === 'task') {
-          // Tasks have data in payload.data — fields: contact, company
-          entityName = taskData.contact || ''
-          companyName = taskData.company || ''
-          prospectEmail = ''
+        await new Promise(r => setTimeout(r, 300))
+        // Get the raw accumulated brief text and extract the draft from section 4
+        const rawBrief = rawBriefRef.current || ''
+        const extracted = extractDraftFromBrief(rawBrief)
+        if (extracted && extracted.length > 30) {
+          setSeparateDraft(extracted)
+          console.log('[CC] Extracted draft from brief, length:', extracted.length)
         } else {
-          // Replies, signals — fields: entity_name, prospect_email
-          entityName = p.entity_name || ''
-          companyName = p.company || ''
-          prospectEmail = p.prospect_email || p.email || p.metadata?.from || ''
+          console.log('[CC] No draft found in brief, raw length:', rawBrief.length)
         }
-        if (!entityName) entityName = selected.title?.split('—')?.[1]?.trim() || selected.title?.split('-')?.[0]?.trim() || ''
-        firstName = entityName.split(' ')[0] || 'there'
-        if (prospectEmail) setResolvedEmail(prospectEmail)
-        const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
-        
-        // For tasks: look up contact email from CRM if not in payload
-        if (!prospectEmail && entityName) {
-          try {
-            const { data: contacts } = await supabase.from('contacts').select('id, data').limit(20)
-            const match = (contacts || []).find(c => {
-              const fn = (c.data?.firstName || '').toLowerCase()
-              const ln = (c.data?.lastName || '').toLowerCase()
-              const full = `${fn} ${ln}`.trim()
-              const co = (c.data?.company || '').toLowerCase()
-              return (fn && entityName.toLowerCase().includes(fn) && (co === companyName.toLowerCase() || !companyName)) || full === entityName.toLowerCase()
-            })
-            if (match?.data?.email) { prospectEmail = match.data.email; setResolvedEmail(match.data.email) }
-          } catch {}
-        }
-        
-        // Get the REAL email subject from the thread — not the alert title
-        let subjectLine = (p.subject || p.metadata?.subject || '').replace(/^Re:\s*/gi, '').trim()
-        if (!subjectLine) {
-          // Look up from email tracking (most recent sent email to this entity)
-          try {
-            const { data: tracked } = await supabase
-              .from('kiko_outreach_queue')
-              .select('subject')
-              .ilike('to_email', `%${entityName.split(' ').pop().toLowerCase()}%`)
-              .order('created_at', { ascending: false })
-              .limit(1)
-            if (tracked?.[0]?.subject) subjectLine = tracked[0].subject
-          } catch {}
-        }
-        if (!subjectLine) {
-          // Try email tracking table
-          try {
-            const { data: tracking } = await supabase
-              .from('kiko_email_tracking')
-              .select('subject')
-              .ilike('recipient_email', `%${entityName.split(' ').pop()}%`)
-              .order('sent_at', { ascending: false })
-              .limit(1)
-            if (tracking?.[0]?.subject) subjectLine = tracking[0].subject
-          } catch {}
-        }
-        if (!subjectLine) subjectLine = (selected.title || '').replace(/^Re:\s*/i, '').replace(/^Reply from\s+/i, '').replace(/[!.]+$/, '')
-        // Use the brief we just generated as context for the draft
-        const briefRef = document.querySelector('.cc-detail-section-body')
-        const briefContext = briefRef ? briefRef.innerText.slice(0, 3000) : ''
-        setSeparateDraft('')
-        setDraftGenerating(true)
-        const draftController = new AbortController()
-        console.log('[CC] Starting draft generation for', entityName, 'email:', prospectEmail, 'subject:', subjectLine)
-        try {
-          const safeContext = (briefContext || '').replace(/[^\x20-\x7E\n]/g, ' ').slice(0, 2500)
-          const isFollowUp = selected.kind === 'followup'
-          const draftRes = await fetch('https://api.vanhawke.agency/api/kiko', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              draftOnly: true,
-              message: isFollowUp
-                ? `Write a follow-up email to ${entityName} at ${companyName} (${prospectEmail || 'email unknown'}).
-
-TODAY'S DATE: ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}. The current F1 season is 2026, NOT 2025.
-
-WE sent the original email and got NO REPLY. This is OUR follow-up to THEM. Do NOT say "thank you for reaching out" or "thank you for getting in touch" — THEY did not reach out, WE did.
-
-Original email subject: "${subjectLine}"
-Recipient: ${entityName} (${prospectEmail})
-Company: ${companyName}
-
-ANALYSIS FROM BRIEF:
-${safeContext}
-
-Write the follow-up email now. Format:
-Subject: Re: ${subjectLine}
-To: ${prospectEmail}
-
-Hi ${firstName},
-
-[2-3 paragraphs using a NEW ANGLE based on the brief analysis above. Reference specific details about their company. Do NOT just "check in" or "follow up on my last email."]
-
-Best,`
-                : `Write a reply email to ${entityName}${prospectEmail ? ` (${prospectEmail})` : ''}.
-
-Subject: Re: ${subjectLine}
-${prospectEmail ? `To: ${prospectEmail}` : `To: [use their email if you know it]`}
-
-Their message: "${snippet?.slice(0, 500)}"
-
-${safeContext ? `Brief context from our analysis:\n${safeContext}` : ''}
-
-Write the email now. Start with "Subject: Re: ${subjectLine}" then "To:" then greeting "Hi ${firstName}," then 2-3 paragraphs then "Best," sign-off.`,
-              userEmail: user?.email || 'sunny@vanhawke.com',
-            }),
-            signal: draftController.signal,
-          })
-          if (draftRes.body) {
-            const dr = draftRes.body.getReader()
-            const dd = new TextDecoder()
-            let dbuf = ''
-            while (true) {
-              const { done, value } = await dr.read()
-              if (done) break
-              dbuf += dd.decode(value, { stream: true })
-              let didx
-              while ((didx = dbuf.indexOf('\n\n')) !== -1) {
-                const dchunk = dbuf.slice(0, didx); dbuf = dbuf.slice(didx + 2)
-                dchunk.split('\n').forEach(line => {
-                  if (!line.startsWith('data:')) return
-                  const raw = line.slice(5).trim()
-                  if (!raw || raw === '[DONE]') return
-                  try {
-                    const evt = JSON.parse(raw)
-                    const txt = evt.delta || evt.text
-                    if (txt) setSeparateDraft(prev => prev + txt)
-                  } catch {}
-                })
-              }
-            }
-          }
-        } catch (e) { if (e.name !== 'AbortError') console.error('[CC] draft gen error:', e) }
-        setDraftGenerating(false)
+        // Resolve email from payload
+        const p = selected.payload || {}
+        const email = p.recipient_email || p.prospect_email || p.email || p.metadata?.from || ''
+        if (email) setResolvedEmail(email)
       }
     })()
     return () => controller.abort()

@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-18T13:28:59.628Z",
+  "generated_at": "2026-05-18T13:47:13.594Z",
   "commits": [
+    {
+      "hash": "8eea292",
+      "subject": "FIX: Follow-up query only loads awaiting_reply, not followed_up",
+      "when": "18 minutes ago"
+    },
     {
       "hash": "2012b0b",
       "subject": "FIX: Gmail sync dismisses old follow-ups in BOTH tables",
-      "when": "2 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "fc91f1f",
       "subject": "Kiko knowledge: Session 66 final updates",
-      "when": "9 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "d34e763",
       "subject": "FIX: Command Centre draft pipeline — To: field, auto-scroll, visual divider",
-      "when": "9 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "62fdffd",
       "subject": "FIX: Partnership scan working — Claude web search + valid category IDs",
-      "when": "14 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "2986ae4",
       "subject": "NEW TOOL: update_partnership — Kiko can now WRITE to the partnership matrix",
-      "when": "63 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "5d0251c",
@@ -94,11 +99,6 @@
     {
       "hash": "8c57331",
       "subject": "CRITICAL FIX: escaped backticks in document-ops.js crashing server",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "1ae542c",
-      "subject": "Mobile responsive: all pages now mobile-ready",
       "when": "4 days ago"
     }
   ]
