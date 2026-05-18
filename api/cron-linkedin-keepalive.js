@@ -9,12 +9,34 @@ import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY);
 
 async function attemptAutoLogin(identity) {
-  // Check if we have stored credentials for this identity
-  const { data: creds } = await supabase.from('kiko_linkedin_credentials')
-    .select('email, password').eq('identity', identity).maybeSingle();
-  if (!creds?.email || !creds?.password) return { ok: false, error: 'no stored credentials' };
-
+  // FIRST: Try restoring cookies from Supabase user_tokens backup
   try {
+    const emailMap = { 'sunny': 'sunny@vanhawke.com', 'matt.smith': 'matt.smith@vanhawke.com' };
+    const email = emailMap[identity];
+    if (email) {
+      const { data } = await supabase.from('user_tokens').select('access_token').eq('user_email', email).eq('provider', 'linkedin').single();
+      if (data?.access_token) {
+        const cookies = JSON.parse(data.access_token);
+        if (cookies?.length > 5) {
+          cookieStore.save(identity, cookies, { source: 'supabase_restore' });
+          console.log(`[keepalive] ${identity}: restored ${cookies.length} cookies from Supabase backup`);
+          // Verify they work
+          const result = await verifyIdentity(identity);
+          if (result.ok && result.authenticated) {
+            console.log(`[keepalive] ✓ ${identity}: Supabase cookies VALID — session recovered`);
+            return { ok: true, cookieCount: cookies.length, method: 'supabase_restore' };
+          }
+        }
+      }
+    }
+  } catch (e) { console.warn(`[keepalive] Supabase restore failed for ${identity}:`, e.message); }
+
+  // SECOND: Try stored credentials for automated login
+  try {
+    const { data: creds } = await supabase.from('kiko_linkedin_credentials')
+      .select('email, password').eq('identity', identity).maybeSingle();
+    if (!creds?.email || !creds?.password) return { ok: false, error: 'no stored credentials and Supabase backup expired' };
+
     const { chromium } = await import('playwright');
     const browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
