@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-05-15T10:58:41.089Z",
+  "generated_at": "2026-05-18T12:25:13.557Z",
   "commits": [
+    {
+      "hash": "5d0251c",
+      "subject": "FIX: Current date in draft prompt + To: field for follow-ups",
+      "when": "3 days ago"
+    },
     {
       "hash": "22b9af2",
       "subject": "FIX: Follow-up drafts now context-aware with correct direction",
-      "when": "3 minutes ago"
+      "when": "3 days ago"
     },
     {
       "hash": "8df26ce",
       "subject": "FIX: Draft now gets 2000 chars of brief context, not 800",
-      "when": "11 minutes ago"
+      "when": "3 days ago"
     },
     {
       "hash": "45c7953",
       "subject": "FIX: Follow-up drafts — wrong item kind, wrong field names",
-      "when": "16 minutes ago"
+      "when": "3 days ago"
     },
     {
       "hash": "eb5e904",
       "subject": "FIX: Command Centre task → email draft pipeline broken for tasks",
-      "when": "32 minutes ago"
+      "when": "3 days ago"
     },
     {
       "hash": "9734fd0",
       "subject": "FIX: Briefing prompt now explicitly names the person, not company",
-      "when": "39 minutes ago"
+      "when": "3 days ago"
     },
     {
       "hash": "238f876",
       "subject": "FIX: Command Centre briefings must look up contact before drafting",
-      "when": "44 minutes ago"
+      "when": "3 days ago"
     },
     {
       "hash": "3444012",
       "subject": "CRITICAL FIX: Bounce detection — bounces no longer treated as replies",
-      "when": "3 hours ago"
+      "when": "3 days ago"
     },
     {
       "hash": "43f2b44",
       "subject": "Permanent rule: Supabase table creation must include grants + RLS",
-      "when": "15 hours ago"
+      "when": "4 days ago"
     },
     {
       "hash": "3fc9467",
       "subject": "Kiko full knowledge sync: Gmail sync + follow-up lifecycle rules",
-      "when": "20 hours ago"
+      "when": "4 days ago"
     },
     {
       "hash": "9c7eef8",
       "subject": "Gmail Activity Sync — full email monitoring cron",
-      "when": "20 hours ago"
+      "when": "4 days ago"
     },
     {
       "hash": "c329071",
       "subject": "CRITICAL FIX: Follow-up lifecycle — auto-complete on reply + send",
-      "when": "20 hours ago"
+      "when": "4 days ago"
     },
     {
       "hash": "790f509",
       "subject": "Kiko knowledge sync: KIKO_BIBLE.md + self-knowledge updated",
-      "when": "21 hours ago"
+      "when": "4 days ago"
     },
     {
       "hash": "8c57331",
       "subject": "CRITICAL FIX: escaped backticks in document-ops.js crashing server",
-      "when": "21 hours ago"
+      "when": "4 days ago"
     },
     {
       "hash": "1ae542c",
       "subject": "Mobile responsive: all pages now mobile-ready",
-      "when": "21 hours ago"
+      "when": "4 days ago"
     },
     {
       "hash": "3ba96c6",
       "subject": "Mobile responsive: Messages page sidebar collapse",
-      "when": "21 hours ago"
+      "when": "4 days ago"
     },
     {
       "hash": "ebfe439",
       "subject": "Video calling: WebRTC video streams + UI",
-      "when": "21 hours ago"
+      "when": "4 days ago"
     },
     {
       "hash": "15c7b84",
       "subject": "Document Ops Phase 2+4: template editor + versioning",
-      "when": "21 hours ago"
+      "when": "4 days ago"
     },
     {
       "hash": "69674e2",
       "subject": "Document Ops Phase 4: versioning + versions API",
-      "when": "22 hours ago"
+      "when": "4 days ago"
     },
     {
       "hash": "87c5c38",
       "subject": "Partnership Detection alerts tab + Knowledge Library + Documents update",
-      "when": "22 hours ago"
-    },
-    {
-      "hash": "903cb34",
-      "subject": "Knowledge Library + Documents page update + nav settings",
-      "when": "22 hours ago"
+      "when": "4 days ago"
     }
   ]
 }

@@ -678,6 +678,7 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
         return `COMPANY INTELLIGENCE: ${c.company_name}\n\nFunding: ${c.funding_total || '?'} (${c.last_funding_round || '?'}, ${c.last_funding_date || '?'})\nRevenue: ${c.revenue_estimate || '?'} | Employees: ${c.employee_count || '?'} (${c.employee_growth || '?'})\n\nLeadership:\n• CEO: ${c.ceo || '?'}\n• CTO: ${c.cto || '?'}\n• CMO: ${c.cmo || '?'}\n• CFO: ${c.cfo || '?'}\n• VP Marketing: ${c.vp_marketing || '?'}\n• VP Engineering: ${c.vp_engineering || '?'}\n\nBusiness: ${c.industry || '?'} / ${c.sub_sector || '?'} | Model: ${c.business_model || '?'}\nProducts: ${(c.key_products || []).join(', ') || '?'}\nCompetitors: ${(c.competitors || []).join(', ') || '?'}\nAcquisitions: ${(c.recent_acquisitions || []).join(', ') || 'none known'}\n\nSponsorship Readiness:\n• Existing: ${(c.existing_sponsorships || []).join(', ') || 'none known'}\n• Marketing budget: ${c.marketing_budget_signal || '?'}\n• Brand awareness: ${c.brand_awareness_signal || '?'}\n• F1 fit score: ${c.sponsorship_fit_score || '?'}/100\n\nEnriched: ${c.enriched_at ? new Date(c.enriched_at).toLocaleDateString('en-GB') : '?'} via ${c.enrichment_source || '?'}`;
       }
       case 'refresh_partnerships': return await refreshTeamPartnerships(params);
+      case 'update_partnership': return await updatePartnership(params);
       case 'enrich_company': {
         const name = params?.company || params?.name;
         if (!name) return 'Please specify a company name to enrich.';
@@ -1093,5 +1094,55 @@ Return ONLY a JSON array of exactly 50 entries with no other text: [{"company":"
     }
   } catch (err) {
     return `Data Agent error (${operation}): ${err.message}`;
+  }
+}
+
+// ── Update Partnership Matrix ──
+async function updatePartnership(params) {
+  const { team_id, partner_name, category_id, tier, status, start_year, end_year, notes, source_url } = params || {};
+  if (!team_id || !partner_name || !category_id) return 'Missing required fields: team_id, partner_name, category_id';
+
+  // Check if partnership already exists
+  const existing = await sbFetch(`f1_partnerships?team_id=eq.${encodeURIComponent(team_id)}&partner_name=ilike.*${encodeURIComponent(partner_name)}*&category_id=eq.${encodeURIComponent(category_id)}&limit=1`);
+  
+  if (existing?.length > 0) {
+    // Update existing
+    const update = {};
+    if (tier) update.tier = tier;
+    if (status) update.status = status;
+    if (start_year) update.start_year = start_year;
+    if (end_year) update.end_year = end_year;
+    if (notes) update.notes = notes;
+    if (source_url) update.source_url = source_url;
+    update.verified = true;
+    update.last_verified_at = new Date().toISOString();
+    update.updated_at = new Date().toISOString();
+    
+    await sbFetch(`f1_partnerships?id=eq.${existing[0].id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(update)
+    });
+    return `✅ UPDATED: ${partner_name} partnership with ${team_id} in ${category_id} category.\nTier: ${tier || existing[0].tier} | Status: ${status || existing[0].status} | Start: ${start_year || existing[0].start_year}\nPartnership matrix is now current.`;
+  } else {
+    // Insert new
+    const newRecord = {
+      team_id,
+      partner_name,
+      category_id,
+      tier: tier || 'partner',
+      status: status || 'confirmed',
+      start_year: start_year || new Date().getFullYear(),
+      end_year: end_year || null,
+      notes: notes || null,
+      source_url: source_url || null,
+      verified: true,
+      last_verified_at: new Date().toISOString(),
+    };
+    
+    await sbFetch('f1_partnerships', {
+      method: 'POST',
+      body: JSON.stringify(newRecord)
+    });
+    return `✅ ADDED: ${partner_name} as ${tier || 'partner'} of ${team_id} in ${category_id} category.\nStatus: ${status || 'confirmed'} | Start: ${start_year || new Date().getFullYear()}\nPartnership matrix updated. The heatmap and gap analysis will now reflect this change.`;
   }
 }
