@@ -455,12 +455,15 @@ export default function OutreachIntelligence({ user }) {
     showToast('Follow-up cleared', 'success')
   }
 
-  const selectFollowUp = (fu) => setSelected({
-    kind: 'followup', id: fu.id,
-    title: `${fu.recipient_name || fu.recipient_email} — ${fu.company || ''}`,
-    meta: `${fu.subject || '(no subject)'} · Sent ${relativeTime(fu.sent_at)} · Due ${dueLabel(fu.follow_up_due_at)}`,
-    payload: fu,
-  })
+  const selectFollowUp = (fu) => {
+    setResolvedEmail(fu.recipient_email || '')
+    setSelected({
+      kind: 'followup', id: fu.id,
+      title: `${fu.recipient_name || fu.recipient_email} — ${fu.company || ''}`,
+      meta: `${fu.subject || '(no subject)'} · Sent ${relativeTime(fu.sent_at)} · Due ${dueLabel(fu.follow_up_due_at)}`,
+      payload: fu,
+    })
+  }
 
   const selectCampaign = (c) => setSelected({
     kind: 'campaign', id: c.id,
@@ -595,6 +598,9 @@ export default function OutreachIntelligence({ user }) {
         if (err.name !== 'AbortError') console.error('[CommandCentre] brief', err)
       }
       setBriefLoading(false)
+      // Auto-scroll the detail panel to top so brief is visible
+      const detailPanel = document.querySelector('.cc-detail-scroll')
+      if (detailPanel) detailPanel.scrollTop = 0
       
       // ── DRAFT GENERATION — uses brief context for fully informed drafts ──
       if (selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup') {
@@ -1149,6 +1155,7 @@ Write the email now. Start with "Subject: Re: ${subjectLine}" then "To:" then gr
                   )}
                   {!draftGenerating && separateDraft && isEmailDraft(separateDraft) && (
                     <div style={{ marginTop: 14 }}>
+                      <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: 12, marginBottom: 8, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#A0A0A0' }}>Email Draft</div>
                       <EmailDraft key={'draft-' + separateDraft.length} text={separateDraft} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} defaultTo={resolvedEmail || selected?.payload?.recipient_email || selected?.payload?.metadata?.from || selected?.payload?.prospect_email || selected?.payload?.email || selected?.payload?.data?.email || ''} />
                     </div>
                   )}
