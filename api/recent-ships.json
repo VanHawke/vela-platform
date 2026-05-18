@@ -1,15 +1,30 @@
 {
-  "generated_at": "2026-05-18T13:19:19.256Z",
+  "generated_at": "2026-05-18T13:28:59.628Z",
   "commits": [
+    {
+      "hash": "2012b0b",
+      "subject": "FIX: Gmail sync dismisses old follow-ups in BOTH tables",
+      "when": "2 minutes ago"
+    },
+    {
+      "hash": "fc91f1f",
+      "subject": "Kiko knowledge: Session 66 final updates",
+      "when": "9 minutes ago"
+    },
+    {
+      "hash": "d34e763",
+      "subject": "FIX: Command Centre draft pipeline — To: field, auto-scroll, visual divider",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "62fdffd",
       "subject": "FIX: Partnership scan working — Claude web search + valid category IDs",
-      "when": "5 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "2986ae4",
       "subject": "NEW TOOL: update_partnership — Kiko can now WRITE to the partnership matrix",
-      "when": "54 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "5d0251c",
@@ -84,21 +99,6 @@
     {
       "hash": "1ae542c",
       "subject": "Mobile responsive: all pages now mobile-ready",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "3ba96c6",
-      "subject": "Mobile responsive: Messages page sidebar collapse",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "ebfe439",
-      "subject": "Video calling: WebRTC video streams + UI",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "15c7b84",
-      "subject": "Document Ops Phase 2+4: template editor + versioning",
       "when": "4 days ago"
     }
   ]

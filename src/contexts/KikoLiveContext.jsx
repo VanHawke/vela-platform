@@ -33,7 +33,7 @@ export function KikoLiveProvider({ children, user }) {
           .order('updated_at', { ascending: false }).limit(80),
         supabase.from('kiko_follow_ups')
           .select('id,sender_email,recipient_email,recipient_name,company,subject,sent_at,follow_up_due_at,status')
-          .in('status', ['awaiting_reply', 'followed_up'])
+          .eq('status', 'awaiting_reply')
           .order('follow_up_due_at', { ascending: true }).limit(20),
         supabase.from('kiko_draft_actions')
           .select('id,action_type,payload,created_at')
