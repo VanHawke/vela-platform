@@ -182,18 +182,10 @@ export default async function handler(req, res) {
         }
       }
 
-      // ── AUTO-PAUSE: 0% reply after 100+ sends and 14+ days ──
+      // ── LOW REPLY WARNING (alert only — NEVER auto-pause) ──
       if (replyRate === 0 && sent.length >= 100 && ageDays >= 14) {
-        const activeEnrollments = (enrollments || []).filter(e => e.status === 'active');
-        if (activeEnrollments.length > 0) {
-          // Pause all active enrollments
-          for (const e of activeEnrollments) {
-            await supabase.from('kiko_sequence_enrollments').update({ status: 'paused', paused_reason: 'Auto-paused: 0% reply rate after 100+ sends' }).eq('id', e.id);
-          }
-          await supabase.from('kiko_outreach_queue').update({ status: 'cancelled' }).in('enrollment_id', activeEnrollments.map(e => e.id)).eq('status', 'queued');
-          insights.push(`🛑 AUTO-PAUSED: ${activeEnrollments.length} enrollments paused (0% reply after ${sent.length} sends over ${ageDays} days)`);
-          recommendations.push('Campaign auto-paused to protect sender reputation. Review and rewrite email content before resuming. Ask Kiko: "optimize the campaign" for specific rewrites.');
-        }
+        insights.push(`🔴 0% reply rate after ${sent.length} emails over ${ageDays} days — review recommended`);
+        recommendations.push('Consider reviewing email content and CTA. Ask Kiko to "optimize the campaign" for analysis.');
       }
 
       // Build the alert
