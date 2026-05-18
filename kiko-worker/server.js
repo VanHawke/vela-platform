@@ -95,6 +95,10 @@ app.all("/api/team-messages", teamMessages);
 app.all("/api/cron-gmail-sync", gmailSync);
 app.post("/api/cron-linkedin-keepalive", linkedinKeepalive);
 app.all("/api/document-ops", documentOps);
+
+// Campaign sequence generation
+import generateSequence from "./api/generate-sequence.js";
+app.all("/api/generate-sequence", generateSequence);
 app.use("/email-intel", emailIntelRoutes);
 
 // Error handler
