@@ -413,3 +413,31 @@ CREATE POLICY "authenticated_full_access" ON public.new_table FOR ALL TO authent
 ```
 
 This is mandatory from Supabase's Data API change (enforced Oct 30, 2026). All 125 existing tables were fixed on May 14, 2026.
+
+### SESSION 66 FINAL UPDATES (May 18, 2026)
+
+**PARTNERSHIP MATRIX — NOW FULLY AUTOMATED:**
+- Nightly scan at 7 AM weekdays uses Claude web search (not RSS — RSS was blocked from Hetzner)
+- Finds new partnership announcements from last 7 days across all 11 teams
+- Writes directly to f1_partnerships with correct category IDs from sponsor_categories table
+- Creates kiko_alerts for new partnerships
+- update_partnership tool: Kiko can add/update partnerships via chat ("Add Intel as McLaren compute partner")
+- Super admin only: update_partnership, refresh_partnerships, create_campaign, bulk_enroll, team email access
+
+**COMMAND CENTRE DRAFT PIPELINE FIXES:**
+- Follow-ups use recipient_name, recipient_email, company, subject (not entity_name)
+- Tasks use data.contact, data.company (not entity_name)
+- To: field pre-populated from resolvedEmail when item first selected
+- Subject from p.subject directly (not metadata.subject)
+- Follow-up drafts say "WE sent, they didn't reply" — never "thank you for reaching out"
+- Current date + F1 season year injected into draft prompt
+- Brief context (2500 chars) passed to draft generation
+- Auto-scroll to brief after loading
+- "EMAIL DRAFT" section divider between brief and draft
+
+**BOUNCE DETECTION:**
+- Gmail sync cron detects bounces vs real replies
+- Checks From header for mailer-daemon/postmaster
+- Checks snippet for "address not found", "delivery failed" etc.
+- Bounces: set bounced_at (not replied_at), pause enrollment, create bounce alert
+- Replies: set replied_at, dismiss follow-up, complete tasks, create reply alert
