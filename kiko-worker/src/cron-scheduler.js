@@ -58,6 +58,7 @@ const SCHEDULES = [
   // Daily
   { schedule: '0 5 * * *',      path: '/api/cron-score-companies',         name: 'score-companies' },
   { schedule: '0 6 * * *',      path: '/api/cron-enrich',                  name: 'enrich' },
+  { schedule: '0 9 * * 1-5',    path: '/api/cron-campaign-monitor',      name: 'campaign-monitor' },
   { schedule: '0 8 * * *',      path: '/api/news-agent',                   name: 'news-agent' },
   { schedule: '0 5 * * *',      path: '/api/ingest-knowledge',             name: 'ingest-knowledge' },
   { schedule: '0 5 * * *',      path: '/api/embed',                        name: 'embed-knowledge', method: 'POST', body: '{"mode":"embed"}' },

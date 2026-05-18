@@ -98,7 +98,9 @@ app.all("/api/document-ops", documentOps);
 
 // Campaign sequence generation
 import generateSequence from "./api/generate-sequence.js";
+import campaignMonitor from "./api/cron-campaign-monitor.js";
 app.all("/api/generate-sequence", generateSequence);
+app.all("/api/cron-campaign-monitor", campaignMonitor);
 app.use("/email-intel", emailIntelRoutes);
 
 // Error handler

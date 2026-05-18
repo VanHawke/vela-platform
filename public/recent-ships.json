@@ -1,40 +1,60 @@
 {
-  "generated_at": "2026-05-18T13:58:41.598Z",
+  "generated_at": "2026-05-18T15:04:15.241Z",
   "commits": [
+    {
+      "hash": "302e974",
+      "subject": "PERMANENT FIX: LinkedIn keepalive with 3-layer recovery + Supabase fallback",
+      "when": "11 minutes ago"
+    },
+    {
+      "hash": "8fb7753",
+      "subject": "FIX: LinkedIn keepalive — no longer skips stale cookies + auto-login",
+      "when": "38 minutes ago"
+    },
+    {
+      "hash": "71edd7f",
+      "subject": "Session fixes: generate-sequence route, partnership scan, news agent, CC draft extraction",
+      "when": "50 minutes ago"
+    },
+    {
+      "hash": "368e118",
+      "subject": "FIX: EmailDraft renders extracted brief draft, bypasses isEmailDraft check",
+      "when": "65 minutes ago"
+    },
     {
       "hash": "4ee9770",
       "subject": "STRUCTURAL FIX: Draft extracted from brief section 4, no separate API call",
-      "when": "11 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "8eea292",
       "subject": "FIX: Follow-up query only loads awaiting_reply, not followed_up",
-      "when": "29 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2012b0b",
       "subject": "FIX: Gmail sync dismisses old follow-ups in BOTH tables",
-      "when": "32 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "fc91f1f",
       "subject": "Kiko knowledge: Session 66 final updates",
-      "when": "39 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "d34e763",
       "subject": "FIX: Command Centre draft pipeline — To: field, auto-scroll, visual divider",
-      "when": "39 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "62fdffd",
       "subject": "FIX: Partnership scan working — Claude web search + valid category IDs",
-      "when": "44 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2986ae4",
       "subject": "NEW TOOL: update_partnership — Kiko can now WRITE to the partnership matrix",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "5d0251c",
@@ -79,26 +99,6 @@
     {
       "hash": "43f2b44",
       "subject": "Permanent rule: Supabase table creation must include grants + RLS",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "3fc9467",
-      "subject": "Kiko full knowledge sync: Gmail sync + follow-up lifecycle rules",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "9c7eef8",
-      "subject": "Gmail Activity Sync — full email monitoring cron",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "c329071",
-      "subject": "CRITICAL FIX: Follow-up lifecycle — auto-complete on reply + send",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "790f509",
-      "subject": "Kiko knowledge sync: KIKO_BIBLE.md + self-knowledge updated",
       "when": "4 days ago"
     }
   ]
