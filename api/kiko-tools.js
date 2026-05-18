@@ -650,6 +650,13 @@ Document:\n${document_text.slice(0, 25000)}` }],
 
   // ── Data Agent ──
   if (name === 'ask_data_agent') {
+    // Super admin only operations
+    if (['update_partnership', 'refresh_partnerships', 'create_campaign', 'bulk_enroll'].includes(input.operation)) {
+      const { data: userRow } = await supabase.from('users').select('role').eq('id', userId).limit(1);
+      if (userRow?.[0]?.role !== 'super_admin') {
+        return `❌ ${input.operation} is restricted to super admin only.`;
+      }
+    }
     try {
       const { callDataAgent } = await import('./agents/data.js');
       return await callDataAgent(input.operation, input.params || {}, userEmail);

@@ -60,7 +60,7 @@ async function upsertPartnership(p, source) {
 
   const { error } = await supabase.from('f1_partnerships')
     .upsert(record, { onConflict: 'team_id,partner_name' });
-  if (error) { console.error('[PartnerScan] Upsert error:', error.message); return null; }
+  if (error) { console.error('[PartnerScan] Upsert error:', error.message, error.details, JSON.stringify(record)); return null; }
 
   const isNew = !existing;
   if (isNew) {
@@ -124,62 +124,52 @@ export default async function handler(req, res) {
     await new Promise(r => setTimeout(r, 500));
   }
 
-  // === PHASE 2: Web search for fresh partnership news ===
-  // Fetch Google News RSS for F1 partnership announcements
-  const searchFeeds = [
-    'https://news.google.com/rss/search?q=F1+team+sponsor+partner+2026&hl=en&gl=US&ceid=US:en',
-    'https://news.google.com/rss/search?q=Formula+1+sponsorship+deal+2026&hl=en&gl=GB&ceid=GB:en',
-    'https://news.google.com/rss/search?q=Formula+1+new+partner+announcement+2026&hl=en&gl=US&ceid=US:en',
-  ];
-
-  // F1 team official news pages
-  const teamFeeds = [
-    { team: 'Red Bull', url: 'https://news.google.com/rss/search?q=site:redbullracing.com+partner&hl=en' },
-    { team: 'Ferrari', url: 'https://news.google.com/rss/search?q=site:ferrari.com+partner+F1&hl=en' },
-    { team: 'McLaren', url: 'https://news.google.com/rss/search?q=site:mclaren.com+partner&hl=en' },
-    { team: 'Mercedes', url: 'https://news.google.com/rss/search?q=site:mercedesamgf1.com+partner&hl=en' },
-    { team: 'Aston Martin', url: 'https://news.google.com/rss/search?q=site:astonmartinf1.com+partner&hl=en' },
-    { team: 'Alpine', url: 'https://news.google.com/rss/search?q=site:alpinecars.com+F1+partner&hl=en' },
-    { team: 'Williams', url: 'https://news.google.com/rss/search?q=site:williamsf1.com+partner&hl=en' },
-    { team: 'Haas', url: 'https://news.google.com/rss/search?q=site:haasf1team.com+partner&hl=en' },
-    { team: 'Racing Bulls', url: 'https://news.google.com/rss/search?q=site:racingbulls.com+partner&hl=en' },
-    { team: 'Audi', url: 'https://news.google.com/rss/search?q=Audi+F1+partner+sponsor+2026&hl=en' },
-  ];
-  const allFeeds = [...searchFeeds.map(url => ({ url })), ...teamFeeds];
-
-  // Rotate through feeds — only scan 3 per run to stay within time budget
-  const dayOfWeek = new Date().getDay(); // 0=Sun, 1=Mon...
-  const feedOffset = (dayOfWeek * 3) % allFeeds.length;
-  const feedsThisRun = allFeeds.slice(feedOffset, feedOffset + 3);
-
+  // === PHASE 2: Claude web search for partnership announcements ===
   let webArticles = 0;
-  for (const feed of feedsThisRun) {
-    try {
-      const feedRes = await fetch(feed.url, { headers: { 'User-Agent': 'Kiko/1.0' } });
-      if (!feedRes.ok) continue;
-      const xml = await feedRes.text();
-      // Simple XML title extraction
-      const titles = [...xml.matchAll(/<title><!\[CDATA\[(.*?)\]\]><\/title>/g)].map(m => m[1]);
-      const altTitles = [...xml.matchAll(/<title>([^<]+)<\/title>/g)].map(m => m[1]);
-      const allTitles = [...titles, ...altTitles].filter(t => t && t.length > 20 && !t.includes('Google News'));
+  try {
+    console.log('[PartnerScan] Phase 2: Starting Claude web search...');
+    const Anthropic = (await import('@anthropic-ai/sdk')).default;
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+    const searchRes = await client.messages.create({
+      model: 'claude-sonnet-4-6', max_tokens: 2000,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages: [{ role: 'user', content: `Search for Formula 1 partnership, sponsorship, and commercial deal announcements from the last 7 days (today is ${new Date().toISOString().split('T')[0]}). Cover ALL teams: Red Bull, Ferrari, McLaren, Mercedes, Aston Martin, Alpine, Williams, Haas, Racing Bulls, Audi/Sauber, Cadillac.
 
-      for (const title of allTitles.slice(0, 10)) {
-        // Check if already in news_articles
-        const { data: exists } = await supabase.from('news_articles')
-          .select('id').ilike('title', `%${title.slice(0, 50)}%`).maybeSingle();
-        if (exists) continue;
+IMPORTANT: category must be one of these EXACT values: ai_data, automotive, banking, cloud, crypto, cybersecurity, energy, software, fashion, fintech, food_bev, gaming, health, hospitality, legal, legal_ai, logistics, robotics, semiconductors, telecom, watches, whiskey
 
-        const partnerships = await classifyPartnership(title);
-        for (const p of partnerships) {
-          const result = await upsertPartnership(p, `Web${feed.team ? ` (${feed.team})` : ''}: ${title}`);
-          if (result === 'new') { added++; results.push(p); webArticles++; }
-          else if (result === 'existing') updated++;
+IMPORTANT: team must be one of: red_bull, ferrari, mclaren, mercedes, aston_martin, alpine, williams, haas, racing_bulls, audi, cadillac
+
+IMPORTANT: tier must be one of: title, principal, official, partner, supplier
+
+Return ONLY a JSON array: [{"team":"mclaren","partner":"Intel","category":"semiconductors","tier":"official","status":"confirmed","source":"brief description"}]. No other text, no code fences.` }]
+    });
+    console.log('[PartnerScan] Phase 2: Claude responded, blocks:', searchRes.content?.length);
+    const textBlock = searchRes.content?.find(b => b.type === 'text');
+    console.log('[PartnerScan] Phase 2: Text block found:', !!textBlock, 'length:', textBlock?.text?.length);
+    if (textBlock?.text) {
+      try {
+        // Strip code fences before parsing
+        const cleaned = textBlock.text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+        const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
+        console.log('[PartnerScan] Phase 2: JSON match found:', !!jsonMatch, 'length:', jsonMatch?.[0]?.length);
+        if (jsonMatch) {
+          const partnerships = JSON.parse(jsonMatch[0]);
+          console.log(`[PartnerScan] Phase 2: Parsed ${partnerships.length} partnerships from Claude`);
+          for (const p of partnerships) {
+            if (!p.team || !p.partner) continue;
+            console.log(`[PartnerScan] Phase 2: Processing ${p.partner} → ${p.team} (${p.category})`);
+            const teamMap = { 'red bull': 'red_bull', 'aston martin': 'aston_martin', 'racing bulls': 'racing_bulls', 'alfa romeo': 'alfa_romeo' };
+            const teamId = teamMap[(p.team || '').toLowerCase()] || (p.team || '').toLowerCase().replace(/\s+/g, '_');
+            const catId = (p.category || 'other').toLowerCase().replace(/\s+/g, '_');
+            const result = await upsertPartnership({ team_id: teamId, partner_name: p.partner, category_id: catId, tier: p.tier || 'partner', status: p.status || 'confirmed', source_url: p.source || null }, `Claude web search ${new Date().toISOString().split('T')[0]}`);
+            if (result === 'new') { added++; results.push(p); webArticles++; }
+            else if (result === 'existing') updated++;
+          }
         }
-        await new Promise(r => setTimeout(r, 500));
-      }
-    } catch (e) { console.error('[PartnerScan] Feed error:', e.message); }
-  }
-  console.log(`[PartnerScan] Phase 2: ${webArticles} new from web search`);
+      } catch (parseErr) { console.error('[PartnerScan] JSON parse error:', parseErr.message); }
+    }
+  } catch (e) { console.error('[PartnerScan] Claude search error:', e.message); }
+  console.log(`[PartnerScan] Phase 2: ${webArticles} new from Claude web search`);
 
   // === PHASE 3: Update scan timestamp on all teams ===
   await supabase.from('f1_teams').update({ updated_at: new Date().toISOString() })
