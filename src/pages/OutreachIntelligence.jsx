@@ -1038,7 +1038,7 @@ export default function OutreachIntelligence({ user }) {
                       <span className="dot" /><span className="dot" /><span className="dot" /> Drafting reply...
                     </div>
                   )}
-                  {!draftGenerating && separateDraft && isEmailDraft(separateDraft) && (
+                  {separateDraft && separateDraft.length > 30 && (
                     <div style={{ marginTop: 14 }}>
                       <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: 12, marginBottom: 8, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#A0A0A0' }}>Email Draft</div>
                       <EmailDraft key={'draft-' + separateDraft.length} text={separateDraft} defaultSender={selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup' ? 'matt' : null} defaultTo={resolvedEmail || selected?.payload?.recipient_email || selected?.payload?.metadata?.from || selected?.payload?.prospect_email || selected?.payload?.email || selected?.payload?.data?.email || ''} />

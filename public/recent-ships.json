@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-18T13:47:13.594Z",
+  "generated_at": "2026-05-18T13:58:41.598Z",
   "commits": [
+    {
+      "hash": "4ee9770",
+      "subject": "STRUCTURAL FIX: Draft extracted from brief section 4, no separate API call",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "8eea292",
       "subject": "FIX: Follow-up query only loads awaiting_reply, not followed_up",
-      "when": "18 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "2012b0b",
       "subject": "FIX: Gmail sync dismisses old follow-ups in BOTH tables",
-      "when": "20 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "fc91f1f",
       "subject": "Kiko knowledge: Session 66 final updates",
-      "when": "27 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "d34e763",
       "subject": "FIX: Command Centre draft pipeline — To: field, auto-scroll, visual divider",
-      "when": "28 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "62fdffd",
       "subject": "FIX: Partnership scan working — Claude web search + valid category IDs",
-      "when": "32 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "2986ae4",
       "subject": "NEW TOOL: update_partnership — Kiko can now WRITE to the partnership matrix",
-      "when": "82 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "5d0251c",
@@ -94,11 +99,6 @@
     {
       "hash": "790f509",
       "subject": "Kiko knowledge sync: KIKO_BIBLE.md + self-knowledge updated",
-      "when": "4 days ago"
-    },
-    {
-      "hash": "8c57331",
-      "subject": "CRITICAL FIX: escaped backticks in document-ops.js crashing server",
       "when": "4 days ago"
     }
   ]
