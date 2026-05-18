@@ -679,6 +679,62 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
       }
       case 'refresh_partnerships': return await refreshTeamPartnerships(params);
       case 'update_partnership': return await updatePartnership(params);
+      case 'campaign_health': {
+        // Return latest campaign monitor recommendations
+        const alerts = await sbFetch('kiko_alerts?type=eq.campaign_report&dismissed=eq.false&order=created_at.desc&limit=3');
+        if (!alerts?.length) return 'No campaign reports yet. The monitor runs daily at 9 AM. Run it manually by asking me to "check campaign health".';
+        return (alerts || []).map(a => a.detail).join('\n\n---\n\n');
+      }
+      case 'optimize_campaign': {
+        // Rewrite campaign emails based on performance data
+        const seqName = params?.campaign || params?.sequence;
+        if (!seqName) return 'Please specify which campaign to optimize.';
+        const seqs = await sbFetch(`kiko_sequences?name=ilike.*${encodeURIComponent(seqName)}*&limit=1`);
+        if (!seqs?.length) return `Campaign "${seqName}" not found.`;
+        const seq = seqs[0];
+        
+        // Get performance data
+        const { data: enrollments } = await supabase.from('kiko_sequence_enrollments').select('id').eq('sequence_id', seq.id);
+        const enrollIds = (enrollments || []).map(e => e.id);
+        const { data: emails } = await supabase.from('kiko_outreach_queue')
+          .select('step_number, status, opens_count, clicks_count, reply_received_at, subject, body_plain')
+          .in('enrollment_id', enrollIds);
+        
+        const sent = (emails || []).filter(e => e.status === 'sent');
+        const openRate = sent.length ? Math.round(sent.filter(e => (e.opens_count || 0) > 0).length / sent.length * 100) : 0;
+        const clickRate = sent.length ? Math.round(sent.filter(e => (e.clicks_count || 0) > 0).length / sent.length * 100) : 0;
+        const replyRate = sent.length ? Math.round(sent.filter(e => e.reply_received_at).length / sent.length * 100) : 0;
+        
+        // Get a sample email for each step
+        const steps = {};
+        for (const e of sent) {
+          if (!steps[e.step_number]) steps[e.step_number] = { subject: e.subject, body: (e.body_plain || '').slice(0, 500), opens: 0, sent: 0 };
+          steps[e.step_number].sent++;
+          if ((e.opens_count || 0) > 0) steps[e.step_number].opens++;
+        }
+        
+        let report = `CAMPAIGN: ${seq.name}\n`;
+        report += `Overall: ${openRate}% opens, ${clickRate}% clicks, ${replyRate}% replies from ${sent.length} sends\n\n`;
+        report += `STEP PERFORMANCE:\n`;
+        for (const [step, data] of Object.entries(steps).sort((a,b) => a[0]-b[0])) {
+          const stepOpen = data.sent ? Math.round(data.opens / data.sent * 100) : 0;
+          report += `\nStep ${step} (${data.sent} sent, ${stepOpen}% opened):\nSubject: ${data.subject}\nBody preview: ${data.body.slice(0, 200)}...\n`;
+        }
+        
+        report += `\n\nRECOMMENDATIONS:\n`;
+        if (openRate >= 40 && replyRate === 0) {
+          report += `• Opens are strong but zero replies. The CTA is too aggressive. Rewrite to ask a question, not request a meeting.\n`;
+          report += `• Try: "Is [category] something [company] is actively exploring?" instead of "Would you be available for a call?"\n`;
+          report += `• Lead with an insight about their industry, not about what we offer.\n`;
+        }
+        if (replyRate === 0 && sent.length > 100) {
+          report += `• Consider pausing this campaign and launching a revised version with updated messaging.\n`;
+          report += `• The current sequence has exhausted its initial list without a single positive response.\n`;
+        }
+        
+        report += `\nTo rewrite the sequence, tell me: "rewrite the [campaign name] emails with a softer CTA" and I'll generate new templates.`;
+        return report;
+      }
       case 'enrich_company': {
         const name = params?.company || params?.name;
         if (!name) return 'Please specify a company name to enrich.';
