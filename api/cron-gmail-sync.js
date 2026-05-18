@@ -81,6 +81,11 @@ export default async function handler(req, res) {
             method: 'PATCH',
             body: JSON.stringify({ follow_up_dismissed: true }),
           }).catch(() => {});
+          // Also dismiss old entries in kiko_follow_ups
+          await sbFetch(`kiko_follow_ups?recipient_email=eq.${encodeURIComponent(recipientEmail)}&status=eq.awaiting_reply&follow_up_due_at=lt.${new Date().toISOString()}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'followed_up', updated_at: new Date().toISOString() }),
+          }).catch(() => {});
 
           // Mark related tasks as completed
           const tasks = await sbFetch(`tasks?select=id,data&limit=50`);
