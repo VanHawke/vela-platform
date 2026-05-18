@@ -131,6 +131,71 @@ export default async function handler(req, res) {
         }
       }
 
+      // ── A/B VARIANT ANALYSIS ──
+      const variants = {};
+      for (const e of sent) {
+        const v = e.variant_label || 'default';
+        if (!variants[v]) variants[v] = { sent: 0, opens: 0, clicks: 0, replies: 0 };
+        variants[v].sent++;
+        if ((e.opens_count || 0) > 0) variants[v].opens++;
+        if ((e.clicks_count || 0) > 0) variants[v].clicks++;
+        if (e.reply_received_at) variants[v].replies++;
+      }
+      if (Object.keys(variants).length > 1) {
+        insights.push('📊 A/B VARIANT PERFORMANCE:');
+        for (const [label, v] of Object.entries(variants)) {
+          const vOpen = v.sent ? Math.round(v.opens / v.sent * 100) : 0;
+          const vClick = v.sent ? Math.round(v.clicks / v.sent * 100) : 0;
+          const vReply = v.sent ? Math.round(v.replies / v.sent * 100) : 0;
+          insights.push(`  ${label}: ${vOpen}% open, ${vClick}% click, ${vReply}% reply (${v.sent} sent)`);
+        }
+        // Find winning variant
+        const best = Object.entries(variants).sort((a, b) => {
+          const scoreA = (a[1].replies * 10) + (a[1].clicks * 3) + a[1].opens;
+          const scoreB = (b[1].replies * 10) + (b[1].clicks * 3) + b[1].opens;
+          return scoreB - scoreA;
+        })[0];
+        if (best && Object.keys(variants).length > 1) {
+          recommendations.push(`Variant "${best[0]}" is outperforming. Consider using it for all remaining sends.`);
+        }
+      }
+
+      // ── SEND TIME ANALYSIS ──
+      const hourPerformance = {};
+      for (const e of sent) {
+        if (!e.sent_at) continue;
+        const hour = new Date(e.sent_at).getUTCHours();
+        if (!hourPerformance[hour]) hourPerformance[hour] = { sent: 0, opens: 0 };
+        hourPerformance[hour].sent++;
+        if ((e.opens_count || 0) > 0) hourPerformance[hour].opens++;
+      }
+      const bestHours = Object.entries(hourPerformance)
+        .filter(([_, v]) => v.sent >= 5)
+        .map(([h, v]) => ({ hour: parseInt(h), rate: Math.round(v.opens / v.sent * 100), sent: v.sent }))
+        .sort((a, b) => b.rate - a.rate);
+      if (bestHours.length >= 3) {
+        const top = bestHours.slice(0, 2);
+        const bottom = bestHours.slice(-1);
+        insights.push(`⏰ Best send times: ${top.map(h => `${h.hour}:00 UTC (${h.rate}% opens)`).join(', ')}`);
+        if (bottom[0]?.rate < top[0]?.rate - 15) {
+          recommendations.push(`Avoid sending at ${bottom[0].hour}:00 UTC (only ${bottom[0].rate}% opens vs ${top[0].rate}% at ${top[0].hour}:00). Concentrate sends in the ${top[0].hour}:00-${top[1]?.hour || top[0].hour}:00 UTC window.`);
+        }
+      }
+
+      // ── AUTO-PAUSE: 0% reply after 100+ sends and 14+ days ──
+      if (replyRate === 0 && sent.length >= 100 && ageDays >= 14) {
+        const activeEnrollments = (enrollments || []).filter(e => e.status === 'active');
+        if (activeEnrollments.length > 0) {
+          // Pause all active enrollments
+          for (const e of activeEnrollments) {
+            await supabase.from('kiko_sequence_enrollments').update({ status: 'paused', paused_reason: 'Auto-paused: 0% reply rate after 100+ sends' }).eq('id', e.id);
+          }
+          await supabase.from('kiko_outreach_queue').update({ status: 'cancelled' }).in('enrollment_id', activeEnrollments.map(e => e.id)).eq('status', 'queued');
+          insights.push(`🛑 AUTO-PAUSED: ${activeEnrollments.length} enrollments paused (0% reply after ${sent.length} sends over ${ageDays} days)`);
+          recommendations.push('Campaign auto-paused to protect sender reputation. Review and rewrite email content before resuming. Ask Kiko: "optimize the campaign" for specific rewrites.');
+        }
+      }
+
       // Build the alert
       const severity = recommendations.length >= 3 ? 'high' : recommendations.length >= 1 ? 'medium' : 'low';
       const title = `Campaign Report: ${seq.name}`;
@@ -155,7 +220,7 @@ export default async function handler(req, res) {
           .select('id')
           .eq('type', 'campaign_report')
           .eq('entity_name', seq.name)
-          .gte('created_at', today)
+          .eq('dismissed', false)
           .limit(1);
 
         if (!existing?.length) {
