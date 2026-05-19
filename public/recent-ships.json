@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-05-18T15:04:15.241Z",
+  "generated_at": "2026-05-19T13:07:22.509Z",
   "commits": [
+    {
+      "hash": "585f1be",
+      "subject": "Phase 1C: Heartbeat system — real-time proactive signal monitoring",
+      "when": "10 minutes ago"
+    },
+    {
+      "hash": "95f562a",
+      "subject": "Phase 1B: Automatic outcome recording on reply/bounce detection",
+      "when": "12 minutes ago"
+    },
+    {
+      "hash": "e8fb554",
+      "subject": "Phase 1A: Hardcoded F1 2026 race calendar — no more web search errors",
+      "when": "16 minutes ago"
+    },
+    {
+      "hash": "e2f99d9",
+      "subject": "RESEARCH: Proactive Intelligence Architecture Plan — 8 papers, 4 production systems",
+      "when": "23 minutes ago"
+    },
+    {
+      "hash": "6e8db79",
+      "subject": "KIKO BDI ARCHITECTURE: Goals, Outcomes, Synthesis — full strategic intelligence",
+      "when": "41 minutes ago"
+    },
+    {
+      "hash": "682a43d",
+      "subject": "BREAKTHROUGH: Goal-driven Morning Synthesis Engine — Kiko's strategic brain",
+      "when": "50 minutes ago"
+    },
+    {
+      "hash": "099bfb0",
+      "subject": "NEW: Race Calendar Intelligence Cron — automatic race-week prospect analysis",
+      "when": "58 minutes ago"
+    },
+    {
+      "hash": "961316f",
+      "subject": "Session 67: Self-knowledge updated, alerts cleaned, race week intelligence",
+      "when": "64 minutes ago"
+    },
+    {
+      "hash": "8cae771",
+      "subject": "REVERTED: Remove auto-pause — campaign monitor alerts only, never takes action",
+      "when": "22 hours ago"
+    },
+    {
+      "hash": "09bbb3f",
+      "subject": "Campaign intelligence: A/B testing, auto-pause, send time optimization",
+      "when": "22 hours ago"
+    },
+    {
+      "hash": "b811e04",
+      "subject": "NEW: Kiko can now analyse and optimize campaigns autonomously",
+      "when": "22 hours ago"
+    },
+    {
+      "hash": "4b7e42f",
+      "subject": "NEW: Campaign Performance Monitor — daily proactive analysis",
+      "when": "22 hours ago"
+    },
     {
       "hash": "302e974",
       "subject": "PERMANENT FIX: LinkedIn keepalive with 3-layer recovery + Supabase fallback",
-      "when": "11 minutes ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "8fb7753",
       "subject": "FIX: LinkedIn keepalive — no longer skips stale cookies + auto-login",
-      "when": "38 minutes ago"
+      "when": "23 hours ago"
     },
     {
       "hash": "71edd7f",
       "subject": "Session fixes: generate-sequence route, partnership scan, news agent, CC draft extraction",
-      "when": "50 minutes ago"
+      "when": "23 hours ago"
     },
     {
       "hash": "368e118",
       "subject": "FIX: EmailDraft renders extracted brief draft, bypasses isEmailDraft check",
-      "when": "65 minutes ago"
+      "when": "23 hours ago"
     },
     {
       "hash": "4ee9770",
       "subject": "STRUCTURAL FIX: Draft extracted from brief section 4, no separate API call",
-      "when": "77 minutes ago"
+      "when": "23 hours ago"
     },
     {
       "hash": "8eea292",
       "subject": "FIX: Follow-up query only loads awaiting_reply, not followed_up",
-      "when": "2 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "2012b0b",
       "subject": "FIX: Gmail sync dismisses old follow-ups in BOTH tables",
-      "when": "2 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "fc91f1f",
       "subject": "Kiko knowledge: Session 66 final updates",
-      "when": "2 hours ago"
-    },
-    {
-      "hash": "d34e763",
-      "subject": "FIX: Command Centre draft pipeline — To: field, auto-scroll, visual divider",
-      "when": "2 hours ago"
-    },
-    {
-      "hash": "62fdffd",
-      "subject": "FIX: Partnership scan working — Claude web search + valid category IDs",
-      "when": "2 hours ago"
-    },
-    {
-      "hash": "2986ae4",
-      "subject": "NEW TOOL: update_partnership — Kiko can now WRITE to the partnership matrix",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "5d0251c",
-      "subject": "FIX: Current date in draft prompt + To: field for follow-ups",
-      "when": "3 days ago"
-    },
-    {
-      "hash": "22b9af2",
-      "subject": "FIX: Follow-up drafts now context-aware with correct direction",
-      "when": "3 days ago"
-    },
-    {
-      "hash": "8df26ce",
-      "subject": "FIX: Draft now gets 2000 chars of brief context, not 800",
-      "when": "3 days ago"
-    },
-    {
-      "hash": "45c7953",
-      "subject": "FIX: Follow-up drafts — wrong item kind, wrong field names",
-      "when": "3 days ago"
-    },
-    {
-      "hash": "eb5e904",
-      "subject": "FIX: Command Centre task → email draft pipeline broken for tasks",
-      "when": "3 days ago"
-    },
-    {
-      "hash": "9734fd0",
-      "subject": "FIX: Briefing prompt now explicitly names the person, not company",
-      "when": "3 days ago"
-    },
-    {
-      "hash": "238f876",
-      "subject": "FIX: Command Centre briefings must look up contact before drafting",
-      "when": "3 days ago"
-    },
-    {
-      "hash": "3444012",
-      "subject": "CRITICAL FIX: Bounce detection — bounces no longer treated as replies",
-      "when": "3 days ago"
-    },
-    {
-      "hash": "43f2b44",
-      "subject": "Permanent rule: Supabase table creation must include grants + RLS",
-      "when": "4 days ago"
+      "when": "24 hours ago"
     }
   ]
 }

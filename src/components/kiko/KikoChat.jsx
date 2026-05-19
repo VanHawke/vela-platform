@@ -204,6 +204,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [showSteps, setShowSteps] = useState(false)
   const [expandedSteps, setExpandedSteps] = useState(null)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [morningBriefing, setMorningBriefing] = useState(null)
+  const [briefingExpanded, setBriefingExpanded] = useState(false)
   const [insightsOpen, setInsightsOpen] = useState(false)
   const { alertCount } = useKikoLive()
   const [mobileCommandOpen, setMobileCommandOpen] = useState(false)
@@ -635,6 +637,23 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   }, [])
 
   useEffect(() => { if (initialMessage && !messages.length) handleSubmit(initialMessage) }, [])
+
+  // Fetch morning briefing on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const today = new Date().toISOString().split('T')[0]
+        const { data } = await supabase.from('kiko_alerts')
+          .select('detail')
+          .eq('type', 'morning_briefing')
+          .eq('dismissed', false)
+          .gte('created_at', today)
+          .order('created_at', { ascending: false })
+          .limit(1)
+        if (data?.[0]?.detail) setMorningBriefing(data[0].detail)
+      } catch {} 
+    })()
+  }, [])
   const justLoadedRef = useRef(false)
   useEffect(() => {
     if (justLoadedRef.current) {
@@ -1697,6 +1716,36 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             </div>
             <div style={{ fontSize: 19, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</div>
           </div>
+
+          {/* Morning Briefing Card — shows when a briefing exists for today */}
+          {!voiceActive && morningBriefing && (
+            <div style={{
+              width: '100%', maxWidth: 680, margin: '24px auto 0', padding: '20px 24px',
+              background: '#FAFAF9', border: '1px solid rgba(0,0,0,0.06)',
+              borderRadius: 12, cursor: 'pointer', transition: 'all 0.2s',
+            }} onClick={() => setBriefingExpanded(!briefingExpanded)}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: briefingExpanded ? 16 : 0 }}>
+                <span style={{ fontSize: 16 }}>📋</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: C.font, letterSpacing: '0.02em' }}>MORNING BRIEFING</span>
+                <span style={{ fontSize: 11, color: '#A0A0A0', fontFamily: C.font, marginLeft: 'auto' }}>{briefingExpanded ? 'Click to collapse' : 'Click to expand'}</span>
+              </div>
+              {!briefingExpanded && (
+                <p style={{ fontSize: 14, color: '#3A3A3A', fontFamily: C.font, lineHeight: 1.6, margin: '10px 0 0', fontWeight: 400 }}>
+                  {morningBriefing.split('\n').find(l => l.startsWith('##') && l.includes('HEADLINE'))
+                    ? morningBriefing.split('\n').find((l, i, arr) => arr[i-1]?.includes('HEADLINE'))?.replace(/^#+\s*/, '') || morningBriefing.slice(0, 200)
+                    : morningBriefing.slice(0, 200)}...
+                </p>
+              )}
+              {briefingExpanded && (
+                <div style={{ fontSize: 14, color: '#2A2A2A', fontFamily: C.font, lineHeight: 1.75, whiteSpace: 'pre-wrap' }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(morningBriefing
+                    .replace(/^# (.+)$/gm, '<h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;color:#0A0A0A">$1</h3>')
+                    .replace(/^## (.+)$/gm, '<h4 style="font-size:14px;font-weight:600;margin:14px 0 6px;color:#0A0A0A">$1</h4>')
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n/g, '<br/>')) }} />
+              )}
+            </div>
+          )}
 
           {/* Prompt bar — on mobile: rendered OUTSIDE kikoHomeContent (at bottom). On desktop: here */}
           {!isMobile && <div id="kikoPromptWrap" style={{
