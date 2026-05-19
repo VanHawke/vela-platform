@@ -748,6 +748,41 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
         return outcomes.map(o => `${o.created_at?.split('T')[0]} | ${o.action_taken} → ${o.result}\n  Worked: ${o.what_worked || 'n/a'} | Failed: ${o.what_failed || 'n/a'} | Next: ${o.next_adjustment || 'n/a'}`).join('\n\n');
       }
 
+      // ── INTENT STATE MACHINE — active short-term actions ──
+      case 'list_intents': {
+        const { data: intents } = await supabase.from('kiko_intents')
+          .select('id, title, status, context, next_action, due_date, goal_id')
+          .in('status', ['active', 'suspended'])
+          .order('due_date', { ascending: true, nullsFirst: false });
+        if (!intents?.length) return 'No active intents. Use create_intent to create one.';
+        return intents.map(i => `[${i.status.toUpperCase()}${i.due_date ? ' | Due: ' + i.due_date : ''}] ${i.title}\n  Context: ${i.context || 'none'}\n  Next: ${i.next_action || 'undefined'}`).join('\n\n');
+      }
+      case 'create_intent': case 'update_intent': {
+        const { intent_id, title, goal_keyword, status: iStatus, next_action: iNext, context: iCtx, due_date: iDue } = params;
+        if (title && !intent_id) {
+          // CREATE
+          let goal_id = null;
+          if (goal_keyword) {
+            const { data: g } = await supabase.from('kiko_goals').select('id').eq('status', 'active').ilike('title', `%${goal_keyword}%`).limit(1);
+            if (g?.length) goal_id = g[0].id;
+          }
+          await supabase.from('kiko_intents').insert({ title, goal_id, status: 'active', context: iCtx || null, next_action: iNext || null, due_date: iDue || null });
+          return `Intent created: ${title}`;
+        }
+        if (intent_id) {
+          // UPDATE / RESUME / COMPLETE
+          const updates = { updated_at: new Date().toISOString() };
+          if (iStatus) updates.status = iStatus;
+          if (iNext) updates.next_action = iNext;
+          if (iCtx) updates.context = iCtx;
+          if (iDue) updates.due_date = iDue;
+          if (iStatus === 'completed' || iStatus === 'abandoned') updates.last_actioned_at = new Date().toISOString();
+          await supabase.from('kiko_intents').update(updates).eq('id', intent_id);
+          return `Intent ${iStatus === 'completed' ? 'completed' : iStatus === 'active' ? 'resumed' : 'updated'}.`;
+        }
+        return 'Provide title (to create) or intent_id (to update).';
+      }
+
       // ── MORNING BRIEFING — Strategic synthesis ──
       case 'morning_briefing': {
         const briefings = await sbFetch('kiko_alerts?type=eq.morning_briefing&dismissed=eq.false&order=created_at.desc&limit=1');

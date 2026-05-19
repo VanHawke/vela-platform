@@ -1642,11 +1642,20 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
         morningBrief += `\nSurface these when briefing or when relevant to the conversation. Ask if they want to approve or dismiss them.]`;
       }
 
-      // Active strategic goals — Kiko's understanding of what Sunny is trying to achieve
+      // Active strategic goals
       if (Array.isArray(goals) && goals.length) {
         morningBrief += `\n\n[ACTIVE STRATEGIC GOALS — everything you do should connect to one of these]:`;
         for (const g of goals) morningBrief += `\n• [${g.priority}] ${g.title}${g.description ? ': ' + g.description.slice(0, 120) : ''}`;
       }
+
+      // Active intents — short-term actionable next steps
+      try {
+        const { data: intents } = await supabase.from('kiko_intents').select('title, status, next_action, due_date').in('status', ['active']).order('due_date', { ascending: true, nullsFirst: false }).limit(5);
+        if (intents?.length) {
+          morningBrief += `\n\n[ACTIVE INTENTS — what needs to happen NOW]:`;
+          for (const i of intents) morningBrief += `\n• ${i.title}${i.due_date ? ' (due: ' + i.due_date + ')' : ''} → ${i.next_action || 'action needed'}`;
+        }
+      } catch {}
 
       // Recent outcomes — what happened when we took action (learning loop)
       if (Array.isArray(outcomes) && outcomes.length) {
