@@ -1569,19 +1569,23 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
           sbFetch(`kiko_personal_context?user_id=eq.${userId}&select=category,key,value&order=updated_at.desc&limit=15`).catch(() => []),
           Promise.resolve([]), // insights — skip
           sbFetch(`kiko_inbox_triage?triage_date=eq.${new Date().toISOString().split('T')[0]}&limit=1&select=summary,priority_emails`).catch(() => []),
-          sbFetch(`kiko_alerts?type=eq.morning_brief&user_id=eq.${userId}&order=created_at.desc&limit=1&select=detail,created_at`).catch(() => []),
+          sbFetch(`kiko_alerts?type=in.(morning_briefing,morning_brief)&order=created_at.desc&limit=1&select=detail,created_at`).catch(() => []),
           Promise.resolve([]), // pending — skip
+          sbFetch(`kiko_goals?status=eq.active&order=priority&limit=5&select=title,priority,description`).catch(() => []),
+          sbFetch(`kiko_outcomes?order=created_at.desc&limit=5&select=action_taken,result,what_worked,what_failed,created_at`).catch(() => []),
         ]
-        : [ // Full: all 7 queries
+        : [ // Full: all queries
           sbFetch(`kiko_preferences?user_id=eq.${userId}&order=confidence.desc&limit=10&select=category,preference,confidence`).catch(() => []),
           sbFetch(`kiko_user_profiles?user_id=eq.${userId || ''}&limit=1&select=draft_instructions,communication_style,language_fingerprint`).catch(() => []),
           sbFetch(`kiko_personal_context?user_id=eq.${userId}&select=category,key,value&order=updated_at.desc&limit=20`).catch(() => []),
           sbFetch(`kiko_conversation_insights?user_id=eq.${userId}&order=created_at.desc&limit=5&select=key_facts,decisions_made,open_threads,entities_discussed`).catch(() => []),
           sbFetch(`kiko_inbox_triage?triage_date=eq.${new Date().toISOString().split('T')[0]}&limit=1&select=summary,priority_emails`).catch(() => []),
-          sbFetch(`kiko_alerts?type=eq.morning_brief&user_id=eq.${userId}&order=created_at.desc&limit=1&select=detail,created_at`).catch(() => []),
+          sbFetch(`kiko_alerts?type=in.(morning_briefing,morning_brief)&order=created_at.desc&limit=1&select=detail,created_at`).catch(() => []),
           sbFetch(`kiko_draft_actions?status=eq.pending&user_id=eq.${userId}&order=created_at.desc&limit=5&select=action_type,payload,created_at`).catch(() => []),
+          sbFetch(`kiko_goals?status=eq.active&order=priority&limit=5&select=title,priority,description`).catch(() => []),
+          sbFetch(`kiko_outcomes?order=created_at.desc&limit=5&select=action_taken,result,what_worked,what_failed,created_at`).catch(() => []),
         ];
-      const [prefs, profiles, personal, insights, triage, brief, pending] = await Promise.all(queries);
+      const [prefs, profiles, personal, insights, triage, brief, pending, goals, outcomes] = await Promise.all(queries);
 
       // Preferences
       if (Array.isArray(prefs) && prefs.length) {
@@ -1636,6 +1640,18 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
         morningBrief += `\n\n[PENDING DRAFT ACTIONS (${pending.length})]:`;
         for (const d of pending.slice(0, 3)) morningBrief += `\n• ${d.action_type}: ${JSON.stringify(d.payload).slice(0, 100)}`;
         morningBrief += `\nSurface these when briefing or when relevant to the conversation. Ask if they want to approve or dismiss them.]`;
+      }
+
+      // Active strategic goals — Kiko's understanding of what Sunny is trying to achieve
+      if (Array.isArray(goals) && goals.length) {
+        morningBrief += `\n\n[ACTIVE STRATEGIC GOALS — everything you do should connect to one of these]:`;
+        for (const g of goals) morningBrief += `\n• [${g.priority}] ${g.title}${g.description ? ': ' + g.description.slice(0, 120) : ''}`;
+      }
+
+      // Recent outcomes — what happened when we took action (learning loop)
+      if (Array.isArray(outcomes) && outcomes.length) {
+        morningBrief += `\n\n[RECENT OUTCOMES — learn from these]:`;
+        for (const o of outcomes) morningBrief += `\n• ${o.action_taken} → ${o.result}${o.what_worked ? ' (worked: ' + o.what_worked.slice(0, 80) + ')' : ''}${o.what_failed ? ' (failed: ' + o.what_failed.slice(0, 80) + ')' : ''}`;
       }
     } catch {} // Non-blocking — if context fails, Kiko still works
 
