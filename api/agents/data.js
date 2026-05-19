@@ -680,10 +680,90 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
       case 'refresh_partnerships': return await refreshTeamPartnerships(params);
       case 'update_partnership': return await updatePartnership(params);
       case 'campaign_health': {
-        // Return latest campaign monitor recommendations
         const alerts = await sbFetch('kiko_alerts?type=eq.campaign_report&dismissed=eq.false&order=created_at.desc&limit=3');
-        if (!alerts?.length) return 'No campaign reports yet. The monitor runs daily at 9 AM. Run it manually by asking me to "check campaign health".';
+        if (!alerts?.length) return 'No campaign reports yet. The monitor runs daily at 9 AM.';
         return (alerts || []).map(a => a.detail).join('\n\n---\n\n');
+      }
+
+      // ── GOAL MANAGEMENT — Kiko's strategic awareness ──
+      case 'list_goals': {
+        const { data: goals } = await supabase.from('kiko_goals').select('*').eq('status', 'active').order('priority');
+        if (!goals?.length) return 'No active goals. Use update_goal to create one.';
+        return goals.map(g => `[${g.priority}] ${g.title}\n  ${g.description || ''}\n  Success: ${g.success_criteria || 'undefined'}\n  Status: ${g.status}`).join('\n\n');
+      }
+      case 'update_goal': {
+        const { goal_id, title, progress_note, status, priority, description, success_criteria } = params;
+        if (title && !goal_id) {
+          // Create new goal
+          const { data: newGoal } = await supabase.from('kiko_goals').insert({
+            title, description: description || '', priority: priority || 'high',
+            success_criteria: success_criteria || '', status: 'active',
+            user_id: userId
+          }).select().single();
+          return `Created goal: ${newGoal?.title || title}`;
+        }
+        if (!goal_id && !title) return 'Provide goal_id to update, or title to create a new goal.';
+        const updates = {};
+        if (status) updates.status = status;
+        if (priority) updates.priority = priority;
+        if (description) updates.description = description;
+        if (success_criteria) updates.success_criteria = success_criteria;
+        updates.updated_at = new Date().toISOString();
+        // Add progress note
+        if (progress_note) {
+          const { data: existing } = await supabase.from('kiko_goals').select('progress_notes').eq('id', goal_id).single();
+          const notes = existing?.progress_notes || [];
+          notes.push({ date: new Date().toISOString().split('T')[0], note: progress_note });
+          updates.progress_notes = notes;
+        }
+        if (Object.keys(updates).length > 1) {
+          await supabase.from('kiko_goals').update(updates).eq('id', goal_id);
+        }
+        return `Goal updated${progress_note ? ' with progress note: ' + progress_note : ''}.`;
+      }
+
+      // ── OUTCOME TRACKING — Learn from what worked and what didn't ──
+      case 'record_outcome': {
+        const { action_taken, goal_id: outcomeGoalId, result, what_worked, what_failed, next_adjustment } = params;
+        await supabase.from('kiko_outcomes').insert({
+          action_taken, goal_id: outcomeGoalId || null,
+          result: result || 'unknown',
+          what_worked: what_worked || null,
+          what_failed: what_failed || null,
+          next_adjustment: next_adjustment || null,
+          created_at: new Date().toISOString()
+        });
+        // Also add as progress note on the goal
+        if (outcomeGoalId && result) {
+          const { data: g } = await supabase.from('kiko_goals').select('progress_notes').eq('id', outcomeGoalId).single();
+          const notes = g?.progress_notes || [];
+          notes.push({ date: new Date().toISOString().split('T')[0], note: `OUTCOME: ${action_taken} → ${result}` });
+          await supabase.from('kiko_goals').update({ progress_notes: notes, updated_at: new Date().toISOString() }).eq('id', outcomeGoalId);
+        }
+        return `Outcome recorded: ${action_taken} → ${result}. ${next_adjustment ? 'Next adjustment: ' + next_adjustment : ''}`;
+      }
+      case 'review_outcomes': {
+        const { data: outcomes } = await supabase.from('kiko_outcomes').select('*').order('created_at', { ascending: false }).limit(10);
+        if (!outcomes?.length) return 'No outcomes recorded yet. Use record_outcome after taking actions.';
+        return outcomes.map(o => `${o.created_at?.split('T')[0]} | ${o.action_taken} → ${o.result}\n  Worked: ${o.what_worked || 'n/a'} | Failed: ${o.what_failed || 'n/a'} | Next: ${o.next_adjustment || 'n/a'}`).join('\n\n');
+      }
+
+      // ── MORNING BRIEFING — Strategic synthesis ──
+      case 'morning_briefing': {
+        const briefings = await sbFetch('kiko_alerts?type=eq.morning_briefing&dismissed=eq.false&order=created_at.desc&limit=1');
+        if (!briefings?.length) return 'No morning briefing available. It runs automatically at 7 AM daily. I can generate one now — ask me to "run the morning briefing".';
+        return briefings[0].detail;
+      }
+      case 'run_morning_briefing': {
+        try {
+          const resp = await fetch(`${process.env.API_BASE_URL || 'http://localhost:3000'}/api/cron-morning-synthesis`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+          const data = await resp.json();
+          if (data.ok) {
+            const briefings = await sbFetch('kiko_alerts?type=eq.morning_briefing&order=created_at.desc&limit=1');
+            return briefings?.[0]?.detail || 'Briefing generated but could not retrieve it.';
+          }
+          return `Briefing generation failed: ${data.error}`;
+        } catch (e) { return `Error: ${e.message}`; }
       }
       case 'optimize_campaign': {
         // Rewrite campaign emails based on performance data
