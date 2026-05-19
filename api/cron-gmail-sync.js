@@ -218,6 +218,16 @@ export default async function handler(req, res) {
               );
             } catch (e) { console.warn('[gmail-sync] Outcome recording failed:', e.message); }
 
+            // REAL-TIME: Evaluate this signal against goals immediately
+            try {
+              const { evaluateSignal } = await import('./signal-evaluator.js');
+              await evaluateSignal(
+                `Email reply from ${t.recipient_name} (${t.company}) to "${t.subject}": ${(full.snippet || '').slice(0, 100)}`,
+                'gmail',
+                { contact: t.recipient_name, company: t.company }
+              );
+            } catch (e) { /* silent — don't break sync */ }
+
             // Mark related tasks as completed
             const tasks = await sbFetch(`tasks?select=id,data&limit=50`);
             for (const tk of (tasks || [])) {

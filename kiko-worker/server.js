@@ -102,11 +102,13 @@ import campaignMonitor from "./api/cron-campaign-monitor.js";
 import raceWeekIntel from "./api/cron-race-week-intel.js";
 import morningSynthesis from "./api/cron-morning-synthesis.js";
 import heartbeat from "./api/cron-heartbeat.js";
+import signalEvaluator from "./api/signal-evaluator.js";
 app.all("/api/generate-sequence", generateSequence);
 app.all("/api/cron-campaign-monitor", campaignMonitor);
 app.all("/api/cron-race-week-intel", raceWeekIntel);
 app.all("/api/cron-morning-synthesis", morningSynthesis);
 app.all("/api/cron-heartbeat", heartbeat);
+app.all("/api/signal-evaluator", signalEvaluator);
 app.use("/email-intel", emailIntelRoutes);
 
 // Error handler
