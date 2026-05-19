@@ -100,9 +100,11 @@ app.all("/api/document-ops", documentOps);
 import generateSequence from "./api/generate-sequence.js";
 import campaignMonitor from "./api/cron-campaign-monitor.js";
 import raceWeekIntel from "./api/cron-race-week-intel.js";
+import morningSynthesis from "./api/cron-morning-synthesis.js";
 app.all("/api/generate-sequence", generateSequence);
 app.all("/api/cron-campaign-monitor", campaignMonitor);
 app.all("/api/cron-race-week-intel", raceWeekIntel);
+app.all("/api/cron-morning-synthesis", morningSynthesis);
 app.use("/email-intel", emailIntelRoutes);
 
 // Error handler
