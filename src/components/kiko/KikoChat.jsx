@@ -1717,16 +1717,19 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ fontSize: 19, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</div>
           </div>
 
-          {/* Morning Briefing Card — shows when a briefing exists for today */}
+          {/* Daily Briefing Card — shows when a briefing exists for today */}
           {!voiceActive && morningBriefing && (
             <div style={{
               width: '100%', maxWidth: 680, margin: '24px auto 0', padding: '20px 24px',
               background: '#FAFAF9', border: '1px solid rgba(0,0,0,0.06)',
               borderRadius: 12, cursor: 'pointer', transition: 'all 0.2s',
+              maxHeight: briefingExpanded ? 420 : 'none',
+              overflow: briefingExpanded ? 'hidden' : 'visible',
+              display: 'flex', flexDirection: 'column',
             }} onClick={() => setBriefingExpanded(!briefingExpanded)}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: briefingExpanded ? 16 : 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: briefingExpanded ? 12 : 0, flexShrink: 0 }}>
                 <span style={{ fontSize: 16 }}>📋</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: C.font, letterSpacing: '0.02em' }}>MORNING BRIEFING</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: C.font, letterSpacing: '0.02em' }}>DAILY BRIEFING</span>
                 <span style={{ fontSize: 11, color: '#A0A0A0', fontFamily: C.font, marginLeft: 'auto' }}>{briefingExpanded ? 'Click to collapse' : 'Click to expand'}</span>
               </div>
               {!briefingExpanded && (
@@ -1737,12 +1740,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 </p>
               )}
               {briefingExpanded && (
-                <div style={{ fontSize: 14, color: '#2A2A2A', fontFamily: C.font, lineHeight: 1.75, whiteSpace: 'pre-wrap' }}
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(morningBriefing
-                    .replace(/^# (.+)$/gm, '<h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;color:#0A0A0A">$1</h3>')
-                    .replace(/^## (.+)$/gm, '<h4 style="font-size:14px;font-weight:600;margin:14px 0 6px;color:#0A0A0A">$1</h4>')
-                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\n/g, '<br/>')) }} />
+                <div onClick={e => e.stopPropagation()} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingRight: 8 }}>
+                  <div style={{ fontSize: 14, color: '#2A2A2A', fontFamily: C.font, lineHeight: 1.75, whiteSpace: 'pre-wrap' }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(morningBriefing
+                      .replace(/^# (.+)$/gm, '<h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;color:#0A0A0A">$1</h3>')
+                      .replace(/^## (.+)$/gm, '<h4 style="font-size:14px;font-weight:600;margin:14px 0 6px;color:#0A0A0A">$1</h4>')
+                      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                      .replace(/\n/g, '<br/>')) }} />
+                </div>
               )}
             </div>
           )}

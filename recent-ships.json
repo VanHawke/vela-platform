@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-05-19T13:07:22.509Z",
+  "generated_at": "2026-05-19T15:37:03.224Z",
   "commits": [
+    {
+      "hash": "f64dae5",
+      "subject": "Phase 1D: Today page shows morning briefing",
+      "when": "2 hours ago"
+    },
     {
       "hash": "585f1be",
       "subject": "Phase 1C: Heartbeat system — real-time proactive signal monitoring",
-      "when": "10 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "95f562a",
       "subject": "Phase 1B: Automatic outcome recording on reply/bounce detection",
-      "when": "12 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e8fb554",
       "subject": "Phase 1A: Hardcoded F1 2026 race calendar — no more web search errors",
-      "when": "16 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e2f99d9",
       "subject": "RESEARCH: Proactive Intelligence Architecture Plan — 8 papers, 4 production systems",
-      "when": "23 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6e8db79",
       "subject": "KIKO BDI ARCHITECTURE: Goals, Outcomes, Synthesis — full strategic intelligence",
-      "when": "41 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "682a43d",
       "subject": "BREAKTHROUGH: Goal-driven Morning Synthesis Engine — Kiko's strategic brain",
-      "when": "50 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "099bfb0",
       "subject": "NEW: Race Calendar Intelligence Cron — automatic race-week prospect analysis",
-      "when": "58 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "961316f",
       "subject": "Session 67: Self-knowledge updated, alerts cleaned, race week intelligence",
-      "when": "64 minutes ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "8cae771",
       "subject": "REVERTED: Remove auto-pause — campaign monitor alerts only, never takes action",
-      "when": "22 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "09bbb3f",
       "subject": "Campaign intelligence: A/B testing, auto-pause, send time optimization",
-      "when": "22 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "b811e04",
       "subject": "NEW: Kiko can now analyse and optimize campaigns autonomously",
-      "when": "22 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "4b7e42f",
       "subject": "NEW: Campaign Performance Monitor — daily proactive analysis",
-      "when": "22 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "302e974",
       "subject": "PERMANENT FIX: LinkedIn keepalive with 3-layer recovery + Supabase fallback",
-      "when": "22 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "8fb7753",
       "subject": "FIX: LinkedIn keepalive — no longer skips stale cookies + auto-login",
-      "when": "23 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "71edd7f",
       "subject": "Session fixes: generate-sequence route, partnership scan, news agent, CC draft extraction",
-      "when": "23 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "368e118",
       "subject": "FIX: EmailDraft renders extracted brief draft, bypasses isEmailDraft check",
-      "when": "23 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "4ee9770",
       "subject": "STRUCTURAL FIX: Draft extracted from brief section 4, no separate API call",
-      "when": "23 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "8eea292",
       "subject": "FIX: Follow-up query only loads awaiting_reply, not followed_up",
-      "when": "24 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "2012b0b",
       "subject": "FIX: Gmail sync dismisses old follow-ups in BOTH tables",
-      "when": "24 hours ago"
-    },
-    {
-      "hash": "fc91f1f",
-      "subject": "Kiko knowledge: Session 66 final updates",
-      "when": "24 hours ago"
+      "when": "26 hours ago"
     }
   ]
 }
