@@ -116,6 +116,27 @@ export default async function handler(req, res) {
       `• [${n.relevance_score || '?'}] ${n.title} (${n.source})`
     ).join('\n') || 'No relevant news';
 
+    // ── GLOBAL MEMORY: Search for relevant past context ──
+    let memoryContext = '';
+    try {
+      const { searchMemory, formatMemoryContext } = await import('./lib/memory-retrieval.js');
+      const goalsKeywords = (goals.data || []).map(g => g.title).join(' ');
+      const memory = await searchMemory(goalsKeywords);
+      memoryContext = formatMemoryContext(memory);
+      if (memoryContext) memoryContext = `\n\n═══ PAST CONTEXT (from memory) ═══\n${memoryContext}`;
+    } catch (e) { console.warn('[MorningSynthesis] Memory retrieval failed:', e.message); }
+
+    // ── ACTIVE INTENTS ──
+    let intentsText = '';
+    try {
+      const { data: intents } = await supabase.from('kiko_intents')
+        .select('title, status, next_action, due_date').eq('status', 'active')
+        .order('due_date', { ascending: true, nullsFirst: false }).limit(5);
+      if (intents?.length) {
+        intentsText = intents.map(i => `• ${i.title}${i.due_date ? ' (due: ' + i.due_date + ')' : ''} → ${i.next_action || 'action needed'}`).join('\n');
+      }
+    } catch {}
+
     // ── REASONING: Ask Claude to synthesise ──
     const synthesisResp = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -149,6 +170,8 @@ ${tasksText}
 
 NEWS & INTELLIGENCE:
 ${newsText}
+${intentsText ? `\n═══ ACTIVE INTENTS (what needs to happen NOW) ═══\n${intentsText}` : ''}
+${memoryContext}
 
 ═══ YOUR TASK ═══
 Produce a briefing with these sections:
