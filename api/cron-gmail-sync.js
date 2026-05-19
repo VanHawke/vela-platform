@@ -163,6 +163,18 @@ export default async function handler(req, res) {
                   entity_type: 'contact', entity_name: t.recipient_name, dismissed: false,
                 }),
               }).catch(() => {});
+
+              // AUTO: Record bounce outcome
+              try {
+                const { recordOutcome } = await import('./lib/outcome-recorder.js');
+                await recordOutcome(
+                  `Email bounced for ${t.recipient_name} (${t.recipient_email})`,
+                  'negative',
+                  { what_failed: `Invalid email address: ${t.recipient_email}`, next_adjustment: 'Re-enrich this contact with correct email' },
+                  'Alpine'
+                );
+              } catch (e) { /* silent */ }
+
               totalSynced++;
               console.log(`[gmail-sync] BOUNCE detected: ${t.recipient_email} — ${snippet.slice(0, 80)}`);
               continue; // Skip reply processing
@@ -191,6 +203,20 @@ export default async function handler(req, res) {
                 dismissed: false,
               }),
             }).catch(() => {});
+
+            // AUTO: Record outcome for the learning loop
+            try {
+              const { recordOutcome } = await import('./lib/outcome-recorder.js');
+              await recordOutcome(
+                `Email reply from ${t.recipient_name} (${t.company}) to "${t.subject}"`,
+                'positive',
+                {
+                  what_worked: `Subject: "${t.subject}" — prospect engaged and replied`,
+                  next_adjustment: 'Analyse what made this prospect respond vs others who didn\'t'
+                },
+                'Alpine' // keyword to match campaign goal
+              );
+            } catch (e) { console.warn('[gmail-sync] Outcome recording failed:', e.message); }
 
             // Mark related tasks as completed
             const tasks = await sbFetch(`tasks?select=id,data&limit=50`);
