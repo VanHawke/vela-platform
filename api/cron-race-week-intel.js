@@ -14,16 +14,24 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY
 );
 
-// Load the hardcoded race calendar (no web search — web search returned wrong results)
+// Load the hardcoded race calendar — F1, Formula E, MotoGP
 function getUpcomingRaces() {
   const __dirname = dirname(fileURLToPath(import.meta.url));
   const calendarPath = join(__dirname, 'data', 'race-calendars.json');
   const calendar = JSON.parse(readFileSync(calendarPath, 'utf8'));
   const now = new Date();
-  // Return next 3 races that haven't happened yet
-  return calendar.f1_2026
-    .filter(r => new Date(r.date) >= new Date(now.toISOString().split('T')[0]))
-    .slice(0, 3);
+  const todayStr = now.toISOString().split('T')[0];
+  
+  const allRaces = [
+    ...(calendar.f1_2026 || []).map(r => ({ ...r, series: 'F1' })),
+    ...(calendar.formula_e_2026 || []).map(r => ({ ...r, series: 'Formula E' })),
+    ...(calendar.motogp_2026 || []).map(r => ({ ...r, series: 'MotoGP' })),
+  ];
+  
+  return allRaces
+    .filter(r => new Date(r.date) >= new Date(todayStr))
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(0, 5);
 }
 
 export default async function handler(req, res) {

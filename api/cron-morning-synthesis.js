@@ -23,10 +23,22 @@ function getRaceContext() {
     const __dirname = dirname(fileURLToPath(import.meta.url));
     const calendar = JSON.parse(readFileSync(join(__dirname, 'data', 'race-calendars.json'), 'utf8'));
     const now = new Date();
-    const upcoming = calendar.f1_2026.filter(r => new Date(r.date) >= new Date(now.toISOString().split('T')[0])).slice(0, 3);
+    const todayStr = now.toISOString().split('T')[0];
+    
+    const allRaces = [
+      ...(calendar.f1_2026 || []).map(r => ({ ...r, series: 'F1' })),
+      ...(calendar.formula_e_2026 || []).map(r => ({ ...r, series: 'Formula E' })),
+      ...(calendar.motogp_2026 || []).map(r => ({ ...r, series: 'MotoGP' })),
+    ];
+    
+    const upcoming = allRaces
+      .filter(r => new Date(r.date) >= new Date(todayStr))
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .slice(0, 5);
+    
     return upcoming.map(r => {
       const days = Math.ceil((new Date(r.date) - now) / 86400000);
-      return `${r.name} in ${r.location} on ${r.date} (${days} days away)${r.sprint ? ' [SPRINT WEEKEND]' : ''}`;
+      return `[${r.series}] ${r.name} in ${r.location} on ${r.date} (${days} days away)${r.sprint ? ' [SPRINT]' : ''}`;
     }).join('\n');
   } catch (e) { return 'Race calendar unavailable'; }
 }
