@@ -1,10 +1,20 @@
 {
-  "generated_at": "2026-05-19T15:37:03.224Z",
+  "generated_at": "2026-05-19T15:59:28.207Z",
   "commits": [
+    {
+      "hash": "61861d1",
+      "subject": "CRITICAL: Goals + outcomes + briefing injected into EVERY Kiko conversation",
+      "when": "18 minutes ago"
+    },
+    {
+      "hash": "c76f43c",
+      "subject": "FIX: Daily Briefing card — rename from Morning, add scroll, stop propagation",
+      "when": "22 minutes ago"
+    },
     {
       "hash": "f64dae5",
       "subject": "Phase 1D: Today page shows morning briefing",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "585f1be",
@@ -29,17 +39,17 @@
     {
       "hash": "6e8db79",
       "subject": "KIKO BDI ARCHITECTURE: Goals, Outcomes, Synthesis — full strategic intelligence",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "682a43d",
       "subject": "BREAKTHROUGH: Goal-driven Morning Synthesis Engine — Kiko's strategic brain",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "099bfb0",
       "subject": "NEW: Race Calendar Intelligence Cron — automatic race-week prospect analysis",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "961316f",
@@ -54,7 +64,7 @@
     {
       "hash": "09bbb3f",
       "subject": "Campaign intelligence: A/B testing, auto-pause, send time optimization",
-      "when": "24 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "b811e04",
@@ -74,12 +84,12 @@
     {
       "hash": "8fb7753",
       "subject": "FIX: LinkedIn keepalive — no longer skips stale cookies + auto-login",
-      "when": "25 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "71edd7f",
       "subject": "Session fixes: generate-sequence route, partnership scan, news agent, CC draft extraction",
-      "when": "25 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "368e118",
@@ -89,16 +99,6 @@
     {
       "hash": "4ee9770",
       "subject": "STRUCTURAL FIX: Draft extracted from brief section 4, no separate API call",
-      "when": "26 hours ago"
-    },
-    {
-      "hash": "8eea292",
-      "subject": "FIX: Follow-up query only loads awaiting_reply, not followed_up",
-      "when": "26 hours ago"
-    },
-    {
-      "hash": "2012b0b",
-      "subject": "FIX: Gmail sync dismisses old follow-ups in BOTH tables",
       "when": "26 hours ago"
     }
   ]

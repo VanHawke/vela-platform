@@ -1717,35 +1717,34 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ fontSize: 19, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</div>
           </div>
 
-          {/* Daily Briefing Card — shows when a briefing exists for today */}
+          {/* Daily Briefing Card */}
           {!voiceActive && morningBriefing && (
             <div style={{
-              width: '100%', maxWidth: 680, margin: '24px auto 0', padding: '20px 24px',
+              width: '100%', maxWidth: 680, margin: '20px auto 0',
               background: '#FAFAF9', border: '1px solid rgba(0,0,0,0.06)',
-              borderRadius: 12, cursor: 'pointer', transition: 'all 0.2s',
-              maxHeight: briefingExpanded ? 420 : 'none',
-              overflow: briefingExpanded ? 'hidden' : 'visible',
-              display: 'flex', flexDirection: 'column',
-            }} onClick={() => setBriefingExpanded(!briefingExpanded)}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: briefingExpanded ? 12 : 0, flexShrink: 0 }}>
-                <span style={{ fontSize: 16 }}>📋</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: C.font, letterSpacing: '0.02em' }}>DAILY BRIEFING</span>
-                <span style={{ fontSize: 11, color: '#A0A0A0', fontFamily: C.font, marginLeft: 'auto' }}>{briefingExpanded ? 'Click to collapse' : 'Click to expand'}</span>
+              borderRadius: 12, transition: 'all 0.2s',
+            }}>
+              <div onClick={() => setBriefingExpanded(!briefingExpanded)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 20px', cursor: 'pointer', borderBottom: briefingExpanded ? '1px solid rgba(0,0,0,0.04)' : 'none' }}>
+                <span style={{ fontSize: 15 }}>📋</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#0A0A0A', fontFamily: C.font, letterSpacing: '0.04em' }}>DAILY BRIEFING</span>
+                <span style={{ fontSize: 11, color: '#A0A0A0', fontFamily: C.font, marginLeft: 'auto' }}>{briefingExpanded ? '▲ Collapse' : '▼ Expand'}</span>
               </div>
               {!briefingExpanded && (
-                <p style={{ fontSize: 14, color: '#3A3A3A', fontFamily: C.font, lineHeight: 1.6, margin: '10px 0 0', fontWeight: 400 }}>
-                  {morningBriefing.split('\n').find(l => l.startsWith('##') && l.includes('HEADLINE'))
-                    ? morningBriefing.split('\n').find((l, i, arr) => arr[i-1]?.includes('HEADLINE'))?.replace(/^#+\s*/, '') || morningBriefing.slice(0, 200)
-                    : morningBriefing.slice(0, 200)}...
-                </p>
+                <div onClick={() => setBriefingExpanded(true)} style={{ padding: '0 20px 16px', cursor: 'pointer' }}>
+                  <p style={{ fontSize: 13, color: '#3A3A3A', fontFamily: C.font, lineHeight: 1.6, margin: 0, fontWeight: 400 }}>
+                    {morningBriefing.slice(0, 180).replace(/^[\s\S]*?(?=Campaign|Alpine|Canadian|HEADLINE|Today)/, '')}...
+                  </p>
+                </div>
               )}
               {briefingExpanded && (
-                <div onClick={e => e.stopPropagation()} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingRight: 8 }}>
-                  <div style={{ fontSize: 14, color: '#2A2A2A', fontFamily: C.font, lineHeight: 1.75, whiteSpace: 'pre-wrap' }}
+                <div style={{ maxHeight: 360, overflowY: 'auto', padding: '12px 20px 20px', WebkitOverflowScrolling: 'touch' }}>
+                  <div style={{ fontSize: 13, color: '#2A2A2A', fontFamily: C.font, lineHeight: 1.75 }}
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(morningBriefing
-                      .replace(/^# (.+)$/gm, '<h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;color:#0A0A0A">$1</h3>')
-                      .replace(/^## (.+)$/gm, '<h4 style="font-size:14px;font-weight:600;margin:14px 0 6px;color:#0A0A0A">$1</h4>')
                       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                      .replace(/^## (.+)$/gm, '<div style="font-size:13px;font-weight:700;margin:18px 0 6px;color:#0A0A0A;text-transform:uppercase;letter-spacing:0.04em">$1</div>')
+                      .replace(/^# (.+)$/gm, '<div style="font-size:14px;font-weight:700;margin:14px 0 8px;color:#0A0A0A">$1</div>')
+                      .replace(/^(\d+)\.\s/gm, '<strong>$1.</strong> ')
+                      .replace(/^•\s/gm, '· ')
                       .replace(/\n/g, '<br/>')) }} />
                 </div>
               )}
