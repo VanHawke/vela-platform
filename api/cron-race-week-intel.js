@@ -4,37 +4,38 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
 
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY
 );
 
+// Load the hardcoded race calendar (no web search — web search returned wrong results)
+function getUpcomingRaces() {
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const calendarPath = join(__dirname, 'data', 'race-calendars.json');
+  const calendar = JSON.parse(readFileSync(calendarPath, 'utf8'));
+  const now = new Date();
+  // Return next 3 races that haven't happened yet
+  return calendar.f1_2026
+    .filter(r => new Date(r.date) >= new Date(now.toISOString().split('T')[0]))
+    .slice(0, 3);
+}
+
 export default async function handler(req, res) {
   try {
-    // Step 1: Get the upcoming race calendar via Claude web search
-    const calendarResp = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: `Today is ${new Date().toISOString().split('T')[0]}. Search for the current 2026 Formula 1 race calendar. Return the next 3 upcoming races in this exact JSON format, nothing else:
-[{"name":"Race Name","location":"City, Country","circuit":"Circuit Name","date":"YYYY-MM-DD","country_code":"XX"}]
-Only include races that haven't happened yet. Return ONLY the JSON array.` }]
-    });
-
-    let races = [];
-    const textBlock = calendarResp.content.find(b => b.type === 'text');
-    if (textBlock?.text) {
-      const cleaned = textBlock.text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-      const match = cleaned.match(/\[[\s\S]*\]/);
-      if (match) { try { races = JSON.parse(match[0]); } catch {} }
-    }
+    // Step 1: Get upcoming races from hardcoded calendar
+    const races = getUpcomingRaces();
 
     if (!races.length) {
-      return res.json({ ok: true, message: 'Could not fetch race calendar', races: [] });
+      return res.json({ ok: true, message: 'No upcoming races in calendar', races: [] });
     }
 
-    console.log(`[RaceWeekIntel] Found ${races.length} upcoming races:`, races.map(r => `${r.name} (${r.date})`).join(', '));
+    console.log(`[RaceWeekIntel] Next races:`, races.map(r => `${r.name} (${r.date})`).join(', '));
 
     const alerts = [];
     const now = new Date();

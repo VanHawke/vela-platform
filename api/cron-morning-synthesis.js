@@ -8,12 +8,28 @@
 // 4. Stores the briefing for the Today page
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY
 );
+
+function getRaceContext() {
+  try {
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const calendar = JSON.parse(readFileSync(join(__dirname, 'data', 'race-calendars.json'), 'utf8'));
+    const now = new Date();
+    const upcoming = calendar.f1_2026.filter(r => new Date(r.date) >= new Date(now.toISOString().split('T')[0])).slice(0, 3);
+    return upcoming.map(r => {
+      const days = Math.ceil((new Date(r.date) - now) / 86400000);
+      return `${r.name} in ${r.location} on ${r.date} (${days} days away)${r.sprint ? ' [SPRINT WEEKEND]' : ''}`;
+    }).join('\n');
+  } catch (e) { return 'Race calendar unavailable'; }
+}
 
 export default async function handler(req, res) {
   const start = Date.now();
@@ -54,18 +70,9 @@ export default async function handler(req, res) {
         .gte('created_at', since).order('relevance_score', { ascending: false }).limit(10),
     ]);
 
-    // ── Get race calendar via web search ──
+    // ── Get race calendar from local file (no web search — web search returned wrong results) ──
     const today = new Date().toISOString().split('T')[0];
-    let raceContext = '';
-    try {
-      const calResp = await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 500,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: `Today is ${today}. What F1 race is happening this weekend or within the next 7 days? Just the race name, location, and date. One sentence.` }]
-      });
-      raceContext = calResp.content.filter(b => b.type === 'text').map(b => b.text).join(' ');
-    } catch (e) { raceContext = 'Race calendar unavailable'; }
+    const raceContext = getRaceContext();
 
     // ── Format signals for Claude ──
     const goalsText = (goals.data || []).map(g =>
