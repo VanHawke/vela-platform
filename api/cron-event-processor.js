@@ -11,7 +11,7 @@ import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const HAIKU = 'claude-haiku-4-5-20251001';
-const SONNET = 'claude-sonnet-4-20250514';
+const SONNET = 'claude-sonnet-4-6';
 
 // Helper: call Claude with model selection
 async function callClaude(model, systemPrompt, userPrompt, maxTokens = 1000) {

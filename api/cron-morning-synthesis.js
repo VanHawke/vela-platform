@@ -139,7 +139,7 @@ export default async function handler(req, res) {
 
     // ── REASONING: Ask Claude to synthesise ──
     const synthesisResp = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 3000,
       messages: [{ role: 'user', content: `You are Kiko, the AI executive operating partner for Van Hawke Group, a Formula One sponsorship advisory firm. Today is ${today}.
 
