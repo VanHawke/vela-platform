@@ -180,24 +180,36 @@ export default async function handler(req, res) {
               continue; // Skip reply processing
             }
 
-            // This is a REAL reply to a tracked email
+            // This is a reply to a tracked email — check if OOO or real
+            const snippetLower = (full.snippet || '').toLowerCase();
+            const isOOO = /\b(out of office|on leave|on vacation|on holiday|away from|auto.?reply|automatic reply|i.?m away|currently (out|away|unavailable)|will (return|be back)|annual leave|maternity|paternity)\b/i.test(snippetLower);
+            const replyType = isOOO ? 'ooo' : 'reply';
+
             await sbFetch(`kiko_email_tracking?id=eq.${t.id}`, {
               method: 'PATCH',
               body: JSON.stringify({
                 replied_at: new Date().toISOString(),
                 reply_snippet: full.snippet || '',
-                follow_up_dismissed: true,
+                follow_up_dismissed: isOOO ? false : true, // Don't dismiss follow-up for OOO
               }),
             });
 
-            // Create high-priority alert
+            // Also set reply_type in outreach queue if applicable
+            await sbFetch(`kiko_outreach_queue?to_email=eq.${encodeURIComponent(t.recipient_email)}&reply_received_at=is.null&limit=1`, {
+              method: 'PATCH',
+              body: JSON.stringify({ reply_received_at: new Date().toISOString(), reply_snippet: full.snippet || '', reply_type: replyType }),
+            }).catch(() => {});
+
+            // Create alert — different for OOO vs real reply
             await sbFetch('kiko_alerts', {
               method: 'POST',
               body: JSON.stringify({
-                type: 'email_reply',
-                severity: 'high',
-                title: `Reply from ${t.recipient_name}!`,
-                detail: `${t.recipient_name} (${t.company}) replied to "${t.subject}". ${(full.snippet || '').slice(0, 200)}`,
+                type: isOOO ? 'email_ooo' : 'email_reply',
+                severity: isOOO ? 'low' : 'high',
+                title: isOOO ? `OOO auto-reply from ${t.recipient_name}` : `REPLY from ${t.recipient_name}!`,
+                detail: isOOO 
+                  ? `${t.recipient_name} (${t.company}) sent an out-of-office reply. This is NOT a real engagement. ${(full.snippet || '').slice(0, 200)}. Follow-up NOT dismissed — needs re-contact after their return.`
+                  : `${t.recipient_name} (${t.company}) replied to "${t.subject}". ${(full.snippet || '').slice(0, 200)}`,
                 entity_type: 'contact',
                 entity_name: t.recipient_name,
                 dismissed: false,
@@ -208,11 +220,13 @@ export default async function handler(req, res) {
             try {
               const { recordOutcome } = await import('./lib/outcome-recorder.js');
               await recordOutcome(
-                `Email reply from ${t.recipient_name} (${t.company}) to "${t.subject}"`,
-                'positive',
+                isOOO 
+                  ? `OOO auto-reply from ${t.recipient_name} (${t.company}) — not a real engagement`
+                  : `Email reply from ${t.recipient_name} (${t.company}) to "${t.subject}"`,
+                isOOO ? 'neutral' : 'positive',
                 {
-                  what_worked: `Subject: "${t.subject}" — prospect engaged and replied`,
-                  next_adjustment: 'Analyse what made this prospect respond vs others who didn\'t'
+                  what_worked: isOOO ? null : `Subject: "${t.subject}" — prospect engaged and replied`,
+                  next_adjustment: isOOO ? `Re-contact ${t.recipient_name} after their return from leave` : 'Analyse what made this prospect respond vs others who didn\'t'
                 },
                 'Alpine' // keyword to match campaign goal
               );

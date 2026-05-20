@@ -27,14 +27,15 @@ export default async function handler(req, res) {
 
       // Get email stats
       const { data: emails } = await supabase.from('kiko_outreach_queue')
-        .select('id, status, step_number, opens_count, clicks_count, reply_received_at, error, to_name, to_email, sent_at')
+        .select('id, status, step_number, opens_count, clicks_count, reply_received_at, reply_type, error, to_name, to_email, sent_at')
         .in('enrollment_id', enrollments.map(e => e.id));
 
       const sent = (emails || []).filter(e => e.status === 'sent');
       const failed = (emails || []).filter(e => e.status === 'failed');
       const opened = sent.filter(e => (e.opens_count || 0) > 0);
       const clicked = sent.filter(e => (e.clicks_count || 0) > 0);
-      const replied = sent.filter(e => e.reply_received_at);
+      const replied = sent.filter(e => e.reply_received_at && e.reply_type !== 'ooo');
+      const oooReplies = sent.filter(e => e.reply_received_at && e.reply_type === 'ooo');
 
       const openRate = sent.length ? Math.round((opened.length / sent.length) * 100) : 0;
       const clickRate = sent.length ? Math.round((clicked.length / sent.length) * 100) : 0;
@@ -106,12 +107,6 @@ export default async function handler(req, res) {
       } else if (liRate >= 20) {
         insights.push(`✅ ${liRate}% LinkedIn acceptance rate`);
       }
-
-      // OOO detection
-      const oooReplies = replied.filter(r => {
-        const snippet = (r.reply_received_at || '').toLowerCase();
-        return false; // We'd need to check reply_snippet
-      });
 
       // Step progression analysis
       const steps = {};
@@ -193,7 +188,7 @@ export default async function handler(req, res) {
       const title = `Campaign Report: ${seq.name}`;
       const detail = [
         `📊 PERFORMANCE (${ageDays} days, ${enrolled} enrolled):`,
-        `• Emails: ${sent.length} sent, ${openRate}% opened, ${clickRate}% clicked, ${replyRate}% replied`,
+        `• Emails: ${sent.length} sent, ${openRate}% opened, ${clickRate}% clicked, ${replyRate}% replied${oooReplies.length ? ' (' + oooReplies.length + ' OOO auto-replies excluded)' : ''}`,
         `• LinkedIn: ${liSent} invites, ${liAccepted} accepted (${liRate}%)`,
         `• Failures: ${failed.length} (${failRate}%)`,
         '',
