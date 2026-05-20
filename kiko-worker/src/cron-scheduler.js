@@ -35,7 +35,7 @@ const SCHEDULES = [
   { schedule: '30 7 * * 1-5',   path: '/api/cron-proactive-recommendations', name: 'proactive-recommendations' },
 
   // Cognitive Architecture (Phase 2)
-  { schedule: '*/10 7-22 * * 1-5', path: '/api/cron-event-processor',     name: 'event-processor' },
+  { schedule: '0 7-22 * * 1-5', path: '/api/cron-event-processor',     name: 'event-processor' },
   { schedule: '0 23 * * 1-5',   path: '/api/cron-cognitive-synthesis',     name: 'cognitive-synthesis' },
   { schedule: '0 0 * * 2-6',    path: '/api/cron-personamail-loop',        name: 'personamail-loop' },
   // DISABLED by Sunny — unnecessary token burn
@@ -50,7 +50,7 @@ const SCHEDULES = [
   // Weekday business
   { schedule: '0 7 * * 1-5',    path: '/api/cron-segment-enroller',        name: 'seg-enroller' },
   { schedule: '30 8 * * 1-5',   path: '/api/cron-task-executor',           name: 'task-executor' },
-  { schedule: '0 8,13,18 * * 1-5', path: '/api/cron-selfcheck-watcher',   name: 'selfcheck' },
+  { schedule: '0 8 * * 1-5', path: '/api/cron-selfcheck-watcher',   name: 'selfcheck' },
   { schedule: '0 12 * * 1-5',      path: '/api/cron-linkedin-social-listen', name: 'linkedin-social-listen' },
   { schedule: '0 9 * * 1-5',    path: '/api/cron-outreach-score',          name: 'outreach-score' },
   { schedule: '0 7 * * 1-5',    path: '/api/cron-partnership-scan',        name: 'partnership-scan' },
