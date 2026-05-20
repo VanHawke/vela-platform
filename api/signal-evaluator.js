@@ -95,6 +95,8 @@ SILENT
         entity_type: source,
         entity_name: metadata.contact || metadata.company || source,
         dismissed: false,
+        verified: source !== 'test',
+        source: `signal-evaluator-${source}`,
       });
       console.log(`[SignalEvaluator] ALERT (${score}/10): ${message.slice(0, 80)}`);
       return { action: 'alerted', score, message, signal, source };

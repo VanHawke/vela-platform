@@ -1918,6 +1918,8 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
       for (const block of response.content) {
         if (block.type !== 'tool_use') continue;
         write({ toolStatus: TOOL_LABELS[block.name] || `Running ${block.name}...` });
+        console.log(`[KIKO] Tool call START: ${block.name} (round ${toolRounds})`);
+        const toolStart = Date.now();
         // Heartbeat: send periodic pings so client knows we're alive during long tool calls
         const heartbeat = setInterval(() => { try { write({ toolStatus: TOOL_LABELS[block.name] || `Still working...` }) } catch {} }, 8000);
         let result;
@@ -1935,6 +1937,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
           ]);
         } catch (toolErr) {
           const errMsg = toolErr.message || String(toolErr);
+          console.log(`[KIKO] Tool call FAILED: ${block.name} after ${Date.now() - toolStart}ms — ${errMsg.slice(0, 100)}`);
           // Detect Google OAuth/token expiry
           if (errMsg.includes('401') || errMsg.includes('403') || errMsg.includes('invalid_grant') || errMsg.includes('Token has been expired')) {
             result = `AUTH_EXPIRED: Google authentication has expired. Please ask Sunny to reconnect his Google account in Settings → Accounts. The ${block.name.replace('ask_', '').replace('read_', '')} tool cannot run until re-authenticated.`;
@@ -1956,6 +1959,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
           try { await logError(`tool:${block.name}`, errMsg, `input: ${JSON.stringify(block.input).slice(0, 300)}`); } catch {}
         }
         clearInterval(heartbeat);
+        console.log(`[KIKO] Tool END: ${block.name} ${Date.now() - toolStart}ms`);
         // Handle navigation from any tool
         if ((block.name === 'navigate_page' || block.name === 'ask_navigator') && result?.navigated) write({ navigate: result.page });
         toolResults.push({

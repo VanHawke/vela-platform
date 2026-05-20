@@ -55,7 +55,7 @@ export default async function handler(req, res) {
 
       // Recent alerts (undismissed, last 24h)
       supabase.from('kiko_alerts').select('type, title, detail, severity, created_at')
-        .eq('dismissed', false).gte('created_at', since).order('created_at', { ascending: false }).limit(15),
+        .eq('dismissed', false).eq('verified', true).gte('created_at', since).order('created_at', { ascending: false }).limit(15),
 
       // Email tracking (last 24h activity)
       supabase.from('kiko_email_tracking').select('recipient_name, company, status, replied_at, bounced_at, last_opened_at')
@@ -200,6 +200,8 @@ Be direct, specific, and strategic. No filler. Every sentence should contain eit
       entity_type: 'briefing',
       entity_name: today,
       dismissed: false,
+      verified: true,
+      source: 'morning-synthesis',
       metadata: {
         goals_count: goals.data?.length || 0,
         signals_count: (alerts.data?.length || 0) + (emails.data?.length || 0),
