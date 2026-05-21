@@ -193,3 +193,33 @@ once the lean version is proven stable.
 - ~20-50 conversations × Sonnet = variable
 
 ### TOTAL: ~$25-50/week (improved from $100+)
+
+---
+
+## SESSION 67 RESOLUTION LOG
+
+### COMPLETED:
+- ✅ Phase A: 12 server-only files synced to git (data protection)
+- ✅ Phase B: Dual cron system consolidated (proactive-intel disabled)
+- ✅ Phase C: Dead code removed (ask_lemlist_live tool, learning-director cron)
+- ✅ Phase D: LinkedIn 20 failures reset for retry, crash loop fixed
+- ✅ Phase E: End-to-end verification (7/7 tests pass)
+- ✅ P1: Calendar integration in morning synthesis
+- ✅ P1: Auto-CRM contact creation from inbound business emails
+- ✅ Narration permanently eliminated (banned phrases list)
+- ✅ Self-diagnosis capability (run_selfcheck via ask_self_monitor)
+- ✅ Tool count accuracy (47 tools, exact categories)
+
+### STILL PENDING (P2):
+- Auto-task creation from Kiko conversations
+- Push notifications (cron-push-dispatcher exists but unwired)
+- Clean up 17 disabled cron files (~2,500 lines of dead code)
+- Full code review of kiko.js (172KB) and kiko-tools.js (120KB)
+- Remove old kiko-self-knowledge.js (77KB) fallback once lean stable
+
+### METRICS:
+- Selfcheck: 22/25 (was 17/25)
+- Active crons: 26 (was 43)
+- Weekly cost: ~$15-30 (was $100+)
+- Tools: 47 (was 48)
+- Server files in git: 100% (was ~85%)
