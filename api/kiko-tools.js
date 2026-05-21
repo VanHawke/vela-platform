@@ -205,7 +205,7 @@ export const TOOL_DEFINITIONS = [
     name: 'navigate_page',
     description: 'Direct page navigation. Use as fallback if ask_navigator is unavailable.',
     input_schema: { type: 'object', properties: {
-      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'command-centre', 'calendar', 'settings', 'partnership-matrix', 'lemlist'], description: 'Page ID' },
+      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'command-centre', 'calendar', 'settings', 'partnership-matrix', 'campaigns'], description: 'Page ID' },
       reason: { type: 'string', description: 'Brief reason' },
     }, required: ['page'] },
   },
@@ -444,7 +444,7 @@ function agentError(agentName, err) {
   return `AGENT UNAVAILABLE: ${agentName} failed — ${err.message}. Tell Sunny this agent hit an error. Do NOT attempt to handle the task yourself.`;
 }
 
-export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com', pageContext = null, userId = null) {
+export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agency', pageContext = null, userId = null) {
 
   // ── Auto-Activity Logger — fires after agent calls that touch CRM entities ──
   const autoLogActivity = async (type, entityName, description) => {
@@ -1661,132 +1661,7 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
   return { error: `Unknown tool: ${name}` };
 }
 
-// ── Lemlist Live API ──
-const lemHeaders = () => {
-  const key = process.env.LEMLIST_KEY;
-  return { 'Content-Type': 'application/json', 'Authorization': `Basic ${Buffer.from(`:${key}`).toString('base64')}` };
-};
-
-async function executeLemlistLive(operation, params = {}) {
-  const h = lemHeaders();
-
-  if (operation === 'campaign_stats') {
-    const res = await fetch('https://api.lemlist.com/api/campaigns', { headers: h });
-    if (!res.ok) return `Lemlist API error: ${res.status}`;
-    const campaigns = await res.json();
-    const filtered = params.campaign_name 
-      ? campaigns.filter(c => c.name?.toLowerCase().includes(params.campaign_name.toLowerCase()))
-      : campaigns;
-    
-    if (!filtered.length) return 'No campaigns found matching that filter.';
-    
-    let out = `LEMLIST CAMPAIGN STATS (${filtered.length} campaigns):\n\n`;
-    for (const c of filtered.slice(0, 10)) {
-      const stats = c.stats || {};
-      out += `▸ ${c.name}\n  Status: ${c.status || 'unknown'}\n`;
-      if (stats.emailsSent) out += `  Sent: ${stats.emailsSent} | Opened: ${stats.emailsOpened || 0} (${stats.emailsSent ? Math.round((stats.emailsOpened||0)/stats.emailsSent*100) : 0}%) | Clicked: ${stats.emailsClicked || 0} | Replied: ${stats.emailsReplied || 0} (${stats.emailsSent ? Math.round((stats.emailsReplied||0)/stats.emailsSent*100) : 0}%)\n`;
-      if (stats.emailsBounced) out += `  Bounced: ${stats.emailsBounced}\n`;
-      out += '\n';
-    }
-    return out;
-  }
-
-  if (operation === 'lead_search') {
-    const query = params.query || params.email || '';
-    if (!query) return 'Need a query (email, name, or company) to search leads.';
-    const res = await fetch(`https://api.lemlist.com/api/leads?search=${encodeURIComponent(query)}&limit=${params.limit || 10}`, { headers: h });
-    if (!res.ok) return `Lemlist API error: ${res.status}`;
-    const leads = await res.json();
-    if (!leads?.length) return `No leads found for "${query}".`;
-    let out = `LEMLIST LEADS (${leads.length} results for "${query}"):\n\n`;
-    for (const l of leads) {
-      out += `▸ ${l.firstName || ''} ${l.lastName || ''} — ${l.email || 'no email'}\n  Company: ${l.companyName || '—'} | Title: ${l.jobTitle || '—'}\n  Campaign: ${l.campaignName || '—'} | Status: ${l.status || '—'}\n\n`;
-    }
-    return out;
-  }
-
-  if (operation === 'lead_detail') {
-    const email = params.email;
-    if (!email) return 'Need an email address for lead detail.';
-    const res = await fetch(`https://api.lemlist.com/api/leads/${encodeURIComponent(email)}`, { headers: h });
-    if (!res.ok) return `Lead not found or API error: ${res.status}`;
-    const lead = await res.json();
-    let out = `LEMLIST LEAD DETAIL:\n\n`;
-    out += `Name: ${lead.firstName || ''} ${lead.lastName || ''}\nEmail: ${lead.email}\n`;
-    out += `Company: ${lead.companyName || '—'}\nTitle: ${lead.jobTitle || '—'}\n`;
-    out += `Phone: ${lead.phone || '—'}\nLinkedIn: ${lead.linkedinUrl || '—'}\n`;
-    out += `Campaign: ${lead.campaignName || '—'}\nStatus: ${lead.status || '—'}\n`;
-    if (lead.enrichment) out += `\nEnrichment: ${JSON.stringify(lead.enrichment).slice(0, 500)}`;
-    return out;
-  }
-
-  if (operation === 'warm_leads') {
-    // Get recent activities showing intent
-    const types = ['emailsReplied', 'emailsClicked', 'emailsInterested', 'linkedinReplied', 'linkedinInterested'];
-    let allWarm = [];
-    for (const type of types) {
-      try {
-        const res = await fetch(`https://api.lemlist.com/api/activities?type=${type}&limit=10`, { headers: h });
-        if (res.ok) {
-          const acts = await res.json();
-          allWarm.push(...(acts || []).map(a => ({ ...a, signalType: type })));
-        }
-      } catch {}
-    }
-    if (!allWarm.length) return 'No warm leads detected in recent activity.';
-    // Deduplicate by email
-    const seen = new Set();
-    const unique = allWarm.filter(a => { const k = a.email || a.leadEmail; if (seen.has(k)) return false; seen.add(k); return true; });
-    let out = `WARM LEADS (${unique.length} showing intent):\n\n`;
-    for (const a of unique.slice(0, 15)) {
-      out += `▸ ${a.firstName || ''} ${a.lastName || ''} (${a.email || a.leadEmail || '—'})\n  Signal: ${a.signalType} | Campaign: ${a.campaignName || '—'} | Date: ${a.createdAt?.slice(0,10) || '—'}\n\n`;
-    }
-    return out;
-  }
-
-  if (operation === 'credits') {
-    const res = await fetch('https://api.lemlist.com/api/team', { headers: h });
-    if (!res.ok) return `Lemlist API error: ${res.status}`;
-    const team = await res.json();
-    return `LEMLIST CREDITS:\nTeam: ${team.name || 'Van Hawke'}\nCredits remaining: ${team.credits?.remaining ?? team.credits ?? 'unknown'}\nPlan: ${team.plan || 'unknown'}`;
-  }
-
-  if (operation === 'signals') {
-    // Pull from kiko_alerts (signals already synced by cron/webhook)
-    const alerts = await sbFetch(`kiko_alerts?type=eq.intent_signal&order=created_at.desc&limit=${params.limit || 10}`);
-    if (!alerts?.length) return 'No intent signals detected recently. Signals flow from Lemlist watchlists via webhook.';
-    let out = `INTENT SIGNALS (${alerts.length} recent):\n\n`;
-    for (const a of alerts) {
-      out += `▸ ${a.title}\n  ${a.detail || ''}\n  Severity: ${a.severity} | Created: ${a.created_at?.slice(0,10) || '—'}\n\n`;
-    }
-    return out;
-  }
-
-  if (operation === 'deliverability') {
-    // Check bounce rates across campaigns
-    const res = await fetch('https://api.lemlist.com/api/campaigns', { headers: h });
-    if (!res.ok) return `Lemlist API error: ${res.status}`;
-    const campaigns = await res.json();
-    const active = campaigns.filter(c => c.status === 'running' || c.status === 'paused');
-    let out = `DELIVERABILITY HEALTH (${active.length} campaigns):\n\n`;
-    let totalSent = 0, totalBounced = 0;
-    for (const c of active) {
-      const s = c.stats || {};
-      const sent = s.emailsSent || 0;
-      const bounced = s.emailsBounced || 0;
-      totalSent += sent; totalBounced += bounced;
-      const bounceRate = sent ? Math.round(bounced/sent*100) : 0;
-      const status = bounceRate > 5 ? '🔴' : bounceRate > 2 ? '🟡' : '🟢';
-      out += `${status} ${c.name}: ${bounceRate}% bounce (${bounced}/${sent})\n`;
-    }
-    const overall = totalSent ? Math.round(totalBounced/totalSent*100) : 0;
-    out += `\nOverall: ${overall}% bounce rate (${totalBounced}/${totalSent} total)`;
-    out += overall > 5 ? '\n⚠️ Bounce rate elevated — check sender reputation.' : '\n✅ Deliverability healthy.';
-    return out;
-  }
-
-  return `Unknown Lemlist operation: ${operation}. Available: campaign_stats, lead_search, lead_detail, warm_leads, credits, signals, deliverability`;
-}
+// Lemlist code REMOVED — Lemlist cancelled, all campaigns run through native engine
 
 // ── Self-Monitor Handler ──
 async function handleSelfMonitor(operation, params = {}) {
