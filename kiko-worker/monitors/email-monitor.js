@@ -116,6 +116,39 @@ export async function runEmailMonitor() {
           });
           alertCount++;
         }
+        // Unknown sender from a business domain — auto-create contact + alert
+        else {
+          const domain = senderEmail.split('@')[1];
+          const skipDomains = ['gmail.com','outlook.com','yahoo.com','hotmail.com','icloud.com','me.com','aol.com','protonmail.com','vanhawke.agency','vanhawke.com','googlemail.com','live.com','msn.com'];
+          if (domain && !skipDomains.includes(domain) && senderName && senderName.length > 1) {
+            // Auto-create contact in CRM
+            const nameParts = senderName.split(' ');
+            const firstName = nameParts[0] || senderName;
+            const lastName = nameParts.slice(1).join(' ') || '';
+            const company = domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1);
+            try {
+              await sbFetch('contacts', {
+                method: 'POST',
+                body: JSON.stringify({
+                  id: crypto.randomUUID(),
+                  data: { firstName, lastName, email: senderEmail, company, source: 'inbound_email', notes: `Auto-created from inbound email: "${subject}" on ${new Date().toLocaleDateString('en-GB')}` },
+                  created_at: new Date().toISOString(),
+                }),
+              });
+              await createAlert({
+                type: 'new_contact', severity: 'low',
+                title: `New contact: ${senderName} (${company})`,
+                detail: `Auto-created from inbound email. Subject: "${subject}". Domain: ${domain}. Created in CRM automatically.`,
+                entity_type: 'contact', entity_id: senderEmail, entity_name: senderName,
+                metadata: { from: senderEmail, subject, inbox: label, message_id: msg.id, domain, auto_created: true },
+                user_id: userId,
+                expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
+              });
+              alertCount++;
+              console.log(`[email-monitor] Auto-created contact: ${senderName} (${company}) from ${senderEmail}`);
+            } catch (e) { /* Contact might already exist — ignore duplicate errors */ }
+          }
+        }
       }
     }
     console.log(`[email-monitor] Complete. ${alertCount} new reply alerts.`);

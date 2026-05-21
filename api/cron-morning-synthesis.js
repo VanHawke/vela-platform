@@ -49,7 +49,7 @@ export default async function handler(req, res) {
     // ── BELIEFS: Collect all overnight signals ──
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    const [goals, alerts, emails, followUps, campaign, tasks, news] = await Promise.all([
+    const [goals, alerts, emails, followUps, campaign, tasks, news, calendarEvents] = await Promise.all([
       // DESIRES: Active goals
       supabase.from('kiko_goals').select('*').eq('status', 'active').order('priority'),
 
@@ -80,6 +80,21 @@ export default async function handler(req, res) {
       // Recent news (classified, last 24h)
       supabase.from('kiko_news_articles').select('title, source, relevance_score, classification')
         .gte('created_at', since).order('relevance_score', { ascending: false }).limit(10),
+
+      // Today's calendar (fetch Sunny's Google Calendar)
+      (async () => {
+        try {
+          const { getGoogleToken } = await import('./google-token.js');
+          const token = await getGoogleToken('sunny@vanhawke.agency');
+          if (!token) return [];
+          const now = new Date();
+          const eod = new Date(now); eod.setHours(23, 59, 59);
+          const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${now.toISOString()}&timeMax=${eod.toISOString()}&singleEvents=true&orderBy=startTime`;
+          const resp = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+          const data = await resp.json();
+          return data.items || [];
+        } catch { return []; }
+      })(),
     ]);
 
     // ── Get race calendar from local file (no web search — web search returned wrong results) ──
@@ -116,6 +131,13 @@ export default async function handler(req, res) {
       `• [${n.relevance_score || '?'}] ${n.title} (${n.source})`
     ).join('\n') || 'No relevant news';
 
+    const calendarText = (calendarEvents || []).length > 0
+      ? (calendarEvents || []).map(e => {
+          const time = e.start?.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'all-day';
+          return `• ${time} — ${e.summary || 'Untitled'}${e.location ? ' @ ' + e.location : ''}`;
+        }).join('\n')
+      : 'No meetings today — open schedule for focused work.';
+
     // ── GLOBAL MEMORY: Search for relevant past context ──
     let memoryContext = '';
     try {
@@ -148,6 +170,7 @@ export default async function handler(req, res) {
 
 GOALS: ${goalsText}
 RACE CALENDAR: ${raceContext}
+TODAY'S SCHEDULE: ${calendarText}
 ACTIVE INTENTS: ${intentsText || 'none'}
 ALERTS: ${alertsText}
 EMAIL ACTIVITY: ${emailText}
@@ -183,6 +206,9 @@ ${goalsText}
 
 ═══ RACE CALENDAR ═══
 ${raceContext}
+
+═══ TODAY'S CALENDAR ═══
+${calendarText}
 
 ═══ ACTIVE INTENTS ═══
 ${intentsText || 'None'}

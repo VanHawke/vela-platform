@@ -1,4 +1,4 @@
-# KIKO MEMORY — Last updated: 2026-05-21T11:00:00Z
+# KIKO MEMORY — Last updated: 2026-05-21T15:30:00Z
 
 ## CURRENT STATE
 - Alpine F1 Legal AI campaign: 110 enrolled, 0 real replies (1 OOO from Joe Paulo/Helsing). CTA is the blocker — 56% opens, 29% clicks, 0% replies. Must rewrite CTA to low-friction question.
@@ -26,6 +26,14 @@
 - 2026-05-21: Self-checker rebuilt with 7 operational checks (Claude API, Gmail, LinkedIn, campaign, briefing).
 - 2026-05-20: Disabled 17 non-essential crons. Cost reduced from $100+/week to $20-35/week.
 - 2026-05-20: Added OOO detection to Gmail sync. Joe Paulo classified as OOO.
+
+## NEW CAPABILITIES (Session 67)
+- Calendar integration: Morning briefing now includes today's Google Calendar events
+- Auto-CRM from inbound emails: Unknown business-domain senders auto-created as contacts
+- Self-diagnosis: Kiko can run full 25-check selfcheck via ask_self_monitor tool
+- Multi-pass synthesis: Planner→Generator→Evaluator for morning briefings
+- Outcome learning: Weekly pattern extraction from campaign data
+- Persistent memory: KIKO_MEMORY.md updated after every conversation + weekly Dreaming
 
 ## OPERATIONAL HEALTH
 - API credits: Active (verified by self-checker)
