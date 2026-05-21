@@ -870,7 +870,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       let lastDataTime = Date.now()
       // Inactivity check — if no data received for 45s, abort
       inactivityCheckId = setInterval(() => {
-        if (Date.now() - lastDataTime > 10000) { clearInterval(inactivityCheckId); try { controller.abort() } catch {} }
+        if (Date.now() - lastDataTime > 45000) { clearInterval(inactivityCheckId); try { controller.abort() } catch {} }
       }, 5000)
       while (true) {
         const { done, value } = await reader.read(); if (done) break

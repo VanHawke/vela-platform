@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-05-19T15:59:28.207Z",
+  "generated_at": "2026-05-21T10:06:35.742Z",
   "commits": [
+    {
+      "hash": "ddaeffc",
+      "subject": "Phase 3: Decision Framework + timeout fix + empty text block guard",
+      "when": "6 minutes ago"
+    },
+    {
+      "hash": "0378dee",
+      "subject": "Session 67 final: Self-knowledge updated with data integrity + cost rules",
+      "when": "17 hours ago"
+    },
+    {
+      "hash": "468e811",
+      "subject": "FIX: Data integrity (verified flag), tool trace logging, clean briefing",
+      "when": "17 hours ago"
+    },
+    {
+      "hash": "62745ca",
+      "subject": "MAJOR COST REDUCTION + OOO DETECTION + CRON AUDIT",
+      "when": "18 hours ago"
+    },
+    {
+      "hash": "6c7847e",
+      "subject": "FIX: OOO detection, reply classification, cost reduction, dead code cleanup",
+      "when": "18 hours ago"
+    },
+    {
+      "hash": "2b1ce35",
+      "subject": "COST FIX: Event processor 10min→60min + Sonnet→Haiku (saves ~$25/week)",
+      "when": "18 hours ago"
+    },
+    {
+      "hash": "daad5f0",
+      "subject": "CRITICAL: Fix Anthropic API credit exhaustion + deprecated model migration",
+      "when": "18 hours ago"
+    },
+    {
+      "hash": "c8afaad",
+      "subject": "Phase 2B: Global Memory Retrieval — three-layer memory complete",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "0ac1e89",
+      "subject": "Phase 2C: Intent State Machine — CREATE/RESUME/UPDATE/IDLE",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "939e8a4",
+      "subject": "Phase 2A: Signal Evaluator — real-time demand detection",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "18de27f",
+      "subject": "Phase 2D: F1 + Formula E + MotoGP calendars — 61 races across 3 series",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "c4e699f",
+      "subject": "Phase 2 architecture documented + FE/MotoGP calendar research started",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "604a437",
+      "subject": "FIX: Daily Briefing card — proper scroll, separated header/content, visible scrollbar",
+      "when": "2 days ago"
+    },
     {
       "hash": "61861d1",
       "subject": "CRITICAL: Goals + outcomes + briefing injected into EVERY Kiko conversation",
-      "when": "18 minutes ago"
+      "when": "2 days ago"
     },
     {
       "hash": "c76f43c",
       "subject": "FIX: Daily Briefing card — rename from Morning, add scroll, stop propagation",
-      "when": "22 minutes ago"
+      "when": "2 days ago"
     },
     {
       "hash": "f64dae5",
       "subject": "Phase 1D: Today page shows morning briefing",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "585f1be",
       "subject": "Phase 1C: Heartbeat system — real-time proactive signal monitoring",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "95f562a",
       "subject": "Phase 1B: Automatic outcome recording on reply/bounce detection",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "e8fb554",
       "subject": "Phase 1A: Hardcoded F1 2026 race calendar — no more web search errors",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "e2f99d9",
       "subject": "RESEARCH: Proactive Intelligence Architecture Plan — 8 papers, 4 production systems",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "6e8db79",
-      "subject": "KIKO BDI ARCHITECTURE: Goals, Outcomes, Synthesis — full strategic intelligence",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "682a43d",
-      "subject": "BREAKTHROUGH: Goal-driven Morning Synthesis Engine — Kiko's strategic brain",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "099bfb0",
-      "subject": "NEW: Race Calendar Intelligence Cron — automatic race-week prospect analysis",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "961316f",
-      "subject": "Session 67: Self-knowledge updated, alerts cleaned, race week intelligence",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "8cae771",
-      "subject": "REVERTED: Remove auto-pause — campaign monitor alerts only, never takes action",
-      "when": "24 hours ago"
-    },
-    {
-      "hash": "09bbb3f",
-      "subject": "Campaign intelligence: A/B testing, auto-pause, send time optimization",
-      "when": "25 hours ago"
-    },
-    {
-      "hash": "b811e04",
-      "subject": "NEW: Kiko can now analyse and optimize campaigns autonomously",
-      "when": "25 hours ago"
-    },
-    {
-      "hash": "4b7e42f",
-      "subject": "NEW: Campaign Performance Monitor — daily proactive analysis",
-      "when": "25 hours ago"
-    },
-    {
-      "hash": "302e974",
-      "subject": "PERMANENT FIX: LinkedIn keepalive with 3-layer recovery + Supabase fallback",
-      "when": "25 hours ago"
-    },
-    {
-      "hash": "8fb7753",
-      "subject": "FIX: LinkedIn keepalive — no longer skips stale cookies + auto-login",
-      "when": "26 hours ago"
-    },
-    {
-      "hash": "71edd7f",
-      "subject": "Session fixes: generate-sequence route, partnership scan, news agent, CC draft extraction",
-      "when": "26 hours ago"
-    },
-    {
-      "hash": "368e118",
-      "subject": "FIX: EmailDraft renders extracted brief draft, bypasses isEmailDraft check",
-      "when": "26 hours ago"
-    },
-    {
-      "hash": "4ee9770",
-      "subject": "STRUCTURAL FIX: Draft extracted from brief section 4, no separate API call",
-      "when": "26 hours ago"
+      "when": "2 days ago"
     }
   ]
 }
