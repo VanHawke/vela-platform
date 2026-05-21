@@ -265,12 +265,18 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micS
             type: 'session.update',
             session: {
               type: 'realtime',
+              model: 'gpt-realtime-2',
+              output_modalities: ['audio'],
               audio: {
                 input: {
-                  turn_detection: { type: 'server_vad', threshold: 0.6, prefix_padding_ms: 300, silence_duration_ms: 500 },
-                  transcription: { model: 'whisper-1' },
+                  format: { type: 'audio/pcm', rate: 24000 },
+                  turn_detection: { type: 'semantic_vad' },
+                  transcription: { model: 'gpt-realtime-whisper' },
                 },
-                output: { voice },
+                output: {
+                  format: { type: 'audio/pcm', rate: 24000 },
+                  voice,
+                },
               },
               instructions: sessionInstructions,
               tools: [

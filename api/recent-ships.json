@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-21T19:44:36.424Z",
+  "generated_at": "2026-05-21T19:50:41.349Z",
   "commits": [
+    {
+      "hash": "f693bbe",
+      "subject": "Team messaging: Screen sharing + Channel creation + Matt ID fix",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "b6f1142",
       "subject": "Voice upgraded to gpt-realtime-2 (GPT-5-class reasoning)",
-      "when": "46 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "f611ead",
       "subject": "Real-time correction learning: detects explicit corrections + saves as persistent preferences",
-      "when": "49 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "23ae830",
       "subject": "Remove email notification + restrict morning briefing to super_admin",
-      "when": "53 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "fd7d960",
       "subject": "Code review: kiko-tools.js — 127 lines dead Lemlist code removed, email bug fixed",
-      "when": "68 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "f0b0d87",
       "subject": "CRITICAL: System prompt slimmed 15x (47KB → 3KB, 407 → 46 lines)",
-      "when": "72 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "068845a",
@@ -79,7 +84,7 @@
     {
       "hash": "8631da2",
       "subject": "Fix all identified gaps: LinkedIn guards, narration, timeouts, data quality",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "4d37a69",
@@ -94,11 +99,6 @@
     {
       "hash": "ca09a4c",
       "subject": "Fix: Lean knowledge loads for ALL requests including greetings + permissions + diagnostics",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "f08305d",
-      "subject": "Fix: Personal memory loading, greeting routing, correct PostgREST queries",
       "when": "7 hours ago"
     }
   ]
