@@ -217,6 +217,33 @@ async function extractConversationInsights(message, fullResponse, intent, userId
         }
       } catch {} // Non-blocking per entity
     }
+
+    // AUTO-TASK CREATION from open threads and decisions
+    const autoTasks = [...(parsed.open_threads || []), ...(parsed.decisions_made || [])].slice(0, 3);
+    for (const taskDesc of autoTasks) {
+      if (taskDesc && taskDesc.length > 5) {
+        try {
+          // Check for duplicates (don't create if similar task exists)
+          const existing = await sbFetch(`tasks?select=id&data->>notes=ilike.*${encodeURIComponent(taskDesc.slice(0, 30))}*&data->>completed=eq.false&limit=1`);
+          if (!existing?.length) {
+            const entity = (parsed.entities || [])[0] || '';
+            await sbFetch('tasks', { method: 'POST', body: JSON.stringify({
+              data: {
+                type: 'follow_up',
+                contact: entity,
+                company: entity,
+                notes: taskDesc.slice(0, 200),
+                source: 'auto_from_conversation',
+                due_date: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+                completed: false,
+              },
+              user_id: userId,
+              created_at: new Date().toISOString(),
+            }) });
+          }
+        } catch {} // Non-blocking
+      }
+    }
   } catch {} // Non-blocking
 }
 
