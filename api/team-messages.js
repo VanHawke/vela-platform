@@ -171,6 +171,26 @@ export default async function handler(req, res) {
         return res.json({ pinned: pinned || [] });
       }
 
+      case 'create-channel': {
+        const { name, channelType = 'group', members = [] } = req.body || {};
+        if (!name) return res.status(400).json({ error: 'Channel name required' });
+        const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        // Check for duplicate
+        const existing = await sbFetch(`kiko_team_channels?id=eq.${id}&select=id&limit=1`);
+        if (existing?.length) return res.status(409).json({ error: 'Channel already exists' });
+        // Get all team member IDs if none specified
+        let memberIds = members;
+        if (!memberIds.length) {
+          const users = await sbFetch('kiko_user_config?select=user_id');
+          memberIds = (users || []).map(u => u.user_id).filter(Boolean);
+        }
+        await sbFetch('kiko_team_channels', { method: 'POST', body: JSON.stringify({
+          id, name, channel_type: channelType, members: memberIds,
+          last_message_at: new Date().toISOString(),
+        }) });
+        return res.json({ success: true, channel: { id, name, channelType, members: memberIds } });
+      }
+
       case 'rename': {
         const { channelId, name } = req.body || {};
         if (!channelId || !name) return res.status(400).json({ error: 'Missing channelId or name' });

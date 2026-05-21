@@ -404,7 +404,10 @@ export default function Messages({ user }) {
             )
           })}
           {/* Section: Channels */}
-          <div style={{ padding: '12px 8px 4px', fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Channels</div>
+          <div style={{ padding: '12px 8px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Channels</span>
+            <button onClick={() => { const name = prompt('New channel name:'); if (name?.trim()) { fetch(`${API}/api/team-messages?action=create-channel`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim() }) }).then(() => loadChannels()).catch(e => alert('Failed: ' + e.message)) } }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, borderRadius: 4 }}><Icon name="plus" size={14} color={C.muted} /></button>
+          </div>
           {channels.filter(ch => ch.channel_type === 'group').map(ch => {
             const isActive = ch.id === activeChannel
             return (
@@ -541,6 +544,7 @@ export default function Messages({ user }) {
             </div>
             {voice.callState !== 'ended' && <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
               {voice.isVideoCall && <button onClick={() => voice.toggleVideo()} style={{ width: 48, height: 48, borderRadius: '50%', background: voice.isVideoEnabled ? C.card : 'rgba(220,38,38,0.1)', border: `1px solid ${voice.isVideoEnabled ? C.border : 'rgba(220,38,38,0.3)'}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={voice.isVideoEnabled ? C.sub : C.red} strokeWidth="2"><rect x="2" y="6" width="14" height="12" rx="2"/><path d={voice.isVideoEnabled ? "m16 10 5-3v10l-5-3" : "m16 10 5-3v10l-5-3M2 2l20 20"}/></svg><span style={{ fontSize: 9, color: voice.isVideoEnabled ? C.sub : C.red }}>{voice.isVideoEnabled ? 'Cam' : 'Off'}</span></button>}
+              <button onClick={() => voice.toggleScreenShare()} style={{ width: 48, height: 48, borderRadius: '50%', background: voice.isScreenSharing ? C.accentSoft : C.card, border: `1px solid ${voice.isScreenSharing ? C.accent : C.border}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={voice.isScreenSharing ? C.accent : C.sub} strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span style={{ fontSize: 9, color: voice.isScreenSharing ? C.accent : C.sub }}>{voice.isScreenSharing ? 'Stop' : 'Share'}</span></button>
               <button onClick={() => voice.toggleMute()} style={{ width: 48, height: 48, borderRadius: 14, background: voice.isMuted ? C.accentSoft : C.card, border: `1px solid ${voice.isMuted ? C.accent : C.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
                 <Icon name={voice.isMuted ? 'muted' : 'phone'} size={18} color={voice.isMuted ? C.accent : C.sub} />
                 <span style={{ fontSize: 9, color: C.sub }}>{voice.isMuted ? 'Unmute' : 'Mute'}</span>

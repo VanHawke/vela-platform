@@ -319,6 +319,47 @@ export function useVoiceCall({ userId, userName, channelId }) {
     }
   }, [])
 
+  // Screen sharing
+  const [isScreenSharing, setIsScreenSharing] = useState(false)
+  const screenStreamRef = useRef(null)
+
+  const toggleScreenShare = useCallback(async () => {
+    if (!pcRef.current || !localStreamRef.current) return
+    if (isScreenSharing) {
+      // Stop screen share — revert to camera
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(t => t.stop())
+        screenStreamRef.current = null
+      }
+      const senders = pcRef.current.getSenders()
+      const videoSender = senders.find(s => s.track?.kind === 'video')
+      if (videoSender) {
+        try {
+          const camStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } })
+          const camTrack = camStream.getVideoTracks()[0]
+          await videoSender.replaceTrack(camTrack)
+          localStreamRef.current.getVideoTracks().forEach(t => { t.stop(); localStreamRef.current.removeTrack(t) })
+          localStreamRef.current.addTrack(camTrack)
+          if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current
+        } catch (e) { console.error('[VoiceCall] Revert camera failed:', e.message) }
+      }
+      setIsScreenSharing(false)
+    } else {
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always' }, audio: false })
+        screenStreamRef.current = screenStream
+        const screenTrack = screenStream.getVideoTracks()[0]
+        const senders = pcRef.current.getSenders()
+        const videoSender = senders.find(s => s.track?.kind === 'video')
+        if (videoSender) { await videoSender.replaceTrack(screenTrack) }
+        else { pcRef.current.addTrack(screenTrack, localStreamRef.current) }
+        if (localVideoRef.current) { localVideoRef.current.srcObject = new MediaStream([screenTrack]) }
+        setIsScreenSharing(true); setIsVideoCall(true); setIsVideoEnabled(true)
+        screenTrack.onended = () => { toggleScreenShare() }
+      } catch (e) { console.error('[VoiceCall] Screen share failed:', e.message); setIsScreenSharing(false) }
+    }
+  }, [isScreenSharing])
+
   // Listen for incoming calls — DO NOT include callState in deps (cleanup kills tones)
   const callStateRef = useRef(callState)
   callStateRef.current = callState
@@ -360,8 +401,8 @@ export function useVoiceCall({ userId, userName, channelId }) {
 
   return {
     callState, callDuration, remoteName, isMuted, callId, callError, callEndReason,
-    isVideoCall, isVideoEnabled,
-    startCall, answerCall, declineCall, endCall, toggleMute, toggleVideo,
+    isVideoCall, isVideoEnabled, isScreenSharing,
+    startCall, answerCall, declineCall, endCall, toggleMute, toggleVideo, toggleScreenShare,
     remoteAudioRef, localVideoRef, remoteVideoRef,
   }
 }
