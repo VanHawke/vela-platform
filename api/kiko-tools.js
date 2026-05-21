@@ -1888,7 +1888,34 @@ async function handleSelfMonitor(operation, params = {}) {
       }
       return out;
     }
-    return `Unknown self-monitor operation: ${operation}. Available: health_check, recent_errors, cron_status, agent_stats`;
+    if (operation === 'run_selfcheck') {
+      try {
+        const resp = await fetch('http://localhost:3000/api/selfcheck?force=1');
+        const data = await resp.json();
+        let out = `FULL SYSTEM SELFCHECK: ${data.summary}\n\n`;
+        const failures = data.checks.filter(c => c.status !== 'PASS');
+        if (failures.length === 0) {
+          out += '✅ ALL CHECKS PASSING — system fully operational.';
+        } else {
+          out += 'ISSUES FOUND:\n';
+          for (const f of failures) {
+            out += `❌ ${f.name}: expected ${f.expected}, actual=${JSON.stringify(f.actual).slice(0, 100)}\n`;
+          }
+          out += '\nRECOMMENDED ACTIONS:\n';
+          for (const f of failures) {
+            if (f.name.includes('email')) out += '• Check sequence-sender cron and outreach queue\n';
+            else if (f.name.includes('gmail')) out += '• Verify Gmail OAuth token is valid\n';
+            else if (f.name.includes('linkedin')) out += '• LinkedIn cookies may need refreshing via /api/cron-linkedin-keepalive\n';
+            else if (f.name.includes('error_budget')) out += '• Review recent errors in kiko_error_log\n';
+            else if (f.name.includes('briefing')) out += '• Morning synthesis cron may have failed — check at /api/cron-morning-synthesis\n';
+            else out += `• Investigate ${f.name}\n`;
+          }
+        }
+        return out;
+      } catch (e) { return `Selfcheck failed: ${e.message}`; }
+    }
+
+    return `Unknown self-monitor operation: ${operation}. Available: health_check, recent_errors, cron_status, agent_stats, run_selfcheck`;
   } catch (e) { return `Self-monitor error: ${e.message}`; }
 }
 
