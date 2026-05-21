@@ -277,7 +277,10 @@ If it FAILS: respond with "FAIL:" followed by specific issues to fix.` }]
       console.log(`[MorningSynthesis] Revised briefing: ${briefing.length} chars`);
     }
 
-    // ── Store briefing ──
+    // ── Store briefing (super_admin only) ──
+    const adminConfig = await supabase.from('kiko_user_config').select('user_id').eq('role', 'super_admin').limit(1).single();
+    const adminUserId = adminConfig?.data?.user_id || null;
+
     await supabase.from('kiko_alerts').insert({
       type: 'morning_briefing',
       severity: 'high',
@@ -288,6 +291,7 @@ If it FAILS: respond with "FAIL:" followed by specific issues to fix.` }]
       dismissed: false,
       verified: true,
       source: 'morning-synthesis',
+      user_id: adminUserId, // Only visible to super_admin via RLS
       metadata: {
         goals_count: goals.data?.length || 0,
         signals_count: (alerts.data?.length || 0) + (emails.data?.length || 0),
@@ -298,27 +302,7 @@ If it FAILS: respond with "FAIL:" followed by specific issues to fix.` }]
 
     console.log(`[MorningSynthesis] Briefing generated (${briefing.length} chars, ${Date.now() - start}ms)`);
 
-    // PUSH: Email the morning briefing to Sunny
-    try {
-      const { getGoogleToken } = await import('./google-token.js');
-      const token = await getGoogleToken('sunny@vanhawke.agency');
-      if (token) {
-        const subject = `Kiko Morning Brief — ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}`;
-        const htmlBody = briefing
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-          .replace(/\n/g, '<br>')
-          .replace(/═+/g, '<hr>');
-        const raw = Buffer.from(
-          `From: Kiko <sunny@vanhawke.agency>\r\nTo: sunny@vanhawke.agency\r\nSubject: ${subject}\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; color: #1a1a1a; line-height: 1.6;">${htmlBody}</div>`
-        ).toString('base64url');
-        await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ raw }),
-        });
-        console.log(`[MorningSynthesis] Email sent to sunny@vanhawke.agency`);
-      }
-    } catch (e) { console.error('[MorningSynthesis] Email notification failed:', e.message); }
+    // Email notification REMOVED per Sunny's request — briefing shows in-app only
 
     return res.json({ ok: true, briefing_length: briefing.length, duration_ms: Date.now() - start });
   } catch (err) {
