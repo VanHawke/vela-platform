@@ -123,6 +123,8 @@ export default async function loadSelfKnowledge(userId) {
       k.push('\n═══ LEARNED PATTERNS ═══');
       for (const p of patterns) k.push(`• ${(p.content || '').slice(0, 120)}`);
     }
+
+    console.log(`[LeanKnowledge] DB loaded: personal=${personalFiles.length}, goals=${goals?.length || 0}, intents=${intents?.length || 0}, patterns=${patterns?.length || 0}`);
   } catch (e) {
     console.error('[LeanKnowledge] DB fetch error:', e.message);
   }
@@ -134,5 +136,6 @@ export default async function loadSelfKnowledge(userId) {
   k.push('Your sequence orchestration doctrine (14-touch pattern, LinkedIn rules) is available on demand.');
 
   const result = k.join('\n');
+  console.log(`[LeanKnowledge] Total: ${result.length} chars, memory=${!!memory}`);
   return result;
 }
