@@ -248,29 +248,57 @@ async function extractConversationInsights(message, fullResponse, intent, userId
 }
 
 // ── Correction Learning — detect when user rephrases ──
-async function detectCorrection(message, conversationHistory, intent) {
-  if (conversationHistory.length < 3) return; // Need at least one exchange
-  try {
+async function detectCorrection(message, conversationHistory, intent, userId) {
+  if (!message || message.length < 5) return;
+  const msgLower = message.toLowerCase().trim();
+  
+  // Detect EXPLICIT corrections: "no", "that's wrong", "actually", "not X, it's Y"
+  const correctionPatterns = /^(no[,.]?\s|that'?s wrong|that'?s not right|actually[,]?\s|incorrect|you'?re wrong|wrong[,.]|not\s+\w+[,]\s+(it'?s|it is)|don'?t|stop|never\s+(say|do|use)|always\s+(use|say|do)|i said|i told you|i meant|correct(ion)?:|the correct|please don'?t)/i;
+  
+  const isExplicitCorrection = correctionPatterns.test(msgLower);
+  
+  // Also detect rephrases (existing logic)
+  let isRephrase = false;
+  if (conversationHistory.length >= 3) {
     const lastUserMsg = conversationHistory.filter(m => m.role === 'user').slice(-2, -1)[0];
-    if (!lastUserMsg) return;
-    // Quick heuristic: if both messages are >10 chars, share 30%+ words, but aren't identical
-    const prev = (lastUserMsg.content || '').toLowerCase().split(/\s+/);
-    const curr = message.toLowerCase().split(/\s+/);
-    if (prev.length < 3 || curr.length < 3) return;
-    const prevSet = new Set(prev);
-    const overlap = curr.filter(w => prevSet.has(w) && w.length > 3).length;
-    const similarity = overlap / Math.max(prev.length, curr.length);
-    if (similarity > 0.25 && similarity < 0.9) {
-      // Likely a rephrase — log it for learning
+    if (lastUserMsg?.content) {
+      const prev = lastUserMsg.content.toLowerCase().split(/\s+/);
+      const curr = msgLower.split(/\s+/);
+      if (prev.length >= 3 && curr.length >= 3) {
+        const prevSet = new Set(prev);
+        const overlap = curr.filter(w => prevSet.has(w) && w.length > 3).length;
+        const similarity = overlap / Math.max(prev.length, curr.length);
+        isRephrase = similarity > 0.25 && similarity < 0.9;
+      }
+    }
+  }
+
+  if (isExplicitCorrection || isRephrase) {
+    try {
+      // Save correction to learning log for future sessions
       await sbFetch('kiko_learning_log', {
         method: 'POST', body: JSON.stringify({
           user_id: userId,
-          category: 'correction', content: `User rephrased. Original: "${lastUserMsg.content?.slice(0, 150)}". Rephrased: "${message.slice(0, 150)}". Intent: ${intent}. Similarity: ${(similarity * 100).toFixed(0)}%.`,
+          category: isExplicitCorrection ? 'explicit_correction' : 'correction',
+          content: `User corrected Kiko: "${message.slice(0, 300)}". Intent: ${intent}. Type: ${isExplicitCorrection ? 'explicit' : 'rephrase'}.`,
           entity_name: null, user_message: message.slice(0, 200),
         })
       });
-    }
-  } catch {} // Non-blocking
+      
+      // Also save as a preference so it persists
+      if (isExplicitCorrection) {
+        await sbFetch('kiko_preferences', {
+          method: 'POST', body: JSON.stringify({
+            user_id: userId,
+            preference_type: 'correction',
+            preference_key: `correction_${Date.now()}`,
+            preference_value: message.slice(0, 300),
+            source: 'explicit_correction',
+          })
+        }).catch(() => {});
+      }
+    } catch {} // Non-blocking
+  }
 }
 // MCP disabled — Anthropic's hosted MCP servers require their own OAuth flow, 
 // not our direct Google tokens. Email/calendar access uses our own tools instead.
@@ -838,7 +866,7 @@ export default async function handler(req, res) {
     }
 
     // Non-blocking: detect if user is rephrasing (correction learning) — registered users only
-    if (isRegistered) detectCorrection(message, conversationHistory, intent);
+    if (isRegistered) detectCorrection(message, conversationHistory, intent, userId);
 
     // Trim conversation history for non-research intents to reduce token usage and latency
     const DEEP_HISTORY_INTENTS = ['research', 'code_review', 'conversation_search'];
