@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { TOOL_DEFINITIONS, DIGEST_BRIEF_TOOL, executeTool, fetchEntityContext, sbFetch, logError } from './kiko-tools.js';
 import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 import { generateSelfKnowledge } from './kiko-self-knowledge.js';
+import loadLeanKnowledge from './kiko-self-knowledge-lean.js';
 import { describeScreen } from './agents/screen-reader.js';
 import { preProcess } from './reasoning-engine.js';
 import { lookupCompany } from './company-lookup.js';
@@ -926,7 +927,7 @@ export default async function handler(req, res) {
   const [entityContext, identityResult, selfKnowledge, voiceMemResult, coreBibleResult, orgBibleResult, userBibleResult, knowledgeBaseResult, learnedRulesResult, preferencesResult] = await Promise.all([
     isLightweight ? Promise.resolve('') : fetchEntityContext(pageEntity),
     sbFetch(`kiko_memories?path=eq./memories/identity.md&user_id=eq.${userId}&select=content&limit=1`).catch(() => []),
-    isLightweight ? Promise.resolve('') : generateSelfKnowledge(userId).catch(() => 'Self-knowledge unavailable.'),
+    isLightweight ? Promise.resolve('') : loadLeanKnowledge(userId).catch(() => generateSelfKnowledge(userId).catch(() => 'Self-knowledge unavailable.')),
     (voiceMode || currentPage === 'voice')
       ? sbFetch(`kiko_memories?select=path,content&is_directory=eq.false&user_id=eq.${userId}&path=like.${encodeURIComponent('/memories/%_profile.md')}&order=path.asc`).catch(() => [])
       : Promise.resolve([]),
