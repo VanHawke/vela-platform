@@ -305,6 +305,17 @@ export default async function handler(req, res) {
         if (actualStep.channel === 'linkedin') {
           let shouldQueue = true;
           
+          // Guard: empty template creates an alert instead of an empty LinkedIn message
+          if (!actualStep.template && !actualStep.body) {
+            await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+              type: 'campaign_error', severity: 'high',
+              title: `⚠️ LinkedIn step ${actualStep.step || enrollment.current_step} has no template`,
+              detail: `Campaign "${sequence.name}" — step ${actualStep.step || enrollment.current_step} for ${enrollment.contact_name || enrollment.contact_email} has no message template. This contact was advanced past the step but no LinkedIn message was sent. Write the template to resume LinkedIn outreach.`,
+              entity_type: 'contact', entity_name: enrollment.contact_name || enrollment.contact_email, dismissed: false
+            }) }).catch(() => {});
+            shouldQueue = false;
+          }
+
           if (actualStep.condition === 'connection_accepted') {
             // Check if prospect is connected on LinkedIn
             const accepted = await sbFetch(`kiko_linkedin_queue?enrollment_id=eq.${enrollment.id}&action=eq.invite&result=eq.accepted&limit=1`).catch(() => []);
@@ -313,6 +324,12 @@ export default async function handler(req, res) {
             if (!isConnected) {
               shouldQueue = false;
               console.log(`[seq-enqueue] Skipping LinkedIn step ${actualStep.step || enrollment.current_step} — not connected (${enrollment.contact_name})`);
+              await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+                type: 'linkedin_skip', severity: 'medium',
+                title: `LinkedIn step skipped — ${enrollment.contact_name} not connected`,
+                detail: `Campaign "${sequence.name}" step ${actualStep.step || enrollment.current_step} requires LinkedIn connection to ${enrollment.contact_name} (${enrollment.company}) but they're not connected. Connection request may need to be sent first.`,
+                entity_type: 'contact', entity_name: enrollment.contact_name, dismissed: false
+              }) }).catch(() => {});
             }
           }
           

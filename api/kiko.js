@@ -1929,13 +1929,13 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
         const heartbeat = setInterval(() => { try { write({ toolStatus: TOOL_LABELS[block.name] || `Still working...` }) } catch {} }, 8000);
         let result;
         try {
-          // Per-tool timeout: 25s max for any single tool call
+          // Per-tool timeout: 35s default, 60s for complex tools (data queries, campaigns, documents)
           const toolPromise = block.name === 'memory'
             ? handleMemory(block.input, userId)
             : executeTool(block.name, block.input, userEmail, pageContext, userId);
-          // Opus-based agents (negotiation, strategy, investment, dispute) need longer timeouts
-          const OPUS_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent', 'run_morning_briefing'];
-          const toolTimeoutMs = OPUS_TOOLS.includes(block.name) ? 60000 : 25000;
+          // Complex tools need longer timeouts (data queries, AI generation, campaigns)
+          const LONG_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent', 'run_morning_briefing', 'ask_data_agent', 'build_campaign', 'generate_document'];
+          const toolTimeoutMs = LONG_TOOLS.includes(block.name) ? 60000 : 35000;
           result = await Promise.race([
             toolPromise,
             new Promise((_, reject) => setTimeout(() => reject(new Error(`Tool timeout: ${block.name} took longer than ${toolTimeoutMs/1000}s`)), toolTimeoutMs))

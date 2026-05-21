@@ -63,8 +63,8 @@ export default async function handler(req, res) {
     }
     const allTeams = ['alpine','aston_martin','audi','cadillac','ferrari','haas','mclaren','mercedes','racing_bulls','red_bull','williams'];
     const open = allTeams.filter(t => !blocked.has(t)).sort();
-    const expected = ['cadillac','haas'];
-    const pass = open.length === 2 && open[0] === 'cadillac' && open[1] === 'haas';
+    const expected = ['cadillac','haas','mercedes'];
+    const pass = open.length === expected.length && expected.every(t => open.includes(t));
     return { pass, actual: open, expected };
   });
 
