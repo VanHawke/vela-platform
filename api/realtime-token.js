@@ -15,7 +15,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         session: {
           type: 'realtime',
-          model: 'gpt-realtime',
+          model: 'gpt-realtime-2',
           audio: { output: { voice } },
         }
       }),
