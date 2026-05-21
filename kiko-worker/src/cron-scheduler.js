@@ -59,6 +59,7 @@ const SCHEDULES = [
   // DISABLED (cost saving) { schedule: '0 5 * * *',      path: '/api/cron-score-companies',         name: 'score-companies' },
   { schedule: '0 6 * * *',      path: '/api/cron-enrich',                  name: 'enrich' },
   { schedule: '0 8-20/2 * * *', path: '/api/cron-heartbeat',             name: 'heartbeat' },
+  { schedule: '0 20 * * 0',    path: '/api/cron-weekly-learning',       name: 'weekly-learning' },
   { schedule: '0 7 * * *',      path: '/api/cron-morning-synthesis',       name: 'morning-synthesis' },
   { schedule: '0 7 * * *',      path: '/api/cron-race-week-intel',        name: 'race-week-intel' },
   { schedule: '0 9 * * 1-5',    path: '/api/cron-campaign-monitor',      name: 'campaign-monitor' },

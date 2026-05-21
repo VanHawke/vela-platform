@@ -137,13 +137,46 @@ export default async function handler(req, res) {
       }
     } catch {}
 
-    // ── REASONING: Ask Claude to synthesise ──
-    const synthesisResp = await anthropic.messages.create({
+    // ── PHASE 3: MULTI-PASS REASONING (Planner → Generator → Evaluator) ──
+    // From Anthropic's evaluator-optimizer pattern: separate planning from generation from quality control.
+
+    // STEP 1: PLANNER (Haiku — fast, cheap, structural)
+    const planResp = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 800,
+      messages: [{ role: 'user', content: `You are a strategic planner for a Formula One sponsorship advisory firm. Today is ${today}.
+
+GOALS: ${goalsText}
+RACE CALENDAR: ${raceContext}
+ACTIVE INTENTS: ${intentsText || 'none'}
+ALERTS: ${alertsText}
+EMAIL ACTIVITY: ${emailText}
+FOLLOW-UPS: ${followUpText}
+CAMPAIGN: ${campaignText}
+${memoryContext}
+
+Produce a structured plan for today's briefing. Output EXACTLY this format:
+HEADLINE: [one sentence — the single most important thing today]
+PRIORITY_1: [most urgent action + why + which goal it serves]
+PRIORITY_2: [second action + why + which goal]
+PRIORITY_3: [third action + why + which goal]
+RACE_ANGLE: [race timing opportunity or "none"]
+RISK: [biggest risk if nothing is done today]
+STALE_DEALS: [any deals/prospects going cold with days count]` }]
+    });
+    const plan = planResp.content[0]?.text || '';
+    console.log(`[MorningSynthesis] Plan: ${plan.length} chars`);
+
+    // STEP 2: GENERATOR (Sonnet — deep reasoning, strategic writing)
+    const genResp = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 3000,
       messages: [{ role: 'user', content: `You are Kiko, the AI executive operating partner for Van Hawke Group, a Formula One sponsorship advisory firm. Today is ${today}.
 
-Your job is to deliver a STRATEGIC MORNING BRIEFING to Sunny Sidhu (Founder & CEO). This is not a data dump. This is what a world-class Chief of Staff would say at 7 AM: "Here's what matters today, here's what's changed, here's what you should do."
+Your PLANNER identified these priorities:
+${plan}
+
+Now write the full strategic briefing using ALL of this data:
 
 ═══ ACTIVE STRATEGIC GOALS ═══
 ${goalsText}
@@ -151,45 +184,72 @@ ${goalsText}
 ═══ RACE CALENDAR ═══
 ${raceContext}
 
+═══ ACTIVE INTENTS ═══
+${intentsText || 'None'}
+
 ═══ OVERNIGHT SIGNALS ═══
-
-EMAIL ACTIVITY (last 24h):
-${emailText}
-
-FOLLOW-UPS AWAITING REPLY:
-${followUpText}
-
-CAMPAIGN STATE:
-${campaignText}
-
-ALERTS:
-${alertsText}
-
-OPEN TASKS:
-${tasksText}
-
-NEWS & INTELLIGENCE:
-${newsText}
-${intentsText ? `\n═══ ACTIVE INTENTS (what needs to happen NOW) ═══\n${intentsText}` : ''}
+EMAIL ACTIVITY: ${emailText}
+FOLLOW-UPS: ${followUpText}
+CAMPAIGN: ${campaignText}
+ALERTS: ${alertsText}
+TASKS: ${tasksText}
+NEWS: ${newsText}
 ${memoryContext}
 
-═══ YOUR TASK ═══
-Produce a briefing with these sections:
+═══ RULES ═══
+1. HEADLINE — One sentence from the planner's headline.
+2. RACE WEEK INTELLIGENCE — If race within 7 days: which prospects to prioritise, what's the location angle, specific actions for Matt. If no race soon, note the next one.
+3. GOAL PROGRESS — For each goal: what changed, what's the next step, flag if stalling.
+4. ACTIONS FOR TODAY — Numbered, specific, tied to goals. "Rewrite the CTA" not "review the campaign."
+5. RISK FLAGS — Stale deals, unanswered follow-ups, campaign problems.
 
-1. **HEADLINE** — One sentence: the single most important thing today.
+CRITICAL: Do NOT fabricate deals, partnerships, or news. If you don't have information about something, say so. Every claim must come from the data above.
+Be direct, specific, strategic. Every sentence = fact, recommendation, or decision point.` }]
+    });
+    let briefing = genResp.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+    console.log(`[MorningSynthesis] Draft briefing: ${briefing.length} chars`);
 
-2. **RACE WEEK INTELLIGENCE** — If there's a race within 7 days: which prospects should be prioritised for outreach this week, what's the market angle for that location, and what specific actions Matt should take. If no race this week, note the next one and what prep is needed.
+    // STEP 3: EVALUATOR (Haiku — quality control, catches fabrication)
+    const evalResp = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 500,
+      messages: [{ role: 'user', content: `You are a quality evaluator for an AI-generated strategic briefing. Review this briefing and check for:
 
-3. **GOAL PROGRESS** — For each active goal, one line: what changed in the last 24h and what the next step is. Flag any goal that's stalling.
+1. FABRICATION — Does it mention any deals, partnerships, or news that aren't in the source data?
+2. USEFULNESS — Does every action have a specific next step? Or is it vague ("consider reviewing")?
+3. GOAL CONNECTION — Is every recommendation tied to an active goal?
+4. OOO HANDLING — If Joe Paulo/Helsing is mentioned, is the OOO correctly noted (not counted as real engagement)?
+5. MISSING — Are there any signals in the data that the briefing ignores?
 
-4. **ACTIONS FOR TODAY** — Numbered list of specific things to do today, in priority order. Each action should be concrete and tied to a goal. "Review campaign CTA" not "think about campaigns."
+SOURCE DATA SUMMARY:
+Goals: ${goalsText.slice(0, 300)}
+Campaign: ${campaignText}
+Email: ${emailText}
+Race: ${raceContext.slice(0, 200)}
+Intents: ${intentsText?.slice(0, 200) || 'none'}
 
-5. **RISK FLAGS** — Anything that needs attention: stale deals, unanswered follow-ups, campaign problems, data quality issues.
+BRIEFING TO EVALUATE:
+${briefing.slice(0, 2000)}
 
-Be direct, specific, and strategic. No filler. Every sentence should contain either a fact, a recommendation, or a decision point. Write as Sunny's most trusted advisor, not as a system report.` }]
+If the briefing PASSES quality: respond with exactly "PASS"
+If it FAILS: respond with "FAIL:" followed by specific issues to fix.` }]
+    });
+    const evalResult = evalResp.content[0]?.text?.trim() || 'PASS';
+    console.log(`[MorningSynthesis] Evaluator: ${evalResult.slice(0, 100)}`);
+
+    // STEP 4: If evaluator rejects, regenerate with feedback (one retry)
+    if (evalResult.startsWith('FAIL') && briefing.length > 100) {
+      console.log(`[MorningSynthesis] Evaluator rejected. Regenerating with feedback...`);
+      const retryResp = await anthropic.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 3000,
+        messages: [
+          { role: 'user', content: `Rewrite this briefing. The evaluator found these issues:\n${evalResult}\n\nOriginal briefing:\n${briefing}\n\nFix the issues and rewrite. Keep the same structure but address every problem the evaluator identified.` }
+        ]
       });
-
-    const briefing = synthesisResp.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+      briefing = retryResp.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+      console.log(`[MorningSynthesis] Revised briefing: ${briefing.length} chars`);
+    }
 
     // ── Store briefing ──
     await supabase.from('kiko_alerts').insert({
