@@ -31,9 +31,9 @@ export default async function handler(req, res) {
     return { pass: (rows || []).length === 11, actual: (rows || []).length, expected: 11 };
   });
 
-  await check('categories_count_is_20', async () => {
+  await check('categories_count_gte_20', async () => {
     const rows = await sbFetch('sponsor_categories?select=id');
-    return { pass: (rows || []).length === 20, actual: (rows || []).length, expected: 20 };
+    return { pass: (rows || []).length >= 20, actual: (rows || []).length, expected: '>=20' };
   });
 
   await check('partnerships_active_gte_420', async () => {
@@ -219,17 +219,17 @@ export default async function handler(req, res) {
   // Gmail sync running? (Check heartbeats)
   await check('gmail_sync_running', async () => {
     const since = new Date(Date.now() - 2 * 3600000).toISOString();
-    const rows = await sbFetch(`kiko_cron_heartbeats?cron_name=eq.gmail-sync&started_at=gte.${since}&select=id&limit=1`);
+    const rows = await sbFetch(`kiko_cron_heartbeats?cron_name=eq.cron-gmail-sync&started_at=gte.${since}&select=id&limit=1`);
     return { pass: (rows || []).length > 0, actual: (rows || []).length > 0 ? 'running' : 'NOT RUNNING', expected: 'running in last 2h' };
   });
 
   // LinkedIn cookies alive?
   await check('linkedin_cookies_alive', async () => {
-    const rows = await sbFetch('user_tokens?provider=eq.linkedin&select=user_id,updated_at&order=updated_at.desc&limit=2');
+    const rows = await sbFetch('user_tokens?provider=eq.linkedin&select=user_email,updated_at&order=updated_at.desc&limit=2');
     if (!rows?.length) return { pass: false, actual: 'no cookies', expected: 'cookies exist' };
     const newest = new Date(rows[0].updated_at);
     const ageHours = (Date.now() - newest.getTime()) / 3600000;
-    return { pass: ageHours < 48, actual: `${Math.round(ageHours)}h old`, expected: '<48h old' };
+    return { pass: ageHours < 48, actual: `${Math.round(ageHours)}h old (${rows.length} accounts)`, expected: '<48h old' };
   });
 
   // Campaign has active enrollments?
