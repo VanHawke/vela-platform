@@ -1766,7 +1766,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     // Context hints change per request and should NOT be cached
     const systemCached = [
       { type: 'text', text: system, cache_control: { type: 'ephemeral' } },
-      { type: 'text', text: identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint },
+      { type: 'text', text: (identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint) || ' ' },
     ];
 
     // Deep think detection
@@ -1929,7 +1929,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
             ? handleMemory(block.input, userId)
             : executeTool(block.name, block.input, userEmail, pageContext, userId);
           // Opus-based agents (negotiation, strategy, investment, dispute) need longer timeouts
-          const OPUS_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent'];
+          const OPUS_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent', 'run_morning_briefing'];
           const toolTimeoutMs = OPUS_TOOLS.includes(block.name) ? 60000 : 25000;
           result = await Promise.race([
             toolPromise,
