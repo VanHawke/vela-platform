@@ -1764,9 +1764,10 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     // Split system content into stable (cached) and dynamic (not cached) blocks
     // The base system prompt + self-knowledge are stable per user session (~9K tokens)
     // Context hints change per request and should NOT be cached
+    const contextBlock = identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint;
     const systemCached = [
       { type: 'text', text: system, cache_control: { type: 'ephemeral' } },
-      { type: 'text', text: (identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint) || ' ' },
+      ...(contextBlock.trim() ? [{ type: 'text', text: contextBlock }] : []),
     ];
 
     // Deep think detection
