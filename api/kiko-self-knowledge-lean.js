@@ -66,8 +66,9 @@ YOUR TOOLS (call these silently — never describe calling them):
 • navigate_page: Direct Sunny to any platform page
 
 WHEN GREETING (no specific question):
-Don't say hello. Lead with what's due today from your intents and goals.
-Example: "Canadian GP is 3 days away. Helsing follow-up is 2 days overdue. CTA rewrite needs doing before any more sends go out. Want me to walk through the priority order?"
+NEVER say just "hello" or ask "what would you like to work on?" You are a Chief of Staff — lead.
+Call morning_briefing tool IMMEDIATELY, then synthesise the top 3 priorities.
+Example output: "Canadian GP is 3 days away. Three things need doing right now: (1) Send the Helsing follow-up — 2 days overdue. (2) Rewrite the CTA — 0 replies from 207 emails. (3) Draft Canada-themed outreach for Clio, NanoXplore, Clear Street. Want me to start with the Helsing email?"
 
 WHEN SOMETHING SEEMS WRONG:
 Don't hide it. Say "Gmail sync hasn't detected replies in 48 hours — this could mean the sync is failing. Let me check." Then actually check.`;
@@ -89,6 +90,20 @@ export default async function loadSelfKnowledge(userId) {
   // LIVE GOALS from DB (~200 tokens)
   try {
     const { sbFetch } = await import('./kiko-tools.js');
+
+    // PERSONAL MEMORY — Sunny's identity, family, preferences (~300 tokens)
+    const [pf1, pf2] = await Promise.all([
+      sbFetch(`kiko_memories?path=eq./memories/personal_facts.md&user_id=eq.${userId}&select=content&limit=1`).catch(() => []),
+      sbFetch(`kiko_memories?path=eq./memories/sunny_personal.md&user_id=eq.${userId}&select=content&limit=1`).catch(() => []),
+    ]);
+    const personalFiles = [...(pf1 || []), ...(pf2 || [])].filter(m => m.content);
+    if (personalFiles.length) {
+      k.push('\n═══ PERSONAL KNOWLEDGE (Sunny) ═══');
+      for (const m of personalFiles) k.push(m.content.slice(0, 500));
+    } else {
+      console.log('[LeanKnowledge] No personal memory files found for user', userId);
+    }
+
     const goals = await sbFetch('kiko_goals?status=eq.active&order=priority&select=title,priority,description');
     if (goals?.length) {
       k.push('\n═══ ACTIVE GOALS ═══');

@@ -1369,7 +1369,10 @@ export default async function handler(req, res) {
     // Inject routing hint into system prompt for non-trivial intents
     const agentMapping = INTENT_TO_AGENT[intent];
     let routingHint = '';
-    if (agentMapping?.tool) {
+    // Greeting: proactive briefing — call morning_briefing FIRST
+    if (intent === 'greeting') {
+      routingHint = '\n\n[ROUTING HINT: This is a GREETING. You MUST call the morning_briefing tool as your first action — NOT ask_ea_agent. Then synthesise the top 3 priorities from the briefing. Do NOT ask permission. TELL Sunny what needs doing right now. Lead with the most urgent overdue action.]';
+    } else if (agentMapping?.tool) {
       routingHint = `\n\n[ROUTING HINT: This message was classified as "${intent}". Start with the ${agentMapping.tool} tool. After getting results, you may call additional tools if the task requires multiple steps — you have up to 10 tool rounds. For example: research a company (web_search) → check CRM (ask_data_agent) → draft email (ask_outreach_agent). Think about what the user actually needs end-to-end, not just the first step.]`;
       // Force consistent email draft format for UI rendering
       if (intent === 'outreach') {
@@ -1857,9 +1860,9 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     // Voice: ALL greetings use Haiku (speed > proactive context). Text: first-message greetings use Sonnet.
     // Identity ("who are you") previously stalled in tool loop because Claude called ask_memory_engine
     // after answering. Now: hard-skip tools, answer from KIKO_BIBLE system prompt only.
-    const FAST_RESPONSE_INTENTS = ['greeting', 'identity'];
+    const FAST_RESPONSE_INTENTS = ['identity'];
     const isSimpleGreeting = FAST_RESPONSE_INTENTS.includes(intent);
-    const useHaikuForGreeting = intent === 'greeting' && (voiceMode || !isFirstMessage);
+    const useHaikuForGreeting = false; // Greetings need Sonnet for strategic briefing
     const skipTools = isSimpleGreeting || casualQuery;
     const isEmailIntent = intent === 'email' || intent === 'email2' || intent === 'outreach';
     // Simple email drafts use Haiku (~5s) — complex strategy emails use Sonnet (~15s)
