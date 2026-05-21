@@ -914,7 +914,7 @@ export default async function handler(req, res) {
   // ── Early greeting detection — skip heavy fetches for simple greetings ──
   const earlyGreeting = /^(hi|hey|hello|good\s+(morning|afternoon|evening)|howdy|what'?s?\s+up|yo)\b/i.test((message || '').trim());
   // Casual/personal questions that don't need CRM, knowledge base, or entity context
-  const casualQuery = !earlyGreeting && /^(should\s+i|what\s+should\s+(i|we)|can\s+you\s+recommend|what('?s| is)\s+(a\s+good|the\s+best)|do\s+you\s+think|how\s+about|what\s+are\s+your?\s+thoughts?|tell\s+me\s+(a\s+joke|something\s+fun|about)|play|watch|eat|cook|read|listen|drink|wear|buy|order|try|visit|go\s+to|make\s+me|sing|dance|joke|game|movie|show|book|song|recipe|weather|temp|rain|snow|sun|time|date|day|tomorrow|tonight|weekend|plan\s+for|uno|chess|cards|board\s+game|netflix|spotify|music|playlist|dinner|lunch|breakfast|snack|coffee|tea|beer|wine|cocktail|restaurant|bar|pub|club|pool|beach|park|gym|walk|run|hike|swim|yoga|meditat|relax|sleep|nap|rest|chill|vibe|mood|feel|happy|sad|tired|bored|excit|fun|funny|humou?r|laugh|smile|love|hate|favo[u]?rite)/i.test((message || '').trim());
+  const casualQuery = !earlyGreeting && /^(can\s+you\s+recommend|what('?s| is)\s+(a\s+good|the\s+best).*(?:movie|show|book|song|recipe|restaurant|bar)|tell\s+me\s+(a\s+joke|something\s+fun)|play|watch|eat|cook|read|listen|drink|wear|buy|order|try\s+(?:this|that|some)|visit\s+(?:a|the)|sing|dance|joke|game|movie|show|book|song|recipe|weather|temp(?:erature)?|rain|snow|sun|time\s+(?:is\s+it|in)|date\s+today|uno|chess|cards|board\s+game|netflix|spotify|music|playlist|dinner\s+(?:idea|suggestion)|lunch\s+(?:idea|suggestion)|coffee|tea|beer|wine|cocktail|pool|beach|park|gym|yoga|meditat|relax|sleep|nap|chill|vibe|mood|feel\s+(?:good|bad|happy|sad|tired|bored))/i.test((message || '').trim());
   const isLightweight = earlyGreeting || casualQuery;
 
   // ── PARALLEL INITIAL LOAD — entityContext, identity, selfKnowledge, Bible layers all at once ──
@@ -2034,6 +2034,43 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     // Conversation Memory: extract insights for cross-session continuity (registered users only)
     if (isRegistered) {
       extractConversationInsights(message, responseText, intent, userId);
+    }
+
+    // PHASE 5: Conversation Compaction — update KIKO_MEMORY.md with key facts from this chat
+    if (isRegistered && responseText.length > 200 && !['navigate', 'screen', 'greeting'].includes(intent)) {
+      try {
+        const { saveMemory } = await import('./kiko-self-knowledge-lean.js');
+        const compactResp = await anthropic.messages.create({
+          model: 'claude-haiku-4-5-20251001', max_tokens: 200,
+          messages: [{ role: 'user', content: `Extract ONLY new facts, decisions, or state changes from this conversation that should update persistent memory. If nothing significant happened, respond with exactly "NONE".
+
+User said: ${(message || '').slice(0, 300)}
+Kiko responded about: ${responseText.slice(0, 500)}
+
+Output format (one per line):
+STATE: [what changed] 
+DECISION: [what was decided]
+FACT: [new information learned]` }]
+        });
+        const extract = compactResp.content?.[0]?.text?.trim() || 'NONE';
+        if (extract !== 'NONE' && extract.length > 10) {
+          const fs = await import('fs');
+          const memPath = (await import('path')).join(process.cwd(), 'api/data/KIKO_MEMORY.md');
+          try {
+            let mem = fs.readFileSync(memPath, 'utf-8');
+            const timestamp = new Date().toISOString().split('T')[0];
+            // Append to RECENT DECISIONS section
+            const insertPoint = mem.indexOf('## OPERATIONAL HEALTH');
+            if (insertPoint > 0) {
+              mem = mem.slice(0, insertPoint) + `- ${timestamp}: ${extract.replace(/\n/g, '; ')}\n` + mem.slice(insertPoint);
+            }
+            // Update the timestamp
+            mem = mem.replace(/Last updated: .*/, `Last updated: ${new Date().toISOString()}`);
+            fs.writeFileSync(memPath, mem, 'utf-8');
+            saveMemory(mem);
+          } catch (e) { console.error('[Compaction] File write error:', e.message); }
+        }
+      } catch (e) { console.error('[Compaction] Error:', e.message); }
     }
 
     // Auto-embed conversation for semantic search (non-blocking)

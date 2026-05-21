@@ -97,6 +97,39 @@ Only include learnings supported by the data. Do not fabricate patterns.` }]
     }
 
     console.log(`[WeeklyLearning] ${stored} learnings stored (${Date.now() - start}ms)`);
+
+    // DREAMING: Update KIKO_MEMORY.md with new patterns + prune stale entries
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const memPath = path.join(process.cwd(), 'api/data/KIKO_MEMORY.md');
+      let mem = fs.readFileSync(memPath, 'utf-8');
+
+      // Get the latest 5 patterns from DB
+      const { data: latestPatterns } = await supabase.from('kiko_learning_log')
+        .select('content').eq('category', 'pattern')
+        .order('created_at', { ascending: false }).limit(5);
+
+      if (latestPatterns?.length) {
+        // Replace the LEARNED PATTERNS section
+        const startMarker = '## LEARNED PATTERNS';
+        const endMarker = '## RECENT DECISIONS';
+        const startIdx = mem.indexOf(startMarker);
+        const endIdx = mem.indexOf(endMarker);
+        if (startIdx >= 0 && endIdx > startIdx) {
+          const newPatterns = latestPatterns.map(p => `- ${(p.content || '').slice(0, 150)}`).join('\n');
+          mem = mem.slice(0, startIdx) + `${startMarker}\n${newPatterns}\n\n` + mem.slice(endIdx);
+        }
+      }
+
+      // Update timestamp
+      mem = mem.replace(/Last updated: .*/, `Last updated: ${new Date().toISOString()}`);
+      fs.writeFileSync(memPath, mem, 'utf-8');
+      console.log(`[WeeklyLearning] KIKO_MEMORY.md updated with ${latestPatterns?.length || 0} patterns`);
+    } catch (e) {
+      console.error('[WeeklyLearning] Memory update error:', e.message);
+    }
+
     return res.json({ ok: true, learnings_stored: stored, duration_ms: Date.now() - start });
   } catch (err) {
     console.error('[WeeklyLearning] Error:', err.message);
