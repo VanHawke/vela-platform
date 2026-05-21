@@ -184,6 +184,69 @@ export default async function handler(req, res) {
     };
   });
 
+  // ═══ OPERATIONAL CHECKS — These catch real problems ═══
+
+  // Can Claude actually respond? (Tests API credits and connectivity)
+  await check('claude_api_responds', async () => {
+    try {
+      const { default: Anthropic } = await import('@anthropic-ai/sdk');
+      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+      const resp = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001', max_tokens: 10,
+        messages: [{ role: 'user', content: 'Reply with exactly: OK' }]
+      });
+      const text = resp.content?.[0]?.text || '';
+      return { pass: text.includes('OK'), actual: text.slice(0, 20), expected: 'OK' };
+    } catch (e) {
+      return { pass: false, actual: e.message?.slice(0, 100), expected: 'Claude responds' };
+    }
+  });
+
+  // Did the morning briefing generate today?
+  await check('morning_briefing_generated_today', async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const rows = await sbFetch(`kiko_alerts?type=eq.morning_briefing&created_at=gte.${today}&select=id,created_at&limit=1`);
+    return { pass: (rows || []).length > 0, actual: (rows || []).length > 0 ? 'generated' : 'MISSING', expected: 'generated' };
+  });
+
+  // Were emails sent in the last 24 hours?
+  await check('emails_sent_last_24h', async () => {
+    const since = new Date(Date.now() - 24 * 3600000).toISOString();
+    const rows = await sbFetch(`kiko_outreach_queue?status=eq.sent&sent_at=gte.${since}&select=id&limit=1`);
+    return { pass: (rows || []).length > 0, actual: (rows || []).length > 0 ? 'sending' : 'NO SENDS', expected: 'sending' };
+  });
+
+  // Gmail sync running? (Check heartbeats)
+  await check('gmail_sync_running', async () => {
+    const since = new Date(Date.now() - 2 * 3600000).toISOString();
+    const rows = await sbFetch(`kiko_cron_heartbeats?cron_name=eq.gmail-sync&started_at=gte.${since}&select=id&limit=1`);
+    return { pass: (rows || []).length > 0, actual: (rows || []).length > 0 ? 'running' : 'NOT RUNNING', expected: 'running in last 2h' };
+  });
+
+  // LinkedIn cookies alive?
+  await check('linkedin_cookies_alive', async () => {
+    const rows = await sbFetch('user_tokens?provider=eq.linkedin&select=user_id,updated_at&order=updated_at.desc&limit=2');
+    if (!rows?.length) return { pass: false, actual: 'no cookies', expected: 'cookies exist' };
+    const newest = new Date(rows[0].updated_at);
+    const ageHours = (Date.now() - newest.getTime()) / 3600000;
+    return { pass: ageHours < 48, actual: `${Math.round(ageHours)}h old`, expected: '<48h old' };
+  });
+
+  // Campaign has active enrollments?
+  await check('campaign_active_enrollments', async () => {
+    const rows = await sbFetch('kiko_sequence_enrollments?status=eq.active&select=id');
+    const count = (rows || []).length;
+    return { pass: count > 0, actual: count, expected: '>0 active' };
+  });
+
+  // Reply detection — any replies in the system?
+  await check('reply_detection_working', async () => {
+    const rows = await sbFetch('kiko_outreach_queue?reply_received_at=not.is.null&select=to_name,reply_type&limit=5');
+    const real = (rows || []).filter(r => r.reply_type !== 'ooo').length;
+    const ooo = (rows || []).filter(r => r.reply_type === 'ooo').length;
+    return { pass: true, actual: `${real} real replies, ${ooo} OOO`, expected: 'tracking replies' };
+  });
+
   // ─── Summary ───
   // FAIL = hard failures only (level !== 'warn'). WARN doesn't block overall pass.
   const passed = checks.filter(c => c.status === 'PASS').length;
