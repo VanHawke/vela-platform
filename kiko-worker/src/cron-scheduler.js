@@ -30,7 +30,8 @@ const SCHEDULES = [
   { schedule: '0 6 * * 1-5',    path: '/api/cron-sequence-enqueue',        name: 'seq-enqueue' },
 
   // Intelligence (previously pg_cron)
-  { schedule: '0 3 * * *',      path: '/api/cron-learning-director',       name: 'learning-director' },
+  // DISABLED: no output since Apr 25, replaced by weekly-learning cron
+  // { schedule: '0 3 * * *',      path: '/api/cron-learning-director',       name: 'learning-director' },
   // DISABLED (cost saving) { schedule: '0 7,14 * * 1-5', path: '/api/cron-proactive',              name: 'proactive-convergence' },
   // DISABLED (cost saving) { schedule: '30 7 * * 1-5',   path: '/api/cron-proactive-recommendations', name: 'proactive-recommendations' },
 
