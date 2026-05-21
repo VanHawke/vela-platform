@@ -261,11 +261,13 @@ export function useVoiceCall({ userId, userName, channelId }) {
 
   // End call
   const endCall = useCallback((reason = 'ended') => {
-    // Only play tones if we were actually in a call
-    if (callState !== 'idle') {
+    // ALWAYS stop tones first — unconditional, prevents stuck ringing
+    tones.stop()
+    
+    // Play appropriate end tone
+    if (callStateRef.current !== 'idle') {
       if (reason === 'missed' || reason === 'declined') tones.busy()
-      else if (reason === 'ended' && callState === 'connected') tones.ended()
-      else tones.stop()
+      else if (reason === 'ended' && callStateRef.current === 'connected') tones.ended()
     }
     if (pcRef.current) { pcRef.current.close(); pcRef.current = null }
     if (localStreamRef.current) { localStreamRef.current.getTracks().forEach(t => t.stop()); localStreamRef.current = null }

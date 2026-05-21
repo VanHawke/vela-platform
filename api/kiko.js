@@ -29,6 +29,19 @@ async function getUserConfig(email) {
       userConfigCache.set(email, { data: config, ts: Date.now() });
       return config;
     }
+    // Email domain fallback: vanhawke.com ↔ vanhawke.agency
+    let altEmail = email;
+    if (email.endsWith('@vanhawke.com')) altEmail = email.replace('@vanhawke.com', '@vanhawke.agency');
+    else if (email.endsWith('@vanhawke.agency')) altEmail = email.replace('@vanhawke.agency', '@vanhawke.com');
+    if (altEmail !== email) {
+      const altRows = await sbFetch(`kiko_user_config?email=eq.${encodeURIComponent(altEmail)}&limit=1`);
+      if (altRows?.[0]) {
+        const config = altRows[0];
+        userConfigCache.set(email, { data: config, ts: Date.now() });
+        userConfigCache.set(altEmail, { data: config, ts: Date.now() });
+        return config;
+      }
+    }
   } catch {}
   // Fallback for unknown users — minimal config so Kiko still works
   return { user_id: null, email, display_name: email.split('@')[0], role: 'user', company_name: '', job_title: '', location: '', timezone: 'Europe/London', communication_style: 'executive', company_description: '' };

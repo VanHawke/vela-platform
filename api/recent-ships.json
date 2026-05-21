@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-21T19:50:41.349Z",
+  "generated_at": "2026-05-21T20:01:06.497Z",
   "commits": [
+    {
+      "hash": "7849759",
+      "subject": "Voice fix: gpt-realtime-2 session config + screen sharing + channel creation + call buttons",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "f693bbe",
       "subject": "Team messaging: Screen sharing + Channel creation + Matt ID fix",
-      "when": "5 minutes ago"
+      "when": "16 minutes ago"
     },
     {
       "hash": "b6f1142",
       "subject": "Voice upgraded to gpt-realtime-2 (GPT-5-class reasoning)",
-      "when": "52 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "f611ead",
       "subject": "Real-time correction learning: detects explicit corrections + saves as persistent preferences",
-      "when": "55 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "23ae830",
       "subject": "Remove email notification + restrict morning briefing to super_admin",
-      "when": "59 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "fd7d960",
       "subject": "Code review: kiko-tools.js — 127 lines dead Lemlist code removed, email bug fixed",
-      "when": "74 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "f0b0d87",
       "subject": "CRITICAL: System prompt slimmed 15x (47KB → 3KB, 407 → 46 lines)",
-      "when": "78 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "068845a",
@@ -79,7 +84,7 @@
     {
       "hash": "7e4b196",
       "subject": "Kiko self-diagnosis: run_selfcheck tool + all gap fixes",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "8631da2",
@@ -94,11 +99,6 @@
     {
       "hash": "89c115c",
       "subject": "Close all intelligence gaps: exact tool awareness, multi-tool verification, Dreaming e2e",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "ca09a4c",
-      "subject": "Fix: Lean knowledge loads for ALL requests including greetings + permissions + diagnostics",
       "when": "7 hours ago"
     }
   ]
