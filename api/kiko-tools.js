@@ -219,19 +219,12 @@ export const TOOL_DEFINITIONS = [
       deal_id: { type: 'string', description: 'Associated deal ID (optional)' },
     }, required: ['type', 'entity_name', 'description'] },
   },
-  {
-    name: 'ask_lemlist_live',
-    description: 'Live Lemlist data. Use when user asks: campaign stats, open rates, reply rates, lead status in Lemlist, credit balance, warm leads, campaign performance, "how is the Haas campaign doing", "show me Lemlist stats", deliverability, bounced leads, interested leads, LinkedIn sequence status.',
-    input_schema: { type: 'object', properties: {
-      operation: { type: 'string', enum: ['campaign_stats', 'lead_search', 'lead_detail', 'warm_leads', 'credits', 'signals', 'deliverability'], description: 'campaign_stats: performance metrics for all/specific campaigns. lead_search: find leads by email/name/company. lead_detail: full lead data by email. warm_leads: leads showing intent (opened/clicked/replied). credits: remaining Lemlist credits. signals: recent intent signals. deliverability: email health check.' },
-      params: { type: 'object', description: 'campaign_name (string, optional filter), email (string, for lead_detail), query (string, for lead_search), limit (number, default 10).' },
-    }, required: ['operation'] },
-  },
+  // ask_lemlist_live REMOVED — Lemlist is cancelled, all campaigns run through native engine
   {
     name: 'ask_self_monitor',
     description: 'Kiko self-monitoring. Check system health, recent errors, cron job status, agent performance. Use when user asks: "are you working", "what errors happened", "is inbox triage running", "what broke", "system health", "diagnose yourself".',
     input_schema: { type: 'object', properties: {
-      operation: { type: 'string', enum: ['health_check', 'recent_errors', 'cron_status', 'agent_stats'], description: 'health_check: overall system health. recent_errors: last 24h errors. cron_status: check if crons ran today. agent_stats: agent usage and error rates.' },
+      operation: { type: 'string', enum: ['health_check', 'recent_errors', 'cron_status', 'agent_stats', 'run_selfcheck'], description: 'health_check: overall system health. recent_errors: last 24h errors. cron_status: check if crons ran today. agent_stats: agent usage and error rates. run_selfcheck: comprehensive 25-check system audit.' },
       params: { type: 'object', description: 'hours (number, default 24 for recent_errors), component (string, filter errors by component).' },
     }, required: ['operation'] },
   },
@@ -990,11 +983,7 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
   }
 
   // ── Lemlist Live Agent ──
-  if (name === 'ask_lemlist_live') {
-    try {
-      return await executeLemlistLive(input.operation, input.params || {});
-    } catch (e) { return agentError('Lemlist Live', e); }
-  }
+  // ask_lemlist_live handler REMOVED — Lemlist cancelled
 
   // ── Self-Monitor ──
   if (name === 'ask_self_monitor') {
