@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-05-21T20:01:06.497Z",
+  "generated_at": "2026-05-21T20:09:27.774Z",
   "commits": [
+    {
+      "hash": "668cf6a",
+      "subject": "Fix voice memory + end call ringing + call button design",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "7849759",
       "subject": "Voice fix: gpt-realtime-2 session config + screen sharing + channel creation + call buttons",
-      "when": "10 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "f693bbe",
       "subject": "Team messaging: Screen sharing + Channel creation + Matt ID fix",
-      "when": "16 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "b6f1142",
       "subject": "Voice upgraded to gpt-realtime-2 (GPT-5-class reasoning)",
-      "when": "62 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "f611ead",
       "subject": "Real-time correction learning: detects explicit corrections + saves as persistent preferences",
-      "when": "65 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "23ae830",
       "subject": "Remove email notification + restrict morning briefing to super_admin",
-      "when": "69 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "fd7d960",
       "subject": "Code review: kiko-tools.js — 127 lines dead Lemlist code removed, email bug fixed",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f0b0d87",
       "subject": "CRITICAL: System prompt slimmed 15x (47KB → 3KB, 407 → 46 lines)",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "068845a",
@@ -49,17 +54,17 @@
     {
       "hash": "a549499",
       "subject": "Updated audit with session 67 resolution log",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "913405a",
       "subject": "Narration permanently eliminated + comprehensive end-to-end verification",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "fa00342",
       "subject": "P1: Calendar integration + Auto-CRM from inbound emails",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "607bff2",
@@ -95,11 +100,6 @@
       "hash": "4d37a69",
       "subject": "Selfcheck fixes: correct LinkedIn column, Gmail cron name, category count threshold",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "89c115c",
-      "subject": "Close all intelligence gaps: exact tool awareness, multi-tool verification, Dreaming e2e",
-      "when": "7 hours ago"
     }
   ]
 }

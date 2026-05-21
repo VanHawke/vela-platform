@@ -11,7 +11,7 @@ const ALL_PAGES = [
   { id: 'home',                label: 'Today',              path: '/',                   showPlus: false, aliases: ['home', 'today', 'dashboard'], pageKey: null },
   { id: 'pipeline',            label: 'Pipeline',           path: '/pipeline',           showPlus: false, aliases: ['pipeline'],                    pageKey: 'pipeline' },
   { id: 'campaigns',           label: 'Campaigns',          path: '/campaigns',          showPlus: false, aliases: ['campaigns', 'sequences'],      pageKey: 'campaigns' },
-  { id: 'messages',            label: 'Messages',           path: '/messages',           showPlus: false, aliases: ['messages', 'chat', 'team'],    pageKey: null },
+  { id: 'messages',            label: 'Messenger',          path: '/messages',           showPlus: false, aliases: ['messages', 'chat', 'team', 'messenger'],    pageKey: null },
   { id: 'command-centre',      label: 'Command Centre',     path: '/command-centre',     showPlus: false, aliases: ['command-centre', 'inbox'],     pageKey: 'command_centre' },
   { id: 'calendar',            label: 'Calendar',           path: '/calendar',           showPlus: false, aliases: ['calendar'],                    pageKey: 'race_calendar' },
   { id: 'contacts',            label: 'Contacts',           path: '/contacts',           showPlus: false, aliases: ['contacts'],                    pageKey: 'contacts' },
@@ -289,7 +289,7 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
           </svg>
         </button>
         {/* Messages shortcut */}
-        <button className="ltn-icon" onClick={() => nav('/messages')} title="Messages" style={{ position: 'relative' }}>
+        <button className="ltn-icon" onClick={() => nav('/messages')} title="Messenger" style={{ position: 'relative' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
           </svg>

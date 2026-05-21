@@ -144,6 +144,74 @@ export default async function handler(req, res) {
         return res.json({ success: true });
       }
 
+      case 'forward': {
+        const { messageId, targetChannelId, fromUserId: fwdUserId, fromName: fwdName } = req.body || {};
+        if (!messageId || !targetChannelId) return res.status(400).json({ error: 'Missing messageId or targetChannelId' });
+        // Fetch original message
+        const origMsgs = await sbFetch(`kiko_team_messages?id=eq.${messageId}&select=content,from_name&limit=1`);
+        if (!origMsgs?.length) return res.status(404).json({ error: 'Message not found' });
+        const orig = origMsgs[0];
+        // Create forwarded message in target channel
+        const fwdContent = `📨 *Forwarded from ${orig.from_name}:*\n${orig.content}`;
+        await sbFetch('kiko_team_messages', { method: 'POST', body: JSON.stringify({
+          channel_id: targetChannelId,
+          from_user_id: fwdUserId || 'system',
+          from_name: fwdName || 'System',
+          content: fwdContent,
+          message_type: 'forwarded',
+          read_by: [fwdUserId].filter(Boolean),
+        }) });
+        await sbFetch(`kiko_team_channels?id=eq.${targetChannelId}`, {
+          method: 'PATCH', body: JSON.stringify({ last_message_at: new Date().toISOString() })
+        });
+        return res.json({ success: true });
+      }
+
+      case 'schedule-meeting': {
+        const { title, startTime, endTime, attendees = [], channelId: meetingChannel, fromUserId: meetUserId, fromName: meetName } = req.body || {};
+        if (!title || !startTime) return res.status(400).json({ error: 'Meeting title and start time required' });
+        try {
+          const { getGoogleToken } = await import('./google-token.js');
+          // Use the requesting user's email for calendar
+          const userConfig = await sbFetch(`kiko_user_config?user_id=eq.${meetUserId}&select=email&limit=1`);
+          const userEmail = userConfig?.[0]?.email || 'sunny@vanhawke.agency';
+          const token = await getGoogleToken(userEmail);
+          if (!token) return res.status(400).json({ error: 'Calendar not connected' });
+          
+          const event = {
+            summary: title,
+            start: { dateTime: startTime, timeZone: 'Europe/London' },
+            end: { dateTime: endTime || new Date(new Date(startTime).getTime() + 30 * 60000).toISOString(), timeZone: 'Europe/London' },
+          };
+          if (attendees.length) event.attendees = attendees.map(a => ({ email: a }));
+          
+          const created = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(event),
+          }).then(r => r.json());
+          
+          if (created.error) return res.status(400).json({ error: created.error.message });
+          
+          // Post meeting notification in channel
+          if (meetingChannel) {
+            const timeStr = new Date(startTime).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+            await sbFetch('kiko_team_messages', { method: 'POST', body: JSON.stringify({
+              channel_id: meetingChannel,
+              from_user_id: meetUserId || 'system',
+              from_name: meetName || 'System',
+              content: `📅 **Meeting scheduled:** ${title}\n🕐 ${timeStr}\n${created.htmlLink ? `[Open in Calendar](${created.htmlLink})` : ''}`,
+              message_type: 'system',
+              read_by: [meetUserId].filter(Boolean),
+            }) });
+          }
+          
+          return res.json({ success: true, event: { id: created.id, htmlLink: created.htmlLink, start: startTime } });
+        } catch (e) {
+          return res.status(500).json({ error: e.message });
+        }
+      }
+
       case 'delete': {
         const { messageId, userId } = req.body || {};
         if (!messageId || !userId) return res.status(400).json({ error: 'Missing fields' });
