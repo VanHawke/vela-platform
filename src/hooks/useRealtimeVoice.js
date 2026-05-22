@@ -66,7 +66,7 @@ async function executeTool(name, args) {
 
 const TOOLS = [
   { type: 'function', name: 'ask_kiko', description: 'MANDATORY for every user query that is not pure greeting/thanks/goodbye. The ONLY way to access Kiko intelligence: pipeline, deals, contacts, partnerships, calendar, email, tasks, memory, news, web search, briefings, strategy.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request, exactly as the user said it' } }, required: ['query'] } },
-  { type: 'function', name: 'navigate_page', description: 'Navigate platform UI. ONLY when user explicitly says go to / take me to / open / show me [page]. Page list: home (chat), pipeline (deals), contacts (CRM), organisations (companies), command-centre (tasks/email/inbox hub), partnership-matrix (F1 sponsorship landscape), calendar (race calendar), campaigns (outreach campaigns), kikocode (code workspace), settings, memory (admin), admin, admin/system. Use exact slug.', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','organisations','command-centre','partnership-matrix','calendar','campaigns','kikocode','settings','memory','admin','admin/system'] } }, required: ['page'] } },
+  { type: 'function', name: 'navigate_page', description: 'Navigate platform UI. ONLY when user explicitly says go to / take me to / open / show me [page].', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','organisations','command-centre','partnership-matrix','calendar','sporting-events','campaigns','messages','documents','knowledge','kikocode','settings','memory','admin','admin/system'] } }, required: ['page'] } },
 ]
 
 export function useRealtimeVoice({ active, onClose, onMessage }) {
@@ -247,10 +247,7 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
             audio: {
               input: {
                 turn_detection: { type: 'server_vad', threshold: 0.6, prefix_padding_ms: 300, silence_duration_ms: 500 },
-                // Whisper transcription MUST be inside audio.input — at session root
-                // it is silently ignored. Without this, conversation.item.input_audio_transcription.completed
-                // never fires, breaking goodbye safety net AND voice→chat-history saves.
-                transcription: { model: 'whisper-1' },
+                transcription: { model: 'whisper-1', language: 'en' },
               }
             },
             instructions: sessionInstructions,

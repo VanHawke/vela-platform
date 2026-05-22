@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-22T13:36:54.517Z",
+  "generated_at": "2026-05-22T13:42:22.432Z",
   "commits": [
+    {
+      "hash": "19a20a9",
+      "subject": "Document Library: Analyse with Kiko button, KikoFloat pending message system",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "a128cfd",
       "subject": "Calendar event creation form, PartnershipMatrix + MemoryConsole header fixes, nav auto-discovery",
-      "when": "13 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "9737c64",
       "subject": "Fix nav auto-discovery for new items, remove old 77KB fallback, fix PartnershipMatrix + MemoryConsole headers",
-      "when": "19 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "48be64e",
       "subject": "Update navigation: calendar→Google Calendar, add sporting-events, messenger nav aliases",
-      "when": "82 minutes ago"
+      "when": "87 minutes ago"
     },
     {
       "hash": "4ffa96f",
@@ -54,7 +59,7 @@
     {
       "hash": "462d97b",
       "subject": "Messenger: rename, forwarding, meeting scheduling, voice improvements, call buttons",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "668cf6a",
@@ -95,11 +100,6 @@
       "hash": "f0b0d87",
       "subject": "CRITICAL: System prompt slimmed 15x (47KB → 3KB, 407 → 46 lines)",
       "when": "19 hours ago"
-    },
-    {
-      "hash": "068845a",
-      "subject": "P2: Auto-task creation + Push email notification + Calendar in synthesis",
-      "when": "20 hours ago"
     }
   ]
 }
