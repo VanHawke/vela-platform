@@ -76,7 +76,10 @@
 
 ## REMAINING TO BUILD
 - PWA push notifications (VAPID keys + endpoints)
-- Gmail .ics invite detection
-- Calendar real-time webhooks (bidirectional sync)
 - Sporting Events page redesign
-- Campaign steps 2,4,6,8,9,10,11 templates
+
+## COMPLETED THIS SESSION (not remaining)
+- Gmail .ics detection: handled by calendar webhook — Google auto-creates calendar events from .ics invites, webhook detects needsAction status, creates alerts
+- Calendar webhooks: LIVE — Google pushes notifications on any calendar change, auto-renews weekly
+- Calendar invite accept/decline: POST /api/calendar-events with {eventId, response: 'accepted'|'declined'|'tentative'}
+- Calendar CRUD: Create (with Meet auto-add), Read, Update (PATCH), Delete — all working
