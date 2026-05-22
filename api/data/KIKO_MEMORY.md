@@ -21,6 +21,7 @@
 - Race week outreach should deploy T-3 days for maximum engagement
 
 ## RECENT DECISIONS
+- 2026-05-22: Phase 5.1 — Bible moved from system prompt to JIT read_bible tool. Saves ~26KB per query. Core Bible + Org Doctrine now loaded on-demand. Knowledge base capped at top 5 relevant domains in prompt. Verified: greeting=22K tokens, outreach=3.9K tokens. All foundation tests pass.
 - 2026-05-21: Restored campaign templates (steps 1,3,5,7). Steps 2,4,6,8,9,10,11 still need writing.
 - 2026-05-21: Fixed step_number→step field mismatch that killed entire campaign since May 19.
 - 2026-05-21: Self-checker rebuilt with 7 operational checks (Claude API, Gmail, LinkedIn, campaign, briefing).
