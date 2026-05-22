@@ -8,7 +8,11 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  if (req.method === 'POST') return createEvent(req, res);
+  if (req.method === 'POST') {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    if (body.response && body.eventId) return respondToInvite(req, res); // Accept/decline invite
+    return createEvent(req, res);
+  }
   if (req.method === 'PATCH' || req.method === 'PUT') return updateEvent(req, res);
   if (req.method === 'DELETE') return deleteEvent(req, res);
   if (req.method !== 'GET') return res.status(405).json({ error: 'GET, POST, PATCH, DELETE supported' });
@@ -188,6 +192,48 @@ async function deleteEvent(req, res) {
     res.json({ eventId, status: 'deleted' });
   } catch (err) {
     console.error('[calendar-events] Delete failed:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+// Accept/decline calendar invite
+async function respondToInvite(req, res) {
+  const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+  const { email, eventId, response } = body; // response: 'accepted', 'declined', 'tentative'
+
+  if (!email || !eventId || !response) return res.status(400).json({ error: 'email, eventId, and response required' });
+  if (!['accepted', 'declined', 'tentative'].includes(response)) return res.status(400).json({ error: 'response must be: accepted, declined, or tentative' });
+
+  try {
+    const accessToken = await getGoogleToken(email);
+
+    // Get current event to find attendee list
+    const getRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!getRes.ok) return res.status(getRes.status).json({ error: 'Event not found' });
+    const event = await getRes.json();
+
+    // Update my response status
+    const attendees = (event.attendees || []).map(a => {
+      if (a.self) return { ...a, responseStatus: response };
+      return a;
+    });
+
+    const patchRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}?sendUpdates=all`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ attendees }),
+    });
+
+    if (!patchRes.ok) {
+      const err = await patchRes.json().catch(() => ({}));
+      return res.status(patchRes.status).json({ error: 'Failed to respond', detail: err.error?.message });
+    }
+
+    res.json({ eventId, response, status: 'responded', title: event.summary });
+  } catch (err) {
+    console.error('[calendar-events] Respond failed:', err.message);
     res.status(500).json({ error: err.message });
   }
 }

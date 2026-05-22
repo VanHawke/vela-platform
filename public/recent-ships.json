@@ -1,30 +1,40 @@
 {
-  "generated_at": "2026-05-22T19:11:47.164Z",
+  "generated_at": "2026-05-22T19:58:41.077Z",
   "commits": [
+    {
+      "hash": "6a739ab",
+      "subject": "Full audit: update KIKO_MEMORY, SESSION_BRIEF, lean prompt — 49 tools, 46 crons, all Session 68 changes",
+      "when": "21 minutes ago"
+    },
+    {
+      "hash": "725510f",
+      "subject": "Calendar: Meet toggle, delete button, edit/delete API endpoints",
+      "when": "47 minutes ago"
+    },
     {
       "hash": "7722e02",
       "subject": "Calendar: Google Meet auto-add, event editing (PATCH), event deletion (DELETE)",
-      "when": "8 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "b606118",
       "subject": "Kiko proactive: greetings now include selfcheck health status, alert on failures first",
-      "when": "26 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "ca05907",
       "subject": "Remove Knowledge Base from nav (internal tool, not user-facing)",
-      "when": "27 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "2c88c1a",
       "subject": "Kiko self-modification: read/edit/deploy own code, audit log, syntax checking, rollback",
-      "when": "39 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "79163d5",
       "subject": "CRITICAL: Mount google-auth routes in Express server (was never mounted on Hetzner)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "a0c7656",
@@ -34,32 +44,32 @@
     {
       "hash": "b82ba2d",
       "subject": "Update KIKO_MEMORY.md with Session 68 changes, fix LegoraTopNav nav sync",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "868b509",
       "subject": "Fix: add sporting-events + knowledge to LegoraTopNav ALL_PAGES (was only in Layout.jsx)",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "d436d4a",
       "subject": "Meeting transcript cron, server route, Google auth consent fix",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "db3f378",
       "subject": "Force consent prompt on Google OAuth (ensures new scopes), fix nav Supabase sync",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "dbce54d",
       "subject": "Google Meet transcript integration: scope, fetcher, Haiku extraction, auto-task creation",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "ba0abf9",
       "subject": "Voice: add language=en to transcription (fixes Korean hallucinations), update nav page list",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "19a20a9",
@@ -69,37 +79,27 @@
     {
       "hash": "a128cfd",
       "subject": "Calendar event creation form, PartnershipMatrix + MemoryConsole header fixes, nav auto-discovery",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "9737c64",
       "subject": "Fix nav auto-discovery for new items, remove old 77KB fallback, fix PartnershipMatrix + MemoryConsole headers",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "48be64e",
       "subject": "Update navigation: calendar→Google Calendar, add sporting-events, messenger nav aliases",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "4ffa96f",
       "subject": "Add Google Calendar page, rename race calendar to Sporting Events, add Messenger to nav",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "332f223",
       "subject": "Casual queries get web_search only (not all 47 tools) — keeps tokens low while enabling current info",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "9096a23",
-      "subject": "Expand casual query detection to match natural phrasing (weather, hotel, etc)",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "eb53ab0",
-      "subject": "Skip business context loading for casual queries (weather, recommendations) — reduces tokens from 22K to ~5K",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     }
   ]
 }

@@ -33,6 +33,7 @@ import linkedinKeepalive from "./api/cron-linkedin-keepalive.js";
 import documentOps from "./api/document-ops.js";
 import meetingTranscripts from "./api/meeting-transcripts.js";
 import googleAuth from "./api/google-auth.js";
+import calendarWebhook from "./api/calendar-webhook.js";
 import { startMonitors } from "./monitors/scheduler.js";
 import { startScheduler } from "./src/cron-scheduler.js";
 
@@ -87,6 +88,7 @@ app.post("/api/cron-contact-reenrich", contactReenrich);
 app.post("/api/meeting-transcripts", meetingTranscripts);
 app.all("/api/google-auth", googleAuth);
 app.all("/api/google-auth/callback", googleAuth);
+app.all("/api/calendar-webhook", calendarWebhook);
 app.use("/api", kikoChatRoutes);
 
 // Routes — existing

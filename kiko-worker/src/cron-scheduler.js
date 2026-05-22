@@ -68,6 +68,7 @@ const SCHEDULES = [
   { schedule: '0 5 * * *',      path: '/api/ingest-knowledge',             name: 'ingest-knowledge' },
   { schedule: '0 5 * * *',      path: '/api/embed',                        name: 'embed-knowledge', method: 'POST', body: '{"mode":"embed"}' },
   { schedule: '0 19 * * 1-5',   path: '/api/meeting-transcripts',          name: 'meeting-transcripts', method: 'POST', body: '{"email":"sunny@vanhawke.com","days":1}' },
+  { schedule: '0 6 * * 1',      path: '/api/calendar-webhook?email=sunny@vanhawke.agency', name: 'calendar-watch-renew', method: 'GET' },
 
   // Weekly
   // DISABLED (cost saving) { schedule: '30 4 * * *',     path: '/api/cron-company-enrich',          name: 'company-enrich' },
