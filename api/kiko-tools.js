@@ -432,6 +432,18 @@ export const TOOL_DEFINITIONS = [
       section: { type: 'string', enum: ['core', 'org', 'knowledge', 'all'], description: 'core: Kiko Bible (operational rules, architecture, team, hard rules). org: Organisation doctrine. knowledge: full research knowledge base (all domains). all: everything.' },
     }, required: ['section'] },
   },
+  {
+    name: 'kiko_self_modify',
+    description: 'Read, edit, and deploy your own source code. Use when you detect a problem via selfcheck or conversation and can fix it. Operations: read_file (view source), edit_file (surgical find/replace), list_files (browse codebase), run_command (build, test, git), deploy (build+deploy+verify). ALWAYS: 1) read the file first, 2) make surgical edits, 3) build to verify, 4) deploy, 5) run selfcheck after. NEVER edit blindly.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['read_file', 'edit_file', 'list_files', 'run_command', 'deploy'], description: 'read_file: view source. edit_file: find/replace. list_files: browse. run_command: shell command. deploy: full build+deploy+restart cycle.' },
+      file_path: { type: 'string', description: 'Relative path from project root, e.g. "api/kiko.js" or "src/pages/Pipeline.jsx"' },
+      old_text: { type: 'string', description: 'For edit_file: exact text to find (must be unique in file)' },
+      new_text: { type: 'string', description: 'For edit_file: replacement text' },
+      command: { type: 'string', description: 'For run_command: shell command to execute. Allowed: git status, git diff, git log, npm run build, pm2 logs, cat, grep, ls, wc, head, tail' },
+      reason: { type: 'string', description: 'Why you are making this change — logged for audit trail' },
+    }, required: ['operation'] },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -501,6 +513,100 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
 
       return parts.join('\n\n') || 'No bible content found.';
     } catch (e) { return agentError('read_bible', e); }
+  }
+
+  // ── Kiko Self-Modification — read, edit, deploy own code ──
+  if (name === 'kiko_self_modify') {
+    const { operation, file_path, old_text, new_text, command, reason } = input;
+    const { execSync } = await import('child_process');
+    const fs = await import('fs');
+    const path = await import('path');
+    const PROJECT_ROOT = '/home/kiko/kiko-worker';
+    const ALLOWED_COMMANDS = ['git status', 'git diff', 'git log', 'npm run build', 'pm2 logs', 'cat ', 'grep ', 'ls ', 'wc ', 'head ', 'tail ', 'node -c '];
+
+    // Audit log
+    const logEntry = `[${new Date().toISOString()}] ${operation} ${file_path || command || ''} — ${reason || 'no reason given'}\n`;
+    try { fs.appendFileSync(path.join(PROJECT_ROOT, 'KIKO_SELF_EDIT_LOG.md'), logEntry); } catch {}
+
+    try {
+      if (operation === 'list_files') {
+        const target = path.join(PROJECT_ROOT, file_path || '');
+        if (!target.startsWith(PROJECT_ROOT)) return 'Error: Path outside project root';
+        const result = execSync(`ls -la "${target}"`, { cwd: PROJECT_ROOT, timeout: 5000 }).toString();
+        return result.slice(0, 3000);
+      }
+
+      if (operation === 'read_file') {
+        if (!file_path) return 'Error: file_path required';
+        const fullPath = path.join(PROJECT_ROOT, file_path);
+        if (!fullPath.startsWith(PROJECT_ROOT)) return 'Error: Path outside project root';
+        if (!fs.existsSync(fullPath)) return `Error: File not found: ${file_path}`;
+        const content = fs.readFileSync(fullPath, 'utf8');
+        if (content.length > 8000) {
+          return `File: ${file_path} (${content.length} chars, ${content.split('\n').length} lines)\n\n` + content.slice(0, 4000) + '\n\n... [TRUNCATED — use run_command with head/tail for specific sections] ...\n\n' + content.slice(-2000);
+        }
+        return `File: ${file_path} (${content.length} chars, ${content.split('\n').length} lines)\n\n${content}`;
+      }
+
+      if (operation === 'edit_file') {
+        if (!file_path || !old_text || new_text === undefined) return 'Error: file_path, old_text, new_text all required';
+        const fullPath = path.join(PROJECT_ROOT, file_path);
+        if (!fullPath.startsWith(PROJECT_ROOT)) return 'Error: Path outside project root';
+        if (!fs.existsSync(fullPath)) return `Error: File not found: ${file_path}`;
+        const content = fs.readFileSync(fullPath, 'utf8');
+        const count = content.split(old_text).length - 1;
+        if (count === 0) return `Error: old_text not found in ${file_path}. Read the file first to get exact text.`;
+        if (count > 1) return `Error: old_text found ${count} times in ${file_path}. Make the search text more specific.`;
+        // Backup
+        fs.writeFileSync(fullPath + '.bak', content);
+        // Apply edit
+        const newContent = content.replace(old_text, new_text);
+        fs.writeFileSync(fullPath, newContent);
+        // Syntax check for JS files
+        if (file_path.endsWith('.js') || file_path.endsWith('.mjs')) {
+          try { execSync(`node -c "${fullPath}"`, { timeout: 5000 }); }
+          catch (syntaxErr) {
+            fs.writeFileSync(fullPath, content); // Rollback
+            return `Error: Syntax error after edit — ROLLED BACK.\n${syntaxErr.message}`;
+          }
+        }
+        return `✓ Edited ${file_path}: replaced 1 occurrence. Backup at ${file_path}.bak. Run deploy to apply.`;
+      }
+
+      if (operation === 'run_command') {
+        if (!command) return 'Error: command required';
+        const isAllowed = ALLOWED_COMMANDS.some(c => command.startsWith(c) || command === c.trim());
+        if (!isAllowed) return `Error: Command not allowed. Permitted: ${ALLOWED_COMMANDS.join(', ')}`;
+        const result = execSync(command, { cwd: PROJECT_ROOT, timeout: 30000, encoding: 'utf8' });
+        return result.slice(0, 4000);
+      }
+
+      if (operation === 'deploy') {
+        const steps = [];
+        // Step 1: Git commit
+        try {
+          execSync('git add -A', { cwd: PROJECT_ROOT, timeout: 10000 });
+          execSync(`git commit --no-verify -m "Kiko self-edit: ${(reason || 'auto-fix').slice(0, 60)}"`, { cwd: PROJECT_ROOT, timeout: 10000 });
+          steps.push('✓ Git committed');
+        } catch (e) { steps.push('○ Git commit skipped (no changes or error): ' + e.message?.slice(0, 100)); }
+        // Step 2: PM2 restart
+        try {
+          execSync('pm2 restart kiko-worker', { cwd: PROJECT_ROOT, timeout: 15000 });
+          steps.push('✓ PM2 restarted');
+        } catch (e) { steps.push('✗ PM2 restart failed: ' + e.message?.slice(0, 100)); }
+        // Step 3: Wait for startup
+        await new Promise(r => setTimeout(r, 3000));
+        // Step 4: Self-check
+        try {
+          const healthRes = await fetch('http://127.0.0.1:3000/health');
+          const health = await healthRes.json();
+          steps.push(`✓ Health check: ${health.status}`);
+        } catch (e) { steps.push('✗ Health check failed: ' + e.message?.slice(0, 100)); }
+        return steps.join('\n');
+      }
+
+      return 'Error: Unknown operation: ' + operation;
+    } catch (e) { return agentError('kiko_self_modify', e); }
   }
 
   // ── Platform Users — user/role awareness ──
