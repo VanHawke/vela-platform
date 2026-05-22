@@ -119,6 +119,7 @@ export default function Settings({ user }) {
     { id: 'command-centre', label: 'Command Centre', path: '/command-centre' },
     { id: 'messages', label: 'Messenger', path: '/messages' },
     { id: 'calendar', label: 'Calendar', path: '/calendar' },
+    { id: 'sporting-events', label: 'Sporting Events', path: '/sporting-events' },
     { id: 'contacts', label: 'Contacts', path: '/contacts' },
     { id: 'organisations', label: 'Organisations', path: '/organisations' },
     { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix' },

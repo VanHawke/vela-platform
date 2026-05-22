@@ -1,30 +1,40 @@
 {
-  "generated_at": "2026-05-22T14:57:24.402Z",
+  "generated_at": "2026-05-22T15:40:40.751Z",
   "commits": [
+    {
+      "hash": "b82ba2d",
+      "subject": "Update KIKO_MEMORY.md with Session 68 changes, fix LegoraTopNav nav sync",
+      "when": "31 minutes ago"
+    },
+    {
+      "hash": "868b509",
+      "subject": "Fix: add sporting-events + knowledge to LegoraTopNav ALL_PAGES (was only in Layout.jsx)",
+      "when": "43 minutes ago"
+    },
     {
       "hash": "d436d4a",
       "subject": "Meeting transcript cron, server route, Google auth consent fix",
-      "when": "41 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "db3f378",
       "subject": "Force consent prompt on Google OAuth (ensures new scopes), fix nav Supabase sync",
-      "when": "47 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "dbce54d",
       "subject": "Google Meet transcript integration: scope, fetcher, Haiku extraction, auto-task creation",
-      "when": "67 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "ba0abf9",
       "subject": "Voice: add language=en to transcription (fixes Korean hallucinations), update nav page list",
-      "when": "75 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "19a20a9",
       "subject": "Document Library: Analyse with Kiko button, KikoFloat pending message system",
-      "when": "80 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a128cfd",
@@ -44,61 +54,51 @@
     {
       "hash": "4ffa96f",
       "subject": "Add Google Calendar page, rename race calendar to Sporting Events, add Messenger to nav",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "332f223",
       "subject": "Casual queries get web_search only (not all 47 tools) — keeps tokens low while enabling current info",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "9096a23",
       "subject": "Expand casual query detection to match natural phrasing (weather, hotel, etc)",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "eb53ab0",
       "subject": "Skip business context loading for casual queries (weather, recommendations) — reduces tokens from 22K to ~5K",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "f605631",
       "subject": "Update KIKO_MEMORY.md with Phase 5.1 decision record",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "f8f76e2",
       "subject": "Phase 5.1: Move Bible from system prompt to JIT read_bible tool — saves ~26KB per query, reduces context drift",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "de65426",
       "subject": "Session 68 brief + Messenger rename in page title/breadcrumb",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "462d97b",
       "subject": "Messenger: rename, forwarding, meeting scheduling, voice improvements, call buttons",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "668cf6a",
       "subject": "Fix voice memory + end call ringing + call button design",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "7849759",
       "subject": "Voice fix: gpt-realtime-2 session config + screen sharing + channel creation + call buttons",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "f693bbe",
-      "subject": "Team messaging: Screen sharing + Channel creation + Matt ID fix",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "b6f1142",
-      "subject": "Voice upgraded to gpt-realtime-2 (GPT-5-class reasoning)",
       "when": "20 hours ago"
     }
   ]
