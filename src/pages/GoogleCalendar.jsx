@@ -26,7 +26,7 @@ function formatDate(dateStr) {
 }
 
 // Event detail panel
-function EventDetail({ event, onClose }) {
+function EventDetail({ event, onClose, onDelete }) {
   if (!event) return null
   const ext = event.extendedProps || {}
   return (
@@ -79,6 +79,13 @@ function EventDetail({ event, onClose }) {
           )}
         </div>
       </div>
+      {onDelete && (
+        <div style={{ padding: '16px 24px', borderTop: `1px solid ${T.border}`, display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={() => { if (window.confirm('Delete this event?')) onDelete(event.id) }} style={{ padding: '8px 16px', borderRadius: T.radiusSm, background: 'transparent', border: `1px solid rgba(200,50,50,0.3)`, fontSize: 12, color: '#C03232', cursor: 'pointer', fontFamily: T.font }}>
+            Delete Event
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -91,7 +98,7 @@ export default function GoogleCalendarPage({ user }) {
   const [viewTitle, setViewTitle] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [newEvent, setNewEvent] = useState({ title: '', date: '', startTime: '09:00', endTime: '10:00', location: '', description: '', attendees: '' })
+  const [newEvent, setNewEvent] = useState({ title: '', date: '', startTime: '09:00', endTime: '10:00', location: '', description: '', attendees: '', addMeet: true })
   const calendarRef = useRef(null)
 
   const fetchEvents = useCallback(async (from, to) => {
@@ -165,17 +172,29 @@ export default function GoogleCalendarPage({ user }) {
       const res = await fetch(`${API}/api/calendar-events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, title: newEvent.title, start, end, location: newEvent.location, description: newEvent.description, attendees }),
+        body: JSON.stringify({ email, title: newEvent.title, start, end, location: newEvent.location, description: newEvent.description, attendees, addMeet: newEvent.addMeet }),
       })
       if (!res.ok) throw new Error((await res.json()).error || 'Failed to create event')
       setShowCreate(false)
-      setNewEvent({ title: '', date: '', startTime: '09:00', endTime: '10:00', location: '', description: '', attendees: '' })
+      setNewEvent({ title: '', date: '', startTime: '09:00', endTime: '10:00', location: '', description: '', attendees: '', addMeet: true })
       // Refresh events
       const cal = calendarRef.current?.getApi()
       if (cal) fetchEvents(cal.view.activeStart.toISOString(), cal.view.activeEnd.toISOString())
       else fetchEvents()
     } catch (err) { setError(err.message) }
     finally { setCreating(false) }
+  }
+
+  const handleDeleteEvent = async (eventId) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const email = session?.user?.email || 'sunny@vanhawke.com'
+      const res = await fetch(`${API}/api/calendar-events?email=${encodeURIComponent(email)}&eventId=${eventId}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to delete')
+      setSelectedEvent(null)
+      const cal = calendarRef.current?.getApi()
+      if (cal) fetchEvents(cal.view.activeStart.toISOString(), cal.view.activeEnd.toISOString())
+    } catch (err) { setError(err.message) }
   }
 
   return (
@@ -235,7 +254,7 @@ export default function GoogleCalendarPage({ user }) {
       {selectedEvent && (
         <>
           <div onClick={() => setSelectedEvent(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 999 }} />
-          <EventDetail event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+          <EventDetail event={selectedEvent} onClose={() => setSelectedEvent(null)} onDelete={handleDeleteEvent} />
         </>
       )}
 
@@ -278,6 +297,10 @@ export default function GoogleCalendarPage({ user }) {
                 <label style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSecondary, display: 'block', marginBottom: 4 }}>Description</label>
                 <textarea value={newEvent.description} onChange={e => setNewEvent(p => ({ ...p, description: e.target.value }))} rows={3} placeholder="Meeting agenda, notes..." style={{ width: '100%', padding: '8px 12px', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, fontSize: 13, fontFamily: T.font, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
               </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: T.text }}>
+                <input type="checkbox" checked={newEvent.addMeet} onChange={e => setNewEvent(p => ({ ...p, addMeet: e.target.checked }))} style={{ width: 16, height: 16 }} />
+                Add Google Meet video call
+              </label>
               <button onClick={handleCreateEvent} disabled={creating || !newEvent.title || !newEvent.date} style={{ height: 40, borderRadius: T.radiusSm, background: creating ? T.textTertiary : T.text, color: T.card, border: 'none', fontSize: 13, fontWeight: 500, cursor: creating ? 'default' : 'pointer', fontFamily: T.font }}>
                 {creating ? 'Creating...' : 'Create Event'}
               </button>

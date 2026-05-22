@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-05-22T19:03:49.413Z",
+  "generated_at": "2026-05-22T19:11:47.164Z",
   "commits": [
+    {
+      "hash": "7722e02",
+      "subject": "Calendar: Google Meet auto-add, event editing (PATCH), event deletion (DELETE)",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "b606118",
       "subject": "Kiko proactive: greetings now include selfcheck health status, alert on failures first",
-      "when": "18 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "ca05907",
       "subject": "Remove Knowledge Base from nav (internal tool, not user-facing)",
-      "when": "19 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "2c88c1a",
       "subject": "Kiko self-modification: read/edit/deploy own code, audit log, syntax checking, rollback",
-      "when": "31 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "79163d5",
@@ -24,7 +29,7 @@
     {
       "hash": "a0c7656",
       "subject": "Fix: add sporting-events to Settings Navigation ALL_TOP_NAV (third location synced)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "b82ba2d",
@@ -59,7 +64,7 @@
     {
       "hash": "19a20a9",
       "subject": "Document Library: Analyse with Kiko button, KikoFloat pending message system",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "a128cfd",
@@ -94,11 +99,6 @@
     {
       "hash": "eb53ab0",
       "subject": "Skip business context loading for casual queries (weather, recommendations) — reduces tokens from 22K to ~5K",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "f605631",
-      "subject": "Update KIKO_MEMORY.md with Phase 5.1 decision record",
       "when": "8 hours ago"
     }
   ]
