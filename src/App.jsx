@@ -16,6 +16,7 @@ const Organisations = lazy(() => import('@/pages/Organisations'))
 const OutreachIntelligence = lazy(() => import('@/pages/OutreachIntelligence'))
 const PartnershipMatrix = lazy(() => import('@/pages/PartnershipMatrix'))
 const CommercialCalendar = lazy(() => import('@/pages/CommercialCalendar'))
+const GoogleCalendar = lazy(() => import('@/pages/GoogleCalendar'))
 const KikoCode = lazy(() => import('@/pages/KikoCode'))
 const Admin = lazy(() => import('@/pages/Admin'))
 const AdminSystem = lazy(() => import('@/pages/AdminSystem'))
@@ -142,7 +143,9 @@ export default function App() {
           <Route path="command-centre" element={<PermissionGate pageKey="command_centre" user={user}><OutreachIntelligence user={user} /></PermissionGate>} />
           {/* News Signals removed — replaced by Partnership Detection alerts */}
           <Route path="partnership-matrix" element={<PermissionGate pageKey="partnership_matrix" user={user}><PartnershipMatrix user={user} /></PermissionGate>} />
-          <Route path="calendar" element={<PermissionGate pageKey="race_calendar" user={user}><CommercialCalendar user={user} /></PermissionGate>} />
+          <Route path="calendar" element={<PermissionGate pageKey="race_calendar" user={user}><GoogleCalendar user={user} /></PermissionGate>} />
+          <Route path="sporting-events" element={<PermissionGate pageKey="race_calendar" user={user}><CommercialCalendar user={user} /></PermissionGate>} />
+          <Route path="races" element={<Navigate to="/sporting-events" replace />} />
           {/* Knowledge Library removed — documents accessible via Kiko chat upload */}
 
           <Route path="campaigns" element={<PermissionGate pageKey="campaigns" user={user}><Campaigns user={user} /></PermissionGate>} />

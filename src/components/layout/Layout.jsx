@@ -53,12 +53,13 @@ const ALL_NAV = [
   { id: 'home', label: 'Home', path: '/', Icon: Home },
   { id: 'pipeline', label: 'Pipeline', path: '/pipeline', Icon: GitBranch },
   { id: 'calendar', label: 'Calendar', path: '/calendar', Icon: Calendar },
+  { id: 'sporting-events', label: 'Sporting Events', path: '/sporting-events', Icon: Compass },
   { id: 'contacts', label: 'Contacts', path: '/contacts', Icon: Users },
   { id: 'organisations', label: 'Organisations', path: '/organisations', Icon: Building2 },
   { id: 'command-centre', label: 'Command Centre', path: '/command-centre', Icon: Target },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'sequences', label: 'Campaigns', path: '/campaigns', Icon: Zap },
-  // LinkedIn page removed — functionality in campaign prospect detail panel
+  { id: 'messages', label: 'Messenger', path: '/messages', Icon: Send },
   { id: 'knowledge', label: 'Knowledge', path: '/knowledge', Icon: Brain },
   { id: 'documents', label: 'Document Library', path: '/documents', Icon: Layers },
 ]
@@ -93,7 +94,7 @@ function getTopNavIds() {
 }
 
 const PAGE_LABELS = {
-  '/pipeline': 'Pipeline', '/calendar': 'Calendar', '/contacts': 'Contacts',
+  '/pipeline': 'Pipeline', '/calendar': 'Calendar', '/sporting-events': 'Sporting Events', '/contacts': 'Contacts',
   '/partnership-matrix': 'Partnership Matrix', '/email': 'Command Centre',
   '/organisations': 'Organisations', '/campaigns': 'Campaigns', '/sequences': 'Campaigns', '/inbox': 'Inbox', '/segments': 'Segments', '/packs': 'Vertical Pack', '/targets': 'Targets',
   '/settings': 'Settings', '/dashboard': 'Dashboard',
@@ -158,7 +159,7 @@ export default function Layout({ user }) {
   // Page permissions — filter nav items based on user's role + per-user overrides
   const userOrgIdNew = '2c6b30da-2d1a-45e5-bbeb-dee1671deba3' // TODO: resolve dynamically when multi-org
   const { canSee: canSeePage } = usePagePermissions(user, userOrgIdNew)
-  const NAV_ID_TO_PAGE_KEY = { 'home': 'home', 'pipeline': 'pipeline', 'calendar': 'race_calendar', 'contacts': 'contacts', 'organisations': 'organisations', 'command-centre': 'command_centre', 'partnership-matrix': 'partnership_matrix', 'sequences': 'campaigns' }
+  const NAV_ID_TO_PAGE_KEY = { 'home': 'home', 'pipeline': 'pipeline', 'calendar': 'race_calendar', 'sporting-events': 'race_calendar', 'contacts': 'contacts', 'organisations': 'organisations', 'command-centre': 'command_centre', 'partnership-matrix': 'partnership_matrix', 'sequences': 'campaigns', 'messages': 'home' }
 
   const isSuperAdmin = user?.app_metadata?.role === 'super_admin'
   // Effective nav = base nav + admin nav (only if super_admin)
