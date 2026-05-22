@@ -621,7 +621,11 @@ export default async function handler(req, res) {
   // ── Early greeting detection — skip heavy fetches for simple greetings ──
   const earlyGreeting = /^(hi|hey|hello|good\s+(morning|afternoon|evening)|howdy|what'?s?\s+up|yo)\b/i.test((message || '').trim());
   // Casual/personal questions that don't need CRM, knowledge base, or entity context
-  const casualQuery = !earlyGreeting && /^(can\s+you\s+recommend|what('?s| is)\s+(a\s+good|the\s+best).*(?:movie|show|book|song|recipe|restaurant|bar)|tell\s+me\s+(a\s+joke|something\s+fun)|play|watch|eat|cook|read|listen|drink|wear|buy|order|try\s+(?:this|that|some)|visit\s+(?:a|the)|sing|dance|joke|game|movie|show|book|song|recipe|weather|temp(?:erature)?|rain|snow|sun|time\s+(?:is\s+it|in)|date\s+today|uno|chess|cards|board\s+game|netflix|spotify|music|playlist|dinner\s+(?:idea|suggestion)|lunch\s+(?:idea|suggestion)|coffee|tea|beer|wine|cocktail|pool|beach|park|gym|yoga|meditat|relax|sleep|nap|chill|vibe|mood|feel\s+(?:good|bad|happy|sad|tired|bored))/i.test((message || '').trim());
+  let casualQuery = !earlyGreeting && /^(can\s+you\s+recommend|what('?s| is)\s+(a\s+good|the\s+best).*(?:movie|show|book|song|recipe|restaurant|bar)|tell\s+me\s+(a\s+joke|something\s+fun)|play|watch|eat|cook|read|listen|drink|wear|buy|order|try\s+(?:this|that|some)|visit\s+(?:a|the)|sing|dance|joke|game|movie|show|book|song|recipe|weather|temp(?:erature)?|rain|snow|sun|time\s+(?:is\s+it|in)|date\s+today|uno|chess|cards|board\s+game|netflix|spotify|music|playlist|dinner\s+(?:idea|suggestion)|lunch\s+(?:idea|suggestion)|coffee|tea|beer|wine|cocktail|pool|beach|park|gym|yoga|meditat|relax|sleep|nap|chill|vibe|mood|feel\s+(?:good|bad|happy|sad|tired|bored))/i.test((message || '').trim());
+  // Extended casual detection — catches natural phrasing like "what's the weather", "recommend a hotel"
+  if (!casualQuery && !earlyGreeting) {
+    casualQuery = /\b(weather|forecast|temperature|hotel\s+recommend|restaurant\s+recommend|recommend\s+a\s+(hotel|restaurant|book|movie|show|place)|cardboard\s+box|moving\s+house|gym\s+near|coffee\s+shop|what\s+should\s+i\s+(eat|watch|read|listen|cook|drink|wear|buy|visit|play))\b/i.test((message || '').trim());
+  }
   const isLightweight = earlyGreeting || casualQuery;
 
   // ── PARALLEL INITIAL LOAD — entityContext, identity, selfKnowledge, Bible layers all at once ──
