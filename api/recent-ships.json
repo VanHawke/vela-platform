@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-05-22T13:18:01.028Z",
+  "generated_at": "2026-05-22T13:23:28.274Z",
   "commits": [
+    {
+      "hash": "9737c64",
+      "subject": "Fix nav auto-discovery for new items, remove old 77KB fallback, fix PartnershipMatrix + MemoryConsole headers",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "48be64e",
       "subject": "Update navigation: calendar→Google Calendar, add sporting-events, messenger nav aliases",
-      "when": "63 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "4ffa96f",
       "subject": "Add Google Calendar page, rename race calendar to Sporting Events, add Messenger to nav",
-      "when": "72 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "332f223",
@@ -29,7 +34,7 @@
     {
       "hash": "f605631",
       "subject": "Update KIKO_MEMORY.md with Phase 5.1 decision record",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f8f76e2",
@@ -54,7 +59,7 @@
     {
       "hash": "7849759",
       "subject": "Voice fix: gpt-realtime-2 session config + screen sharing + channel creation + call buttons",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "f693bbe",
@@ -74,7 +79,7 @@
     {
       "hash": "23ae830",
       "subject": "Remove email notification + restrict morning briefing to super_admin",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "fd7d960",
@@ -94,11 +99,6 @@
     {
       "hash": "1cf5294",
       "subject": "P2: Dead code cleanup — 21 files archived, 3,443 lines removed",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "a549499",
-      "subject": "Updated audit with session 67 resolution log",
       "when": "20 hours ago"
     }
   ]

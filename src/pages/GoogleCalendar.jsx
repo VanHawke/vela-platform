@@ -89,6 +89,9 @@ export default function GoogleCalendarPage({ user }) {
   const [error, setError] = useState(null)
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [viewTitle, setViewTitle] = useState('')
+  const [showCreate, setShowCreate] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [newEvent, setNewEvent] = useState({ title: '', date: '', startTime: '09:00', endTime: '10:00', location: '', description: '', attendees: '' })
   const calendarRef = useRef(null)
 
   const fetchEvents = useCallback(async (from, to) => {
@@ -150,6 +153,31 @@ export default function GoogleCalendarPage({ user }) {
 
   const meetCount = events.filter(e => e.extendedProps?.meetLink).length
 
+  const handleCreateEvent = async () => {
+    if (!newEvent.title || !newEvent.date) return
+    setCreating(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const email = session?.user?.email || 'sunny@vanhawke.com'
+      const start = `${newEvent.date}T${newEvent.startTime}:00`
+      const end = `${newEvent.date}T${newEvent.endTime}:00`
+      const attendees = newEvent.attendees ? newEvent.attendees.split(',').map(e => e.trim()).filter(Boolean) : []
+      const res = await fetch(`${API}/api/calendar-events`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, title: newEvent.title, start, end, location: newEvent.location, description: newEvent.description, attendees }),
+      })
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to create event')
+      setShowCreate(false)
+      setNewEvent({ title: '', date: '', startTime: '09:00', endTime: '10:00', location: '', description: '', attendees: '' })
+      // Refresh events
+      const cal = calendarRef.current?.getApi()
+      if (cal) fetchEvents(cal.view.activeStart.toISOString(), cal.view.activeEnd.toISOString())
+      else fetchEvents()
+    } catch (err) { setError(err.message) }
+    finally { setCreating(false) }
+  }
+
   return (
     <div style={{ fontFamily: T.font, color: T.text, minHeight: '100vh', background: T.bg }}>
       <PageHeader
@@ -161,6 +189,11 @@ export default function GoogleCalendarPage({ user }) {
           { value: String(weekCount), label: 'This week' },
           { value: String(meetCount), label: 'With Meet' },
         ]}
+        toolbar={
+          <button onClick={() => { setShowCreate(true); setNewEvent(e => ({ ...e, date: new Date().toISOString().split('T')[0] })) }} style={{ height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.text, color: T.card, border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Calendar size={14} /> New Event
+          </button>
+        }
       />
 
       <div style={{ padding: '0 44px 44px' }}>
@@ -203,6 +236,53 @@ export default function GoogleCalendarPage({ user }) {
         <>
           <div onClick={() => setSelectedEvent(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 999 }} />
           <EventDetail event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+        </>
+      )}
+
+      {showCreate && (
+        <>
+          <div onClick={() => setShowCreate(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 999 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 440, maxWidth: '90vw', background: T.card, borderRadius: T.radiusCard, boxShadow: T.glassShadowFloat, zIndex: 1000, fontFamily: T.font }}>
+            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${T.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 16, fontWeight: 500, color: T.text }}>New Event</span>
+              <button onClick={() => setShowCreate(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textSecondary }}><X size={16} /></button>
+            </div>
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSecondary, display: 'block', marginBottom: 4 }}>Title *</label>
+                <input value={newEvent.title} onChange={e => setNewEvent(p => ({ ...p, title: e.target.value }))} placeholder="Meeting with..." style={{ width: '100%', padding: '8px 12px', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSecondary, display: 'block', marginBottom: 4 }}>Date *</label>
+                  <input type="date" value={newEvent.date} onChange={e => setNewEvent(p => ({ ...p, date: e.target.value }))} style={{ width: '100%', padding: '8px 12px', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div style={{ width: 100 }}>
+                  <label style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSecondary, display: 'block', marginBottom: 4 }}>Start</label>
+                  <input type="time" value={newEvent.startTime} onChange={e => setNewEvent(p => ({ ...p, startTime: e.target.value }))} style={{ width: '100%', padding: '8px 12px', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div style={{ width: 100 }}>
+                  <label style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSecondary, display: 'block', marginBottom: 4 }}>End</label>
+                  <input type="time" value={newEvent.endTime} onChange={e => setNewEvent(p => ({ ...p, endTime: e.target.value }))} style={{ width: '100%', padding: '8px 12px', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSecondary, display: 'block', marginBottom: 4 }}>Location</label>
+                <input value={newEvent.location} onChange={e => setNewEvent(p => ({ ...p, location: e.target.value }))} placeholder="Office, Zoom link, address..." style={{ width: '100%', padding: '8px 12px', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSecondary, display: 'block', marginBottom: 4 }}>Attendees</label>
+                <input value={newEvent.attendees} onChange={e => setNewEvent(p => ({ ...p, attendees: e.target.value }))} placeholder="email1@example.com, email2@example.com" style={{ width: '100%', padding: '8px 12px', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSecondary, display: 'block', marginBottom: 4 }}>Description</label>
+                <textarea value={newEvent.description} onChange={e => setNewEvent(p => ({ ...p, description: e.target.value }))} rows={3} placeholder="Meeting agenda, notes..." style={{ width: '100%', padding: '8px 12px', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, fontSize: 13, fontFamily: T.font, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+              </div>
+              <button onClick={handleCreateEvent} disabled={creating || !newEvent.title || !newEvent.date} style={{ height: 40, borderRadius: T.radiusSm, background: creating ? T.textTertiary : T.text, color: T.card, border: 'none', fontSize: 13, fontWeight: 500, cursor: creating ? 'default' : 'pointer', fontFamily: T.font }}>
+                {creating ? 'Creating...' : 'Create Event'}
+              </button>
+            </div>
+          </div>
         </>
       )}
 
