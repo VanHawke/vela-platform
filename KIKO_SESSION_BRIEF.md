@@ -1,389 +1,172 @@
-# KIKO INTELLIGENCE OS — COMPLETE ARCHITECTURE & BUILD HISTORY
-
-## For session handoff — read THIS before writing ANY code
-
-## Last updated: 2026-05-11 13:00 UTC (Session 66 final)
-
-### SESSION 66 CHANGES (CRITICAL — read before any code):
-
-**Email Draft & Send Now:**
-- draftOnly fast path: separate `/api/kiko` call with `draftOnly: true`, bypasses full Kiko pipeline
-- Send Now button: 2-step confirmation, sends via `/api/gmail-send`
-- Real email thread subject from metadata (not alert title)
-- defaultTo prop auto-populates recipient from alert metadata
-
-**Closed-Loop CRM Automation (gmail-send.js post-send actions):**
-- Track email in `kiko_email_tracking` (5-day follow-up)
-- Dismiss reply alerts for recipient
-- Log outbound activity
-- Update contact lastActivity + append timestamped interaction note
-- Update linked deal notes
-- Create 14-day follow-up task
-- Auto-create contact if recipient not in CRM
-
-**Cognitive Engine (cron-event-processor.js):**
-- ACTION step now generates: create_alert, create_task, update_deal, update_contact_notes
-- Task due dates anchored to psychology recommendation timing
-- Contact notes get timestamped cognitive analysis
-- Deals auto-reactivate when stage changes (Closed Lost → To revisit)
-- Field names fixed: firstName/lastName (camelCase), title (not job_title)
-- Task date fixer: replace year, not offset recalculation
-- Action handlers support both action.data.field and action.field
-
-**Data Quality Guardrails (3 layers):**
-- start_sequence: blocks enrollment if name doesn't match email
-- bulk_enroll: filters mismatched contacts before enrollment
-- cron-sequence-sender: validates every email before send, creates data_quality alert
-- cron-selfcheck-watcher: scans queue 3x daily for mismatches, auto-blocks
-
-**Chat UX:**
-- Smooth streaming: token buffer, 3 chars/frame at 60fps
-- react-markdown rendering (KikoMessage.jsx): tables, bold, code blocks, lists
-- Streaming hang fix: tickStreamBuffer checks streamingRef.current
-- Inactivity timeout reduced from 45s to 10s
-- Image paste: Cmd+V screenshots in both KikoChat and KikoFloat
-- Waveform dots removed from message footer
-- KikoFloat: same streaming buffer + react-markdown
-
-**LinkedIn Social Listening:**
-- cron-linkedin-social-listen.js: runs noon weekdays, max 25 profiles
-- getActivity() added to linkedinEngine.js: visits activity pages, multi-selector extraction
-- Dedup via kiko_linkedin_activity_log table (entity_name + post_hash unique index)
-- Events emit to kiko_events as 'linkedin_activity', processed by reasoning chain
-- VERIFIED: 9 posts from 3 prospects, 7 processed through full 5-step chain
-
-**Background:**
-- #FEFEFC replaced with #FFFFFF across all 22+ files
-- Morning intelligence, morning email, weekly report crons DISABLED (token savings)
-- Stale kiko-draft.js deleted from Hetzner
-- Old JS bundles cleaned (kept latest 5)
-
-## 60 build sessions spanning April 7-26, 2026
-
-## Transcripts: /mnt/transcripts/ (read journal.txt for session index)
-
----
-
-## ⚠️ MANDATORY BUILD RULES
-
-### KIKO KNOWLEDGE UPDATE — REQUIRED AFTER EVERY BUILD
-
-After EVERY code change, feature addition, or bug fix that affects Kiko's capabilities:
-
-1. **Update** `api/kiko-self-knowledge.js` — this is Kiko's capability map. If you added a tool, changed how something works, or fixed a flow, Kiko must know about it here. She reads this on every request.
-
-2. **Update** `KIKO_BIBLE.md` — this is Kiko's governing document. Architecture changes, sequence logic, channel orchestration, voice rules, hard rules — all go here.
-
-3. **Deploy both to Hetzner** — `scp` both files + `pm2 restart kiko-worker`. If you only deploy code but not knowledge, Kiko doesn't know she has new capabilities and will redirect users to the UI or give outdated advice.
-
-4. **Verify** — after deploying, confirm Kiko knows about the change by checking her self-knowledge or Bible contains the update.
-
-**This is NOT optional.** Kiko is the operating intelligence of the entire platform. If she doesn't know about a feature, it doesn't exist from the user's perspective. Every session must end with a comprehensive Kiko knowledge sync.
-
----
-
-## ⚡ SESSION 60 — COMPLETED
-
-### Campaign Pipeline (all done)
-
-- ✅ build_campaign tool — Kiko executes end-to-end campaign builds via chat
-- ✅ legal_ai category added (22 total categories, 11 teams, all alphabetical)
-- ✅ Sequence engine v2 — LinkedIn reinforces email, never replaces it
-- ✅ 7-touchpoint pattern: Email→LinkedIn→Email→LinkedIn IF→Email→LinkedIn IF→Email
-- ✅ Contract values corrected: $3M-$40M (NOT $500K-$2M)
-- ✅ Post-processing: dashes stripped, banned phrases auto-replaced at code level
-- ✅ askKiko prompt rewritten with good/bad examples and $3M-$40M positioning
-- ✅ Sequence sender v2: handles LinkedIn condition field (skip if not connected)
-- ✅ Send-from dropdown fixed (uses user prop, not supabase.auth timing)
-- ✅ "Regenerate with Kiko" button on sequence tab
-- ✅ Background job processor: async processing, no timeout kills
-- ✅ Source prospects consolidated to one button (background job only)
-- ✅ Campaign targets with "Needs Email" purple badge
-- ✅ Background task Realtime (Supabase subscription, instant updates)
-- ✅ Task panel: Retry/Remove buttons, real progress bar
-- ✅ KikoFloat conversation-aware follow-up pills
-- ✅ Drag-and-drop step reordering in sequence flow view
-- ✅ KIKO_BIBLE + self-knowledge comprehensive update
-
-### Session 61 Priorities
-
-1. End-to-end send test: build → enroll → activate → email lands in inbox
-2. Kiko calling build_campaign live test in chat
-3. Sequence quality review with Sunny on a real campaign
-
-## IDENTITY
-
-**Platform:** Kiko Intelligence OS — AI executive operating partner for Van Hawke Group **Owner:** Sunny Sidhu, CEO of Van Hawke Group (Weybridge, UK) **Entities:** Van Hawke Agency (F1/Formula E sponsorship advisory), Van Hawke Maison Inc. (luxury eyewear), Van Hawke Group Inc. (US holding/IP) **Primary client:** Haas F1 Team (TGR Haas) **Team:** Sunny (super_admin), Matt Smith (user, Head of Commercial Partnerships, Newark DE)
-
----
+# KIKO SESSION 68 BRIEF
+# Created: 2026-05-22 | Previous: Session 67 (massive intelligence + audit + features session)
+# READ THIS ENTIRE FILE BEFORE WRITING ANY CODE
 
 ## ENVIRONMENT
+- Repo: `/Users/sunny/Desktop/vela-platform/`
+- Frontend: `https://kiko.vanhawke.agency` (Hetzner nginx at /var/www/kiko/)
+- API: `https://api.vanhawke.agency` (Hetzner 178.104.73.22, PM2 process: kiko-worker)
+- Worker: `/home/kiko/kiko-worker/` on Hetzner
+- Supabase: project `dwiywqeleyckzcxbwrlb`
+- Latest commit: `462d97b` on main
+- Deploy: `npm run build && scp -r dist/* root@178.104.73.22:/var/www/kiko/` for frontend
+- Deploy API: `scp api/FILE.js root@178.104.73.22:/home/kiko/kiko-worker/api/ && ssh root@178.104.73.22 "su - kiko -c 'pm2 restart kiko-worker'"`
+- NEVER run `npx vercel` — Vercel is permanently cancelled
 
-ComponentLocationDetailsRepo`/Users/sunny/Desktop/vela-platform/`Git → auto-deploys to VercelFrontend`https://kiko.vanhawke.agency`Vercel (static only, free tier)API`https://api.vanhawke.agency`Hetzner 178.104.73.22, Express port 3000, nginx SSLSupabaseproject_id `dwiywqeleyckzcxbwrlb`62 kiko\_\* tables, 4,500+ entriesLinkedInHetznerPlaywright + Decodo proxy ([isp.decodo.com:10001](http://isp.decodo.com:10001))VoiceOpenAI GPT-4o Realtime APIWebRTC, api/realtime-token.js
+## CRITICAL EMAIL MAPPING
+- Auth email: `sunny@vanhawke.com` | Config email: `sunny@vanhawke.agency`
+- getUserConfig has domain fallback: .com ↔ .agency (fixed in Session 67)
+- Always test with `sunny@vanhawke.agency` for config lookups
+- Matt's auth: `matt.smith@vanhawke.com` | Config: `matt.smith@vanhawke.agency`
+- Matt's auth ID: `f1cb67ee-2917-44a3-affe-e8779ede3851`
+- Sunny's auth ID: `9f486437-4bf5-4111-abfe-fe19bfa76063`
 
-### Deploy Rules (NEVER BREAK)
+## WHAT CHANGED IN SESSION 67 (MASSIVE SESSION)
 
-- `npm run build` → `git add -A` → `git commit --no-verify -m "msg"` → `git push origin main`
-- Hetzner: `scp` → `chown kiko:kiko` → `su - kiko -c 'cd /home/kiko/kiko-worker && pm2 restart kiko-worker'`
-- NEVER use `--force`, `VERCEL_FORCE_NO_BUILD_CACHE=1`, or `npx vercel --prod` (caused $830 overage)
-- NEVER modify `api/kiko.js`, `api/kiko-tools.js`, `api/kiko-self-knowledge.js` without permission
-- Always `node --check` before deploying server files
-- After PM2 changes: `pm2 save`
+### INTELLIGENCE LAYER (Phase 3-5)
+- **Lean system prompt**: 47KB → 3KB (15x reduction). Old 407-line SYSTEM_PROMPT replaced with 46-line slim version
+- **KIKO_MEMORY.md**: Persistent memory file updated after every conversation (compaction) and weekly (Dreaming)
+- **kiko-self-knowledge-lean.js**: Loads identity + goals + intents + patterns + personal memory (~3K tokens)
+- **Multi-pass morning synthesis**: Planner → Generator → Evaluator (Anthropic's evaluator-optimizer pattern)
+- **Weekly outcome learning**: Extracts patterns from campaign data, stores in kiko_learning_log
+- **Real-time correction detection**: "No, that's wrong" / "Actually..." detected and saved as preferences
+- **Auto-task creation**: Post-conversation hook creates tasks from open_threads
+- **Decision framework**: Every response must connect to goal → assess → recommend → justify → offer to act
+- **Banned narration phrases**: "Good —", "Context loaded", "Memory loaded", "Let me check" etc.
 
----
+### CODE CLEANUP
+- 176 → 155 API files (21 archived to _archived/)
+- 27,079 → ~20,000 lines
+- kiko.js: 2,287 → 1,967 lines
+- kiko-tools.js: 1,936 → 1,811 lines
+- ask_lemlist_live tool REMOVED (Lemlist cancelled)
+- Old 77KB self-knowledge archived to _archived/replaced/
+- learning-director cron DISABLED (no output since April 25)
+- 17 disabled cron files archived
 
-## COMPLETE BUILD HISTORY (April 7-24, 2026)
+### CRON CONSOLIDATION
+- Dual cron systems discovered: cron-scheduler.js (27 active) + monitors/scheduler.js (5 active + 1 disabled)
+- proactive-intel in monitors DISABLED (overlaps with heartbeat + morning-synthesis)
+- All server-only files synced to git (routes/kiko-chat.js, monitors/, etc.)
+- Active crons: 26 (from 43)
+- Weekly cost: ~$15-30 (from $100+)
 
-### Week 1 (Apr 7-9): Foundation
+### MESSENGER (renamed from Messages)
+- File sharing: drag & drop → Supabase Storage (vela-assets bucket)
+- Voice calls: WebRTC via Supabase Realtime signaling
+- Video calls: WebRTC with PiP local video, toggle camera
+- Screen sharing: getDisplayMedia, auto-revert to camera
+- Message forwarding: forward arrow icon, picks target channel
+- Meeting scheduling: "📅 Meet" button → creates Google Calendar event → posts in channel
+- Channel creation: "+" button in sidebar
+- Reactions, threading, edit, delete, pin, @kiko AI mentions
+- Realtime delivery, typing indicators, presence, browser notifications
+- Matt's channel member ID fixed (was wrong UUID)
 
-- Kiko Master Plan v1.0 architecture designed and executed
-- 5 of 16 sprints shipped (A1-A2, B1 partial)
-- Lemlist removal + contacts cleanup (11,876→4,193)
-- 72% cron cost reduction
-- Command Centre built
-- Campaign sequencer wired
-- Kiko Bible + self-learning feedback loop + meta-learning + rule promotion
-- Intent classifier built
-- Voice-in-chat transcription wiring
-- Parallel multi-task conversations (schema + UI)
-- Deterministic campaign builder
-- F1 partnership matrix data hygiene
-- System-wide audit (27 agent files, 4,829 lines)
-- Morning Brief system
-- Self-test endpoint (18 checks)
+### VOICE (gpt-realtime-2)
+- Upgraded to gpt-realtime-2 (GPT-5-class reasoning)
+- Session config: semantic_vad, gpt-realtime-whisper transcription
+- Audio checks ("can you hear me") now answer instantly without ask_kiko
+- 10 varied holding phrases instead of just "Let me check"
+- Email mapping fix: voice now loads personal memory correctly
 
-### Week 2 (Apr 10-13): Multi-User & Polish
+### SELFCHECK
+- 22/25 passing (was 17/25)
+- Fixed: LinkedIn column (user_email not user_id), Gmail cron name, category count
+- All 7 operational checks pass: Claude API, Gmail sync, LinkedIn cookies, campaign, briefing, enrollments, reply detection
 
-- v0.0.11 → v0.0.62 deployed (51 versions)
-- Build campaign timeout fix
-- Voice mode hardening (auto-reconnect, heartbeat, status indicator)
-- Gmail signature fix (sendAs API alias matching)
-- Multi-conversation foundation + ThreadIndicator UI
-- Memory extraction quality (642 rows cleaned, 8-pass filter)
-- Complete 7-sub-phase multi-user migration:
-  - A: Audit → B: Org schema → C: Three-layer Bible split → D: Settings tabs
-  - E: Export role gating → F: Campaign send-as + onboarding → G: Page permissions
-- Matt Smith onboarding (Google OAuth fix, RLS provisioning, kiko_user_config)
-- Background Tasks Phase 1-4 (fire-and-switch, SSE streaming)
-- Domain migration: vela-platform-one.vercel.app → kiko.vanhawke.agency
-- Vela→Kiko rename across all user-facing surfaces
-- DB-backed branding refactor
-- Embeddings backfill
-- 8 unread warm replies recovered from Lemlist inbox
-
-### Week 2b (Apr 14-15): LinkedIn & UI Redesign
-
-- v0.0.63 → v0.0.70 (Lemlist webhook safety net, LinkedIn Layers 1+2)
-- Complete native LinkedIn integration:
-  - Layer 1: Tools (search, send invite, send message)
-  - Layer 2: Sequence engine with safety (25/day→40, kill switch, audit log)
-  - Voyager API blocked by Cloudflare → Playwright stealth engine on Hetzner
-  - Chrome extension for cookie sync
-  - Decodo residential proxy integration (dedicated Germany IPs)
-- Hetzner VPS provisioned (CX21 Falkenstein)
-- [Legora.com](http://Legora.com) UI redesign:
-  - Complete design system extraction (free fonts, exact colour tokens)
-  - 8 HTML mockup pages built and approved
-  - Phase 1 token swap across entire platform
-  - kiko-polish.css/js with 21st.dev-inspired patterns
-  - 3 navigation option mockups (Option A locked)
-  - Calendar Option C with outreach intelligence
-
-### Week 2c (Apr 15-17): React Port & Platform Buildout
-
-- Full Legora React port committed (all 8 pages)
-- Supabase outreach intelligence tables + RLS
-- Settings overhaul (11 tabs)
-- Pipeline deal panel consistency
-- Hetzner cron migration (48→49 crons from Vercel)
-- Voice settings (5 tone presets)
-- Google Calendar integration (read + write)
-- Knowledge seeder expanded (15→26 domains)
-- Pipeline analytics + activity history + inline editing
-- Contacts enrichment badges
-- LinkedIn connect UI in Settings
-- Notification bell with real data
-- F1 2026 calendar (22 races) + MotoGP + WEC + Formula E calendars
-- Knowledge versioning
-- Sequence visual builder with drag-to-reorder
-- Contact dedup
-- Campaign section Legora theme overhaul
-- Prospect detail panel + campaign stats bar
-- Google Maps directions tool
-- Supabase backup setup
-
-### Week 3 (Apr 19-22): Mobile + Campaign Engine
-
-- Mobile PWA buildout (page-by-page approval, bottom nav, service worker)
-- KikoAvatar 5-dot identity system
-- Voice mode mobile fixes
-- Command Centre mobile panel
-- Campaign engine completion (multi-user email + LinkedIn sending + reply detection)
-- Knowledge domain expansion to 28 domains
-- Formula E calendar fix (17 races)
-- SequenceDetail Legora theme alignment (81 fixes)
-- Lemlist-style campaign builder rebuild (flow view + conditions + multichannel)
-- Prospect management (bulk select/sort/duplicate/delete)
-- Add Prospects deep research pipeline
-- Email intelligence engine (6 APIs)
-- Gmail draft creation for team members with signatures
-- Multi-file upload system
-- Condition evaluation engine
-- Platform audit with dead code cleanup
-- Self-improvement engine (learned rules, preferences, user awareness)
-- Document library page
-- Push notifications infrastructure
-
-### Week 3b (Apr 22-24): Hetzner Migration + Intelligence Engine
-
-- ALL API calls migrated to Hetzner (62 frontend fetch() calls updated)
-- Wildcard Express route handler + nested path support
-- SSL (Let's Encrypt) + DNS (api.vanhawke.agency)
-- nginx SSE streaming config
-- Missing directories synced (api/lib/, api/\_lib/, api/admin/)
-- Reasoning engine built and deployed:
-  - Pre-processing: entity extraction (Haiku), CRM lookup, knowledge search
-  - 8-second hard timeout, skips lightweight intents
-  - Web verification removed (delegated to Claude's tools)
-  - Results injected as PRE-VERIFIED INTELLIGENCE
-- Email draft fixes: body blank (renderBody regex), subject/to stateful, memory fire-and-forget
-- Real-time monitors: pipeline (30min), email (2min), follow-ups (2hrs), scheduled sender (5min)
-- Supabase Realtime listener (3 channels)
-- All 16 crons migrated from Vercel to Hetzner
-- Full platform audit (22 tools tested, 25 agents verified)
-- Model migration to claude-sonnet-4-6
-- Follow-up tracking system (kiko_follow_ups table, 7 prospects seeded)
-- Scheduled email sending (table, cron, UI with timezone picker)
-- Auto-tracking hook (every sent email auto-logged)
-- Chat sidebar fixes (rename event + correct JSONB query)
-- Dynamic timezone detection (browser Intl API)
-- Display names ("Matt Smith [matt.smith@vanhawke.agency](mailto:matt.smith@vanhawke.agency)") across all email paths
-- Campaign sender display name fix (was hardcoded "Sunny Sidhu")
-- Simple drafts use Haiku (\~12s vs 22-37s Sonnet)
-- Proactive Intelligence Engine (2x daily — scans F1/fashion/business, creates strategic alerts)
-- 8 competitive research domains in learning director
-- Complete memory architecture awareness (62 tables, 4,500+ entries documented)
-- 3 deep query tools (relationships, thought journal, conversation insights)
-- Document generation pipeline (research → structure → branded HTML/PPTX)
-- Homepage fixes (greeting, background tasks icon, nav CSS grid centering)
-
-### Session 59 (Apr 24-25): Proactive Intelligence v2 + Hetzner Consolidation + KikoLiveContext
-
-**Intelligence Infrastructure:**
-
-- Self-Discovery Engine (monitors/competitive-discovery.js) — 5 domains rotating weekly
-- Predictive Synthesis added to proactive-intel monitor — 5 prediction types, 2x daily
-- Agency Org Intel domain (12 topics) in learning director. Total: 29 research domains
-- Knowledge Visibility Fix — domain-aware loading (latest per domain, up to 28)
-- search_knowledge now searches kiko_knowledge table
-- 16 dormant crons activated (cron-scheduler.js wired into server.js, 21 local jobs)
-- 26 dead cron entries removed, pg_cron audit confirmed zero jobs
-- Full API sync: 120 files to Hetzner. cron-job-processor URL: Vercel → Hetzner
-- Vercel stripped to 1 function (google-auth only) — free tier ready
-
-**KikoLiveContext (src/contexts/KikoLiveContext.jsx):**
-
-- Single source of truth for all intelligence surfaces
-- Supabase Realtime subscriptions on 5 tables (alerts, tasks, follow-ups, draft_actions, activities)
-- All actions logged to activities table — Kiko reads these in her system prompt
-- Homepage pills, alert panel, Command Centre all share live state
-- Dismiss alert → all surfaces update. Complete task → pills rebuild. Instant.
-
-**Command Centre:**
-
-- Follow-up tracker + mark-as-done, campaign activity section
-- Expanded signals (predictions, discoveries, proactive intel)
-- Role-based filtering (Matt = sponsorship only, Sunny = all)
-- Auto-reconciliation checks 3 sources (activities, outreach queue, follow-ups)
-- Stale deals 30-365d only (excludes never-touched). Clear all overdue button
-- Tasks/followUps/actions from KikoLiveContext — no duplicate queries
-
-**Alert Panel (KikoInsights):**
-
-- Fully rewritten to use KikoLiveContext
-- Inline CTAs on every alert: Brief me, Act on this, × (no expand needed)
-- Suggested actions: Do this, Brief me first, × (was icon-only, now text CTAs)
-- Shows ALL undismissed alerts (count matches pill)
-
-**Homepage:**
-
-- CSS alignment fixed (removed marginLeft: -14 offset when sidebar collapsed)
-- Alert pill hidden when count=0, pills never exceed prompt bar width (660px, nowrap)
-- Dynamic pills from context: follow-ups, replies, stale deals, predictions
-- Labels truncated at 28 chars, 3 chips when alert visible, 4 when hidden
-
-**Data Fixes:**
-
-- 125 null user_id alerts → assigned to Sunny. All monitors now write user_id
-- RLS policies added for kiko_follow_ups + kiko_draft_actions (were invisible to frontend)
-- 37 overdue tasks bulk-cleared. Illumio follow-up closed (Closed Lost deal)
-- Nscale + Stord deal lastActivity updated from follow-up sent dates
-- Old noise alerts dismissed. Draft actions cleared. Clean slate.
+### DATA FIXES
+- D.Energy: null category → Energy/Petrochemical
+- Cybersecurity open teams: updated to include Mercedes
+- LinkedIn: 20 failed entries reset for retry
+- Morning briefing: restricted to super_admin only (user_id set)
 
 ---
 
-## CURRENT ARCHITECTURE (April 24, 2026)
+## OUTSTANDING ITEMS FOR THIS SESSION
 
-### Monitors (all on Hetzner, weekdays only)
+### P0 — MUST DO FIRST:
+1. **"Messages" → "Messenger" everywhere**: Settings page, Kiko tool definitions, navigate_page enum, any remaining references. Also update KIKO_MEMORY.md and lean prompt so Kiko knows it's "Messenger" not "Messages"
+2. **Make Kiko aware of ALL new capabilities**: Update lean prompt with Messenger features (forwarding, meeting scheduling, screen sharing, video calls), voice improvements, self-diagnosis, calendar integration
+3. **Voice still broken**: In Session 67, voice dropped connections and gave Korean hallucinations. The session config was updated to gpt-realtime-2 format + email mapping fixed. NEEDS TESTING. If still broken, check:
+   - Browser console for WebRTC errors
+   - Whether session.update is being received (format might still be wrong)
+   - Whether ask_kiko timeout is causing connection drops
+   - The useRealtimeVoice.js hook also needs the same session config update as KikoVoice.jsx
 
-MonitorSchedulePurposePipeline30min308 deals health scanEmail replies2min (7am-9pm)Gmail inbox scan for repliesFollow-ups2hrs (8am-8pm)Overdue follow-up alertsScheduled sender5min (7am-9pm)Send emails at scheduled timeProactive intel + predictions8am + 2pmF1/fashion/business strategic alerts + predictive synthesisCompetitive discoverySunday 5amSelf-discovers new competitors, prospects, disruptorsLearning director3am1 competitive research topic per night (29 domains)RealtimeAlways3 Supabase channelsCron scheduler21 jobsAPI crons calling localhost (previously dormant, activated Session 59)
+### P1 — CALENDAR INTEGRATION (Sunny's vision):
+Sunny proposed: "Copy all of Google Calendar's functionality but bring it into Kiko, synced perfectly with Google Calendar and Gmail. Launch Google Meet from within the platform. Add a transcription tool for meetings that gives Kiko better understanding."
 
-### Tools (42+ in kiko-tools.js)
+This is a major feature build. The architecture:
+- **Bidirectional Google Calendar sync**: Read events (already done in morning synthesis), write events (already done in schedule-meeting), but also need: real-time webhook for calendar changes, accept/decline from within Kiko, recurring events, event editing
+- **Gmail calendar invites**: Auto-detect .ics attachments and calendar invites in emails, show accept/decline in Command Centre
+- **Google Meet integration**: When scheduling a meeting, auto-add Google Meet link. Launch Meet from within Kiko
+- **Meeting transcription**: Use gpt-realtime-whisper or Deepgram to transcribe meetings. Store transcripts in kiko_knowledge. Give Kiko access to meeting context
+- **Calendar page**: Already exists at /calendar (race calendar). Needs dual view: F1 race calendar + Google Calendar events
 
-Agents: navigator, deal, data, outreach, document, memory, strategy, negotiation, category, finance, ea, legal, dispute, content, investment, pricing, signal, travel, specialist, code_review Actions: navigate_page, log_activity, google_maps_link, create_email_draft, batch_draft_emails, read_email, read_calendar, manage_knowledge, linkedin_search/invite/message, get_platform_users, update_kiko_preference, search_conversations, trigger_triage New: check_follow_ups, check_scheduled_emails, generate_document, query_relationships, query_thought_journal, query_conversation_insights
-
-### Memory Systems (62 tables, 4,500+ entries)
-
-Loaded every conversation: Core Bible, Org Bible, User Bible, Knowledge Base (28+ domains), Learned Rules (43), Preferences (8), Personal Context (486), Conversation Insights (last 5 of 1,591), User Profiles (1) Queryable via tools: Thought Journal (196), Relationships (94), Email Style (16), AI Memory (153), Learning Log (433), Memories (1,431), Skills (35)
-
-### Research Domains (9 Van Hawke competitive + academic curriculum)
-
-VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning, agency org structures VH Business: zero-to-global building, marketing/social playbook VH Maison: eyewear competitive, fashion marketing Academic: 15+ pillars (sales, negotiation, psychology, legal, etc.) Self-Discovery: agency competitors, prospect signals, eyewear disruptors, agency structures, F1 commercial shifts
-
----
-
-## WHAT'S PENDING (prioritized)
-
-### Must Fix
-
-1. **Homepage alignment** — CSS grid deployed but user says nothing changed. Needs verification + possible cache issue
-2. **Document generation speed** — 150s total (53s research + 97s structure). JSON repair added. Needs PPTX test + move to background job
-3. **Email drafts still \~22s** for complex (Sonnet). Simple use Haiku (\~12s)
-
-### Should Build
-
-4. **ChatGPT re-import** — User has extensive ChatGPT conversations to import
-5. **Supabase pg_cron audit** — 11 crons run via pg_cron, some may overlap with the newly activated cron-scheduler. Verify no double execution
-6. **Proactive synthesis feedback** — Predictions should feed into morning brief and greeting. Verify alert → brief pipeline works
-7. **Vercel cleanup** — Remove api/ serverless function config from vercel.json since all API runs on Hetzner now
-
-### Future
-
- 8. **Google Pub/Sub** — Webhook built but blocked by Workspace policy. 2min polling as workaround
- 9. **Meeting transcription** — BlackHole + Whisper approach designed, parked
-10. **Full Vercel elimination** — Serve frontend from Hetzner
-11. **SponsorSignal LinkedIn posting system**
+### P2 — REMAINING FIXES:
+4. **Old 77KB self-knowledge fallback**: Still loaded if lean fails. Should be removed once lean proven stable
+5. **Bible still loaded every conversation (~26KB)**: Should be moved to just-in-time via tools
+6. **Campaign steps 2, 4, 6, 8, 9, 10, 11**: Still need template text (LinkedIn steps + breakup email)
+7. **LinkedIn 20% failure rate**: 20 entries reset for retry — monitor results
+8. **End call not stopping ringing**: tones.stop() fix deployed but needs testing
+9. **useRealtimeVoice.js**: Mobile voice page needs same session config update as KikoVoice.jsx
 
 ---
 
-## OPERATING RULES
+## ARCHITECTURE REFERENCE
 
-### Email
+### System Prompt Flow:
+1. SLIM_SYSTEM_PROMPT (46 lines, ~3KB) — identity + psychology + doctrine
+2. {DYNAMIC_SELF_KNOWLEDGE} → kiko-self-knowledge-lean.js (~3K tokens)
+   - Loads: KIKO_MEMORY.md, personal facts, goals, intents, patterns
+3. Bible block (~26KB) — STILL loaded, should move to JIT
+4. Knowledge base (scored by relevance to current query)
+5. Learned rules + preferences
+6. Entity context (page-specific)
+7. Routing hints (per intent)
 
-- NEVER include pricing in early-stage outreach
-- NEVER use generic openings ("I hope this finds you well")
-- Always "intelligent age" not "AI generation"
-- Always "Cultural Performance Eyewear" for Van Hawke Maison
-- Never reference "secured funding" with prospects
-- Always USD, never GBP
-- Emails under 150 words
-- Display: "Matt Smith [matt.smith@vanhawke.agency](mailto:matt.smith@vanhawke.agency)" (all paths)
+### Tool Execution:
+- 47 tools registered in kiko-tools.js
+- executeTool() dispatches by name
+- Timeouts: 35s default, 60s for complex (data_agent, build_campaign, generate_document)
+- Tool results fed back to Claude for next round (max 5-10 rounds)
 
-### Code
+### Cron Systems:
+- System A: kiko-worker/src/cron-scheduler.js — 26 active HTTP-based crons
+- System B: kiko-worker/monitors/scheduler.js — 5 active node-cron monitors
+- Cron heartbeats stored in kiko_cron_heartbeats table
 
-- Deliverables first, commentary second
-- If asked to "tighten," cut 25-40%
-- Strategic advisor: brutally honest, start with hard truth
-- Before API work: search current official docs first
-- Every Kiko session: read KIKO_SESSION_BRIEF.md + KIKO_EVOLUTION_PLAN.md
-- Update KIKO_BIBLE.md after every ship [BIBLE.md](http://BIBLE.md) after every ship [BIBLE.md](http://BIBLE.md) after every ship
+### Database:
+- Supabase project: dwiywqeleyckzcxbwrlb
+- 146 RLS policies
+- 2 users: sunny@vanhawke.agency (super_admin), matt.smith@vanhawke.agency (user)
+- Key tables: kiko_user_config, kiko_alerts, kiko_goals, kiko_intents, kiko_learning_log, kiko_memories, kiko_knowledge, kiko_team_messages, kiko_team_channels, kiko_outreach_queue, kiko_sequence_enrollments, contacts, deals, tasks
+
+### Voice Architecture:
+- Token: api/realtime-token.js → gpt-realtime-2 session
+- Transport: WebRTC direct to OpenAI
+- Intelligence: Voice model calls ask_kiko() → /api/kiko (same brain as text)
+- Instructions: src/lib/buildVoiceInstructions.js
+- Components: KikoVoice.jsx (desktop), MobileVoicePage.jsx (mobile), useRealtimeVoice.js (hook)
+
+### Messenger Architecture:
+- Frontend: src/pages/Messages.jsx (795 lines)
+- API: api/team-messages.js (364 lines)
+- Voice/Video: src/hooks/useVoiceCall.js (409 lines)
+- Storage: Supabase Storage bucket 'vela-assets'
+- Realtime: Supabase postgres_changes on kiko_team_messages
+- Channels: General, Alpine Campaign, DM-sunny-matt (+ create from UI)
+
+---
+
+## PROCESS RULES (PERMANENT)
+- Read KIKO_SESSION_BRIEF.md FIRST before any code
+- Build locally with `npm run build`, verify no errors
+- Deploy frontend: `scp -r dist/* root@178.104.73.22:/var/www/kiko/`
+- Deploy API: `scp api/FILE.js root@178.104.73.22:/home/kiko/kiko-worker/api/`
+- Restart: `ssh root@178.104.73.22 "su - kiko -c 'pm2 restart kiko-worker'"`
+- NEVER run `npx vercel`
+- Test EVERY change before claiming it works
+- Update KIKO_MEMORY.md after significant changes
+- Surgical edits only — no destructive rewrites

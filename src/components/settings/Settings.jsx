@@ -117,7 +117,7 @@ export default function Settings({ user }) {
     { id: 'pipeline', label: 'Pipeline', path: '/pipeline' },
     { id: 'campaigns', label: 'Campaigns', path: '/campaigns' },
     { id: 'command-centre', label: 'Command Centre', path: '/command-centre' },
-    { id: 'messages', label: 'Messages', path: '/messages' },
+    { id: 'messages', label: 'Messenger', path: '/messages' },
     { id: 'calendar', label: 'Calendar', path: '/calendar' },
     { id: 'contacts', label: 'Contacts', path: '/contacts' },
     { id: 'organisations', label: 'Organisations', path: '/organisations' },

@@ -318,9 +318,9 @@ export default function Messages({ user }) {
         <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '1.1px', textTransform: 'uppercase', color: C.sub, marginBottom: 6 }}>
           <span style={{ fontWeight: 600, color: C.text }}>Today</span>
           <span style={{ margin: '0 6px', color: C.muted }}>/</span>
-          <span>Messages</span>
+          <span>Messenger</span>
         </div>
-        <h1 style={{ fontSize: 36, fontWeight: 300, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', margin: 0, color: C.text }}>Messages</h1>
+        <h1 style={{ fontSize: 36, fontWeight: 300, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', margin: 0, color: C.text }}>Messenger</h1>
       </div>
 
       {/* Main layout: sidebar + chat */}
