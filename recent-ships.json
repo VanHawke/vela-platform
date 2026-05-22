@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-05-22T13:23:28.274Z",
+  "generated_at": "2026-05-22T13:36:54.517Z",
   "commits": [
+    {
+      "hash": "a128cfd",
+      "subject": "Calendar event creation form, PartnershipMatrix + MemoryConsole header fixes, nav auto-discovery",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "9737c64",
       "subject": "Fix nav auto-discovery for new items, remove old 77KB fallback, fix PartnershipMatrix + MemoryConsole headers",
-      "when": "5 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "48be64e",
       "subject": "Update navigation: calendar→Google Calendar, add sporting-events, messenger nav aliases",
-      "when": "68 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "4ffa96f",
       "subject": "Add Google Calendar page, rename race calendar to Sporting Events, add Messenger to nav",
-      "when": "77 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "332f223",
       "subject": "Casual queries get web_search only (not all 47 tools) — keeps tokens low while enabling current info",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "9096a23",
       "subject": "Expand casual query detection to match natural phrasing (weather, hotel, etc)",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "eb53ab0",
       "subject": "Skip business context loading for casual queries (weather, recommendations) — reduces tokens from 22K to ~5K",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f605631",
@@ -44,7 +49,7 @@
     {
       "hash": "de65426",
       "subject": "Session 68 brief + Messenger rename in page title/breadcrumb",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "462d97b",
@@ -54,7 +59,7 @@
     {
       "hash": "668cf6a",
       "subject": "Fix voice memory + end call ringing + call button design",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "7849759",
@@ -69,12 +74,12 @@
     {
       "hash": "b6f1142",
       "subject": "Voice upgraded to gpt-realtime-2 (GPT-5-class reasoning)",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "f611ead",
       "subject": "Real-time correction learning: detects explicit corrections + saves as persistent preferences",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "23ae830",
@@ -94,11 +99,6 @@
     {
       "hash": "068845a",
       "subject": "P2: Auto-task creation + Push email notification + Calendar in synthesis",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "1cf5294",
-      "subject": "P2: Dead code cleanup — 21 files archived, 3,443 lines removed",
       "when": "20 hours ago"
     }
   ]

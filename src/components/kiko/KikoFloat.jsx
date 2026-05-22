@@ -282,6 +282,19 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   // Auto-reopen after navigation (page reload preserves state via sessionStorage)
   useEffect(() => {
     try {
+      // Check for pending messages from other pages (e.g. "Analyse with Kiko" from Document Library)
+      const pendingRaw = sessionStorage.getItem('kiko_pending_message')
+      if (pendingRaw) {
+        sessionStorage.removeItem('kiko_pending_message')
+        try {
+          const { message, timestamp } = JSON.parse(pendingRaw)
+          if (message && Date.now() - timestamp < 30000) {
+            setInput(message)
+            setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open')
+            return // Don't also process kiko_reopen
+          }
+        } catch {}
+      }
       const raw = sessionStorage.getItem('kiko_reopen')
       if (!raw) return
       sessionStorage.removeItem('kiko_reopen')
@@ -301,6 +314,24 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open')
       }
     } catch {}
+  }, [])
+
+  // Listen for pending message events from other components (e.g. Document Library "Analyse with Kiko")
+  useEffect(() => {
+    const handler = () => {
+      const raw = sessionStorage.getItem('kiko_pending_message')
+      if (!raw) return
+      sessionStorage.removeItem('kiko_pending_message')
+      try {
+        const { message, timestamp } = JSON.parse(raw)
+        if (message && Date.now() - timestamp < 30000) {
+          setInput(message)
+          setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open')
+        }
+      } catch {}
+    }
+    window.addEventListener('kiko_pending_check', handler)
+    return () => window.removeEventListener('kiko_pending_check', handler)
   }, [])
 
   function toggleOpen() {

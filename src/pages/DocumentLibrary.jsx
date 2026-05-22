@@ -1,6 +1,6 @@
 // src/pages/DocumentLibrary.jsx — Document Library (Legora theme, matches Campaigns layout)
 import { useState, useEffect, useCallback } from 'react'
-import { useOutletContext } from 'react-router-dom'
+import { useOutletContext, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import T from '@/lib/theme'
 import TemplateEditorModal from '@/components/TemplateEditorModal'
@@ -27,6 +27,7 @@ function formatDate(d) {
 
 export default function DocumentLibrary() {
   const { isMobile } = useOutletContext() || {}
+  const navigate = useNavigate()
   const [docs, setDocs] = useState([])
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState('user')
@@ -323,6 +324,17 @@ export default function DocumentLibrary() {
                   <Download size={14} /> Download
                 </a>
               )}
+              <button onClick={() => {
+                const title = selectedDoc.title || selectedDoc.name || 'document'
+                const msg = `Analyse the document "${title}"${selectedDoc.team_name ? ` (${selectedDoc.team_name})` : ''}${selectedDoc.category ? ` — category: ${selectedDoc.category}` : ''}. Summarise key points, risks, and recommended actions.`
+                sessionStorage.setItem('kiko_pending_message', JSON.stringify({ message: msg, timestamp: Date.now() }))
+                setSelectedDoc(null)
+                // KikoFloat on current page will pick up the pending message on next render cycle
+                window.dispatchEvent(new Event('kiko_pending_check'))
+              }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 6, background: 'rgba(10,10,10,0.04)', border: `1px solid ${C.border}`, fontSize: 12, fontWeight: 500, color: C.text, cursor: 'pointer', fontFamily: C.font }}>
+                ✦ Analyse with Kiko
+              </button>
               <button onClick={() => setSelectedDoc(null)}
                 style={{ padding: '8px 16px', borderRadius: 6, background: 'transparent', border: `1px solid ${C.border}`, fontSize: 12, color: C.textSecondary, cursor: 'pointer', fontFamily: C.font }}>
                 Close
