@@ -1163,8 +1163,8 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
       routingHint = '\n\n[ROUTING HINT: This is a general question. You have FULL access to all tools — CRM, web search, Gmail, Calendar, all 23 specialist agents. KNOWLEDGE CHECK: Before answering any legal, financial, tax, compliance, or domain-specific question, CHECK YOUR RESEARCH KNOWLEDGE BASE above (═══ RESEARCH KNOWLEDGE BASE). If you have relevant research, reference it and cite the research date. If the research is older than 7 days or insufficient, supplement with web_search for the latest. For CRM-related questions, also check manage_knowledge → search_knowledge. ALWAYS save new valuable findings via manage_knowledge → save_insight.]';
     }
 
-    // For general queries, inject live CRM context (registered users only)
-    if (isRegistered && intent === 'general') {
+    // For general queries, inject live CRM context (registered users only, skip casual queries)
+    if (isRegistered && intent === 'general' && !casualQuery) {
       try {
         const [gDeals, gTasks, gActivity, gLearnings] = await Promise.all([
           sbFetch('deals?select=data&data->>status=eq.active&limit=50').catch(() => []),
@@ -1239,9 +1239,9 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     }
 
     // ── UNIVERSAL ENTITY AUTO-RECALL — parallelized (registered users only) ──
-    // Skip for fast intents (greeting, navigate, screen, calendar_read, email_read)
+    // Skip for fast intents (greeting, navigate, screen, calendar_read, email_read) and casual queries (weather, recommendations)
     const SKIP_ENTITY_RECALL = ['greeting', 'identity', 'outreach', 'content', 'navigate', 'screen', 'calendar_read', 'email_read'];
-    if (!voiceMode && isRegistered && !SKIP_ENTITY_RECALL.includes(intent)) {
+    if (!voiceMode && isRegistered && !casualQuery && !SKIP_ENTITY_RECALL.includes(intent)) {
       try {
         const capWords = message.match(/\b[A-Z][a-zA-Z]{2,}(?:\s+[A-Z][a-zA-Z]+)*/g) || [];
         const userName = (userConfig.display_name || '').split(' ')[0];
@@ -1279,7 +1279,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     let morningBrief = '';
     if (isRegistered) { // All modes get personal context (voice uses light queries for speed)
     // ── CONTEXT LOADING — intent-aware (light for greetings, full for everything else) ──
-    const isLightIntent = voiceMode || ['greeting', 'identity', 'navigate', 'screen'].includes(intent);
+    const isLightIntent = voiceMode || casualQuery || ['greeting', 'identity', 'navigate', 'screen'].includes(intent);
     try {
       const queries = isLightIntent
         ? [ // Light: only 3 queries for greeting speed
