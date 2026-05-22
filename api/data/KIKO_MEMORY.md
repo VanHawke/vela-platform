@@ -1,58 +1,82 @@
-# KIKO MEMORY — Last updated: 2026-05-22T19:00:00Z
+# KIKO MEMORY — Last updated: 2026-05-22T20:00:00Z (Session 68 — full audit)
 
-## CURRENT STATE
-- Alpine F1 Legal AI campaign: 110 enrolled, 0 real replies. Test campaign — learning from failure. CTA is the blocker.
-- Haas F1 partnership: In advanced discussion (2026-2028). Needs proactive check-in.
-- Canadian GP: Race weekend May 25. Montreal round next.
-- Van Hawke Maison: Archive 01 eyewear in development with Giacomo and Temi.
+## PLATFORM STATE
+- 49 tools, 35 routes, 46 crons, 125 API files, 11 nav items
+- Architecture: Hetzner (178.104.73.22) → Express API + frontend, Supabase DB, Claude Sonnet backbone
+- Frontend: kiko.vanhawke.agency | API: api.vanhawke.agency
+- Users: sunny@vanhawke.agency (super_admin), matt.smith@vanhawke.agency (user)
 
-## SESSION 68 CHANGES (2026-05-22)
+## SESSION 68 CHANGES (2026-05-22) — 28 commits
+
 ### Context Architecture (BIGGEST IMPACT)
-- Bible moved from system prompt to JIT read_bible tool. Saves 26KB per query (87% token reduction)
-- Casual query optimization: weather, recommendations skip CRM/entity context entirely
-- Old 77KB self-knowledge fallback REMOVED. Lean-only now.
+- Bible moved from system prompt to JIT read_bible tool — 87% token reduction (30K→3,912 on outreach)
+- Casual query optimization: weather, recommendations skip CRM/entity context
+- Old 77KB self-knowledge fallback REMOVED
 
-### New Pages & Features
-- Google Calendar page: /calendar with FullCalendar (month/week/day/list), event creation form (title, date, time, location, attendees, description)
-- Sporting Events page: /sporting-events — F1/FE/MotoGP/WEC race calendar with peak outreach windows
-- Document Library "Analyse with Kiko" button: click doc → KikoFloat opens with analysis prompt
-- Google Meet transcript integration: POST /api/meeting-transcripts fetches completed meetings, pulls transcripts, Haiku extracts summary/decisions/action items, stores in kiko_knowledge, auto-creates tasks. Cron runs 7pm weekdays.
+### Self-Modification (NEW CAPABILITY)
+- kiko_self_modify tool: read_file, edit_file, list_files, run_command, deploy
+- All edits logged to KIKO_SELF_EDIT_LOG.md
+- JS files auto syntax-checked after edit, rolled back on error
+- Deploy: git commit → pm2 restart → health check
+- Kiko now proactively runs selfcheck on greeting and reports failures FIRST
 
-### Navigation Fixes
-- LegoraTopNav.jsx ALL_PAGES synced with Layout.jsx ALL_NAV (was out of sync — root cause of missing nav items)
-- Nav now includes: sporting-events, knowledge, documents (previously missing)
-- Supabase nav_settings updated for super_admin user
+### Google Integration (FULLY FIXED)
+- Google OAuth: 3 bugs fixed (wrong prompt, route unmounted in Express, nginx not proxying callback)
+- Nginx proxy added for /api/google-auth on kiko.vanhawke.agency
+- google-auth route explicitly mounted in Express server.js
+- OAuth prompt changed to 'consent' (forces full scope grant)
+- Refresh token + Meet scope now working
+- Scopes: Gmail (full), Calendar, meetings.space.readonly, OpenID, Profile
 
-### Style Fixes
-- PartnershipMatrix: h1 → Source Serif 4, 28px/300
-- MemoryConsole: h1 → Source Serif 4, 36px/300 with SYSTEM/Memory eyebrow
+### Google Calendar
+- Page at /calendar with FullCalendar (month/week/day/list views)
+- Event creation form: title, date, time, location, attendees, description
+- Google Meet auto-add: checkbox in create form, auto-generates meet.google.com links
+- Event editing: PATCH /api/calendar-events
+- Event deletion: DELETE /api/calendar-events with confirmation
+- Stats: today count, week count, Meet count
 
-### Voice Fixes
-- Added language: 'en' to Whisper transcription config (fixes Korean hallucinations)
-- Updated voice TOOLS navigate_page enum with all current pages
+### Google Meet Transcripts
+- POST /api/meeting-transcripts fetches completed meetings from Meet REST API
+- Pulls transcript entries (speaker, text, timestamps)
+- Haiku extracts: summary, decisions, action items, open questions
+- Stores in kiko_knowledge (domain: meeting-transcripts)
+- Auto-creates tasks from action items (3-day due date)
+- Cron: 7pm weekdays
 
-### Google Auth
-- OAuth prompt changed from 'select_account' to 'consent' (forces full consent screen for new scopes)
-- meetings.space.readonly scope added for Google Meet API access
-- STILL NEEDS: User must disconnect + reconnect Google to get new Meet scope
+### Navigation
+- 3 separate nav lists synced: LegoraTopNav.jsx, Layout.jsx, Settings.jsx
+- Knowledge Base removed from nav (internal tool, not user-facing)
+- Sporting Events added to all 3 nav lists + Settings toggle
+- Nav auto-discovery: new items auto-append for existing users
+- 11 nav items: Today, Command Centre, Pipeline, Campaigns, Messenger, Calendar, Sporting Events, Contacts, Organisations, Partnership Matrix, Document Library
 
-### PWA Foundation
-- manifest.json created (app name, icons, theme)
-- Service worker (sw.js) created for push notifications
-- SW registration replaces old SW-killer in index.html
-- web-push npm package installed in kiko-worker
-- STILL NEEDS: VAPID key generation, push subscribe/send endpoints, frontend notification UI
+### Other Fixes
+- PartnershipMatrix header: Source Serif 4, 28px/300
+- MemoryConsole header: Source Serif 4, 36px/300 with SYSTEM/Memory eyebrow
+- Document Library "Analyse with Kiko" button → opens KikoFloat with analysis prompt
+- Voice: language='en' in Whisper transcription (fixes Korean hallucinations)
+- Voice: navigate_page enum updated with all current pages
+- PWA: manifest.json + service worker + registration (push notifications need VAPID keys)
+
+## ACTIVE CAMPAIGNS
+- Alpine F1 Legal AI: 110 enrolled, 56% open, 29% click, 0 real replies. Test campaign — CTA is the blocker.
 
 ## KEY PROSPECTS
-- Helsing/Joe Paulo: 31 clicks, OOO ended May 11. Follow-up overdue.
-- Icertis: 3 contacts clicking — buying committee signal.
-- Litera: Jeff Macomber + Tyler Rhodes clicking — internal discussion.
-
-## LEARNED PATTERNS
-- Volume alone doesn't drive results — 207 emails, 0 replies
-- 56% open rate confirms sender reputation is strong
-- 29% click rate with 0 replies = CTA kills conversion
-- Context engineering is #1 discipline of 2026 — 65% of AI failures = context drift
+- Helsing/Joe Paulo: 31 clicks, follow-up overdue
+- Icertis: 3 contacts clicking — buying committee signal
+- Litera: Jeff Macomber + Tyler Rhodes clicking
 
 ## OPERATIONAL HEALTH
-- Active crons: 27 (added meeting-transcripts at 7pm weekdays)
+- Active crons: 46 (including meeting-transcripts at 7pm weekdays)
+- Self-modification capability: ACTIVE
+- Proactive health monitoring: ACTIVE (runs on every greeting)
+- Google OAuth: WORKING with refresh token + Meet scope
+- LinkedIn cookies: ALIVE (selfcheck passing)
+
+## REMAINING TO BUILD
+- PWA push notifications (VAPID keys + endpoints)
+- Gmail .ics invite detection
+- Calendar real-time webhooks (bidirectional sync)
+- Sporting Events page redesign
+- Campaign steps 2,4,6,8,9,10,11 templates
