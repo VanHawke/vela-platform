@@ -1,46 +1,58 @@
-# KIKO MEMORY — Last updated: 2026-05-21T15:30:00Z
+# KIKO MEMORY — Last updated: 2026-05-22T19:00:00Z
 
 ## CURRENT STATE
-- Alpine F1 Legal AI campaign: 110 enrolled, 0 real replies (1 OOO from Joe Paulo/Helsing). CTA is the blocker — 56% opens, 29% clicks, 0% replies. Must rewrite CTA to low-friction question.
-- Haas F1 partnership: In advanced discussion (2026-2028). No movement in 7+ days. Needs proactive check-in.
-- Canadian GP: Race day May 25 (Sprint). 3 Canada-linked prospects: Clio (Vancouver, Legal AI), NanoXplore (Montreal, materials), Clear Street (fintech).
-- Van Hawke Maison: Archive 01 eyewear in development with Giacomo and Temi. No updates this week.
+- Alpine F1 Legal AI campaign: 110 enrolled, 0 real replies. Test campaign — learning from failure. CTA is the blocker.
+- Haas F1 partnership: In advanced discussion (2026-2028). Needs proactive check-in.
+- Canadian GP: Race weekend May 25. Montreal round next.
+- Van Hawke Maison: Archive 01 eyewear in development with Giacomo and Temi.
+
+## SESSION 68 CHANGES (2026-05-22)
+### Context Architecture (BIGGEST IMPACT)
+- Bible moved from system prompt to JIT read_bible tool. Saves 26KB per query (87% token reduction)
+- Casual query optimization: weather, recommendations skip CRM/entity context entirely
+- Old 77KB self-knowledge fallback REMOVED. Lean-only now.
+
+### New Pages & Features
+- Google Calendar page: /calendar with FullCalendar (month/week/day/list), event creation form (title, date, time, location, attendees, description)
+- Sporting Events page: /sporting-events — F1/FE/MotoGP/WEC race calendar with peak outreach windows
+- Document Library "Analyse with Kiko" button: click doc → KikoFloat opens with analysis prompt
+- Google Meet transcript integration: POST /api/meeting-transcripts fetches completed meetings, pulls transcripts, Haiku extracts summary/decisions/action items, stores in kiko_knowledge, auto-creates tasks. Cron runs 7pm weekdays.
+
+### Navigation Fixes
+- LegoraTopNav.jsx ALL_PAGES synced with Layout.jsx ALL_NAV (was out of sync — root cause of missing nav items)
+- Nav now includes: sporting-events, knowledge, documents (previously missing)
+- Supabase nav_settings updated for super_admin user
+
+### Style Fixes
+- PartnershipMatrix: h1 → Source Serif 4, 28px/300
+- MemoryConsole: h1 → Source Serif 4, 36px/300 with SYSTEM/Memory eyebrow
+
+### Voice Fixes
+- Added language: 'en' to Whisper transcription config (fixes Korean hallucinations)
+- Updated voice TOOLS navigate_page enum with all current pages
+
+### Google Auth
+- OAuth prompt changed from 'select_account' to 'consent' (forces full consent screen for new scopes)
+- meetings.space.readonly scope added for Google Meet API access
+- STILL NEEDS: User must disconnect + reconnect Google to get new Meet scope
+
+### PWA Foundation
+- manifest.json created (app name, icons, theme)
+- Service worker (sw.js) created for push notifications
+- SW registration replaces old SW-killer in index.html
+- web-push npm package installed in kiko-worker
+- STILL NEEDS: VAPID key generation, push subscribe/send endpoints, frontend notification UI
 
 ## KEY PROSPECTS
-- Helsing/Joe Paulo: 31 clicks (extreme engagement), OOO ended May 11. Follow-up to hs-marketing@helsing.ai is 2 days overdue.
-- Icertis: 3 contacts clicking (Samir Bodas, Jay Lee, Anand Subbaraman) — buying committee signal.
-- Litera: Jeff Macomber + Tyler Rhodes both clicking — internal discussion.
-- Uniphore/Dawne Rubenzer: 3 click events. High intent.
-- ContractPodAi/Jessica King: 2 clicks. Legal AI native — perfect fit.
+- Helsing/Joe Paulo: 31 clicks, OOO ended May 11. Follow-up overdue.
+- Icertis: 3 contacts clicking — buying committee signal.
+- Litera: Jeff Macomber + Tyler Rhodes clicking — internal discussion.
 
 ## LEARNED PATTERNS
-- Volume alone doesn't drive results — 207 emails, 0 replies proves this
-- Intro-framed subjects ("Re: E1 x Vanhawke Intro") outperform cold outreach
-- 29% click rate with 0 replies = prospects investigate but CTA kills conversion
-- 56% open rate confirms subject lines and sender reputation are strong
-- Race week outreach should deploy T-3 days for maximum engagement
-
-## RECENT DECISIONS
-- 2026-05-22: Phase 5.1 — Bible moved from system prompt to JIT read_bible tool. Saves ~26KB per query. Core Bible + Org Doctrine now loaded on-demand. Knowledge base capped at top 5 relevant domains in prompt. Verified: greeting=22K tokens, outreach=3.9K tokens. All foundation tests pass.
-- 2026-05-21: Restored campaign templates (steps 1,3,5,7). Steps 2,4,6,8,9,10,11 still need writing.
-- 2026-05-21: Fixed step_number→step field mismatch that killed entire campaign since May 19.
-- 2026-05-21: Self-checker rebuilt with 7 operational checks (Claude API, Gmail, LinkedIn, campaign, briefing).
-- 2026-05-20: Disabled 17 non-essential crons. Cost reduced from $100+/week to $20-35/week.
-- 2026-05-20: Added OOO detection to Gmail sync. Joe Paulo classified as OOO.
-
-## NEW CAPABILITIES (Session 67)
-- Calendar integration: Morning briefing now includes today's Google Calendar events
-- Auto-CRM from inbound emails: Unknown business-domain senders auto-created as contacts
-- Self-diagnosis: Kiko can run full 25-check selfcheck via ask_self_monitor tool
-- Multi-pass synthesis: Planner→Generator→Evaluator for morning briefings
-- Outcome learning: Weekly pattern extraction from campaign data
-- Persistent memory: KIKO_MEMORY.md updated after every conversation + weekly Dreaming
+- Volume alone doesn't drive results — 207 emails, 0 replies
+- 56% open rate confirms sender reputation is strong
+- 29% click rate with 0 replies = CTA kills conversion
+- Context engineering is #1 discipline of 2026 — 65% of AI failures = context drift
 
 ## OPERATIONAL HEALTH
-- API credits: Active (verified by self-checker)
-- Morning briefing: Generating daily at 7 AM (multi-pass: Planner→Generator→Evaluator)
-- Campaign sending: Resumed May 21 (24 emails queued after template restore)
-- Gmail sync: Running (replies detected, OOO classified)
-- LinkedIn cookies: Needs verification
-- Active crons: 26 (down from 43)
-- Weekly learning: Extracts patterns every Sunday 8 PM
+- Active crons: 27 (added meeting-transcripts at 7pm weekdays)
