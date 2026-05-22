@@ -1582,13 +1582,15 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     const FAST_RESPONSE_INTENTS = ['identity'];
     const isSimpleGreeting = FAST_RESPONSE_INTENTS.includes(intent);
     const useHaikuForGreeting = false; // Greetings need Sonnet for strategic briefing
-    const skipTools = isSimpleGreeting || casualQuery;
+    const skipTools = isSimpleGreeting; // Only identity queries skip tools entirely
     const isEmailIntent = intent === 'email' || intent === 'email2' || intent === 'outreach';
     // Simple email drafts use Haiku (~5s) — complex strategy emails use Sonnet (~15s)
     const isSimpleDraft = isEmailIntent && /\b(re-?engag|catch.?up|follow.?up|check.?in|reconnect|hello|introduction|touching base|quick email|brief email|short email|keeping in touch|reaching out)\b/i.test(message);
     const isComplexDraft = isEmailIntent && /\b(negotiat|strateg|invest|disput|pricing|proposal|partner|board|acquisition|due diligence|term sheet)\b/i.test(message);
     const useHaikuForEmail = isSimpleDraft && !isComplexDraft;
-    const toolOpts = skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : isEmailIntent ? { lightTools: lightEmailTools, useHaiku: useHaikuForEmail } : {};
+    // Casual queries get web_search only (no heavy business tools) — keeps token count low while allowing current info
+    const casualTools = casualQuery ? nativeTools : null;
+    const toolOpts = skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : casualQuery ? { lightTools: casualTools, maxTokens: 1500 } : isEmailIntent ? { lightTools: lightEmailTools, useHaiku: useHaikuForEmail } : {};
     // Command Centre: never use Haiku, always enough tokens for full brief + draft
     if (currentPage === 'command-centre') {
       toolOpts.maxTokens = 8192;
