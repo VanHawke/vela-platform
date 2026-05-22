@@ -81,9 +81,14 @@ function getTopNavIds() {
       if (!Array.isArray(parsed)) return DEFAULT_TOP_IDS
       // Remove stale items that no longer exist in nav
       const cleaned = parsed.filter(id => VALID_NAV_IDS.has(id))
-      // If user legitimately cleared down to even 1 item, respect it (was previously <4 treated as corrupt).
-      // Only fall back to defaults if the list is genuinely empty.
       if (cleaned.length === 0) return DEFAULT_TOP_IDS
+      // Auto-append new nav items that aren't in the user's saved list
+      const missing = DEFAULT_TOP_IDS.filter(id => !cleaned.includes(id))
+      if (missing.length > 0) {
+        const updated = [...cleaned, ...missing]
+        localStorage.setItem(TOP_NAV_STORAGE_KEY, JSON.stringify(updated))
+        return updated
+      }
       if (cleaned.length !== parsed.length) {
         localStorage.setItem(TOP_NAV_STORAGE_KEY, JSON.stringify(cleaned))
       }

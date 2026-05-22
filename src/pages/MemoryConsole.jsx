@@ -86,8 +86,11 @@ export default function MemoryConsole({ user }) {
       {/* Header */}
       <div style={{ padding: '24px 32px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ fontSize: 25, fontWeight: 400, color: T.text, margin: 0, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Brain size={22} /> Memory Console
+          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B', display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <span style={{ color: '#0A0A0A', fontWeight: 600 }}>SYSTEM</span><span style={{ color: '#C0C0C0' }}>/</span><span>Memory</span>
+          </div>
+          <h1 style={{ fontSize: 36, fontWeight: 300, color: T.text, margin: 0, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em' }}>
+            Memory Console
           </h1>
           <p style={{ fontSize: 14, color: T.textTertiary, margin: '4px 0 0', fontFamily: T.font }}>
             {memoryCount} memories · {(totalSize / 1024).toFixed(1)}KB total

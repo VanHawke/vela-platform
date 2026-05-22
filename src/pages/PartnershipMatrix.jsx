@@ -129,7 +129,7 @@ export default function PartnershipMatrix({ user }) {
       <div style={{ padding: '12px 20px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <div>
-            <h1 style={{ fontSize: 19, fontWeight: 400, margin: 0, letterSpacing: '-0.02em' }}>Partnership Matrix</h1>
+            <h1 style={{ fontSize: 28, fontWeight: 300, margin: 0, letterSpacing: '-0.018em', fontFamily: "'Source Serif 4', Georgia, serif" }}>Partnership Matrix</h1>
             <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0' }}>{partnerships.length} partnerships · {teams.length} teams · {totalGaps} gaps · Auto-scanned daily 7am</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
