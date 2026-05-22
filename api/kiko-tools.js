@@ -205,7 +205,7 @@ export const TOOL_DEFINITIONS = [
     name: 'navigate_page',
     description: 'Direct page navigation. Use as fallback if ask_navigator is unavailable.',
     input_schema: { type: 'object', properties: {
-      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'command-centre', 'calendar', 'settings', 'partnership-matrix', 'campaigns'], description: 'Page ID' },
+      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'command-centre', 'calendar', 'sporting-events', 'settings', 'partnership-matrix', 'campaigns', 'messages', 'documents', 'knowledge'], description: 'Page ID. calendar = personal Google Calendar. sporting-events = F1/FE race calendar.' },
       reason: { type: 'string', description: 'Brief reason' },
     }, required: ['page'] },
   },
