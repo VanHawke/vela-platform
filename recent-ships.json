@@ -1,10 +1,20 @@
 {
-  "generated_at": "2026-05-22T18:44:56.110Z",
+  "generated_at": "2026-05-22T19:03:49.413Z",
   "commits": [
+    {
+      "hash": "b606118",
+      "subject": "Kiko proactive: greetings now include selfcheck health status, alert on failures first",
+      "when": "18 minutes ago"
+    },
+    {
+      "hash": "ca05907",
+      "subject": "Remove Knowledge Base from nav (internal tool, not user-facing)",
+      "when": "19 minutes ago"
+    },
     {
       "hash": "2c88c1a",
       "subject": "Kiko self-modification: read/edit/deploy own code, audit log, syntax checking, rollback",
-      "when": "12 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "79163d5",
@@ -29,7 +39,7 @@
     {
       "hash": "d436d4a",
       "subject": "Meeting transcript cron, server route, Google auth consent fix",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "db3f378",
@@ -54,12 +64,12 @@
     {
       "hash": "a128cfd",
       "subject": "Calendar event creation form, PartnershipMatrix + MemoryConsole header fixes, nav auto-discovery",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "9737c64",
       "subject": "Fix nav auto-discovery for new items, remove old 77KB fallback, fix PartnershipMatrix + MemoryConsole headers",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "48be64e",
@@ -90,16 +100,6 @@
       "hash": "f605631",
       "subject": "Update KIKO_MEMORY.md with Phase 5.1 decision record",
       "when": "8 hours ago"
-    },
-    {
-      "hash": "f8f76e2",
-      "subject": "Phase 5.1: Move Bible from system prompt to JIT read_bible tool — saves ~26KB per query, reduces context drift",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "de65426",
-      "subject": "Session 68 brief + Messenger rename in page title/breadcrumb",
-      "when": "9 hours ago"
     }
   ]
 }

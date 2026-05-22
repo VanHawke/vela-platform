@@ -8,9 +8,10 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  // POST = create event, GET = read events
   if (req.method === 'POST') return createEvent(req, res);
-  if (req.method !== 'GET') return res.status(405).json({ error: 'GET or POST only' });
+  if (req.method === 'PATCH' || req.method === 'PUT') return updateEvent(req, res);
+  if (req.method === 'DELETE') return deleteEvent(req, res);
+  if (req.method !== 'GET') return res.status(405).json({ error: 'GET, POST, PATCH, DELETE supported' });
 
   const userEmail = req.query.email;
   if (!userEmail) return res.status(400).json({ error: 'email required' });
@@ -90,7 +91,22 @@ async function createEvent(req, res) {
     if (location) event.location = location;
     if (attendees?.length) event.attendees = attendees.map(a => typeof a === 'string' ? { email: a } : a);
 
-    const gcalRes = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+    // Auto-add Google Meet link if addMeet flag is true or attendees are present
+    const addMeet = body.addMeet !== false && (body.addMeet || attendees?.length > 0);
+    if (addMeet) {
+      event.conferenceData = {
+        createRequest: {
+          conferenceSolutionKey: { type: 'hangoutsMeet' },
+          requestId: `kiko-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        },
+      };
+    }
+
+    const gcalUrl = addMeet
+      ? 'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1'
+      : 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+
+    const gcalRes = await fetch(gcalUrl, {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(event),
@@ -102,16 +118,76 @@ async function createEvent(req, res) {
     }
 
     const created = await gcalRes.json();
+    const meetLink = created.conferenceData?.entryPoints?.find(e => e.entryPointType === 'video')?.uri;
     res.json({
       id: created.id,
       title: created.summary,
       start: created.start?.dateTime || created.start?.date,
       end: created.end?.dateTime || created.end?.date,
       link: created.htmlLink,
+      meetLink: meetLink || null,
       status: 'created',
     });
   } catch (err) {
     console.error('[calendar-events] Create failed:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function updateEvent(req, res) {
+  const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+  const { email, eventId, title, start, end, description, location, attendees } = body;
+
+  if (!email || !eventId) return res.status(400).json({ error: 'email and eventId required' });
+
+  try {
+    const accessToken = await getGoogleToken(email);
+    const patch = {};
+    if (title) patch.summary = title;
+    if (description !== undefined) patch.description = description;
+    if (location !== undefined) patch.location = location;
+    if (start) patch.start = start.includes('T') ? { dateTime: start, timeZone: 'Europe/London' } : { date: start };
+    if (end) patch.end = end.includes('T') ? { dateTime: end, timeZone: 'Europe/London' } : { date: end };
+    if (attendees?.length) patch.attendees = attendees.map(a => typeof a === 'string' ? { email: a } : a);
+
+    const gcalRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+
+    if (!gcalRes.ok) {
+      const err = await gcalRes.json().catch(() => ({}));
+      return res.status(gcalRes.status).json({ error: 'Failed to update event', detail: err.error?.message });
+    }
+
+    const updated = await gcalRes.json();
+    res.json({ id: updated.id, title: updated.summary, status: 'updated' });
+  } catch (err) {
+    console.error('[calendar-events] Update failed:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function deleteEvent(req, res) {
+  const { email, eventId } = req.query || {};
+  if (!email || !eventId) return res.status(400).json({ error: 'email and eventId required' });
+
+  try {
+    const accessToken = await getGoogleToken(email);
+    const gcalRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!gcalRes.ok && gcalRes.status !== 204) {
+      const err = await gcalRes.json().catch(() => ({}));
+      return res.status(gcalRes.status).json({ error: 'Failed to delete event', detail: err.error?.message });
+    }
+
+    res.json({ eventId, status: 'deleted' });
+  } catch (err) {
+    console.error('[calendar-events] Delete failed:', err.message);
     res.status(500).json({ error: err.message });
   }
 }
