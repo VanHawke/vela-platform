@@ -46,7 +46,7 @@ function handleConsent(req, res) {
     response_type: 'code',
     scope: SCOPES,
     access_type: 'offline',
-    prompt: req.query?.force === 'true' ? 'consent' : 'select_account',
+    prompt: 'consent',
     state: email,
   });
 
