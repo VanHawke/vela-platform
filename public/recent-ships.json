@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-05-22T14:09:58.535Z",
+  "generated_at": "2026-05-22T14:16:30.456Z",
   "commits": [
+    {
+      "hash": "db3f378",
+      "subject": "Force consent prompt on Google OAuth (ensures new scopes), fix nav Supabase sync",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "dbce54d",
       "subject": "Google Meet transcript integration: scope, fetcher, Haiku extraction, auto-task creation",
-      "when": "20 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "ba0abf9",
       "subject": "Voice: add language=en to transcription (fixes Korean hallucinations), update nav page list",
-      "when": "28 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "19a20a9",
       "subject": "Document Library: Analyse with Kiko button, KikoFloat pending message system",
-      "when": "33 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "a128cfd",
       "subject": "Calendar event creation form, PartnershipMatrix + MemoryConsole header fixes, nav auto-discovery",
-      "when": "46 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "9737c64",
       "subject": "Fix nav auto-discovery for new items, remove old 77KB fallback, fix PartnershipMatrix + MemoryConsole headers",
-      "when": "52 minutes ago"
+      "when": "58 minutes ago"
     },
     {
       "hash": "48be64e",
@@ -84,7 +89,7 @@
     {
       "hash": "f693bbe",
       "subject": "Team messaging: Screen sharing + Channel creation + Matt ID fix",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "b6f1142",
@@ -94,11 +99,6 @@
     {
       "hash": "f611ead",
       "subject": "Real-time correction learning: detects explicit corrections + saves as persistent preferences",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "23ae830",
-      "subject": "Remove email notification + restrict morning briefing to super_admin",
       "when": "19 hours ago"
     }
   ]

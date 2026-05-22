@@ -67,6 +67,7 @@ const SCHEDULES = [
   { schedule: '0 8 * * *',      path: '/api/news-agent',                   name: 'news-agent' },
   { schedule: '0 5 * * *',      path: '/api/ingest-knowledge',             name: 'ingest-knowledge' },
   { schedule: '0 5 * * *',      path: '/api/embed',                        name: 'embed-knowledge', method: 'POST', body: '{"mode":"embed"}' },
+  { schedule: '0 19 * * 1-5',   path: '/api/meeting-transcripts',          name: 'meeting-transcripts', method: 'POST', body: '{"email":"sunny@vanhawke.com","days":1}' },
 
   // Weekly
   // DISABLED (cost saving) { schedule: '30 4 * * *',     path: '/api/cron-company-enrich',          name: 'company-enrich' },
