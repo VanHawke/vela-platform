@@ -60,7 +60,7 @@ LinkedIn: linkedin_search_prospects, linkedin_send_invite, linkedin_send_message
 Strategy & Intelligence: ask_strategy_agent, ask_negotiation_agent, ask_signal_agent, ask_pricing_agent, ask_investment_agent, ask_dispute_agent, ask_finance_agent, ask_legal_agent
 Content & Documents: ask_content_agent, ask_document_agent, generate_document, digest_master_brief
 Navigation & Platform: ask_navigator, navigate_page, get_platform_users, ask_self_monitor, ask_code_review
-Memory & Knowledge: ask_memory_engine, manage_knowledge, query_conversation_insights, query_thought_journal, update_kiko_preference, search_conversations, get_cognitive_analysis
+Memory & Knowledge: ask_memory_engine, manage_knowledge, query_conversation_insights, query_thought_journal, update_kiko_preference, search_conversations, get_cognitive_analysis, read_bible
 Calendar & Travel: read_calendar, ask_travel_agent, google_maps_link, ask_ea_agent
 Specialist: ask_specialist_agent, ask_category_agent
 
@@ -130,9 +130,12 @@ export default async function loadSelfKnowledge(userId) {
 
   // REFERENCE NOTE: detailed docs available via tools
   k.push('\n═══ DETAILED KNOWLEDGE (load on demand) ═══');
-  k.push('Your full strategic doctrine is in KIKO_BIBLE.md — read it via tools when you need operational rules.');
-  k.push('Your full tool documentation is in self-knowledge — read it via tools when you need parameter details.');
-  k.push('Your sequence orchestration doctrine (14-touch pattern, LinkedIn rules) is available on demand.');
+  k.push('IMPORTANT: Your operational doctrine (KIKO_BIBLE) is NOT pre-loaded. Call the read_bible tool when you need:');
+  k.push('• Operational rules, hard rules, email formatting rules, outreach doctrine');
+  k.push('• Campaign sequencing patterns (14-touch, LinkedIn rules)');
+  k.push('• Platform architecture, team info, F1 partnership values');
+  k.push('• Full research knowledge base across all domains');
+  k.push('For quick CRM/data lookups, use ask_data_agent. For doctrine/rules, use read_bible.');
 
   const result = k.join('\n');
   console.log(`[LeanKnowledge] Total: ${result.length} chars, memory=${!!memory}`);

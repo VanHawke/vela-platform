@@ -681,11 +681,19 @@ export default async function handler(req, res) {
       return `[${k.domain} — ${new Date(k.researched_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}]\n${k.content.slice(0, contentLimit)}`;
     }).join('\n\n');
   })();
+  // PHASE 5.1: Bible moved to JIT via read_bible tool (saves ~26KB per query)
+  // coreBible + orgBible now loaded on-demand via read_bible tool
+  // Only userBible (small, always relevant) + message-relevant knowledge stay in prompt
+  const relevantKnowledge = (() => {
+    if (!knowledgeBase) return '';
+    // knowledgeBase is already relevance-scored above — split into domain entries
+    const entries = knowledgeBase.split('\n\n').filter(l => l.trim().length > 50);
+    // Only keep top 5 most relevant domains (rest available via search_knowledge tool)
+    return entries.slice(0, 5).join('\n\n');
+  })();
   const bibleBlock = [
-    coreBible ? `\n\n═══ KIKO CORE BIBLE ═══\n${coreBible}` : '',
-    orgBible ? `\n\n═══ ORGANISATION DOCTRINE ═══\n${orgBible}` : '',
     userBible ? `\n\n═══ PERSONAL CONTEXT (PRIVATE — THIS USER ONLY) ═══\n${userBible}` : '',
-    knowledgeBase ? `\n\n═══ RESEARCH KNOWLEDGE BASE (auto-updated daily) ═══\n${knowledgeBase}` : '',
+    relevantKnowledge ? `\n\n═══ RELEVANT KNOWLEDGE ═══\n${relevantKnowledge}` : '',
   ].join('');
 
   // Learned rules — self-promoted patterns Kiko must follow

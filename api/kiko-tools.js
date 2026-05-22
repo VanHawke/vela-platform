@@ -425,6 +425,13 @@ export const TOOL_DEFINITIONS = [
       entity_name: { type: 'string', description: 'Name of the person or company to look up. E.g. "Matthew Liberty", "Proofpoint", "Jasmyn Collings".' },
     }, required: ['entity_name'] },
   },
+  {
+    name: 'read_bible',
+    description: 'Load Kiko operational doctrine, org rules, or full research knowledge base on demand. Use when you need: operational rules, outreach doctrine, campaign sequencing rules, platform architecture details, team info, email formatting rules, F1 partnership values, hard rules. Also use when your answer would benefit from the full knowledge base across all research domains. Call this BEFORE responding if the query involves doctrine, rules, or operational procedures.',
+    input_schema: { type: 'object', properties: {
+      section: { type: 'string', enum: ['core', 'org', 'knowledge', 'all'], description: 'core: Kiko Bible (operational rules, architecture, team, hard rules). org: Organisation doctrine. knowledge: full research knowledge base (all domains). all: everything.' },
+    }, required: ['section'] },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -456,6 +463,45 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
       })});
     } catch {} // Never fail on logging
   };
+
+  // ── Read Bible — JIT doctrine loading (Phase 5.1) ──
+  if (name === 'read_bible') {
+    try {
+      const section = input.section || 'all';
+      const parts = [];
+
+      if (section === 'core' || section === 'all') {
+        const rows = await sbFetch('kiko_core_bible?select=content&order=version.desc&limit=1');
+        if (rows?.[0]?.content) parts.push(`═══ KIKO CORE BIBLE ═══\n${rows[0].content}`);
+        else parts.push('[Core Bible not found in database]');
+      }
+
+      if (section === 'org' || section === 'all') {
+        // Get user's org
+        const orgMember = await sbFetch(`organization_members?user_id=eq.${userId}&select=organization_id&limit=1`).catch(() => []);
+        const orgId = orgMember?.[0]?.organization_id;
+        if (orgId) {
+          const orgRows = await sbFetch(`org_bibles?organization_id=eq.${orgId}&select=content&limit=1`);
+          if (orgRows?.[0]?.content) parts.push(`═══ ORGANISATION DOCTRINE ═══\n${orgRows[0].content}`);
+        }
+      }
+
+      if (section === 'knowledge' || section === 'all') {
+        const knowledge = await sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=100');
+        if (knowledge?.length) {
+          // Deduplicate by domain (latest per domain)
+          const byDomain = new Map();
+          for (const k of knowledge) { if (k.content && !byDomain.has(k.domain)) byDomain.set(k.domain, k); }
+          parts.push(`═══ RESEARCH KNOWLEDGE BASE (${byDomain.size} domains) ═══\n` +
+            [...byDomain.values()].map(k =>
+              `[${k.domain} — ${new Date(k.researched_at).toLocaleDateString('en-GB')}]\n${k.content.slice(0, 3000)}`
+            ).join('\n\n'));
+        }
+      }
+
+      return parts.join('\n\n') || 'No bible content found.';
+    } catch (e) { return agentError('read_bible', e); }
+  }
 
   // ── Platform Users — user/role awareness ──
   if (name === 'get_platform_users') {
