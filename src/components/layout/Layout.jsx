@@ -60,7 +60,6 @@ const ALL_NAV = [
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'sequences', label: 'Campaigns', path: '/campaigns', Icon: Zap },
   { id: 'messages', label: 'Messenger', path: '/messages', Icon: Send },
-  { id: 'knowledge', label: 'Knowledge', path: '/knowledge', Icon: Brain },
   { id: 'documents', label: 'Document Library', path: '/documents', Icon: Layers },
 ]
 // Super-admin-only nav items appended to ALL_NAV at runtime if user role is super_admin.

@@ -123,7 +123,6 @@ export default function Settings({ user }) {
     { id: 'contacts', label: 'Contacts', path: '/contacts' },
     { id: 'organisations', label: 'Organisations', path: '/organisations' },
     { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix' },
-    { id: 'knowledge', label: 'Knowledge Base', path: '/knowledge' },
     { id: 'documents', label: 'Document Library', path: '/documents' },
   ]
   const DEFAULT_TOP_NAV = ALL_TOP_NAV.map(t => t.id)
