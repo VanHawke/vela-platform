@@ -24,12 +24,15 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-    // Force-kill old service worker and clear all caches
+    // Register Kiko PWA service worker for push notifications
     if('serviceWorker' in navigator){
-      navigator.serviceWorker.getRegistrations().then(function(regs){
-        regs.forEach(function(r){r.unregister()});
+      window.addEventListener('load', function(){
+        navigator.serviceWorker.register('/sw.js').then(function(reg){
+          console.log('[Kiko] Service worker registered, scope:', reg.scope);
+        }).catch(function(err){
+          console.warn('[Kiko] Service worker registration failed:', err);
+        });
       });
-      if(window.caches){caches.keys().then(function(k){k.forEach(function(n){caches.delete(n)})});}
     }
     </script>
   </body>

@@ -1,73 +1,59 @@
-// Kiko Intelligence OS — Service Worker v3
-// Network-first (no caching) + Push notifications
+// public/sw.js — Kiko PWA Service Worker
+// Handles: push notifications, offline caching, app install
 
-const CACHE_NAME = 'kiko-v3';
+const CACHE_NAME = 'kiko-v1'
 
-self.addEventListener('install', (event) => {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-  // Always go to network, never cache
-  return;
-});
-
-// ── Push Notification Handler ──
+// Listen for push notifications from the server
 self.addEventListener('push', (event) => {
-  let data = { title: 'Kiko', body: 'New notification', url: '/' };
+  let data = { title: 'Kiko', body: 'New notification', icon: '/kiko-icon-192.png' }
   try {
-    if (event.data) data = { ...data, ...event.data.json() };
-  } catch (e) {
-    console.error('[SW] Push parse error:', e);
-  }
-
-  const options = {
-    body: data.body,
-    icon: '/kiko-icon-192.png',
-    badge: '/kiko-icon-192.png',
-    vibrate: [100, 50, 100],
-    data: { url: data.url || '/' },
-    actions: [
-      { action: 'open', title: 'Open Kiko' },
-      { action: 'dismiss', title: 'Dismiss' },
-    ],
-    tag: 'kiko-notification',
-    renotify: true,
-  };
+    if (event.data) data = { ...data, ...event.data.json() }
+  } catch { /* use defaults */ }
 
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
-});
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon || '/kiko-icon-192.png',
+      badge: '/kiko-icon-192.png',
+      tag: data.tag || 'kiko-notification',
+      data: data.url || '/',
+      actions: data.actions || [],
+      vibrate: [200, 100, 200],
+    })
+  )
+})
 
-// ── Notification Click Handler ──
+// Handle notification click — open the app
 self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  
-  if (event.action === 'dismiss') return;
+  event.notification.close()
+  const url = event.notification.data || '/'
 
-  const url = event.notification.data?.url || '/';
-  
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
       // Focus existing window if open
       for (const client of windowClients) {
-        if (client.url.includes('kiko.vanhawke.agency') && 'focus' in client) {
-          client.navigate(url);
-          return client.focus();
+        if (client.url.includes(self.location.origin)) {
+          client.focus()
+          client.navigate(url)
+          return
         }
       }
-      // Open new window
-      return clients.openWindow(url);
+      // Otherwise open new window
+      return clients.openWindow(url)
     })
-  );
-});
+  )
+})
+
+// Install — cache critical assets
+self.addEventListener('install', (event) => {
+  self.skipWaiting()
+})
+
+// Activate — clean old caches
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then(names => Promise.all(
+      names.filter(n => n !== CACHE_NAME).map(n => caches.delete(n))
+    )).then(() => self.clients.claim())
+  )
+})

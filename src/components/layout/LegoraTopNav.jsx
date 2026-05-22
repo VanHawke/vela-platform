@@ -14,9 +14,11 @@ const ALL_PAGES = [
   { id: 'messages',            label: 'Messenger',          path: '/messages',           showPlus: false, aliases: ['messages', 'chat', 'team', 'messenger'],    pageKey: null },
   { id: 'command-centre',      label: 'Command Centre',     path: '/command-centre',     showPlus: false, aliases: ['command-centre', 'inbox'],     pageKey: 'command_centre' },
   { id: 'calendar',            label: 'Calendar',           path: '/calendar',           showPlus: false, aliases: ['calendar'],                    pageKey: 'race_calendar' },
+  { id: 'sporting-events',     label: 'Sporting Events',    path: '/sporting-events',    showPlus: false, aliases: ['sporting-events', 'races', 'race-calendar'], pageKey: 'race_calendar' },
   { id: 'contacts',            label: 'Contacts',           path: '/contacts',           showPlus: false, aliases: ['contacts'],                    pageKey: 'contacts' },
   { id: 'organisations',       label: 'Organisations',      path: '/organisations',      showPlus: false, aliases: ['organisations', 'orgs', 'companies'], pageKey: 'organisations' },
   { id: 'partnership-matrix',  label: 'Partnership Matrix', path: '/partnership-matrix', showPlus: false, aliases: ['partnership-matrix', 'insights'], pageKey: 'partnership_matrix' },
+  { id: 'knowledge',           label: 'Knowledge',          path: '/knowledge',          showPlus: false, aliases: ['knowledge', 'research'],       pageKey: null },
   { id: 'documents',           label: 'Document Library',   path: '/documents',          showPlus: false, aliases: ['documents', 'library', 'docs'], pageKey: null },
 ]
 const DEFAULT_TOP_IDS = ALL_PAGES.map(p => p.id)
