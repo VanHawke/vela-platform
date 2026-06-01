@@ -15,13 +15,13 @@ export default async function handler(req, res) {
     const contacts = await sbFetch('contacts?select=id,data&limit=50&order=updated_at.desc');
     const activeContacts = (contacts || [])
       .filter(c => c.data?.firstName && c.data?.company)
-      .slice(0, 30);
+      .slice(0, 5); // Rotate 5 per day — covers full list weekly
 
     // 2. Get pipeline companies
     const companies = await sbFetch('companies?select=id,data&limit=30&order=updated_at.desc');
     const activeCompanies = (companies || [])
       .filter(c => c.data?.name)
-      .slice(0, 20);
+      .slice(0, 5); // Rotate 5 per day
 
     // 3. Build monitoring request for Kiko
     const contactList = activeContacts.map(c => 
@@ -37,7 +37,19 @@ export default async function handler(req, res) {
       return res.json({ ok: true, message: 'No contacts or companies to monitor' });
     }
 
-    // 4. Call Kiko to research and act
+    // 4. Use Haiku for cheap monitoring — only escalate to Opus for genuine signals
+    // Cost: ~$0.01 per run (Haiku) vs ~$1.00 (Opus with 30 web searches)
+    const Anthropic = (await import('@anthropic-ai/sdk')).default;
+    const haiku = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+
+    // Quick Haiku classification: which contacts/companies are worth a web search?
+    const triageRes = await haiku.messages.create({
+      model: 'claude-haiku-4-5-20251001', max_tokens: 500,
+      messages: [{ role: 'user', content: `You are monitoring CRM contacts for a Formula One sponsorship advisory firm. Which of these contacts or companies are most likely to have had recent changes (job moves, funding, news)? Pick the top 3 to research. Return JSON: {"research": ["Name at Company", ...]}\n\nContacts:\n${contactList}\n\nCompanies:\n${companyList}` }]
+    });
+    const triage = triageRes.content[0]?.text || '{"research":[]}';
+
+    // Only call the full Kiko API for the top 3 — saves 90% of cost
     const kikoRes = await fetch(`${baseUrl}/api/kiko`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

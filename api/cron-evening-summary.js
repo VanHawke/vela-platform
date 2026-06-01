@@ -6,7 +6,23 @@ export default async function handler(req, res) {
   const hbId = await cronHeartbeat('cron-evening-summary', 'started');
   try {
     const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
-    const kikoRes = await fetch(`${baseUrl}/api/kiko`, {
+    // Use Haiku for evening summary — cheap summarisation, not strategic reasoning
+    const Anthropic = (await import('@anthropic-ai/sdk')).default;
+    const haiku = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+    const { sbFetch: sb } = await import('./kiko-tools.js');
+    const tasks = await sb('tasks?status=neq.completed&order=due_date&limit=10').catch(() => []);
+    const alerts = await sb('kiko_alerts?dismissed=eq.false&order=created_at.desc&limit=10').catch(() => []);
+    const taskSum = (tasks || []).map(t => t.title || '').join('; ');
+    const alertSum = (alerts || []).map(a => (a.title || '') + ': ' + (a.detail || '').slice(0, 50)).join('; ');
+    const summaryRes = await haiku.messages.create({
+      model: 'claude-haiku-4-5-20251001', max_tokens: 800,
+      messages: [{ role: 'user', content: `Evening summary for Van Hawke Group. Open tasks: ${taskSum || 'none'}. Active alerts: ${alertSum || 'none'}. Summarise: what needs attention tomorrow, top 3 priorities. Be concise — bullet points.` }]
+    });
+    const summary = summaryRes.content[0]?.text || 'No summary generated';
+    await sb('kiko_knowledge', { method: 'POST', body: JSON.stringify({ domain: 'daily-summary', content: summary, source: 'evening-cron', researched_at: new Date().toISOString() })});
+    console.log('[EveningSummary] Complete via Haiku (cost: ~$0.003)');
+    // DEAD CODE BELOW — replaced by Haiku direct call above
+    if (false) await fetch(`${baseUrl}/api/kiko`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -82,7 +82,20 @@ async function handleNotification(req, res) {
           if (hoursUntil > 0 && hoursUntil < 2 && event.attendees?.length > 0) {
             const attendeeNames = event.attendees.filter(a => !a.self).map(a => a.email).join(', ');
             try {
-              await fetch(`http://127.0.0.1:${process.env.PORT || 3000}/api/kiko`, {
+              // Use Haiku for meeting prep — cheap research summarisation
+              const Anthropic = (await import('@anthropic-ai/sdk')).default;
+              const haiku = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+              const prepRes = await haiku.messages.create({
+                model: 'claude-haiku-4-5-20251001', max_tokens: 600,
+                tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 3 }],
+                messages: [{ role: 'user', content: `Research these meeting attendees for a Formula One sponsorship advisory firm and prepare a brief: ${attendeeNames}. For each: who are they, what company, any recent news? Keep it concise.` }]
+              });
+              const prep = prepRes.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+              const { sbFetch: sb } = await import('./kiko-tools.js');
+              await sb('kiko_knowledge', { method: 'POST', body: JSON.stringify({ domain: 'meeting-prep', content: `Meeting: ${event.summary}\n${prep}`, source: 'calendar-webhook', researched_at: new Date().toISOString() })});
+              console.log('[calendar-webhook] Meeting prep via Haiku (cost: ~$0.01)');
+              // DEAD CODE — old Opus call replaced
+              if (false) await fetch(`http://127.0.0.1:${process.env.PORT || 3000}/api/kiko`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
