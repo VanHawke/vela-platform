@@ -869,8 +869,7 @@ export default async function handler(req, res) {
     if (fastMatch) {
       classification = { intent: fastMatch[0], confidence: 0.99, useMCP: false };
     } else {
-      // BYPASS: Opus 4.8 routes naturally — no intent classifier needed
-      classification = { intent: 'general', confidence: 1.0, useMCP: false };
+      classification = await classifyIntent(message, currentPage, conversationHistory);
     }
     const { intent, target } = classification;
 
@@ -1600,7 +1599,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     // Only runs for substantive queries about specific entities — NOT for follow-ups, greetings, or simple commands
     const SKIP_REASONING = ['navigate', 'screen', 'calendar', 'self_monitor', 'identity', 'greeting', 'knowledge', 'conversation_search', 'code_review', 'email_read'];
     const isShortFollowUp = message.length < 40 && /^(yes|no|ok|sure|thanks|do it|go ahead|continue|proceed|sounds good|perfect|great|send it|approved)/i.test(message.trim());
-    const shouldReason = false; // DISABLED: Opus 4.8 reasons naturally — no pre-processing needed
+    const shouldReason = !skipTools && !isGreeting && !isShortFollowUp && !SKIP_REASONING.includes(intent);
     if (shouldReason) {
       try {
         write({ toolStatus: 'Gathering intelligence...' });
