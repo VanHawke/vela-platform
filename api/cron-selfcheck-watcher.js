@@ -145,6 +145,43 @@ export default async function handler(req, res) {
       }
     } catch (dqErr) { console.warn('[selfcheck] Data quality scan error:', dqErr.message); }
 
+
+    // ══ AUTO-REMEDIATION: Call Kiko (Opus 4.8) to investigate and fix failures ══
+    if (failed.length > 0 && alertsCreated > 0) {
+      try {
+        const failDetails = failed.map(f => `${f.name}: ${f.actual || f.status}`).join(', ');
+        const kikoRes = await fetch(`${baseUrl}/api/kiko`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `SYSTEM ALERT: Selfcheck detected ${failed.length} failure(s): ${failDetails}. Use kiko_self_modify to read the relevant code, diagnose the root cause, and fix it if possible. If you cannot fix it, explain exactly what is wrong and what Sunny needs to do.`,
+            userEmail: 'sunny@vanhawke.agency',
+            currentPage: 'admin/system',
+            conversationHistory: [],
+            nostream: true,
+            system: true,
+          }),
+          signal: AbortSignal.timeout(120000),
+        });
+        if (kikoRes.ok) {
+          const kikoData = await kikoRes.json();
+          console.log('[selfcheck-watcher] Kiko auto-remediation response:', (kikoData.response || '').slice(0, 200));
+          // Store Kiko's analysis as an alert so Sunny sees it
+          await supabase.from('kiko_alerts').insert({
+            type: 'kiko_remediation',
+            severity: 'info',
+            title: 'Kiko auto-investigated selfcheck failures',
+            detail: (kikoData.response || 'No response').slice(0, 2000),
+            entity_type: 'system',
+            dismissed: false,
+            metadata: { failures: failed.map(f => f.name), timestamp: new Date().toISOString() },
+          });
+        }
+      } catch (remErr) {
+        console.warn('[selfcheck-watcher] Auto-remediation failed:', remErr.message);
+      }
+    }
+
     const summary = {
       ok: true,
       duration_ms: Date.now() - startedAt,

@@ -176,6 +176,31 @@ Return ONLY a JSON array: [{"team":"mclaren","partner":"Intel","category":"semic
   await supabase.from('f1_teams').update({ updated_at: new Date().toISOString() })
     .neq('id', 'none');
 
+
+  // ══ FEED NEW PARTNERSHIPS TO KIKO FOR ANALYSIS ══
+  if (added > 0) {
+    try {
+      const partnerList = results.map(p => `${p.partner_name || p.partner} → ${p.team_id || 'unknown team'} (${p.category_id || p.category || 'uncategorized'})`).join('; ');
+      const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
+      await fetch(`${baseUrl}/api/kiko`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `PARTNERSHIP INTELLIGENCE: ${added} new F1/FE partnership(s) detected by the scanner: ${partnerList}. Analyze what this means for Van Hawke's positioning. Check for category conflicts with our prospects. Update your memory if this changes the competitive landscape. If any of these affect Haas F1 or Alpine, flag immediately.`,
+          userEmail: 'sunny@vanhawke.agency',
+          currentPage: 'partnership-matrix',
+          conversationHistory: [],
+          nostream: true,
+          system: true,
+        }),
+        signal: AbortSignal.timeout(120000),
+      });
+      console.log('[PartnerScan] Kiko analysis triggered for', added, 'new partnerships');
+    } catch (kikoErr) {
+      console.warn('[PartnerScan] Kiko analysis failed:', kikoErr.message);
+    }
+  }
+
   const summary = {
     phase1_articles: unscanned.length,
     phase2_web: webArticles,

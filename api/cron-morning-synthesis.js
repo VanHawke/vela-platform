@@ -192,7 +192,7 @@ STALE_DEALS: [any deals/prospects going cold with days count]` }]
 
     // STEP 2: GENERATOR (Sonnet — deep reasoning, strategic writing)
     const genResp = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-opus-4-8',
       max_tokens: 3000,
       messages: [{ role: 'user', content: `You are Kiko, the AI executive operating partner for Van Hawke Group, a Formula One sponsorship advisory firm. Today is ${today}.
 
@@ -267,7 +267,7 @@ If it FAILS: respond with "FAIL:" followed by specific issues to fix.` }]
     if (evalResult.startsWith('FAIL') && briefing.length > 100) {
       console.log(`[MorningSynthesis] Evaluator rejected. Regenerating with feedback...`);
       const retryResp = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-opus-4-8',
         max_tokens: 3000,
         messages: [
           { role: 'user', content: `Rewrite this briefing. The evaluator found these issues:\n${evalResult}\n\nOriginal briefing:\n${briefing}\n\nFix the issues and rewrite. Keep the same structure but address every problem the evaluator identified.` }
