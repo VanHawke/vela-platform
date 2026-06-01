@@ -433,6 +433,14 @@ export const TOOL_DEFINITIONS = [
     }, required: ['section'] },
   },
   {
+    name: 'run_code',
+    description: 'Execute Python or JavaScript code and return the output. Use for calculations, data processing, analysis, generating HTML charts/dashboards, or any computational task. When creating visuals, generate data then output HTML in a html code block so it renders as an interactive artifact.',
+    input_schema: { type: 'object', properties: {
+      language: { type: 'string', enum: ['python', 'javascript'], description: 'Language to execute' },
+      code: { type: 'string', description: 'Code to execute. Full script. stdout is returned.' },
+    }, required: ['language', 'code'] },
+  },
+  {
     name: 'kiko_self_modify',
     description: 'Read, edit, and deploy your own source code. Use when you detect a problem via selfcheck or conversation and can fix it. Operations: read_file (view source), edit_file (surgical find/replace), list_files (browse codebase), run_command (build, test, git), deploy (API: pm2 restart), full_deploy (frontend: npm run build + copy to /var/www/kiko/ + pm2 restart). ALWAYS: 1) read the file first, 2) make surgical edits, 3) build to verify, 4) deploy, 5) run selfcheck after. NEVER edit blindly.',
     input_schema: { type: 'object', properties: {
@@ -516,6 +524,24 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
   }
 
   // ── Kiko Self-Modification — read, edit, deploy own code ──
+  if (name === 'run_code') {
+    const { language, code } = input;
+    const { execSync } = require('child_process');
+    const fs = require('fs');
+    const ext = language === 'python' ? 'py' : 'js';
+    const tmpFile = '/tmp/kiko_code_' + Date.now() + '.' + ext;
+    try {
+      fs.writeFileSync(tmpFile, code);
+      const cmd = language === 'python' ? 'python3 ' + tmpFile : 'node ' + tmpFile;
+      const output = execSync(cmd, { timeout: 30000, encoding: 'utf8', maxBuffer: 512 * 1024 });
+      try { fs.unlinkSync(tmpFile); } catch {}
+      return output.slice(0, 5000) || '(no output)';
+    } catch (e) {
+      try { fs.unlinkSync(tmpFile); } catch {}
+      return 'Error: ' + (e.stderr || e.message || '').slice(0, 2000);
+    }
+  }
+
   if (name === 'kiko_self_modify') {
     const { operation, file_path, old_text, new_text, command, reason } = input;
     const { execSync } = await import('child_process');
