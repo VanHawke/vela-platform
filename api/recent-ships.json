@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-05-22T19:58:41.077Z",
+  "generated_at": "2026-06-01T15:46:03.946Z",
   "commits": [
     {
-      "hash": "6a739ab",
-      "subject": "Full audit: update KIKO_MEMORY, SESSION_BRIEF, lean prompt — 49 tools, 46 crons, all Session 68 changes",
-      "when": "21 minutes ago"
+      "hash": "0ef77d7",
+      "subject": "Fix: deep think → Opus 4.8, max_tokens doubled, redundant imports removed, audit cleanup",
+      "when": "8 minutes ago"
     },
     {
-      "hash": "725510f",
-      "subject": "Calendar: Meet toggle, delete button, edit/delete API endpoints",
-      "when": "47 minutes ago"
+      "hash": "f32fadd",
+      "subject": "Staging environment: staging worker on port 3001, staging-first deploy, health check before production promotion",
+      "when": "18 minutes ago"
     },
     {
-      "hash": "7722e02",
-      "subject": "Calendar: Google Meet auto-add, event editing (PATCH), event deletion (DELETE)",
-      "when": "55 minutes ago"
+      "hash": "b921c5f",
+      "subject": "Cost fix: Haiku for classification crons, Opus only for morning synthesis. ~-2/day",
+      "when": "27 minutes ago"
     },
     {
-      "hash": "b606118",
-      "subject": "Kiko proactive: greetings now include selfcheck health status, alert on failures first",
+      "hash": "91b7aac",
+      "subject": "Prospect intelligence: daily contact/company monitoring, job changes, funding, leadership, auto-CRM updates, outreach triggers",
       "when": "73 minutes ago"
     },
     {
-      "hash": "ca05907",
-      "subject": "Remove Knowledge Base from nav (internal tool, not user-facing)",
-      "when": "74 minutes ago"
+      "hash": "49f1aff",
+      "subject": "Complete company operator: email reply intelligence, pipeline enforcement, meeting prep, evening summary, 10-category morning brief",
+      "when": "75 minutes ago"
     },
     {
-      "hash": "2c88c1a",
-      "subject": "Kiko self-modification: read/edit/deploy own code, audit log, syntax checking, rollback",
-      "when": "86 minutes ago"
+      "hash": "d65a375",
+      "subject": "Strip middleware: bypass intent classifier + reasoning pre-process. Opus routes naturally.",
+      "when": "83 minutes ago"
     },
     {
-      "hash": "79163d5",
-      "subject": "CRITICAL: Mount google-auth routes in Express server (was never mounted on Hetzner)",
-      "when": "4 hours ago"
+      "hash": "f16b0df",
+      "subject": "Fix supabase is not defined — replace SDK calls with sbFetch REST calls",
+      "when": "2 hours ago"
     },
     {
-      "hash": "a0c7656",
-      "subject": "Fix: add sporting-events to Settings Navigation ALL_TOP_NAV (third location synced)",
-      "when": "4 hours ago"
+      "hash": "49f9572",
+      "subject": "CRITICAL FIX: Remove temperature parameter — Opus 4.8 rejects it, was causing 400 on every tool call",
+      "when": "2 hours ago"
     },
     {
-      "hash": "b82ba2d",
-      "subject": "Update KIKO_MEMORY.md with Session 68 changes, fix LegoraTopNav nav sync",
-      "when": "5 hours ago"
+      "hash": "574a857",
+      "subject": "Deploy safeguards: build verification, syntax check, mandatory reason, code change discipline",
+      "when": "2 hours ago"
     },
     {
-      "hash": "868b509",
-      "subject": "Fix: add sporting-events + knowledge to LegoraTopNav ALL_PAGES (was only in Layout.jsx)",
-      "when": "5 hours ago"
+      "hash": "3911f60",
+      "subject": "Memory import: tag user_id on all imports for RLS privacy",
+      "when": "2 hours ago"
     },
     {
-      "hash": "d436d4a",
-      "subject": "Meeting transcript cron, server route, Google auth consent fix",
-      "when": "6 hours ago"
+      "hash": "77e6387",
+      "subject": "Timeouts: 60s/120s. Memory import from Claude/ChatGPT. Full-stack self-modify.",
+      "when": "3 hours ago"
     },
     {
-      "hash": "db3f378",
-      "subject": "Force consent prompt on Google OAuth (ensures new scopes), fix nav Supabase sync",
-      "when": "6 hours ago"
+      "hash": "5f757aa",
+      "subject": "Kiko full-stack: self-modify accesses full repo, full_deploy builds frontend + API + restart",
+      "when": "3 hours ago"
     },
     {
-      "hash": "dbce54d",
-      "subject": "Google Meet transcript integration: scope, fetcher, Haiku extraction, auto-task creation",
-      "when": "6 hours ago"
+      "hash": "5e8f450",
+      "subject": "Proactive Kiko: selfcheck auto-remediation, partnership analysis feed, morning synthesis on Opus 4.8",
+      "when": "3 hours ago"
     },
     {
-      "hash": "ba0abf9",
-      "subject": "Voice: add language=en to transcription (fixes Korean hallucinations), update nav page list",
-      "when": "6 hours ago"
+      "hash": "66e6a24",
+      "subject": "CRITICAL FIX: Add merge tag replacement — {{first_name}}/{{last_name}}/{{company}} now personalized before send",
+      "when": "3 hours ago"
     },
     {
-      "hash": "19a20a9",
-      "subject": "Document Library: Analyse with Kiko button, KikoFloat pending message system",
-      "when": "6 hours ago"
+      "hash": "c5f993c",
+      "subject": "Kiko identity: Claude Opus 4.8 in lean prompt",
+      "when": "3 hours ago"
     },
     {
-      "hash": "a128cfd",
-      "subject": "Calendar event creation form, PartnershipMatrix + MemoryConsole header fixes, nav auto-discovery",
-      "when": "7 hours ago"
+      "hash": "3027743",
+      "subject": "Kiko memory: Opus 4.8 identity, 17 crons, cleaned architecture, full state",
+      "when": "3 hours ago"
     },
     {
-      "hash": "9737c64",
-      "subject": "Fix nav auto-discovery for new items, remove old 77KB fallback, fix PartnershipMatrix + MemoryConsole headers",
-      "when": "7 hours ago"
+      "hash": "ad87160",
+      "subject": "Cron cleanup: 46→17. Remove crons Opus handles on demand. Keep infrastructure + campaign engine + integrations",
+      "when": "3 hours ago"
     },
     {
-      "hash": "48be64e",
-      "subject": "Update navigation: calendar→Google Calendar, add sporting-events, messenger nav aliases",
-      "when": "8 hours ago"
+      "hash": "f66598b",
+      "subject": "Upgrade Kiko to Claude Opus 4.8 (latest, shipped May 28 — Dynamic Workflows, 1M context, 4x honesty)",
+      "when": "3 hours ago"
     },
     {
-      "hash": "4ffa96f",
-      "subject": "Add Google Calendar page, rename race calendar to Sporting Events, add Messenger to nav",
-      "when": "8 hours ago"
+      "hash": "aaef904",
+      "subject": "MAJOR: Kiko backbone upgraded from Sonnet to Opus. Lean prompt: greeting guard, proceed rule, verification rule",
+      "when": "3 hours ago"
     },
     {
-      "hash": "332f223",
-      "subject": "Casual queries get web_search only (not all 47 tools) — keeps tokens low while enabling current info",
-      "when": "9 hours ago"
+      "hash": "1c9c494",
+      "subject": "Calendar webhooks live, invite accept/decline, Gmail .ics handled via webhook, Kiko knowledge updated",
+      "when": "10 days ago"
     }
   ]
 }

@@ -30,6 +30,46 @@ function splitAtSafeBoundary(text) {
   }
 }
 
+
+// ═══ ARTIFACT RENDERER — interactive HTML/SVG/chart rendering in chat ═══
+function ArtifactFrame({ code, language }) {
+  const ref = React.useRef(null)
+  const [expanded, setExpanded] = React.useState(false)
+  const [showCode, setShowCode] = React.useState(false)
+  const height = expanded ? 600 : 340
+
+  React.useEffect(() => {
+    if (!ref.current) return
+    const doc = ref.current.contentDocument
+    if (!doc) return
+    doc.open()
+    if (language === 'svg') {
+      doc.write('<html><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#fafafa">' + code + '</body></html>')
+    } else {
+      doc.write(code)
+    }
+    doc.close()
+  }, [code, language])
+
+  return (
+    <div style={{ margin: '12px 0', borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)', background: '#fff' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 12px', background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+        <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', fontWeight: 500 }}>Interactive {language.toUpperCase()}</span>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button onClick={() => setShowCode(!showCode)} style={{ border: 'none', background: 'rgba(0,0,0,0.04)', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10, color: 'rgba(0,0,0,0.5)' }}>{showCode ? 'Preview' : 'Code'}</button>
+          <button onClick={() => setExpanded(!expanded)} style={{ border: 'none', background: 'rgba(0,0,0,0.04)', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10, color: 'rgba(0,0,0,0.5)' }}>{expanded ? 'Collapse' : 'Expand'}</button>
+          <button onClick={() => { const w = window.open(); w.document.write(code); w.document.close() }} style={{ border: 'none', background: 'rgba(0,0,0,0.04)', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10, color: 'rgba(0,0,0,0.5)' }}>Pop out</button>
+        </div>
+      </div>
+      {showCode ? (
+        <pre style={{ margin: 0, padding: 12, overflow: 'auto', background: 'rgba(0,0,0,0.02)', fontSize: 12, maxHeight: height }}><code>{code}</code></pre>
+      ) : (
+        <iframe ref={ref} sandbox="allow-scripts allow-same-origin" style={{ width: '100%', height, border: 'none', background: '#fff' }} title="Kiko Artifact" />
+      )}
+    </div>
+  )
+}
+
 // Custom components for react-markdown
 const mdComponents = {
   // Code blocks with copy button
@@ -41,10 +81,15 @@ const mdComponents = {
       }} {...props}>{children}</code>
     }
     const text = String(children).replace(/\n$/, '')
+    const lang = (className || '').replace('language-', '')
+    // ARTIFACT RENDERING — render HTML/SVG/chart blocks interactively
+    if (['html', 'svg', 'artifact', 'dashboard', 'chart'].includes(lang)) {
+      return <ArtifactFrame code={text} language={lang} />
+    }
     return (
       <div style={{ position: 'relative', margin: '12px 0', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.06)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 12px', background: 'rgba(0,0,0,0.03)', borderBottom: '1px solid rgba(0,0,0,0.04)', fontSize: 11, color: 'rgba(0,0,0,0.4)' }}>
-          <span>{(className || '').replace('language-', '') || 'code'}</span>
+          <span>{lang || 'code'}</span>
           <button onClick={() => navigator.clipboard.writeText(text)} style={{
             border: 'none', background: 'rgba(0,0,0,0.04)', borderRadius: 4, padding: '2px 8px',
             cursor: 'pointer', fontSize: 11, color: 'rgba(0,0,0,0.5)',

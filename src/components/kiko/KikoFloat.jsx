@@ -123,6 +123,18 @@ if (!document.getElementById('kiko-float-styles')) {
   document.head.appendChild(el)
 }
 
+// Extract artifacts (HTML/SVG blocks) for interactive rendering
+function extractArtifacts(text) {
+  if (!text) return { clean: text, artifacts: [] }
+  const artifacts = []
+  const clean = text.replace(/```(?:html|svg|artifact)(\n[\s\S]*?)```/g, (match, code) => {
+    const id = 'artifact-' + artifacts.length
+    artifacts.push({ id, code: code.trim() })
+    return '\n[ARTIFACT:' + id + ']\n'
+  })
+  return { clean, artifacts }
+}
+
 function md(text) {
   if (!text) return ''
   let h = text
