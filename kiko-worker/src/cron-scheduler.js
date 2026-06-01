@@ -27,6 +27,7 @@ const SCHEDULES = [
   { schedule: '0 8 * * 1-5',       path: '/api/cron-selfcheck-watcher',   name: 'selfcheck' },
   { schedule: '0 7 * * 1-5',       path: '/api/cron-partnership-scan',    name: 'partnership-scan' },
   { schedule: '0 9 * * 1-5',       path: '/api/cron-campaign-monitor',    name: 'campaign-monitor' },
+  { schedule: '0 18 * * 1-5',      path: '/api/cron-evening-summary',     name: 'evening-summary' },
 
   // ═══ INTEGRATIONS (external API sync) ═══
   { schedule: '0 19 * * 1-5',      path: '/api/meeting-transcripts',      name: 'meeting-transcripts', method: 'POST', body: '{"email":"sunny@vanhawke.com","days":1}' },

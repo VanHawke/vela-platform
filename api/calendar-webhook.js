@@ -74,6 +74,30 @@ async function handleNotification(req, res) {
           }
         }
       }
+
+        // Check for upcoming meetings (within 2 hours) — prepare briefs
+        for (const event of events) {
+          const startTime = new Date(event.start?.dateTime || event.start?.date);
+          const hoursUntil = (startTime - Date.now()) / 3600000;
+          if (hoursUntil > 0 && hoursUntil < 2 && event.attendees?.length > 0) {
+            const attendeeNames = event.attendees.filter(a => !a.self).map(a => a.email).join(', ');
+            try {
+              await fetch(`http://127.0.0.1:${process.env.PORT || 3000}/api/kiko`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  message: `MEETING PREP — You have "${event.summary}" in ${Math.round(hoursUntil * 60)} minutes with: ${attendeeNames}. Prepare a brief: (1) Who are these people? Check CRM and web. (2) What's the context — any deals, emails, or history with them? (3) Key talking points. (4) What outcome should Sunny aim for? Store the prep in manage_knowledge with domain "meeting-prep".`,
+                  userEmail: email,
+                  currentPage: 'calendar',
+                  conversationHistory: [],
+                  nostream: true, system: true,
+                }),
+                signal: AbortSignal.timeout(60000),
+              });
+              console.log('[calendar-webhook] Meeting prep triggered for:', event.summary);
+            } catch (prepErr) { console.warn('[calendar-webhook] Meeting prep failed:', prepErr.message); }
+          }
+        }
     } catch (err) {
       console.error('[calendar-webhook] Error processing notification:', err.message);
     }

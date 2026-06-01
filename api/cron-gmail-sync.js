@@ -262,6 +262,29 @@ export default async function handler(req, res) {
     }
 
     await cronHeartbeat('cron-gmail-sync', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: totalSynced });
+
+    // ══ PROACTIVE INTELLIGENCE: Trigger Kiko to analyse new replies and take action ══
+    try {
+      // Count recent reply alerts (last 30 min)
+      const recentReplies = await sbFetch('kiko_alerts?type=eq.email_reply&created_at=gte.' + new Date(Date.now() - 30*60000).toISOString() + '&dismissed=eq.false&select=id,title,detail');
+      if (recentReplies?.length > 0) {
+        const replySum = recentReplies.map(r => r.title + ': ' + (r.detail || '').slice(0, 100)).join('; ');
+        await fetch(`http://127.0.0.1:${process.env.PORT || 3000}/api/kiko`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `PROACTIVE — ${recentReplies.length} new email reply(s) detected: ${replySum}. For each reply: (1) Classify the intent — is this a YES, NO, NOT NOW, OOO, REFERRAL, or QUESTION? (2) Based on the classification, create the appropriate follow-up task via ask_data_agent. For NOT NOW: set a 3-month follow-up. For YES: create an urgent task to schedule a call. For REFERRAL: research the referred person and draft outreach. For QUESTION: draft a reply. (3) If any reply mentions funding, acquisition, or leadership change, flag it as a hot signal.`,
+            userEmail: 'sunny@vanhawke.agency',
+            currentPage: 'command-centre',
+            conversationHistory: [],
+            nostream: true, system: true,
+          }),
+          signal: AbortSignal.timeout(120000),
+        });
+        console.log('[gmail-sync] Kiko reply analysis triggered for', recentReplies.length, 'replies');
+      }
+    } catch (kikoErr) { console.warn('[gmail-sync] Kiko analysis failed:', kikoErr.message); }
+
     return res.json({ ok: true, synced: totalSynced, duration_ms: Date.now() - __hbStart });
   } catch (err) {
     console.error('[gmail-sync] Fatal:', err.message);

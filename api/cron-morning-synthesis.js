@@ -223,14 +223,20 @@ NEWS: ${newsText}
 ${memoryContext}
 
 ═══ RULES ═══
-1. HEADLINE — One sentence from the planner's headline.
-2. RACE WEEK INTELLIGENCE — If race within 7 days: which prospects to prioritise, what's the location angle, specific actions for Matt. If no race soon, note the next one.
-3. GOAL PROGRESS — For each goal: what changed, what's the next step, flag if stalling.
-4. ACTIONS FOR TODAY — Numbered, specific, tied to goals. "Rewrite the CTA" not "review the campaign."
-5. RISK FLAGS — Stale deals, unanswered follow-ups, campaign problems.
+1. HEADLINE — One sentence, the single most important thing today.
+2. SYSTEM HEALTH — Any failing checks or broken systems. Report first, fix if possible.
+3. RACE WEEK INTELLIGENCE — If race within 7 days: which prospects to prioritise, location angle, specific actions for Matt. Pre-race outreach window opens 5 days before every GP.
+4. PIPELINE DECAY — Any deal untouched for 14+ days is in breach. Name them. Recommend: re-engage or kill. Create a follow-up task for each.
+5. FOLLOW-UP ENFORCEMENT — Any follow-up overdue by 3+ days. Name them with exact days overdue. These are revenue leaks.
+6. REPLY INTELLIGENCE — Classify any new email replies: YES (schedule call urgently), NOT NOW (set 3-month reminder), REFERRAL (research referred person), OOO (note return date, set reminder), QUESTION (draft reply).
+7. COMPANY SIGNALS — From news, alerts, and partnership data: any prospect company with funding, acquisition, leadership change, or new partnership. Flag as outreach opportunity with specific angle.
+8. CAMPAIGN HEALTH — Open rates, click rates, reply rates. If clicks high but replies zero, the CTA is wrong. Recommend specific rewrite.
+9. ACTIONS FOR TODAY — Numbered, specific, tied to goals. "Draft the Helsing follow-up referencing Alpine Legal AI" not "review the pipeline."
+10. REVENUE AT RISK — Pipeline weighted value. What closes this quarter vs next. What is stalling.
 
-CRITICAL: Do NOT fabricate deals, partnerships, or news. If you don't have information about something, say so. Every claim must come from the data above.
-Be direct, specific, strategic. Every sentence = fact, recommendation, or decision point.` }]
+CRITICAL: Do NOT fabricate deals, partnerships, or news. Every claim must come from the data above.
+Be direct, specific, strategic. Every sentence = fact, recommendation, or decision point.
+When you identify an action, be specific enough that it can be executed immediately.` }]
     });
     let briefing = genResp.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
     console.log(`[MorningSynthesis] Draft briefing: ${briefing.length} chars`);
@@ -303,6 +309,40 @@ If it FAILS: respond with "FAIL:" followed by specific issues to fix.` }]
     console.log(`[MorningSynthesis] Briefing generated (${briefing.length} chars, ${Date.now() - start}ms)`);
 
     // Email notification REMOVED per Sunny's request — briefing shows in-app only
+
+
+    // ══ PROACTIVE EXECUTION: Kiko acts on the briefing — creates tasks, drafts follow-ups ══
+    try {
+      const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
+      await fetch(`${baseUrl}/api/kiko`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `MORNING AUTO-ACTIONS — Execute these based on today's briefing:
+
+1. PIPELINE DECAY: For any deal mentioned as stale (14+ days untouched), create a follow-up task with a specific next action. Use ask_data_agent to create tasks.
+
+2. OVERDUE FOLLOW-UPS: For any follow-up mentioned as overdue (3+ days), create a task with the recommended action. If a draft email would help, prepare one.
+
+3. PRE-RACE OUTREACH: If a race is within 5 days, identify the top 3 prospects who should receive pre-race outreach and create tasks for each.
+
+4. COMPANY SIGNALS: If any prospect company has a new funding round, acquisition, or leadership change, create a task to send a congratulatory/relevant outreach.
+
+5. CAMPAIGN ACTIONS: If campaign stats show problems (high clicks, zero replies), create a task to rewrite the CTA.
+
+Today's briefing for context:
+${briefing.slice(0, 3000)}
+
+Execute silently. Create tasks. Do not explain — just act.`,
+          userEmail: 'sunny@vanhawke.agency',
+          currentPage: 'command-centre',
+          conversationHistory: [],
+          nostream: true, system: true,
+        }),
+        signal: AbortSignal.timeout(120000),
+      });
+      console.log('[MorningSynthesis] Auto-actions triggered');
+    } catch (actErr) { console.warn('[MorningSynthesis] Auto-actions failed:', actErr.message); }
 
     return res.json({ ok: true, briefing_length: briefing.length, duration_ms: Date.now() - start });
   } catch (err) {
