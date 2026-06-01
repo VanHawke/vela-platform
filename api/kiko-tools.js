@@ -526,8 +526,8 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
   // ── Kiko Self-Modification — read, edit, deploy own code ──
   if (name === 'run_code') {
     const { language, code } = input;
-    const { execSync } = require('child_process');
-    const fs = require('fs');
+    const { execSync } = await import('child_process');
+    const fs = await import('fs');
     const ext = language === 'python' ? 'py' : 'js';
     const tmpFile = '/tmp/kiko_code_' + Date.now() + '.' + ext;
     try {
