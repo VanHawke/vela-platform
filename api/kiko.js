@@ -3,10 +3,10 @@
 // Step 2: Deterministic navigation OR agent dispatch OR full tool loop
 import Anthropic from '@anthropic-ai/sdk';
 import { TOOL_DEFINITIONS, DIGEST_BRIEF_TOOL, executeTool, fetchEntityContext, sbFetch, logError } from './kiko-tools.js';
-import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
+// BYPASSED: import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 import loadLeanKnowledge from './kiko-self-knowledge-lean.js';
 import { describeScreen } from './agents/screen-reader.js';
-import { preProcess } from './reasoning-engine.js';
+// DISABLED: import { preProcess } from './reasoning-engine.js';
 import { lookupCompany } from './company-lookup.js';
 import { callEAAgent } from './agents/ea.js';
 
@@ -1521,8 +1521,8 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
       }
       
       const params = {
-        model: useDeep ? 'claude-opus-4-6' : (useHaiku ? 'claude-haiku-4-5-20251001' : MODEL),
-        max_tokens: opts.maxTokens || (useDeep ? 16000 : 4096),
+        model: useDeep ? MODEL : (useHaiku ? 'claude-haiku-4-5-20251001' : MODEL),
+        max_tokens: opts.maxTokens || (useDeep ? 32000 : 8192),
         system: systemCached, messages: msgs, tools: toolsWithCache,
       };
       if (useDeep) {
