@@ -852,7 +852,7 @@ Document:\n${document_text.slice(0, 25000)}` }],
   if (name === 'ask_data_agent') {
     // Super admin only operations
     if (['update_partnership', 'refresh_partnerships', 'create_campaign', 'bulk_enroll'].includes(input.operation)) {
-      const { data: userRow } = await supabase.from('users').select('role').eq('id', userId).limit(1);
+      const userRows = await sbFetch(`users?id=eq.${userId}&select=role&limit=1`); const userRow = userRows?.[0];
       if (userRow?.[0]?.role !== 'super_admin') {
         return `❌ ${input.operation} is restricted to super admin only.`;
       }
@@ -1720,7 +1720,7 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
         status: 'pending',
         priority: 5,
       };
-      const { error } = await supabase.from('kiko_linkedin_queue').insert(queueItem);
+      await sbFetch('kiko_linkedin_queue', { method: 'POST', body: JSON.stringify(queueItem) });
       if (error) return { error: error.message };
       // Trigger immediate processing
       fetch(HETZNER + '/api/linkedin-trigger', { method: 'POST', headers: { 'Authorization': 'Bearer ' + SECRET } }).catch(() => {});
