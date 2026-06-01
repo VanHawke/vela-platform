@@ -540,7 +540,6 @@ export default async function handler(req, res) {
       const stream = await anthropic.messages.stream({
         model: MODEL,
         max_tokens: 1024,
-        temperature: 0.7,
         system: `You are a senior sponsorship executive drafting email replies. Rules:
 - Output ONLY the email. No commentary, no analysis, no sections, no headers.
 - Format: Subject: line, then To: line, then blank line, then greeting, then body, then sign-off.
@@ -1523,7 +1522,6 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
       const params = {
         model: useDeep ? 'claude-opus-4-6' : (useHaiku ? 'claude-haiku-4-5-20251001' : MODEL),
         max_tokens: opts.maxTokens || (useDeep ? 16000 : 4096),
-        temperature: intent === 'crm_write' || intent === 'campaign' || /campaign|sequence|enroll|target/i.test(message || '') ? 0 : 1,
         system: systemCached, messages: msgs, tools: toolsWithCache,
       };
       if (useDeep) {

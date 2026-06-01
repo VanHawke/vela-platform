@@ -25,7 +25,6 @@ export default async function handler(req, res) {
     const stream = await anthropic.messages.stream({
       model: MODEL,
       max_tokens: 1024,
-      temperature: 0.7,
       system: `You are a senior sponsorship executive drafting email replies. Rules:
 - Output ONLY the email. No commentary, no analysis, no sections, no headers, no explanation.
 - Format: Subject: line, then To: line, then blank line, then greeting, then body, then sign-off.
