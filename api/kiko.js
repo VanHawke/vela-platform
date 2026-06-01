@@ -12,7 +12,7 @@ import { callEAAgent } from './agents/ea.js';
 
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
-const MODEL = 'claude-sonnet-4-6';
+const MODEL = 'claude-opus-4-6';
 
 // ── User config loader — replaces all hardcoded user references ──
 const userConfigCache = new Map();
