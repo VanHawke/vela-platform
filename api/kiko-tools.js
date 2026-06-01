@@ -434,9 +434,9 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'kiko_self_modify',
-    description: 'Read, edit, and deploy your own source code. Use when you detect a problem via selfcheck or conversation and can fix it. Operations: read_file (view source), edit_file (surgical find/replace), list_files (browse codebase), run_command (build, test, git), deploy (build+deploy+verify). ALWAYS: 1) read the file first, 2) make surgical edits, 3) build to verify, 4) deploy, 5) run selfcheck after. NEVER edit blindly.',
+    description: 'Read, edit, and deploy your own source code. Use when you detect a problem via selfcheck or conversation and can fix it. Operations: read_file (view source), edit_file (surgical find/replace), list_files (browse codebase), run_command (build, test, git), deploy (API: pm2 restart), full_deploy (frontend: npm run build + copy to /var/www/kiko/ + pm2 restart). ALWAYS: 1) read the file first, 2) make surgical edits, 3) build to verify, 4) deploy, 5) run selfcheck after. NEVER edit blindly.',
     input_schema: { type: 'object', properties: {
-      operation: { type: 'string', enum: ['read_file', 'edit_file', 'list_files', 'run_command', 'deploy'], description: 'read_file: view source. edit_file: find/replace. list_files: browse. run_command: shell command. deploy: full build+deploy+restart cycle.' },
+      operation: { type: 'string', enum: ['read_file', 'edit_file', 'list_files', 'run_command', 'deploy', 'full_deploy'], description: 'read_file: view source. edit_file: find/replace. list_files: browse. run_command: shell command. deploy: full build+deploy+restart cycle.' },
       file_path: { type: 'string', description: 'Relative path from project root, e.g. "api/kiko.js" or "src/pages/Pipeline.jsx"' },
       old_text: { type: 'string', description: 'For edit_file: exact text to find (must be unique in file)' },
       new_text: { type: 'string', description: 'For edit_file: replacement text' },
@@ -521,8 +521,8 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
     const { execSync } = await import('child_process');
     const fs = await import('fs');
     const path = await import('path');
-    const PROJECT_ROOT = '/home/kiko/kiko-worker';
-    const ALLOWED_COMMANDS = ['git status', 'git diff', 'git log', 'npm run build', 'pm2 logs', 'cat ', 'grep ', 'ls ', 'wc ', 'head ', 'tail ', 'node -c '];
+    const PROJECT_ROOT = '/home/kiko/vela-platform';
+    const ALLOWED_COMMANDS = ['git status', 'git diff', 'git log', 'npm run build', 'npm install', 'pm2 logs', 'pm2 restart', 'cat ', 'grep ', 'ls ', 'wc ', 'head ', 'tail ', 'node -c ', 'cp -r '];
 
     // Audit log
     const logEntry = `[${new Date().toISOString()}] ${operation} ${file_path || command || ''} — ${reason || 'no reason given'}\n`;
@@ -579,6 +579,42 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
         if (!isAllowed) return `Error: Command not allowed. Permitted: ${ALLOWED_COMMANDS.join(', ')}`;
         const result = execSync(command, { cwd: PROJECT_ROOT, timeout: 30000, encoding: 'utf8' });
         return result.slice(0, 4000);
+      }
+
+      if (operation === 'full_deploy') {
+        const steps = [];
+        // Step 1: Build frontend
+        try {
+          const buildOut = execSync('npm run build 2>&1', { cwd: PROJECT_ROOT, timeout: 60000, encoding: 'utf8' });
+          if (buildOut.includes('error') && !buildOut.includes('built in')) {
+            steps.push('✗ Build failed: ' + buildOut.slice(-300));
+            return steps.join('\n');
+          }
+          steps.push('✓ Frontend built');
+        } catch (e) { steps.push('✗ Build failed: ' + e.message?.slice(0, 200)); return steps.join('\n'); }
+        // Step 2: Copy frontend to /var/www/kiko/
+        try {
+          execSync('cp -r dist/* /var/www/kiko/', { cwd: PROJECT_ROOT, timeout: 10000 });
+          steps.push('✓ Frontend deployed to /var/www/kiko/');
+        } catch (e) { steps.push('✗ Frontend copy failed: ' + e.message?.slice(0, 100)); }
+        // Step 3: Copy API files
+        try {
+          execSync('cp -r api/* /home/kiko/kiko-worker/api/', { cwd: PROJECT_ROOT, timeout: 10000 });
+          steps.push('✓ API files synced');
+        } catch (e) { steps.push('✗ API sync failed: ' + e.message?.slice(0, 100)); }
+        // Step 4: PM2 restart
+        try {
+          execSync('pm2 restart kiko-worker', { cwd: PROJECT_ROOT, timeout: 15000 });
+          steps.push('✓ PM2 restarted');
+        } catch (e) { steps.push('✗ PM2 restart failed: ' + e.message?.slice(0, 100)); }
+        // Step 5: Health check
+        await new Promise(r => setTimeout(r, 3000));
+        try {
+          const healthRes = await fetch('http://127.0.0.1:3000/health');
+          const health = await healthRes.json();
+          steps.push('✓ Health: ' + health.status);
+        } catch (e) { steps.push('✗ Health check failed: ' + e.message?.slice(0, 100)); }
+        return steps.join('\n');
       }
 
       if (operation === 'deploy') {
