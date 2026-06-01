@@ -1655,8 +1655,8 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
             ? handleMemory(block.input, userId)
             : executeTool(block.name, block.input, userEmail, pageContext, userId);
           // Complex tools need longer timeouts (data queries, AI generation, campaigns)
-          const LONG_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent', 'run_morning_briefing', 'ask_data_agent', 'build_campaign', 'generate_document'];
-          const toolTimeoutMs = LONG_TOOLS.includes(block.name) ? 60000 : 35000;
+          const LONG_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent', 'run_morning_briefing', 'ask_data_agent', 'build_campaign', 'generate_document', 'kiko_self_modify', 'ask_content_agent', 'ask_document_agent'];
+          const toolTimeoutMs = LONG_TOOLS.includes(block.name) ? 120000 : 60000;
           result = await Promise.race([
             toolPromise,
             new Promise((_, reject) => setTimeout(() => reject(new Error(`Tool timeout: ${block.name} took longer than ${toolTimeoutMs/1000}s`)), toolTimeoutMs))
