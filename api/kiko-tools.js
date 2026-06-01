@@ -583,15 +583,22 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
 
       if (operation === 'full_deploy') {
         const steps = [];
-        // Step 1: Build frontend
+        // Step 0: REQUIRE a reason — no blind deploys
+        if (!reason) return 'Error: You must provide a reason for the deploy. What did you change and why?';
+        
+        // Step 1: Build frontend — if this fails, STOP. Do not deploy.
         try {
           const buildOut = execSync('npm run build 2>&1', { cwd: PROJECT_ROOT, timeout: 60000, encoding: 'utf8' });
-          if (buildOut.includes('error') && !buildOut.includes('built in')) {
-            steps.push('✗ Build failed: ' + buildOut.slice(-300));
+          if (buildOut.includes('ERROR') || buildOut.includes('error TS') || (buildOut.includes('error') && !buildOut.includes('built in'))) {
+            steps.push('✗ BUILD FAILED — DEPLOY ABORTED. Fix the error first.');
+            steps.push(buildOut.slice(-500));
             return steps.join('\n');
           }
-          steps.push('✓ Frontend built');
-        } catch (e) { steps.push('✗ Build failed: ' + e.message?.slice(0, 200)); return steps.join('\n'); }
+          steps.push('✓ Frontend built successfully');
+        } catch (e) { 
+          steps.push('✗ BUILD FAILED — DEPLOY ABORTED: ' + e.message?.slice(0, 300)); 
+          return steps.join('\n'); 
+        }
         // Step 2: Copy frontend to /var/www/kiko/
         try {
           execSync('cp -r dist/* /var/www/kiko/', { cwd: PROJECT_ROOT, timeout: 10000 });
@@ -618,7 +625,19 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
       }
 
       if (operation === 'deploy') {
+        if (!reason) return 'Error: You must provide a reason for the deploy. What did you change and why?';
         const steps = [];
+        // Step 0: Syntax-check all recently modified JS files
+        try {
+          const recent = execSync('find . -name "*.js" -newer KIKO_SELF_EDIT_LOG.md -not -path "*/node_modules/*" 2>/dev/null', { cwd: PROJECT_ROOT, timeout: 5000, encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+          for (const f of recent.slice(0, 10)) {
+            execSync(`node -c "${f}"`, { cwd: PROJECT_ROOT, timeout: 3000 });
+          }
+          if (recent.length) steps.push('✓ Syntax verified: ' + recent.length + ' files');
+        } catch (e) { 
+          steps.push('✗ SYNTAX ERROR — DEPLOY ABORTED: ' + e.message?.slice(0, 200));
+          return steps.join('\n');
+        }
         // Step 1: Git commit
         try {
           execSync('git add -A', { cwd: PROJECT_ROOT, timeout: 10000 });
