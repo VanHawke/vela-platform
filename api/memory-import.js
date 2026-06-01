@@ -12,6 +12,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   const { data, source, email } = req.body || {};
+  const userId = email === 'sunny@vanhawke.agency' || email === 'sunny@vanhawke.com' ? '9f486437-4bf5-4111-abfe-fe19bfa76063' : null;
   // data = raw conversation export (JSON string or array)
   // source = 'claude' or 'chatgpt'
   if (!data) return res.status(400).json({ error: 'data field required (conversation export JSON)' });
@@ -70,6 +71,7 @@ export default async function handler(req, res) {
         // Store in kiko_knowledge
         await supabase.from('kiko_knowledge').insert({
           domain: `imported-${source || 'unknown'}-${parsed_result.domain || 'general'}`,
+          user_id: userId,
           content: `[Imported from ${source || 'unknown'}] ${conv.title}\n\n${parsed_result.summary}\n\nDecisions: ${(parsed_result.decisions || []).join('; ')}\nPreferences: ${(parsed_result.preferences || []).join('; ')}\nContacts: ${(parsed_result.contacts || []).join('; ')}`,
           source: `${source || 'unknown'}-import`,
           researched_at: new Date().toISOString(),
