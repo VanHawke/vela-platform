@@ -1086,7 +1086,7 @@ export default async function handler(req, res) {
     }
 
     // Inject routing hint into system prompt for non-trivial intents
-    const agentMapping = INTENT_TO_AGENT[intent];
+    const agentMapping = null; // BYPASSED: intent classifier removed
     let routingHint = '';
     // Greeting: proactive briefing — call morning_briefing FIRST
     if (intent === 'greeting') {
