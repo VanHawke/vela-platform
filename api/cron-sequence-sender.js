@@ -9,6 +9,38 @@ import { loadUserSignatures, buildMimeWithInlineImages } from './lib/email-forma
 
 const TRACK_BASE = 'https://api.vanhawke.agency/api/track';
 
+// ═══ MERGE TAG REPLACEMENT — personalizes templates with contact data ═══
+function personalizeTemplate(template, contact) {
+  if (!template) return '';
+  let out = template;
+  const firstName = (contact.contact_name || '').split(' ')[0] || '';
+  const lastName = (contact.contact_name || '').split(' ').slice(1).join(' ') || '';
+  const replacements = {
+    '{{first_name}}': firstName,
+    '{{firstName}}': firstName,
+    '{{last_name}}': lastName,
+    '{{lastName}}': lastName,
+    '{{full_name}}': contact.contact_name || '',
+    '{{name}}': contact.contact_name || '',
+    '{{company}}': contact.company || '',
+    '{{company_name}}': contact.company || '',
+    '{{email}}': contact.contact_email || contact.to_email || '',
+    '{{title}}': contact.title || '',
+    '{{job_title}}': contact.title || '',
+  };
+  for (const [tag, value] of Object.entries(replacements)) {
+    out = out.split(tag).join(value);
+  }
+  // Also handle {first_name} single-brace variant
+  for (const [tag, value] of Object.entries(replacements)) {
+    const singleBrace = tag.replace('{{', '{').replace('}}', '}');
+    out = out.split(singleBrace).join(value);
+  }
+  return out;
+}
+
+
+
 // Inject open pixel + wrap all http(s) links with click tracker.
 // Recipient sees a normal email; we get open + click telemetry.
 function instrumentHtml(html, queueId) {
@@ -255,9 +287,9 @@ export default async function handler(req, res) {
         const raw = buildMimeWithInlineImages({
           from: fromEmail,
           to: email.to_email,
-          subject: email.subject,
-          htmlBody: instrumentHtml(email.body_html, email.id),
-          plainBody: email.body_plain,
+          subject: personalizeTemplate(email.subject, email),
+          htmlBody: instrumentHtml(personalizeTemplate(email.body_html, email), email.id),
+          plainBody: personalizeTemplate(email.body_plain, email),
           threadId,
           inlineImages,
         });
@@ -339,7 +371,7 @@ export default async function handler(req, res) {
                   company: enrollment[0].company, channel: branchStep.channel || 'email',
                   action: branchStep.action || (branchStep.channel === 'linkedin' ? 'message' : 'send'),
                   step_number: nextStep.step, subject: branchStep.subject || '',
-                  body_plain: branchStep.template || '', status: 'pending',
+                  body_plain: personalizeTemplate(branchStep.template || '', enrollment[0]), status: 'pending',
                   scheduled_for: new Date(now.getTime() + (branchStep.delay_days || 1) * 86400000).toISOString(),
                 }) }).catch(() => {});
               }
@@ -376,7 +408,7 @@ export default async function handler(req, res) {
                   contact_name: enrollment[0].contact_name, company: enrollment[0].company,
                   linkedin_url: enrollment[0].linkedin_url || '',
                   action: nextStep.action || 'message',
-                  message: nextStep.template || '', step_number: nextStep.step,
+                  message: personalizeTemplate(nextStep.template || '', enrollment[0]), step_number: nextStep.step,
                   status: 'queued',
                   scheduled_for: new Date(now.getTime() + (nextStep.delay_days || 1) * 86400000).toISOString(),
                 }) }).catch(() => {});
@@ -396,7 +428,7 @@ export default async function handler(req, res) {
                     enrollment_id: email.enrollment_id, sequence_id: enrollment[0].sequence_id,
                     contact_name: enrollment[0].contact_name, company: enrollment[0].company,
                     linkedin_url: enrollment[0].linkedin_url || '',
-                    action: advanceTarget.action || 'message', message: advanceTarget.template || '',
+                    action: advanceTarget.action || 'message', message: personalizeTemplate(advanceTarget.template || '', enrollment[0]),
                     step_number: advanceTarget.step, status: 'queued',
                     scheduled_for: new Date(now.getTime() + (advanceTarget.delay_days || 1) * 86400000).toISOString(),
                   }) }).catch(() => {});
