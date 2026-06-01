@@ -586,6 +586,9 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
         // Step 0: REQUIRE a reason — no blind deploys
         if (!reason) return 'Error: You must provide a reason for the deploy. What did you change and why?';
         
+        // STAGING-FIRST DEPLOY: build → deploy to staging → health check staging → promote to production
+        const STAGING_ROOT = '/home/kiko/staging-worker';
+        
         // Step 1: Build frontend — if this fails, STOP. Do not deploy.
         try {
           const buildOut = execSync('npm run build 2>&1', { cwd: PROJECT_ROOT, timeout: 60000, encoding: 'utf8' });
@@ -599,22 +602,33 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
           steps.push('✗ BUILD FAILED — DEPLOY ABORTED: ' + e.message?.slice(0, 300)); 
           return steps.join('\n'); 
         }
-        // Step 2: Copy frontend to /var/www/kiko/
+        // Step 2: Deploy to STAGING first
+        try {
+          execSync('cp -r dist/* /var/www/kiko-staging/', { cwd: PROJECT_ROOT, timeout: 10000 });
+          execSync('cp -r api/* /home/kiko/staging-worker/api/', { cwd: PROJECT_ROOT, timeout: 10000 });
+          execSync('pm2 restart kiko-staging', { timeout: 15000 });
+          steps.push('✓ Deployed to STAGING');
+        } catch (e) { steps.push('✗ Staging deploy failed: ' + e.message?.slice(0, 100)); return steps.join('\n'); }
+        // Step 3: Health check STAGING
+        await new Promise(r => setTimeout(r, 3000));
+        try {
+          const stagingHealth = await fetch('http://127.0.0.1:3001/health');
+          const sh = await stagingHealth.json();
+          if (sh.status !== 'ok') { steps.push('✗ STAGING HEALTH FAILED — NOT promoting to production'); return steps.join('\n'); }
+          steps.push('✓ Staging health check passed');
+        } catch (e) { steps.push('✗ STAGING HEALTH FAILED: ' + e.message?.slice(0, 100) + ' — NOT promoting to production'); return steps.join('\n'); }
+        // Step 4: Promote to PRODUCTION (only if staging passed)
         try {
           execSync('cp -r dist/* /var/www/kiko/', { cwd: PROJECT_ROOT, timeout: 10000 });
-          steps.push('✓ Frontend deployed to /var/www/kiko/');
-        } catch (e) { steps.push('✗ Frontend copy failed: ' + e.message?.slice(0, 100)); }
-        // Step 3: Copy API files
-        try {
           execSync('cp -r api/* /home/kiko/kiko-worker/api/', { cwd: PROJECT_ROOT, timeout: 10000 });
-          steps.push('✓ API files synced');
-        } catch (e) { steps.push('✗ API sync failed: ' + e.message?.slice(0, 100)); }
-        // Step 4: PM2 restart
+          steps.push('✓ Frontend + API promoted to production');
+        } catch (e) { steps.push('✗ Production copy failed: ' + e.message?.slice(0, 100)); }
+        // Step 5: PM2 restart production
         try {
           execSync('pm2 restart kiko-worker', { cwd: PROJECT_ROOT, timeout: 15000 });
-          steps.push('✓ PM2 restarted');
+          steps.push('✓ Production restarted');
         } catch (e) { steps.push('✗ PM2 restart failed: ' + e.message?.slice(0, 100)); }
-        // Step 5: Health check
+        // Step 6: Health check PRODUCTION
         await new Promise(r => setTimeout(r, 3000));
         try {
           const healthRes = await fetch('http://127.0.0.1:3000/health');
