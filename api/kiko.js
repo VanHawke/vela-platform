@@ -423,6 +423,11 @@ async function handleMemory(input, userId) {
       return lines.map((l,i)=>`${i+1}\t${l}`).join('\n');
     }
     if (command === 'create') {
+      // BLOCK junk memory files — these polluted memory with 900+ useless files
+      const JUNK_PATTERNS = ['ping_response', 'navigation_pipeline', 'cloudflare', 'brief_snapshot', 'health_check', 'cron_log', 'tool_trace'];
+      if (JUNK_PATTERNS.some(p => path.toLowerCase().includes(p))) {
+        return `Blocked: "${path}" — diagnostic files must NOT be written to memory. Memory is for strategic knowledge only.`;
+      }
       await sbFetch('kiko_memories', { method:'POST', headers:{Prefer:'resolution=merge-duplicates'}, body: JSON.stringify({path, content:file_text||'', is_directory:false, user_id: userId, updated_at:new Date().toISOString()}) });
       return `Created ${path}`;
     }

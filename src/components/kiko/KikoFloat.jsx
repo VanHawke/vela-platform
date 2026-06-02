@@ -219,6 +219,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const navigate = useNavigate()
   const inputRef = useRef(null)
   const scrollRef = useRef(null)
+  const containerRef = useRef(null)
   const fileInputRef = useRef(null)
   const mediaRef = useRef(null)
   const recorderRef = useRef(null)
@@ -270,7 +271,14 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   }, [open])
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // Only auto-scroll if user is near the bottom — don't hijack their scroll position
+    const container = containerRef.current
+    if (!container) { scrollRef.current?.scrollIntoView({ behavior: 'smooth' }); return }
+    const threshold = 150 // px from bottom
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < threshold
+    if (isNearBottom) {
+      scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages, streamText])
 
   // Reset voiceOpen when KikoVoice closes (e.g. via "Goodbye Kiko" command)
@@ -593,7 +601,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
 
           {/* Messages */}
           {hasMessages && (
-            <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
+            <div ref={containerRef} style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
               {messages.map((msg, i) => (
                 <div key={i} style={{ marginBottom: msg.role !== 'user' ? 4 : 8 }}>
                   <div style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
