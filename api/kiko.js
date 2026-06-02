@@ -670,7 +670,20 @@ export default async function handler(req, res) {
     orgId ? sbFetch(`org_bibles?organization_id=eq.${orgId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
     isRegistered ? sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
     isLightweight ? Promise.resolve([]) : sbFetch('kiko_knowledge?select=domain,content,researched_at,source&order=researched_at.desc&limit=100').catch(() => []),
-    isLightweight ? Promise.resolve([]) : sbFetch(`kiko_learned_rules?active=eq.true&select=id,rule_text,category,evidence_count,weight&order=weight.desc&limit=20`).catch(() => []),
+    isLightweight ? Promise.resolve([]) : (async () => {
+      // CONTEXTUAL RULE LOADING — load rules relevant to THIS conversation, not all 20
+      const msgLower = (message || '').toLowerCase();
+      const categories = [];
+      if (/pipeline|deal|prospect|crm|contact/i.test(msgLower)) categories.push('deal_patterns', 'recurring_topics');
+      if (/email|outreach|campaign|send|draft/i.test(msgLower)) categories.push('communication_patterns', 'positive_signals');
+      if (/strategy|business|where.*are.*we|assess|review/i.test(msgLower)) categories.push('decision_patterns', 'implicit_preferences', 'frustration_triggers');
+      if (/fix|broken|error|bug|code|deploy/i.test(msgLower)) categories.push('frustration_triggers', 'positive_signals');
+      // Always load frustration triggers and communication patterns (most impactful)
+      if (!categories.includes('frustration_triggers')) categories.push('frustration_triggers');
+      if (!categories.includes('communication_patterns')) categories.push('communication_patterns');
+      const catFilter = categories.length ? `&category=in.(${categories.join(',')})` : '';
+      return sbFetch(`kiko_learned_rules?active=eq.true${catFilter}&select=id,rule_text,category,evidence_count,weight&order=weight.desc&limit=10`).catch(() => []);
+    })(),
     isLightweight ? Promise.resolve([]) : sbFetch(`kiko_preferences?select=category,preference,confidence&order=confidence.desc&limit=15`).catch(() => []),
   ]);
 
@@ -1961,6 +1974,28 @@ RETURN EMPTY ARRAYS rather than padding with weak inferences.
           if (!hasConcreteness(str)) return true;
           return false;
         };
+
+        // ═══ SELF-EVALUATION — Kiko rates her own performance ═══
+        // Was this a good response? Learn from both success and failure.
+        try {
+          const lastUserMsg = (message || '').slice(0, 200);
+          const responseSnippet = sseBuffer.map(d => d.delta || '').join('').slice(0, 300);
+          const selfEvalRes = await (new Anthropic({ apiKey: process.env.ANTHROPIC_KEY })).messages.create({
+            model: 'claude-haiku-4-5-20251001', max_tokens: 300,
+            messages: [{ role: 'user', content: `Rate this AI response. User asked: "${lastUserMsg}" AI responded with: "${responseSnippet}". Return JSON only: {"quality": 1-10, "improvement": "one sentence on what to do better next time", "pattern": "one rule for future responses"}. Be harsh and specific.` }]
+          });
+          const evalText = selfEvalRes.content[0]?.text || '';
+          try {
+            const evalData = JSON.parse(evalText.replace(/\`\`\`json|\`\`\`/g, '').trim());
+            if (evalData.quality < 7 && evalData.pattern) {
+              await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
+                user_id: userId, category: 'self_evaluation',
+                content: 'Quality: ' + evalData.quality + '/10. Improvement: ' + evalData.improvement + '. Rule: ' + evalData.pattern,
+                source: 'self_eval', user_message: lastUserMsg.slice(0, 100),
+              })});
+            }
+          } catch {}
+        } catch {}
 
         // Save facts to learning log (filtered)
         for (const fact of (parsed.facts || []).slice(0, 3)) {
