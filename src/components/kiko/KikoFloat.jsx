@@ -270,6 +270,30 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     if (open) setTimeout(() => inputRef.current?.focus(), 200)
   }, [open])
 
+  // ═══ KEYBOARD SHORTCUTS ═══
+  useEffect(() => {
+    const handler = (e) => {
+      // Cmd+K or Ctrl+K — focus Kiko input (open if closed)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        if (!open) toggleOpen()
+        setTimeout(() => inputRef.current?.focus(), 100)
+      }
+      // Cmd+N or Ctrl+N — new conversation
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n' && open) {
+        e.preventDefault()
+        setMessages([]); setInput(''); setConvId(null)
+        setTimeout(() => inputRef.current?.focus(), 100)
+      }
+      // Escape — close Kiko
+      if (e.key === 'Escape' && open && !streaming) {
+        toggleOpen()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [open, streaming])
+
   useEffect(() => {
     // Only auto-scroll if user is near the bottom — don't hijack their scroll position
     const container = containerRef.current
@@ -594,6 +618,15 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 </span>
               )}
             </div>
+            <button onClick={() => {
+              const md = messages.map(m => m.role === 'user' ? '**You:** ' + m.content : '**Kiko:** ' + m.content).join('\n\n---\n\n')
+              const blob = new Blob([md], { type: 'text/markdown' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a'); a.href = url; a.download = 'kiko-chat-' + new Date().toISOString().slice(0,10) + '.md'; a.click()
+              URL.revokeObjectURL(url)
+            }} title="Export chat" style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTer, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
             <button onClick={toggleOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTer, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
               <X size={13} />
             </button>
@@ -614,6 +647,14 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                     {msg.role === 'user' ? msg.content : isEmailDraft(msg.content) ? <EmailDraft text={msg.content} /> : <KikoMessage content={msg.content} isStreaming={false} role="assistant" />}
                   </div>
                   </div>
+                  {msg.role === 'user' && !streaming && (
+                    <div style={{ display: 'flex', gap: 1, marginTop: 2, justifyContent: 'flex-end' }}>
+                      <button onClick={() => { setInput(msg.content); setMessages(prev => prev.slice(0, i)); inputRef.current?.focus() }} title="Edit & resend" style={{ width: 24, height: 24, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', color: '#A0A0A0', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.1s' }}
+                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.08)'; e.currentTarget.style.color = '#6B6B6B' }}
+                        onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#A0A0A0' }}
+                      ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                    </div>
+                  )}
                   {msg.role !== 'user' && !streaming && (
                     <div style={{ display: 'flex', gap: 1, marginTop: 2, paddingLeft: 28 }}>
                       <button onClick={() => { navigator.clipboard?.writeText(msg.content); }} title="Copy" style={{ width: 24, height: 24, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', color: '#A0A0A0', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.1s' }}

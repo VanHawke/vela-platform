@@ -268,6 +268,26 @@ async function detectCorrection(message, conversationHistory, intent, userId) {
   const correctionPatterns = /^(no[,.]?\s|that'?s wrong|that'?s not right|actually[,]?\s|incorrect|you'?re wrong|wrong[,.]|not\s+\w+[,]\s+(it'?s|it is)|don'?t|stop|never\s+(say|do|use)|always\s+(use|say|do)|i said|i told you|i meant|correct(ion)?:|the correct|please don'?t)/i;
   
   const isExplicitCorrection = correctionPatterns.test(msgLower);
+
+  // ═══ POSITIVE PATTERN LEARNING — learn from what WORKS, not just corrections ═══
+  const positivePatterns = /^(perfect|exactly|great|good|yes|that'?s right|that'?s correct|nice|brilliant|spot on|well done|thank you|thanks|love it|nailed it|this is great|excellent)/i;
+  const isPositiveFeedback = positivePatterns.test(msgLower);
+  if (isPositiveFeedback && conversationHistory.length >= 2) {
+    const lastAssistant = conversationHistory.filter(m => m.role === 'assistant').slice(-1)[0];
+    if (lastAssistant) {
+      try {
+        await sbFetch('kiko_learning_log', {
+          method: 'POST',
+          body: JSON.stringify({
+            category: 'positive_pattern',
+            content: 'User gave positive feedback: "' + message.slice(0, 100) + '" after response about: ' + (lastAssistant.content || '').slice(0, 200),
+            source: 'conversation',
+            user_id: userId,
+          })
+        });
+      } catch {}
+    }
+  }
   
   // Also detect rephrases (existing logic)
   let isRephrase = false;

@@ -6,6 +6,13 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
 // Strip tool calls, tool responses, and internal narration from display text
+// Extract tool names from message for collapsible display
+function extractToolNames(text) {
+  if (!text) return []
+  const matches = text.match(/"name"\s*:\s*"([^"]+)"/g) || []
+  return [...new Set(matches.map(m => m.replace(/"name"\s*:\s*"/, '').replace('"', '')))].filter(n => !['text'].includes(n))
+}
+
 function cleanForDisplay(text) {
   if (!text) return ''
   return text
@@ -16,6 +23,32 @@ function cleanForDisplay(text) {
     .replace(/\{"success"\s*:\s*true[\s\S]*?\}\s*/g, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
+}
+
+// Collapsible tool usage indicator
+function ToolsUsed({ tools }) {
+  const [expanded, setExpanded] = React.useState(false)
+  if (!tools.length) return null
+  const TOOL_LABELS = {
+    ask_data_agent: 'CRM lookup', ask_deal_agent: 'Deal analysis', ask_outreach_agent: 'Outreach', 
+    ask_strategy_agent: 'Strategy', ask_memory_engine: 'Memory', read_bible: 'Knowledge base',
+    ask_negotiation_agent: 'Negotiation', ask_signal_agent: 'Signals', create_email_draft: 'Email draft',
+    run_code: 'Code execution', kiko_self_modify: 'Self-edit', navigate_page: 'Navigation',
+    manage_knowledge: 'Knowledge', query_relationships: 'Relationships', check_follow_ups: 'Follow-ups',
+  }
+  return (
+    <div style={{ margin: '8px 0 4px', fontSize: 11, color: 'rgba(0,0,0,0.35)' }}>
+      <button onClick={() => setExpanded(!expanded)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'rgba(0,0,0,0.35)', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span style={{ transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s', display: 'inline-block' }}>▸</span>
+        {tools.length} tool{tools.length > 1 ? 's' : ''} used
+      </button>
+      {expanded && (
+        <div style={{ marginTop: 4, paddingLeft: 12, borderLeft: '2px solid rgba(0,0,0,0.06)' }}>
+          {tools.map((t, i) => <div key={i} style={{ padding: '1px 0' }}>{TOOL_LABELS[t] || t}</div>)}
+        </div>
+      )}
+    </div>
+  )
 }
 
 // Split text into complete markdown (safe to parse) and partial (still streaming)
@@ -150,6 +183,9 @@ export default function KikoMessage({ content, isStreaming, role }) {
     )
   }
 
+  // Extract tools used (before cleaning strips them)
+  const toolsUsed = useMemo(() => extractToolNames(content), [content])
+
   // Assistant message — full markdown rendering
   const { complete, partial } = isStreaming ? splitAtSafeBoundary(cleaned) : { complete: cleaned, partial: '' }
 
@@ -165,6 +201,7 @@ export default function KikoMessage({ content, isStreaming, role }) {
       )}
       {partial && <span>{partial}</span>}
       {isStreaming && <span style={{ display: 'inline-block', animation: 'kikoCursorBlink 1s step-end infinite', color: '#B45A28', marginLeft: 2, fontWeight: 300 }}>▊</span>}
+      {!isStreaming && toolsUsed.length > 0 && <ToolsUsed tools={toolsUsed} />}
     </div>
   )
 }
