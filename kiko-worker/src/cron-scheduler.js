@@ -29,6 +29,7 @@ const SCHEDULES = [
   { schedule: '0 9 * * 1-5',       path: '/api/cron-campaign-monitor',    name: 'campaign-monitor' },
   { schedule: '0 18 * * 1-5',      path: '/api/cron-evening-summary',     name: 'evening-summary' },
   { schedule: '0 10 * * 1-5',      path: '/api/cron-prospect-intelligence', name: 'prospect-intel' },
+  { schedule: '0 3 * * 0',          path: '/api/cron-conversation-learning', name: 'conv-learning' },
 
   // ═══ INTEGRATIONS (external API sync) ═══
   { schedule: '0 19 * * 1-5',      path: '/api/meeting-transcripts',      name: 'meeting-transcripts', method: 'POST', body: '{"email":"sunny@vanhawke.com","days":1}' },
