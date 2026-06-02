@@ -1248,7 +1248,7 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
         const { name: srcName, url, category, content } = params;
         if (!srcName) return 'Error: name is required for add_source';
         if (content) {
-          await sbFetch('kiko_knowledge_sources', { method: 'POST', body: JSON.stringify({ name: srcName, type: 'document', category: category || 'general', content: content.slice(0, 50000), active: true }) });
+          await sbFetch('kiko_knowledge_sources', { method: 'POST', body: JSON.stringify({ name: srcName, type: 'document', category: category || 'general', content: content.slice(0, 50000), active: true, user_id: userId }) });
           return `Knowledge source added: "${srcName}" (document, ${category || 'general'}). Will be processed on next ingestion cycle.`;
         }
         if (url) {
