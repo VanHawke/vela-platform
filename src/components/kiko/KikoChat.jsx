@@ -246,9 +246,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const loadMobileHistory = useCallback(async () => {
     try {
       const orgId = user?.app_metadata?.org_id
-      const query = orgId
-        ? supabase.from('conversations').select('id, title, updated_at').eq('org_id', orgId).neq('archived', true).order('updated_at', { ascending: false }).limit(50)
-        : supabase.from('conversations').select('id, title, updated_at').eq('user_id', user?.id).neq('archived', true).order('updated_at', { ascending: false }).limit(50)
+      // Always show own conversations — super_admin oversight via Kiko on request
+      const query = supabase.from('conversations').select('id, title, updated_at').eq('user_id', user?.id).neq('archived', true).order('updated_at', { ascending: false }).limit(50)
       const { data } = await query
       setMobileHistoryConvos(data || [])
     } catch (e) { console.error('[MobileHistory]', e) }

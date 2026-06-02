@@ -43,9 +43,9 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
     setLoading(true)
     try {
       const [kikoRes, importedRes] = await Promise.all([
-        // Query by org_id if available, otherwise by user_id
+        // Always show own conversations only — super_admin can request Matt's via Kiko
         orgId
-          ? supabase.from('conversations').select('id, title, updated_at').eq('org_id', orgId).neq('archived', true).order('updated_at', { ascending: false }).limit(50)
+          ? supabase.from('conversations').select('id, title, updated_at').eq('user_id', user.id).neq('archived', true).order('updated_at', { ascending: false }).limit(50)
           : supabase.from('conversations').select('id, title, updated_at').eq('user_id', user.id).neq('archived', true).order('updated_at', { ascending: false }).limit(50),
         supabase.from('kiko_imported_conversations').select('id, title, source, original_date').eq('user_id', user.id).eq('processed', true).order('original_date', { ascending: false }).limit(500),
       ])
