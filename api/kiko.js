@@ -1519,13 +1519,18 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     const userNow = new Date().toLocaleString('en-GB', { timeZone: timezone, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     const timezoneHint = `\n\n[USER DATETIME: ${userNow} | Timezone: ${timezone} | Locale: ${locale}]`;
 
-    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint + identityHint + attributionHint + emailStyleHint + conversationSummary + timezoneHint;
+    // CONTEXT ENGINEERING (Anthropic Sep 2025): "smallest possible set of high-signal tokens"
+    // Only essential context pre-loaded. Everything else retrieved via tools on demand.
+    const systemWithHint = system + activeThreadsHint + conversationSummary + timezoneHint;
+    // Stripped: identityContext, routingHint, preferencesHint, personalHint, profileHint,
+    //           memoryHint, inboxHint, morningBrief, modeHint, identityHint, attributionHint, emailStyleHint
+    //           These are now available via tools (read_bible, ask_memory_engine, check_follow_ups, etc.)
 
     // ── Prompt Caching ──
     // Split system content into stable (cached) and dynamic (not cached) blocks
     // The base system prompt + self-knowledge are stable per user session (~9K tokens)
     // Context hints change per request and should NOT be cached
-    const contextBlock = identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint;
+    const contextBlock = activeThreadsHint + conversationSummary;
     const systemCached = [
       { type: 'text', text: system, cache_control: { type: 'ephemeral' } },
       ...(contextBlock.trim() ? [{ type: 'text', text: contextBlock }] : []),
