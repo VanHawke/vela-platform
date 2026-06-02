@@ -1701,6 +1701,8 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
         auditLog('tool_call', { userId, userEmail, intent, toolName: block.name, detail: JSON.stringify(block.input).slice(0, 300) });
       }
       write({ toolStatus: null });
+      // Clean break between tool rounds — prevents text stitching without spaces
+      write({ delta: '\n\n' });
       messages.push({ role: 'assistant', content: response.content });
       messages.push({ role: 'user', content: toolResults });
       response = await streamCall(messages);
