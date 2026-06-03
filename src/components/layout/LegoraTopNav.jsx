@@ -218,8 +218,11 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
   ]
 
 
+  const [navReady, setNavReady] = useState(false)
+  useEffect(() => { requestAnimationFrame(() => setNavReady(true)) }, [])
+
   return (
-    <nav className="legora-topnav legora-top-nav-desktop">
+    <nav className="legora-topnav legora-top-nav-desktop" style={{ opacity: navReady ? 1 : 0, transition: 'opacity 0.15s ease-in' }}>
       {/* Brand */}
       <button className="ltn-brand" onClick={() => { try { nav('/') } catch { window.location.href = '/' } }}>
         {customLogo ? (

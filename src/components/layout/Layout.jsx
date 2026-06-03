@@ -162,7 +162,7 @@ export default function Layout({ user }) {
 
   // Page permissions — filter nav items based on user's role + per-user overrides
   const userOrgIdNew = '2c6b30da-2d1a-45e5-bbeb-dee1671deba3' // TODO: resolve dynamically when multi-org
-  const { canSee: canSeePage } = usePagePermissions(user, userOrgIdNew)
+  const { canSee: canSeePage, loading: permsLoading } = usePagePermissions(user, userOrgIdNew)
   const NAV_ID_TO_PAGE_KEY = { 'home': 'home', 'pipeline': 'pipeline', 'calendar': 'race_calendar', 'sporting-events': 'race_calendar', 'contacts': 'contacts', 'organisations': 'organisations', 'command-centre': 'command_centre', 'partnership-matrix': 'partnership_matrix', 'sequences': 'campaigns', 'messages': 'home' }
 
   const isSuperAdmin = user?.app_metadata?.role === 'super_admin'
