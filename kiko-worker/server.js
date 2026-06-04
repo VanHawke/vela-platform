@@ -32,6 +32,7 @@ import teamMessages from "./api/team-messages.js";
 import linkedinKeepalive from "./api/cron-linkedin-keepalive.js";
 import linkedinMonitor from "./api/cron-linkedin-monitor.js";
 import crmEnrich from "./api/cron-crm-enrich.js";
+import dailyIntelligence from "./api/cron-daily-intelligence.js";
 import documentOps from "./api/document-ops.js";
 import meetingTranscripts from "./api/meeting-transcripts.js";
 import googleAuth from "./api/google-auth.js";
@@ -105,6 +106,7 @@ app.all("/api/cron-gmail-sync", gmailSync);
 app.post("/api/cron-linkedin-keepalive", linkedinKeepalive);
 app.post("/api/cron-linkedin-monitor", linkedinMonitor);
 app.post("/api/cron-crm-enrich", crmEnrich);
+app.post("/api/cron-daily-intelligence", dailyIntelligence);
 app.all("/api/document-ops", documentOps);
 
 // Campaign sequence generation

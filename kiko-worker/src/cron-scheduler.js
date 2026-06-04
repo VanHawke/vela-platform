@@ -24,13 +24,10 @@ const SCHEDULES = [
   { schedule: '*/30 9-18 * * 1-5', path: '/linkedin-queue/process',       name: 'linkedin-queue', local: true },
   { schedule: '0 10,14,17 * * 1-5', path: '/linkedin-queue/check-replies', name: 'linkedin-replies', local: true },
 
-  // ═══ INTELLIGENCE (Opus-powered triggers) ═══
-  { schedule: '0 7 * * *',         path: '/api/cron-morning-synthesis',   name: 'morning-synthesis' },
+  // ═══ INTELLIGENCE (consolidated — replaces morning-synthesis, partnership-scan, prospect-intel, evening-summary) ═══
+  { schedule: '0 6 * * *',         path: '/api/cron-daily-intelligence',  name: 'daily-intelligence' },
   { schedule: '0 8 * * 1-5',       path: '/api/cron-selfcheck-watcher',   name: 'selfcheck' },
-  { schedule: '0 7 * * 1-5',       path: '/api/cron-partnership-scan',    name: 'partnership-scan' },
   { schedule: '0 9 * * 1-5',       path: '/api/cron-campaign-monitor',    name: 'campaign-monitor' },
-  { schedule: '0 18 * * 1-5',      path: '/api/cron-evening-summary',     name: 'evening-summary' },
-  { schedule: '0 10 * * 1-5',      path: '/api/cron-prospect-intelligence', name: 'prospect-intel' },
   { schedule: '0 3 * * 0',          path: '/api/cron-conversation-learning', name: 'conv-learning' },
 
   // ═══ INTEGRATIONS (external API sync) ═══
