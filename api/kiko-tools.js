@@ -547,7 +547,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
     const { execSync } = await import('child_process');
     const fs = await import('fs');
     const path = await import('path');
-    const PROJECT_ROOT = '/home/kiko/vela-platform';
+    const PROJECT_ROOT = '/home/kiko/kiko-worker'; // FIXED: was /home/kiko/vela-platform (stale copy, 2 days old)
     const ALLOWED_COMMANDS = ['git status', 'git diff', 'git log', 'npm run build', 'npm install', 'pm2 logs', 'pm2 restart', 'cat ', 'grep ', 'ls ', 'wc ', 'head ', 'tail ', 'node -c ', 'cp -r '];
 
     // Audit log

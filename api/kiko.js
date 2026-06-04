@@ -6,7 +6,7 @@ import { TOOL_DEFINITIONS, DIGEST_BRIEF_TOOL, executeTool, fetchEntityContext, s
 // BYPASSED: import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 import loadLeanKnowledge from './kiko-self-knowledge-lean.js';
 import { describeScreen } from './agents/screen-reader.js';
-// DISABLED: import { preProcess } from './reasoning-engine.js';
+import { preProcess } from './reasoning-engine.js'; // RE-ENABLED: Pre-loads entity-specific CRM data so Opus doesn't waste tool rounds
 import { lookupCompany } from './company-lookup.js';
 import { callEAAgent } from './agents/ea.js';
 
@@ -1645,7 +1645,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     // Only runs for substantive queries about specific entities — NOT for follow-ups, greetings, or simple commands
     const SKIP_REASONING = ['navigate', 'screen', 'calendar', 'self_monitor', 'identity', 'greeting', 'knowledge', 'conversation_search', 'code_review', 'email_read'];
     const isShortFollowUp = message.length < 40 && /^(yes|no|ok|sure|thanks|do it|go ahead|continue|proceed|sounds good|perfect|great|send it|approved)/i.test(message.trim());
-    const shouldReason = false; // DISABLED: Opus 4.8 reasons naturally — no pre-processing needed
+    const shouldReason = !isShortFollowUp && !SKIP_REASONING.includes(intent) && !casualQuery && !earlyGreeting; // RE-ENABLED: Pre-loads entity-specific CRM data
     if (shouldReason) {
       try {
         write({ toolStatus: 'Gathering intelligence...' });
