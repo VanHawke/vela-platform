@@ -441,3 +441,40 @@ This is mandatory from Supabase's Data API change (enforced Oct 30, 2026). All 1
 - Checks snippet for "address not found", "delivery failed" etc.
 - Bounces: set bounced_at (not replied_at), pause enrollment, create bounce alert
 - Replies: set replied_at, dismiss follow-up, complete tasks, create reply alert
+
+### SESSION 69 FIXES (June 4, 2026)
+
+**COMMAND CENTRE REBUILD — all 6 tabs now query correct fields:**
+- Signals: queries allAlerts from kiko_alerts WHERE dismissed=false, sorted severity DESC. Badge logic via alertBadge() function mapping type → color (campaign_report→orange, morning_briefing→blue, deal_stale→red, new_contact→green, follow_up_due→red, selfcheck_fail→grey). Dismiss button writes dismissed=true.
+- Outreach: reads payload.entity (header) and payload.draft (email preview) from kiko_draft_actions. Dismiss writes status='dismissed'. Limit raised to 300.
+- Schedule: queries scheduled_for (NOT scheduled_at), renders recipient_name/recipient_email/subject. Merges active kiko_sequence_enrollments with next_send_at into timeline via scheduleItems useMemo.
+- Follow-ups: PRESERVED as-is (already worked).
+- Campaigns: groups all enrollments by sequence_id via campaignGroups useMemo. Renders stats card (Enrolled/Active/Paused/Bounced/Completed/Reply rate/Bounce rate) plus top-10 prospects with status badges.
+- Discover: placeholder with search input.
+- Tab counts shown next to each tab label. Refresh button refreshes all data sources.
+
+**DATA AGENT FIX — list_intents/create_intent/update_intent:**
+- Bug: supabase client not imported in api/agents/data.js
+- Fix: added createClient import from @supabase/supabase-js at module top
+- All intent operations now work (verified: 4 active intents visible)
+
+**ENROLLMENT EMAIL MIS-ROUTING — root cause fixed:**
+- 14 enrollment records across 8 companies had wrong emails (2nd contact at same company inherited 1st contact's email)
+- All 14 paused with paused_reason='mis-routed_email' via SQL
+- Root cause: build-campaign-enroll.js had no name/email mismatch guardrail
+- Fix: added same name/email validation guard that exists in start_sequence and bulk_enroll
+- All 3 enrollment paths now validate name matches email local part before enrolling
+
+**MEMORY CLEANUP — ~95 junk files deleted:**
+- Round 1 (Kiko): 43 files — brief_*, weather_*, ping_*, pipeline_visit_*, email_check_*, system_health_*
+- Round 2 (Kiko): 52 files — 38 torq_contacts_* dupes, 5 lemlist_* (deprecated tool), 9 ephemeral one-offs
+
+**SERVICE WORKER — replaced with self-unregistering version:**
+- Old sw.js cached stale bundles across deploys
+- New sw.js: self.skipWaiting() + self.registration.unregister() on activate
+
+**KNOWN ISSUES (flagged by Kiko, not yet fixed):**
+- cron-gmail-sync.js INBOX scan: is:unread filter drops read replies; 2-hour window with no high-water-mark; only matches known contacts
+- Matt's Google scope is NULL — drafts can't send
+- Auto-close cron may dismiss warm threads with inbound replies (needs investigation)
+- Evolution Plan phases 6-14 not formally tracked against completion

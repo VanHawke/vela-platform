@@ -10,7 +10,8 @@ import { useKikoLive } from '@/contexts/KikoLiveContext'
 import PageHeader from '@/components/layout/PageHeader'
 import {
   Mail, Linkedin, MessageSquare, CheckSquare, Square, AlertTriangle,
-  Zap, TrendingUp, Clock, RefreshCw, Inbox, Send, ExternalLink, Calendar
+  Zap, TrendingUp, Clock, RefreshCw, Inbox, Send, ExternalLink, Calendar,
+  Search
 } from 'lucide-react'
 import './OutreachIntelligence.css'
 import EmailDraft, { isEmailDraft } from '@/components/kiko/EmailDraft'
@@ -19,7 +20,6 @@ import EmailDraft, { isEmailDraft } from '@/components/kiko/EmailDraft'
 // Strip draft email section from brief (to avoid showing it twice when EmailDraft renders)
 function stripDraftFromBrief(text) {
   if (!text) return text
-  // Remove everything from "4. DRAFT" or "DRAFT REPLY" or "DRAFT EMAIL" or "DRAFT OUTREACH" to end
   return text.replace(/\n*(?:#{1,4}\s*)?(?:\d+\.\s*)?(?:DRAFT\s*(?:REPLY|EMAIL|OUTREACH|FOLLOW.?UP))[:\s—\-]*[\s\S]*/i, '\n').trim()
 }
 
@@ -27,26 +27,20 @@ function extractDraftFromBrief(text) {
   if (!text) return ''
   const match = text.match(/(?:#{1,4}\s*)?(?:\d+\.\s*)?(?:DRAFT\s*(?:REPLY|EMAIL|OUTREACH|FOLLOW.?UP))[:\s—\-]*([\s\S]*)/i)
   if (!match?.[1]) return ''
-  // Clean the draft text — remove markdown headers and excess formatting
   let draft = match[1].trim()
-  // Remove "Subject:" prefix line if it's on its own line and re-add it properly for EmailDraft parsing
-  draft = draft.replace(/^\s*#+\s*/gm, '') // Remove markdown headers
+  draft = draft.replace(/^\s*#+\s*/gm, '')
   return draft
 }
 
-// Strip tool calls, tool responses, Kiko's internal narration, and em dashes from brief text
 function stripToolCalls(text) {
   if (!text) return text
   return text
     .replace(/<tool_call>[\s\S]*?<\/tool_call>/g, '')
     .replace(/<tool_response>[\s\S]*?<\/tool_response>/g, '')
-    // Strip open-ended tool tags during streaming (closing tag not yet arrived)
     .replace(/<tool_response>[\s\S]*/g, '')
     .replace(/<tool_call>[\s\S]*/g, '')
-    // Strip raw JSON blocks that leak from tool responses
     .replace(/\{"success"\s*:\s*true[\s\S]*?\}\s*/g, '')
     .replace(/\{"emails"\s*:[\s\S]*?\}\s*/g, '')
-    // Strip narration about tool use
     .replace(/I'll pull.*?(?:now|first)\.?\s*/gi, '')
     .replace(/Let me (?:look up|search|check|find|pull|retrieve).*?(?:\.|$)/gim, '')
     .replace(/Reading email (?:history|thread).*?(?:\.|$)/gim, '')
@@ -63,7 +57,6 @@ function parseBriefMarkdown(text) {
   if (!text) return ''
   return text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    // Split inline bullet runs (•) into proper line-separated bullets
     .replace(/•\s*/g, '\n• ')
     .replace(/^### (.+)$/gm, '<h4 style="margin:16px 0 6px;font-size:13px;font-weight:600;color:#0A0A0A;font-family:Inter,system-ui,sans-serif">$1</h4>')
     .replace(/^## (.+)$/gm, '<h3 style="margin:18px 0 8px;font-size:14px;font-weight:600;color:#0A0A0A;font-family:Inter,system-ui,sans-serif">$1</h3>')
@@ -75,7 +68,6 @@ function parseBriefMarkdown(text) {
     .replace(/\n/g, '<br/>')
 }
 
-// Clean raw markdown from titles for list display
 function cleanTitle(text) {
   if (!text) return ''
   return text.replace(/\*\*/g, '').replace(/•/g, ' · ').replace(/\s+/g, ' ').trim()
@@ -105,7 +97,6 @@ function relativeTime(iso) {
   if (d < 7) return `${d}d ago`
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
-// Task rows have no 'title' field — reconstruct a useful label from type/contact/company.
 function taskLabel(task) {
   const d = task.data || {}
   if (d.title) return d.title
@@ -138,15 +129,11 @@ function dueLabel(iso) {
 }
 
 // ─── Enrich selected item with live Supabase data ───
-// Pulls the real company row, recent deals, contact record, and recent emails for the
-// entity attached to this task/deal/reply — then builds a dense fact-packed prompt.
-// Returns a string. Falls back to buildBriefPrompt() if no enrichment data found.
 async function enrichSelectedForBrief(sel) {
   const basePrompt = buildBriefPrompt(sel)
   try {
     const p = sel?.payload || {}
     const d = p.data || {}
-    // Extract company/contact from data fields, meta line, OR parse from the task/deal title
     const titleParts = (sel?.title || '').split(/\s*[—–-]\s*/)
     const titleSuffix = titleParts.length > 1 ? titleParts[titleParts.length - 1].trim() : null
     const companyName = d.company || p.company || sel?.meta?.split('·')?.[0]?.trim() || p.entity_name || titleSuffix || null
@@ -154,7 +141,6 @@ async function enrichSelectedForBrief(sel) {
     if (!companyName && !contactName) return basePrompt
 
     const facts = []
-    // Fetch company row (+ last touchpoint hint)
     if (companyName) {
       const { data: companies } = await supabase
         .from('companies').select('id, data')
@@ -166,7 +152,6 @@ async function enrichSelectedForBrief(sel) {
         const companyFacts = [cd.industry, cd.country, cd.size && `~${cd.size} employees`, cd.website].filter(Boolean).join(' · ')
         if (companyFacts) facts.push(`COMPANY: ${cd.name} — ${companyFacts}`)
         if (cd.description) facts.push(`ABOUT: ${String(cd.description).slice(0, 400)}`)
-        // Recent deals for this company
         const { data: deals } = await supabase
           .from('deals').select('id, data, updated_at').order('updated_at', { ascending: false }).limit(200)
         const related = (deals || []).filter(dl => ((dl.data?.company || '').toLowerCase().trim() === needle)).slice(0, 3)
@@ -175,7 +160,6 @@ async function enrichSelectedForBrief(sel) {
         }
       }
     }
-    // Contact row + history
     const contactSearch = contactName || titleSuffix
     if (contactSearch) {
       const { data: contacts } = await supabase
@@ -195,7 +179,6 @@ async function enrichSelectedForBrief(sel) {
         if (cd.notes) facts.push(`CONTACT NOTES: ${String(cd.notes).slice(0, 300)}`)
       }
     }
-    // Recent activities for this entity
     if (companyName) {
       const { data: acts } = await supabase
         .from('activities').select('type, subject, direction, created_at')
@@ -205,7 +188,6 @@ async function enrichSelectedForBrief(sel) {
         facts.push(`RECENT ACTIVITY LOG:\n${acts.map(a => `  [${new Date(a.created_at).toLocaleDateString('en-GB', { day:'numeric',month:'short' })}] ${a.direction === 'inbound' ? '← IN' : '→ OUT'} ${a.type}: ${a.subject || '(no subject)'}`).join('\n')}`)
       }
     }
-    // Relevant alerts/signals for this entity
     if (companyName) {
       const { data: alerts } = await supabase
         .from('kiko_alerts').select('title, detail, created_at')
@@ -215,13 +197,10 @@ async function enrichSelectedForBrief(sel) {
         facts.push(`RECENT SIGNALS/ALERTS:\n${alerts.map(a => `  [${new Date(a.created_at).toLocaleDateString('en-GB', { day:'numeric',month:'short' })}] ${a.title}`).join('\n')}`)
       }
     }
-    // ── REASONING CHAIN — check for existing cognitive analysis to ensure consistency ──
     const entityName = companyName || contactName || titleSuffix || ''
     if (entityName) {
       try {
-        // Timeout: if chain lookup takes >5s, skip it — don't block the brief
         const chainPromise = (async () => {
-          // Step 1: find event_ids where entity_name matches (classify/context steps have it in input)
           const { data: matchingSteps, error: err1 } = await supabase
             .from('kiko_reasoning_chains')
             .select('event_id')
@@ -231,7 +210,6 @@ async function enrichSelectedForBrief(sel) {
           if (err1) { console.warn('[enrichBrief] chain step1 error:', err1.message); return null }
           if (!matchingSteps?.length) return null
           const eventIds = [...new Set(matchingSteps.map(s => s.event_id))]
-          // Step 2: fetch ALL steps for those events (including psychology + action)
           const { data: chains, error: err2 } = await supabase
             .from('kiko_reasoning_chains')
             .select('step_type, output, created_at')
@@ -244,48 +222,42 @@ async function enrichSelectedForBrief(sel) {
           chainPromise,
           new Promise(resolve => setTimeout(() => resolve(null), 5000))
         ])
-          if (chains?.length) {
-            const psychologyStep = chains.find(c => c.step_type === 'psychology')
-            const actionStep = chains.find(c => c.step_type === 'action')
-            const classifyStep = chains.find(c => c.step_type === 'classify')
-            const parts = []
-            if (classifyStep?.output) parts.push(`Classification: ${JSON.stringify(classifyStep.output).slice(0, 300)}`)
-            if (psychologyStep?.output) parts.push(`Psychology analysis: ${JSON.stringify(psychologyStep.output).slice(0, 800)}`)
-            if (actionStep?.output) parts.push(`Recommended actions: ${JSON.stringify(actionStep.output).slice(0, 500)}`)
-            if (parts.length >= 2) {
-              facts.push(`\n--- KIKO'S EXISTING ANALYSIS (from cognitive reasoning chain, generated ${new Date(chains[0].created_at).toLocaleDateString('en-GB')}) ---\n${parts.join('\n')}\n--- END EXISTING ANALYSIS ---\nCRITICAL: Use the above analysis as your definitive recommendation. Do NOT contradict it. The cognitive engine has already analysed this signal. Your brief must be consistent with its conclusion. If suggesting timing (e.g. follow up in X weeks), use the SAME timing as the analysis above.`)
-            }
+        if (chains?.length) {
+          const psychologyStep = chains.find(c => c.step_type === 'psychology')
+          const actionStep = chains.find(c => c.step_type === 'action')
+          const classifyStep = chains.find(c => c.step_type === 'classify')
+          const parts = []
+          if (classifyStep?.output) parts.push(`Classification: ${JSON.stringify(classifyStep.output).slice(0, 300)}`)
+          if (psychologyStep?.output) parts.push(`Psychology analysis: ${JSON.stringify(psychologyStep.output).slice(0, 800)}`)
+          if (actionStep?.output) parts.push(`Recommended actions: ${JSON.stringify(actionStep.output).slice(0, 500)}`)
+          if (parts.length >= 2) {
+            facts.push(`\n--- KIKO'S EXISTING ANALYSIS (from cognitive reasoning chain, generated ${new Date(chains[0].created_at).toLocaleDateString('en-GB')}) ---\n${parts.join('\n')}\n--- END EXISTING ANALYSIS ---\nCRITICAL: Use the above analysis as your definitive recommendation. Do NOT contradict it.`)
           }
+        }
       } catch (e) { console.error('[enrichBrief] reasoning chain lookup:', e) }
     }
     
     if (facts.length === 0) {
-      // No CRM data found — tell Kiko to web search the entity
       const entityName = companyName || contactSearch || titleSuffix || sel?.title || ''
-      return `${basePrompt}\n\n---\nNO CRM DATA FOUND for "${entityName}". Use web_search to research this company/person before responding. Search for: "${entityName}" to find their website, LinkedIn, recent news, funding, and key people. Then give a comprehensive brief based on what you find.`
+      return `${basePrompt}\n\n---\nNO CRM DATA FOUND for "${entityName}". Use web_search to research this company/person before responding.`
     }
-    return `${basePrompt}\n\n---\nLIVE CONTEXT (from CRM) — ALL THE DATA YOU NEED IS HERE:\n${facts.join('\n')}\n---\nCRITICAL INSTRUCTIONS:\n1. You already have all the relevant CRM data above. DO NOT call pipeline overview tools, deal summary tools, or any tool that returns data about OTHER entities.\n2. If you must use a tool, ONLY search for more information about the SPECIFIC entity mentioned above.\n3. Your response must be EXCLUSIVELY about this entity. Do NOT mention other deals, other tasks, or pipeline health.\n4. Do NOT give a pipeline overview, pipeline health assessment, or mention how many overdue tasks exist.\n5. Structure your response as: WHO they are → DEAL STATUS → WHAT TO DO NEXT → DRAFT EMAIL.`
+    return `${basePrompt}\n\n---\nLIVE CONTEXT (from CRM) — ALL THE DATA YOU NEED IS HERE:\n${facts.join('\n')}\n---\nCRITICAL INSTRUCTIONS:\n1. You already have all the relevant CRM data above. DO NOT call pipeline overview tools.\n2. If you must use a tool, ONLY search for more about the SPECIFIC entity mentioned above.\n3. Your response must be EXCLUSIVELY about this entity.\n4. Structure: WHO they are → DEAL STATUS → WHAT TO DO NEXT → DRAFT EMAIL.`
   } catch {
     return basePrompt
   }
 }
 
-// ─── Build the /api/kiko prompt from a selected item ───
-// Kiko's command-centre page-role prompt handles the rest — this just wraps
-// the selected entity so she knows what to brief on.
-// Van Hawke email voice — learned from 115 real sent emails. MUST be included in every draft.
 const VH_EMAIL_VOICE = `
 EMAIL VOICE RULES (MANDATORY — learned from 115 real sent emails, match EXACTLY):
 - Opening: ALWAYS match the greeting style of the existing thread. If they wrote "Hi Matt" then reply "Hi [Name]". If the thread uses "Dear", use "Dear". When no thread exists, default to "Dear [First name],".
-- Tone: Match the formality of the prospect's last message. If they're casual, be casual. If formal, be formal.
-- Replies: SHORT. 2-4 paragraphs max. Each paragraph often a single sentence. Standalone one-line paragraphs for emphasis.
+- Tone: Match the formality of the prospect's last message.
+- Replies: SHORT. 2-4 paragraphs max. Each paragraph often a single sentence.
 - Closing: "Kind regards," for formal. "Best," for warm. ALWAYS followed by signature block.
-- NEVER use em dashes (—). Use commas or full stops instead. No dashes of any kind mid-sentence.
-- Short declarative statements. Then a longer explanatory clause in a new sentence.
-- NEVER use: "hope this finds you well", "just wanted to reach out", "circle back", "touch base", "synergy", "I think", "maybe", "hopefully", "excited to", "please don't hesitate", "don't hesitate to reach out", "I'd love to", "thrilled", "delighted"
+- NEVER use em dashes (—). Use commas or full stops instead.
+- NEVER use: "hope this finds you well", "just wanted to reach out", "circle back", "touch base", "synergy", "I think", "maybe", "hopefully", "excited to", "please don't hesitate", "I'd love to", "thrilled", "delighted"
 - PREFERRED phrases: "at this level", "in practice", "while the category remains open", "long-term positioning", "happy to work around whatever is easiest", "much appreciated"
-- NO AI FILLER. No corporate pleasantries. No "genuinely helpful" or "appreciate the candour". Every word earns its place.
-- Write like a senior dealmaker who respects the reader's time, not a chatbot being polite.
+- NO AI FILLER. Every word earns its place.
+- Write like a senior dealmaker who respects the reader's time.
 `
 
 function buildBriefPrompt(sel) {
@@ -297,7 +269,6 @@ function buildBriefPrompt(sel) {
     const snippet = (p.detail || '').includes('Snippet:') ? p.detail.split('Snippet:')[1]?.trim() : (p.detail || '')
     const emailSubject = p.metadata?.subject || sel.title
     return `REPLY BRIEF — ${p.entity_name || 'prospect'} replied.
-
 THEIR FULL REPLY (show this verbatim): "${snippet}"
 Email thread subject: "${emailSubject}". Arrived ${relativeTime(p.created_at)}.
 
@@ -307,9 +278,9 @@ Use Gmail search to find the LAST EMAIL WE SENT to ${p.entity_name || 'this pers
 
 Respond with ONLY these sections:
 1. CONTEXT — ${p.entity_name || 'This person'}: role, company, where we stand. 2-3 lines.
-2. OUR LAST EMAIL — the most recent email WE sent to them. Show the subject and key lines so the user knows what triggered this reply.
-3. THEIR REPLY IN FULL — reproduce their complete reply text above. Do not truncate or summarise it.
-4. DEFINITIVE NEXT STEP — EXACTLY what to do: who, when, what channel, what to achieve. One action, no hedging. EXPLAIN THE PSYCHOLOGY: why this approach works on this type of prospect at this stage (e.g. commitment-consistency, loss aversion, tactical empathy, scarcity). This is what makes your advice valuable.
+2. OUR LAST EMAIL — the most recent email WE sent to them.
+3. THEIR REPLY IN FULL — reproduce their complete reply text above.
+4. DEFINITIVE NEXT STEP — EXACTLY what to do. EXPLAIN THE PSYCHOLOGY.
 
 Do NOT write a draft email. The draft will be generated separately.
 
@@ -323,33 +294,40 @@ ${VH_EMAIL_VOICE}`
     if (d.contact) bits.push(`Contact: ${d.contact}`)
     if (d.dueDate) bits.push(`Due: ${d.dueDate}`)
     if (d.notes) bits.push(`Notes: ${d.notes}`)
-    return `Brief on ${d.contact || titleSuffix || 'the contact'} at ${d.company || 'their company'}.\n\n${bits.join('\n')}\n\nIMPORTANT: Do NOT show tool calls, tool responses, or internal reasoning. Present ONLY the clean brief.\n\nCRITICAL: "${d.contact || titleSuffix}" is a PERSON'S NAME, not a company. Address the email "Hi ${(d.contact || titleSuffix || '').split(' ')[0]}," — NEVER "Hi ${d.company || ''},". The contact field is ALWAYS a person.\n\nRESPOND WITH ONLY THESE 4 SECTIONS:\n1. CONTEXT — ${d.contact || titleSuffix || 'This person'}: role, company, one line on where we stand. 2-3 lines max.\n2. LAST COMMS — search Gmail for the last email we sent or received from ${d.contact || 'this person'}. Show the subject line and key content of just the most recent email for context.\n3. DEFINITIVE NEXT STEP — EXACTLY what to do: who, when, what channel, what the message should achieve. One action, no hedging.\n4. DRAFT EMAIL — Address "Hi ${(d.contact || titleSuffix || '').split(' ')[0]}," (the person, NOT the company). Subject: line, then greeting, body, sign-off. No em dashes.\n\nThis is about ${d.contact || d.company || sel.title} ONLY. Keep it short and actionable.\n\n${VH_EMAIL_VOICE}`
+    return `Brief on ${d.contact || titleSuffix || 'the contact'} at ${d.company || 'their company'}.\n\n${bits.join('\n')}\n\nIMPORTANT: Do NOT show tool calls. Present ONLY the clean brief.\n\nCRITICAL: "${d.contact || titleSuffix}" is a PERSON'S NAME, not a company.\n\nRESPOND WITH ONLY:\n1. CONTEXT — 2-3 lines.\n2. LAST COMMS — search Gmail for the last email.\n3. DEFINITIVE NEXT STEP\n4. DRAFT EMAIL — Address "Hi ${(d.contact || titleSuffix || '').split(' ')[0]},"\n\n${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'deal') {
-    return `FOCUS: Brief me ONLY on this specific deal. Do NOT give a general pipeline review.\n\nDeal: ${p.company || p.title}\nStage: ${p.stage}\nValue: ${p.value ? '$' + p.value : 'n/a'}\nDays since activity: ${p.daysSince}\n\nRespond with ONLY:\n1. ACCOUNT STATUS — where we are with ${p.company || p.title} specifically, what's happened, key contacts\n2. NEXT MOVE — the single best action to progress this deal\n3. MARKET SIGNALS — any recent news or signals on this company\n4. DRAFT EMAIL — format with Subject: on its own line, then Dear [Name], body, Kind regards\n\nStay focused on ${p.company || p.title} ONLY. Senior sales voice, specific names and dates.\n\n${VH_EMAIL_VOICE}`
+    return `FOCUS: Brief me ONLY on this specific deal.\n\nDeal: ${p.company || p.title}\nStage: ${p.stage}\nValue: ${p.value ? '$' + p.value : 'n/a'}\nDays since activity: ${p.daysSince}\n\nRespond with ONLY:\n1. ACCOUNT STATUS\n2. NEXT MOVE\n3. MARKET SIGNALS\n4. DRAFT EMAIL\n\n${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'signal') {
-    return `SPONSORSHIP NEWS ANALYSIS — "${sel.title}"
-
-Entity: ${p.entity_name || 'unknown'}
-Detail: "${p.detail || ''}"
-
-Look up ${p.entity_name || 'this entity'} in our CRM and partnership matrix.
-
-Give me:
-1. WHAT HAPPENED — full breakdown of this announcement/deal
-2. COMMERCIAL IMPACT — what this means for Van Hawke's pipeline and competitive position
-3. ACTION REQUIRED — should we act on this, and if so, specific next step
-4. DRAFT OUTREACH — if there's an opportunity, a draft email to the relevant contact`
+    return `SIGNAL ANALYSIS — "${sel.title}"\n\nEntity: ${p.entity_name || 'unknown'}\nType: ${p.type || 'unknown'}\nDetail: "${(p.detail || '').slice(0, 500)}"\n\nGive me:\n1. WHAT HAPPENED — full breakdown\n2. COMMERCIAL IMPACT — what this means for Van Hawke\n3. ACTION REQUIRED — should we act on this?\n4. DRAFT OUTREACH — if there's an opportunity`
   }
   if (sel.kind === 'followup') {
     const contactFirstName = (p.recipient_name || '').split(' ')[0] || 'there'
-    return `I need a re-engagement brief for ${p.recipient_name || p.recipient_email} at ${p.company || 'their company'}.\n\nCRITICAL: "${p.recipient_name}" is the PERSON'S NAME. "${p.company}" is the COMPANY. Address the email "Hi ${contactFirstName}," — NEVER "Hi ${p.company || ''},". The contact is a PERSON, not a company.\n\nOriginal email subject: "${p.subject || ''}"\nRecipient email: ${p.recipient_email || 'unknown'}\nSent: ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : 'unknown'}\nFollow-up due: ${p.follow_up_due_at ? new Date(p.follow_up_due_at).toLocaleDateString('en-GB') : 'unknown'}\nStatus: ${p.status}\n\nGive me:\n1. LAST CORRESPONDENCE — search Gmail for our full email thread with ${p.recipient_name || p.recipient_email}. Show the last email WE sent (full text) and any reply received. Include dates.\n2. WHY NO REPLY — psychological analysis of why they haven't responded, based on their role, company stage, and timing\n3. DEFINITIVE NEXT STEP — tell me EXACTLY what to do: when to send, what angle to use, what channel. One clear action. No hedging.\n4. DRAFT FOLLOW-UP EMAIL — Subject: Re: ${p.subject || ''}, To: ${p.recipient_email || ''}, then greeting "Hi ${contactFirstName}," then body then "Best," sign-off. Use a completely different angle from the original — don't just "check in."\n\n${VH_EMAIL_VOICE}`
+    return `Re-engagement brief for ${p.recipient_name || p.recipient_email} at ${p.company || 'their company'}.\n\nOriginal subject: "${p.subject || ''}"\nRecipient: ${p.recipient_email || 'unknown'}\nSent: ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : 'unknown'}\nFollow-up due: ${p.follow_up_due_at ? new Date(p.follow_up_due_at).toLocaleDateString('en-GB') : 'unknown'}\n\nGive me:\n1. LAST CORRESPONDENCE — search Gmail\n2. WHY NO REPLY — psychological analysis\n3. DEFINITIVE NEXT STEP\n4. DRAFT FOLLOW-UP EMAIL — Hi ${contactFirstName},\n\n${VH_EMAIL_VOICE}`
   }
   if (sel.kind === 'campaign') {
-    return `Brief me on campaign prospect: ${p.contact_name || 'Unknown'} at ${p.company || 'their company'}.\n\nCurrent step: ${p.current_step}\nNext send scheduled: ${p.next_send_at ? new Date(p.next_send_at).toLocaleDateString('en-GB') : 'pending'}\n\nGive me: (1) company background, (2) where they are in the sequence, (3) whether we should continue, pause, or escalate this prospect.`
+    return `Brief me on campaign prospect: ${p.contact_name || 'Unknown'} at ${p.company || 'their company'}.\n\nCurrent step: ${p.current_step}\nNext send: ${p.next_send_at ? new Date(p.next_send_at).toLocaleDateString('en-GB') : 'pending'}\n\nGive me: (1) company background, (2) where they are in the sequence, (3) whether to continue, pause, or escalate.`
   }
   return `Brief me on: ${sel.title}.`
+}
+
+// ─── Badge logic for alert types ───
+function alertBadge(alert) {
+  const t = alert.type || ''
+  const s = alert.severity || ''
+  if (t === 'campaign_report') return { bg: '#FFF3E0', c: '#E65100', l: 'Campaign' }
+  if (t === 'morning_briefing') return { bg: '#E6F1FB', c: '#185FA5', l: 'Briefing' }
+  if (t === 'deal_stale' || t === 'high_value_stale') return { bg: '#FCEBEB', c: '#A32D2D', l: 'Stale deal' }
+  if (t === 'new_contact') return { bg: '#E1F5EE', c: '#0F6E56', l: 'New contact' }
+  if (t === 'follow_up_due') return { bg: '#FCEBEB', c: '#A32D2D', l: 'Overdue' }
+  if (t === 'selfcheck_fail' || t === 'kiko_remediation') return { bg: '#F5F5F5', c: '#6B6B6B', l: 'System' }
+  if (t === 'category_recommendation') return { bg: '#EEEDFE', c: '#534AB7', l: 'Category' }
+  if (t === 'convergence') return { bg: '#FAEEDA', c: '#854F0B', l: 'Convergence' }
+  if (t === 'data_quality') return { bg: '#F5F5F5', c: '#6B6B6B', l: 'Data' }
+  if (t === 'proactive_heartbeat') return { bg: '#E6F1FB', c: '#185FA5', l: 'Heartbeat' }
+  if (s === 'critical') return { bg: '#FCEBEB', c: '#A32D2D', l: 'Urgent' }
+  return { bg: '#E6F1FB', c: '#185FA5', l: 'Signal' }
 }
 
 export default function OutreachIntelligence({ user }) {
@@ -359,7 +337,7 @@ export default function OutreachIntelligence({ user }) {
   const [hotReplies, setHotReplies] = useState([])
   const [signals, setSignals] = useState([])
   const [campaignActivity, setCampaignActivity] = useState([])
-  const [mainTab, setMainTab] = useState('followups')
+  const [mainTab, setMainTab] = useState('signals')
   const [intelTab, setIntelTab] = useState('f1')
   const [taskFilter, setTaskFilter] = useState('overdue')
   const [showNewTask, setShowNewTask] = useState(false)
@@ -367,13 +345,22 @@ export default function OutreachIntelligence({ user }) {
   const [newTaskCompany, setNewTaskCompany] = useState('')
   const [newTaskDue, setNewTaskDue] = useState('')
 
-  // Shared live state — tasks, followUps, actions all from context
   const live = useKikoLive()
   const tasks = live.tasks
   const followUps = live.followUps
 
-  // Selected item state — drives right pane
-  const [selected, setSelected] = useState(null) // { kind, id, title, meta, payload }
+  const [selected, setSelected] = useState(null)
+  // ═══ Data for enhanced Command Centre tabs ═══
+  const [draftActions, setDraftActions] = useState([])
+  const [scheduledEmails, setScheduledEmails] = useState([])
+  const [allAlerts, setAllAlerts] = useState([])
+  const [enrollments, setEnrollments] = useState([])
+  useEffect(() => {
+    supabase.from('kiko_draft_actions').select('*').eq('status', 'pending').order('created_at', { ascending: false }).limit(300).then(({ data }) => setDraftActions(data || []))
+    supabase.from('kiko_scheduled_emails').select('*').order('scheduled_for', { ascending: true }).limit(30).then(({ data }) => setScheduledEmails(data || []))
+    supabase.from('kiko_alerts').select('*').eq('dismissed', false).order('created_at', { ascending: false }).limit(200).then(({ data }) => setAllAlerts(data || []))
+    supabase.from('kiko_sequence_enrollments').select('*').order('enrolled_at', { ascending: false }).limit(500).then(({ data }) => setEnrollments(data || []))
+  }, [])
   const [brief, setBrief] = useState('')
   const [briefLoading, setBriefLoading] = useState(false)
   const briefAbortRef = useRef(null)
@@ -393,8 +380,7 @@ export default function OutreachIntelligence({ user }) {
     try {
       const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      const signalTypes = ['partnership_detected', 'new_partnership', 'competitive_change', 'company_signal', 'proactive_intel', 'prediction', 'cognitive_analysis', 'cognitive_synthesis', 'convergence', 'proactive_recommendation', 'follow_up_overdue']
-      const [dealsRes, hotRes, signalRes, campaignRes] = await Promise.all([
+      const [dealsRes, hotRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at')
           .not('data->>status', 'in', '("won","lost")')
           .order('updated_at', { ascending: false }),
@@ -405,24 +391,10 @@ export default function OutreachIntelligence({ user }) {
           .gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString())
           .order('created_at', { ascending: false })
           .limit(20),
-        supabase.from('kiko_alerts')
-          .select('id, type, severity, title, detail, entity_name, created_at')
-          .in('type', signalTypes)
-          .eq('dismissed', false)
-          .in('severity', ['high', 'critical', 'medium'])
-          .gte('created_at', weekAgo)
-          .order('created_at', { ascending: false })
-          .limit(20),
-        supabase.from('kiko_sequence_enrollments')
-          .select('id, contact_name, company, status, current_step, next_send_at, sequence_id, updated_at')
-          .eq('status', 'active')
-          .order('next_send_at', { ascending: true })
-          .limit(15),
       ])
       setDeals(dealsRes.data || [])
       setHotReplies((() => {
         const raw = hotRes.data || []
-        // Deduplicate: prefer email_reply_manual (has snippet) over email_reply (no snippet) for same entity
         const seen = new Map()
         for (const r of raw) {
           const key = (r.entity_name || '').toLowerCase()
@@ -433,18 +405,11 @@ export default function OutreachIntelligence({ user }) {
         }
         return [...seen.values()].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       })())
-      setSignals((signalRes.data || []).filter(s => {
-        const text = `${s.title} ${s.detail} ${s.entity_name}`.toLowerCase()
-        // Permanently exclude eyewear/fashion/non-sports content
-        if (/eyewear|gentle.?monster|kering|luxottica|essilor|sunglass|optical|lens.?craft|safilo|marchon|maui.?jim/i.test(text)) return false
-        // ONLY show actual sports sponsorship/partnership content — not competitor intelligence
-        const isSportsSponsorship = /sponsor|partner|naming.?rights|title.?sponsor|team.?deal|paddock|grid|race.?week|category.?exclusive/i.test(text)
-          && /\bf1\b|formula.?1|formula.?e|fe\b|motogp|wec|le mans|indycar|nascar|rally|endurance|motorsport/i.test(text)
-        const isAgencySignal = s.title?.includes('[AGENCY]')
-        const isPartnership = s.type === 'partnership_detected' || s.type === 'new_partnership'
-        return isSportsSponsorship || isAgencySignal || isPartnership
-      }))
-      setCampaignActivity(campaignRes.data || [])
+      // Refresh allAlerts + enrollments on manual refresh too
+      supabase.from('kiko_alerts').select('*').eq('dismissed', false).order('created_at', { ascending: false }).limit(200).then(({ data }) => setAllAlerts(data || []))
+      supabase.from('kiko_sequence_enrollments').select('*').order('enrolled_at', { ascending: false }).limit(500).then(({ data }) => setEnrollments(data || []))
+      supabase.from('kiko_draft_actions').select('*').eq('status', 'pending').order('created_at', { ascending: false }).limit(300).then(({ data }) => setDraftActions(data || []))
+      supabase.from('kiko_scheduled_emails').select('*').order('scheduled_for', { ascending: true }).limit(30).then(({ data }) => setScheduledEmails(data || []))
     } catch (err) {
       console.error('[CommandCentre] load', err)
     }
@@ -502,7 +467,6 @@ export default function OutreachIntelligence({ user }) {
     }
     const { data, error } = await supabase.from('tasks').insert({ data: taskData, updated_at: new Date().toISOString() }).select('id').single()
     if (!error && data) {
-      setTasks(prev => [{ id: data.id, data: taskData, updated_at: new Date().toISOString() }, ...prev])
       setNewTaskTitle(''); setNewTaskCompany(''); setNewTaskDue(''); setShowNewTask(false)
       showToast('Task created', 'success')
     }
@@ -538,18 +502,66 @@ export default function OutreachIntelligence({ user }) {
         const prob = (STAGE_PROB[stage] || 10) / 100
         return { ...d.data, _id: d.id, daysSince: days, stage, weighted: (parseFloat(d.data?.value) || 0) * prob }
       })
-      // Only show deals with genuine activity that went stale (30-180 days)
-      // Exclude "never touched" deals (999d) — those aren't stale, they're untouched
       .filter(x => x.daysSince > 30 && x.daysSince < 365)
       .sort((a, b) => b.weighted - a.weighted)
       .slice(0, 8)
   }, [deals, now])
 
+  // ── Campaigns: group enrollments by sequence_id ──
+  const campaignGroups = useMemo(() => {
+    const groups = {}
+    for (const e of enrollments) {
+      const sid = e.sequence_id || 'unknown'
+      if (!groups[sid]) groups[sid] = { sequence_id: sid, enrollments: [] }
+      groups[sid].enrollments.push(e)
+    }
+    return Object.values(groups).map(g => {
+      const all = g.enrollments
+      return {
+        ...g,
+        total: all.length,
+        active: all.filter(e => e.status === 'active').length,
+        paused: all.filter(e => e.status === 'paused').length,
+        bounced: all.filter(e => e.status === 'bounced').length,
+        completed: all.filter(e => e.status === 'completed').length,
+        replied: all.filter(e => e.reply_detected_at).length,
+        name: all[0]?.company_intel?.campaign_name || `Campaign ${g.sequence_id?.slice(0, 8) || ''}`,
+        prospects: all.slice(0, 10),
+      }
+    }).sort((a, b) => b.total - a.total)
+  }, [enrollments])
+
+  // ── Schedule: merge scheduled emails + active enrollment next-sends ──
+  const scheduleItems = useMemo(() => {
+    const items = []
+    for (const se of scheduledEmails) {
+      items.push({
+        id: se.id,
+        time: se.scheduled_for,
+        name: se.recipient_name || se.recipient_email || 'Unknown',
+        company: '',
+        subject: se.subject || '(no subject)',
+        channel: 'email',
+        source: 'scheduled',
+        status: se.status,
+      })
+    }
+    for (const en of enrollments.filter(e => e.status === 'active' && e.next_send_at)) {
+      items.push({
+        id: en.id,
+        time: en.next_send_at,
+        name: en.contact_name || en.contact_email || 'Unknown',
+        company: en.company || '',
+        subject: `Step ${en.current_step || '?'}`,
+        channel: en.linkedin_url ? 'linkedin' : 'email',
+        source: 'sequence',
+        status: en.status,
+      })
+    }
+    return items.sort((a, b) => new Date(a.time) - new Date(b.time))
+  }, [scheduledEmails, enrollments])
+
   // ── Kiko brief loader (SSE streaming from /api/kiko) ──
-  // Pre-fetches relevant deal/contact/email context for the selected item and stuffs it
-  // directly into the message string — this is a workaround because /api/kiko isn't
-  // consuming `pageContext.selectedItem` for command-centre task detail, which caused
-  // briefs to come back generic with no company/contact context attached.
   useEffect(() => {
     if (!selected) { setBrief(''); setSeparateDraft(''); return }
     if (briefAbortRef.current) briefAbortRef.current.abort()
@@ -561,7 +573,6 @@ export default function OutreachIntelligence({ user }) {
     setBriefLoading(true)
     ;(async () => {
       try {
-        // Enrich the prompt with live data from Supabase for task/deal/reply
         const enriched = await enrichSelectedForBrief(selected)
         const res = await fetch('https://api.vanhawke.agency/api/kiko', {
           method: 'POST',
@@ -597,7 +608,6 @@ export default function OutreachIntelligence({ user }) {
                 }
                 const chunk = evt.delta || evt.text
                 if (chunk) {
-                  // Catch raw error JSON in the text stream
                   if (chunk.includes('"overloaded_error"') || chunk.includes('"type":"error"')) {
                     setBrief('Kiko is temporarily busy. Click the item again to retry.')
                     return
@@ -616,23 +626,16 @@ export default function OutreachIntelligence({ user }) {
         if (err.name !== 'AbortError') console.error('[CommandCentre] brief', err)
       }
       setBriefLoading(false)
-      // Auto-scroll the detail panel to top so brief is visible
       const detailPanel = document.querySelector('.cc-detail-scroll')
       if (detailPanel) detailPanel.scrollTop = 0
       
-      // ── DRAFT EXTRACTION — extract section 4 from the brief (which has full tool context) ──
       if (selected?.kind === 'reply' || selected?.kind === 'task' || selected?.kind === 'followup') {
         await new Promise(r => setTimeout(r, 300))
-        // Get the raw accumulated brief text and extract the draft from section 4
         const rawBrief = rawBriefRef.current || ''
         const extracted = extractDraftFromBrief(rawBrief)
         if (extracted && extracted.length > 30) {
           setSeparateDraft(extracted)
-          console.log('[CC] Extracted draft from brief, length:', extracted.length)
-        } else {
-          console.log('[CC] No draft found in brief, raw length:', rawBrief.length)
         }
-        // Resolve email from payload
         const p = selected.payload || {}
         const email = p.recipient_email || p.prospect_email || p.email || p.metadata?.from || ''
         if (email) setResolvedEmail(email)
@@ -641,11 +644,9 @@ export default function OutreachIntelligence({ user }) {
     return () => controller.abort()
   }, [selected, user?.email])
 
-  // Channel helpers for Hot Reply cards
   const channelOf = (r) => r.type === 'email_bounced' ? 'bounce' : r.type?.includes('linkedin') ? 'linkedin' : r.type?.includes('email') ? 'email' : 'reply'
   const channelIcon = (ch) => ch === 'linkedin' ? <Linkedin size={11} /> : ch === 'bounce' ? <AlertTriangle size={11} /> : ch === 'email' ? <Mail size={11} /> : <MessageSquare size={11} />
 
-  // Select helpers — translate each row into a common 'selected' shape
   const selectReply = (r) => setSelected({
     kind: 'reply', id: r.id,
     title: r.title || '(reply)',
@@ -671,7 +672,32 @@ export default function OutreachIntelligence({ user }) {
     payload: s,
   })
 
+  const dismissAlert = async (alert, e) => {
+    e?.stopPropagation()
+    await supabase.from('kiko_alerts').update({ dismissed: true }).eq('id', alert.id)
+    setAllAlerts(prev => prev.filter(a => a.id !== alert.id))
+    showToast('Alert dismissed', 'success')
+  }
+
+  const dismissDraft = async (draft, e) => {
+    e?.stopPropagation()
+    await supabase.from('kiko_draft_actions').update({ status: 'dismissed', reviewed_at: new Date().toISOString() }).eq('id', draft.id)
+    setDraftActions(prev => prev.filter(d => d.id !== draft.id))
+    showToast('Draft dismissed', 'success')
+  }
+
   const isSelected = (kind, id) => selected?.kind === kind && selected?.id === id
+
+  // ── Sort alerts: severity DESC then created_at DESC ──
+  const sortedAlerts = useMemo(() => {
+    const sevOrder = { critical: 0, high: 1, medium: 2, low: 3 }
+    return [...allAlerts].sort((a, b) => {
+      const sa = sevOrder[a.severity] ?? 4
+      const sb = sevOrder[b.severity] ?? 4
+      if (sa !== sb) return sa - sb
+      return new Date(b.created_at) - new Date(a.created_at)
+    })
+  }, [allAlerts])
 
   return (
     <div className="cc">
@@ -720,7 +746,7 @@ export default function OutreachIntelligence({ user }) {
                       <div className={`cc-hot-card-channel ${ch}`}>{channelIcon(ch)}</div>
                       <div className="cc-hot-card-from">{r.entity_name || 'Unknown'}</div>
                       <div className="cc-hot-card-when">{relativeTime(r.created_at)}</div>
-                      <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_alerts').update({ dismissed: true }).eq('id', r.id); await supabase.from('activities').insert({ type: 'alert_dismissed', entity_name: r.entity_name || r.title, subject: `Dismissed: ${r.title}`, status: 'completed' }).catch(() => {}); setHotReplies(prev => prev.filter(x => x.id !== r.id)); showToast('Alert cleared', 'success') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 13, padding: '0 2px', marginLeft: 4, lineHeight: 1 }} title="Dismiss">×</button>
+                      <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_alerts').update({ dismissed: true }).eq('id', r.id); setHotReplies(prev => prev.filter(x => x.id !== r.id)); showToast('Alert cleared', 'success') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 13, padding: '0 2px', marginLeft: 4, lineHeight: 1 }} title="Dismiss">×</button>
                     </div>
                     <div className="cc-hot-card-title">
                       {r.type?.includes('connection') && <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: 4, background: 'rgba(6,214,160,0.12)', color: '#06a87d', fontSize: 10, fontWeight: 600, marginRight: 6, verticalAlign: 'middle' }}>CONNECTED</span>}
@@ -741,10 +767,12 @@ export default function OutreachIntelligence({ user }) {
         {/* SECTION TABS */}
         <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.08)', marginBottom: 16, marginTop: 8 }}>
           {[
-            { id: 'followups', label: 'Follow-ups' },
-            { id: 'campaign', label: 'Campaign Activity' },
-            { id: 'stale', label: 'Stale Deals' },
-            { id: 'intel', label: 'Sponsorship News' },
+            { id: 'signals', label: 'Signals', count: sortedAlerts.length },
+            { id: 'outreach', label: 'Outreach', count: draftActions.length },
+            { id: 'schedule', label: 'Schedule', count: scheduleItems.length },
+            { id: 'followups', label: 'Follow-ups', count: tasks.length },
+            { id: 'campaigns', label: 'Campaigns', count: enrollments.length },
+            { id: 'discover', label: 'Discover' },
           ].map(t => (
             <button key={t.id} onClick={() => { setMainTab(t.id); setSelected(null) }} style={{
               padding: '10px 18px', fontSize: 13, fontWeight: mainTab === t.id ? 600 : 400,
@@ -752,15 +780,104 @@ export default function OutreachIntelligence({ user }) {
               borderBottom: mainTab === t.id ? '2px solid #0A0A0A' : '2px solid transparent',
               background: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none',
               cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
-            }}>{t.label}</button>
+            }}>
+              {t.label}
+              {t.count != null && <span style={{ color: '#A0A0A0', marginLeft: 6, fontSize: 11 }}>{t.count}</span>}
+            </button>
           ))}
         </div>
 
-        {/* MASTER-DETAIL GRID — hidden when intel tab active */}
+        {/* MASTER-DETAIL GRID */}
         <div className="cc-grid">
           {/* LEFT: Grouped priority list */}
           <div className="cc-list">
-            {mainTab === 'followups' && (<>
+
+        {/* ═══ SIGNALS TAB ═══ */}
+        {mainTab === 'signals' && (
+          <div style={{ padding: '0 4px' }}>
+            {sortedAlerts.length === 0 ? (
+              <div style={{ padding: '40px 0', textAlign: 'center', color: '#6B6B6B', fontSize: 14 }}>No active signals. Kiko monitors contacts, companies, and campaigns overnight.</div>
+            ) : sortedAlerts.map((alert) => {
+              const badge = alertBadge(alert)
+              const initials = ((alert.entity_name || alert.title || '').split(' ').slice(0, 2).map(w => (w||'')[0]).join('').toUpperCase()) || '?'
+              return (
+                <div key={alert.id} className={`cc-row ${isSelected('signal', alert.id) ? 'selected' : ''}`} onClick={() => selectSignal(alert)} style={{ display: 'flex', alignItems: 'center', padding: '12px 0', borderBottom: '0.5px solid rgba(0,0,0,0.06)', cursor: 'pointer' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: badge.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 500, color: badge.c, marginRight: 12, flexShrink: 0 }}>{initials}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cleanTitle(alert.title)}</div>
+                    <div style={{ fontSize: 12, color: '#6B6B6B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(alert.detail || '').slice(0, 80)}</div>
+                  </div>
+                  <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5, background: badge.bg, color: badge.c, padding: '3px 8px', borderRadius: 4, marginRight: 8, flexShrink: 0, fontWeight: 600 }}>{badge.l}</span>
+                  <button onClick={(e) => { e.stopPropagation(); selectSignal(alert) }} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 6, border: '0.5px solid rgba(0,0,0,0.12)', background: '#fff', cursor: 'pointer', marginRight: 4 }}>Action</button>
+                  <button onClick={(e) => dismissAlert(alert, e)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 15, padding: '0 4px', lineHeight: 1 }} title="Dismiss">×</button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* ═══ OUTREACH TAB ═══ */}
+        {mainTab === 'outreach' && (
+          <div style={{ padding: '0 4px' }}>
+            {draftActions.length === 0 ? (
+              <div style={{ padding: '40px 0', textAlign: 'center', color: '#6B6B6B', fontSize: 14 }}>No suggested outreach yet. Kiko generates drafts when signals are detected.</div>
+            ) : draftActions.map((draft) => {
+              const payload = typeof draft.payload === 'string' ? (() => { try { return JSON.parse(draft.payload) } catch { return {} } })() : (draft.payload || {})
+              const entity = payload.entity || payload.entity_name || draft.action_type || 'Suggested outreach'
+              const draftText = payload.draft || payload.content || ''
+              const context = payload.context || ''
+              return (
+                <div key={draft.id} style={{ border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 10, padding: 20, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A' }}>{entity}</div>
+                    <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5, background: '#E6F1FB', color: '#185FA5', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>{draft.action_type || 'follow_up'}</span>
+                  </div>
+                  {context && <div style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 10, lineHeight: 1.5 }}>{context.slice(0, 200)}</div>}
+                  {draftText && (
+                    <div style={{ background: '#FAFAFA', borderRadius: 8, padding: '14px 16px', fontSize: 13, lineHeight: 1.6, marginBottom: 14, whiteSpace: 'pre-wrap', maxHeight: 200, overflow: 'auto', color: '#2A2A2A' }}>{draftText.slice(0, 800)}{draftText.length > 800 ? '…' : ''}</div>
+                  )}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button style={{ fontSize: 12, padding: '6px 14px', borderRadius: 6, background: '#0A0A0A', color: '#fff', border: 'none', cursor: 'pointer' }}>Schedule send</button>
+                    <button style={{ fontSize: 12, padding: '6px 14px', borderRadius: 6, border: '0.5px solid rgba(0,0,0,0.12)', background: '#fff', cursor: 'pointer' }}>Edit</button>
+                    <button onClick={(e) => dismissDraft(draft, e)} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 6, border: '0.5px solid rgba(0,0,0,0.12)', background: '#fff', cursor: 'pointer', color: '#6B6B6B' }}>Dismiss</button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* ═══ SCHEDULE TAB ═══ */}
+        {mainTab === 'schedule' && (
+          <div style={{ padding: '0 4px' }}>
+            {scheduleItems.length === 0 ? (
+              <div style={{ padding: '40px 0', textAlign: 'center', color: '#6B6B6B', fontSize: 14 }}>No messages scheduled. Use campaigns or ask Kiko to schedule outreach.</div>
+            ) : scheduleItems.map((item) => {
+              const time = item.time ? new Date(item.time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '--:--'
+              const date = item.time ? new Date(item.time).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''
+              const isLI = item.channel === 'linkedin'
+              return (
+                <div key={item.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 0', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
+                  <div style={{ width: 70, flexShrink: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A' }}>{time}</div>
+                    <div style={{ fontSize: 10, color: '#A0A0A0' }}>{date}</div>
+                  </div>
+                  <div style={{ width: 24, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: isLI ? '#185FA5' : '#6B6B6B' }}>
+                    {isLI ? <Linkedin size={13} /> : <Mail size={13} />}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0, marginLeft: 8 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A' }}>{item.name}{item.company ? ` · ${item.company}` : ''}</div>
+                    <div style={{ fontSize: 11, color: '#6B6B6B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.subject}</div>
+                  </div>
+                  <span style={{ fontSize: 10, textTransform: 'uppercase', background: isLI ? '#E6F1FB' : '#FAFAFA', color: isLI ? '#185FA5' : '#6B6B6B', padding: '3px 8px', borderRadius: 4, flexShrink: 0, fontWeight: 500 }}>{item.source === 'sequence' ? `Seq · ${isLI ? 'LI' : 'Email'}` : isLI ? 'LinkedIn' : 'Email'}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* ═══ FOLLOW-UPS TAB (PRESERVED AS-IS) ═══ */}
+        {mainTab === 'followups' && (<>
             {/* TASK FILTER TABS */}
             <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', marginBottom: 8, alignItems: 'center' }}>
               {[
@@ -828,36 +945,7 @@ export default function OutreachIntelligence({ user }) {
               })()}
             </div>
 
-            </>)}
-            {mainTab === 'stale' && (<>
-            {/* STALE DEALS */}
-            <div className="cc-group">
-              <div className="cc-group-h">
-                <h3><Clock size={10} />Stale deals</h3>
-                <span className="cc-group-count">{staleDeals.length}</span>
-              </div>
-              {staleDeals.length === 0 ? (
-                <div className="cc-empty-row">All deals active</div>
-              ) : staleDeals.slice(0, 6).map(d => (
-                <div
-                  key={d._id}
-                  className={`cc-row ${isSelected('deal', d._id) ? 'selected' : ''}`}
-                  onClick={() => selectDeal(d)}
-                >
-                  <div className="cc-row-icon amber"><TrendingUp size={10} /></div>
-                  <div className="cc-row-body">
-                    <div className="cc-row-title">{d.company || d.title || 'Untitled'}</div>
-                    <div className="cc-row-meta">
-                      {d.stage} · {fmtCurrency(parseFloat(d.value) || 0)} · {d.daysSince}d idle
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            </>)}
-            {mainTab === 'followups' && (<>
-            {/* FOLLOW-UP TRACKER */}
+            {/* AWAITING REPLIES */}
             {followUps.length > 0 && (
               <div className="cc-group">
                 <div className="cc-group-h">
@@ -889,115 +977,77 @@ export default function OutreachIntelligence({ user }) {
                 })}
               </div>
             )}
-
             </>)}
-            {mainTab === 'campaign' && (<>
-            {/* CAMPAIGN ACTIVITY */}
-            {campaignActivity.length > 0 && (
-              <div className="cc-group">
-                <div className="cc-group-h">
-                  <h3><Zap size={10} />Active sequences</h3>
-                  <span className="cc-group-count">{campaignActivity.length}</span>
-                </div>
-                {campaignActivity.slice(0, 8).map(c => (
-                  <div
-                    key={c.id}
-                    className={`cc-row ${isSelected('campaign', c.id) ? 'selected' : ''}`}
-                    onClick={() => selectCampaign(c)}
-                  >
-                    <div className="cc-row-icon purple"><Send size={10} /></div>
-                    <div className="cc-row-body">
-                      <div className="cc-row-title">{c.contact_name || 'Unknown'}</div>
-                      <div className="cc-row-meta">
-                        {c.company && <>{c.company} · </>}
-                        Step {c.current_step} · {c.next_send_at ? `Next: ${relativeTime(c.next_send_at)}` : 'pending'}
+
+        {/* ═══ CAMPAIGNS TAB ═══ */}
+        {mainTab === 'campaigns' && (
+          <div style={{ padding: '0 4px' }}>
+            {campaignGroups.length === 0 ? (
+              <div style={{ padding: '40px 0', textAlign: 'center', color: '#6B6B6B', fontSize: 14 }}>No campaign data. Enroll prospects via outreach sequences.</div>
+            ) : campaignGroups.map((group) => {
+              const replyRate = group.total > 0 ? Math.round((group.replied / group.total) * 100) : 0
+              const bounceRate = group.total > 0 ? Math.round((group.bounced / group.total) * 100) : 0
+              return (
+                <div key={group.sequence_id} style={{ border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 10, padding: 20, marginBottom: 16 }}>
+                  {/* Campaign Header */}
+                  <div style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', marginBottom: 12 }}>{group.name}</div>
+                  
+                  {/* Stats Row */}
+                  <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
+                    {[
+                      { label: 'Enrolled', value: group.total, bg: '#F5F5F5', c: '#0A0A0A' },
+                      { label: 'Active', value: group.active, bg: '#E1F5EE', c: '#0F6E56' },
+                      { label: 'Paused', value: group.paused, bg: '#FAEEDA', c: '#854F0B' },
+                      { label: 'Bounced', value: group.bounced, bg: '#FCEBEB', c: '#A32D2D' },
+                      { label: 'Completed', value: group.completed, bg: '#E6F1FB', c: '#185FA5' },
+                    ].map(stat => (
+                      <div key={stat.label} style={{ textAlign: 'center', minWidth: 60 }}>
+                        <div style={{ fontSize: 18, fontWeight: 600, color: stat.c }}>{stat.value}</div>
+                        <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5, color: '#6B6B6B', marginTop: 2 }}>{stat.label}</div>
                       </div>
+                    ))}
+                    <div style={{ textAlign: 'center', minWidth: 60 }}>
+                      <div style={{ fontSize: 18, fontWeight: 600, color: replyRate > 0 ? '#0F6E56' : '#6B6B6B' }}>{replyRate}%</div>
+                      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5, color: '#6B6B6B', marginTop: 2 }}>Reply rate</div>
+                    </div>
+                    <div style={{ textAlign: 'center', minWidth: 60 }}>
+                      <div style={{ fontSize: 18, fontWeight: 600, color: bounceRate > 10 ? '#A32D2D' : '#6B6B6B' }}>{bounceRate}%</div>
+                      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5, color: '#6B6B6B', marginTop: 2 }}>Bounce rate</div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
 
-            </>)}
-            {mainTab === 'followups' && (<>
-            {/* THIS WEEK TASKS */}
-            <div className="cc-group">
-              <div className="cc-group-h">
-                <h3><Calendar size={10} />Due this week</h3>
-                <span className="cc-group-count">{thisWeekTasks.length}</span>
-              </div>
-              {thisWeekTasks.length === 0 ? (
-                <div className="cc-empty-row">Nothing due this week</div>
-              ) : thisWeekTasks.slice(0, 8).map(t => (
-                <div
-                  key={t.id}
-                  className={`cc-row ${isSelected('task', t.id) ? 'selected' : ''}`}
-                  onClick={() => selectTask(t)}
-                >
-                  <button className="cc-row-icon sage" onClick={e => completeTask(t, e)} title="Mark done">
-                    <Square size={10} />
-                  </button>
-                  <div className="cc-row-body">
-                    <div className="cc-row-title">{taskLabel(t)}</div>
-                    <div className="cc-row-meta">
-                      {taskSub(t) && <>{taskSub(t)} · </>}
-                      {dueLabel(t.data?.dueDate)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            </>)}
-            {mainTab === 'intel' && (<>
-            {/* SPONSORSHIP NEWS with series sub-tabs */}
-            <div className="cc-group">
-              <div className="cc-group-h">
-                <h3><Zap size={10} />Sponsorship News</h3>
-                <span className="cc-group-count">{signals.length}</span>
-              </div>
-              <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', padding: '0 16px' }}>
-                {[
-                  { id: 'f1', label: 'F1', match: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bwilliams\b|\baston martin\b|\bkick sauber\b|\bracing bulls\b|\bcadillac\b/i },
-                  { id: 'fe', label: 'Formula E', match: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b|\bmahindra\b/i },
-                  { id: 'wec', label: 'WEC', match: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b/i },
-                  { id: 'motogp', label: 'MotoGP', match: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b/i },
-                  { id: 'all', label: 'All' },
-                ].map(tab => {
-                  const count = tab.id === 'all' ? signals.length : signals.filter(s => tab.match?.test(`${s.title} ${s.detail} ${s.entity_name}`)).length
-                  return (
-                    <button key={tab.id} onClick={() => setIntelTab(tab.id)} style={{
-                      padding: '8px 14px', fontSize: 12, fontWeight: intelTab === tab.id ? 600 : 400,
-                      color: intelTab === tab.id ? '#0A0A0A' : '#6B6B6B',
-                      borderBottom: intelTab === tab.id ? '2px solid #0A0A0A' : '2px solid transparent',
-                      background: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none',
-                      cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
-                    }}>
-                      {tab.label} <span style={{ color: '#A0A0A0', marginLeft: 3 }}>{count}</span>
-                    </button>
-                  )
-                })}
-              </div>
-              {(() => {
-                const tabs = { f1: /formula.?1|f1|\bhaas\b|\balpine\b|\bmclaren\b|\bferrari\b|\bredbull\b|\bred bull\b|\bmercedes\b|\bcadillac\b|\baston martin\b|\bwilliams\b/i, fe: /formula.?e|\bfe\b|\bjaguar tcs\b|\bds penske\b|\bmahindra\b/i, wec: /\bwec\b|\ble mans\b|\bendurance\b|\bhypercar\b/i, motogp: /motogp|\bmoto.?gp\b|\bducati\b|\baprilia\b/i }
-                const filtered = intelTab === 'all' ? signals : signals.filter(s => tabs[intelTab]?.test(`${s.title} ${s.detail} ${s.entity_name}`))
-                return filtered.length === 0 ? (
-                  <div className="cc-empty-row">No sponsorship news{intelTab !== 'all' ? ` for ${intelTab.toUpperCase()}` : ''} this week</div>
-                ) : filtered.slice(0, 15).map(s => (
-                  <div key={s.id} className={`cc-row ${isSelected('signal', s.id) ? 'selected' : ''}`} onClick={() => selectSignal(s)} style={{ cursor: 'pointer' }}>
-                    <div className="cc-row-icon purple"><Zap size={10} /></div>
-                    <div className="cc-row-body">
-                      <div className="cc-row-title">{cleanTitle(s.title)}</div>
-                      <div className="cc-row-meta">
-                        {s.entity_name && <>{s.entity_name} · </>}
-                        {relativeTime(s.created_at)}
+                  {/* Top Prospects */}
+                  <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: '#A0A0A0', marginBottom: 8, fontWeight: 600 }}>Top prospects</div>
+                  {group.prospects.map((p) => {
+                    const statusColor = p.status === 'active' ? { bg: '#E1F5EE', c: '#0F6E56' } : p.status === 'paused' ? { bg: '#FAEEDA', c: '#854F0B' } : p.status === 'bounced' ? { bg: '#FCEBEB', c: '#A32D2D' } : { bg: '#E6F1FB', c: '#185FA5' }
+                    return (
+                      <div key={p.id} className={`cc-row ${isSelected('campaign', p.id) ? 'selected' : ''}`} onClick={() => selectCampaign(p)} style={{ display: 'flex', alignItems: 'center', padding: '8px 0', borderBottom: '0.5px solid rgba(0,0,0,0.04)', cursor: 'pointer' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A' }}>{p.contact_name || p.contact_email || 'Unknown'}</div>
+                          <div style={{ fontSize: 11, color: '#6B6B6B' }}>{p.company || ''}{p.title ? ` · ${p.title}` : ''} · Step {p.current_step || '?'}</div>
+                        </div>
+                        <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5, background: statusColor.bg, color: statusColor.c, padding: '2px 6px', borderRadius: 4, fontWeight: 600, flexShrink: 0 }}>{p.status}</span>
                       </div>
-                    </div>
-                  </div>
-                ))
-              })()}
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* ═══ DISCOVER TAB ═══ */}
+        {mainTab === 'discover' && (
+          <div style={{ padding: '40px 0', textAlign: 'center' }}>
+            <div style={{ fontSize: 16, fontWeight: 500, color: '#0A0A0A', marginBottom: 12 }}>Discover new prospects</div>
+            <div style={{ maxWidth: 400, margin: '0 auto 20px', fontSize: 13, color: '#6B6B6B', lineHeight: 1.6 }}>Ask Kiko to find companies similar to your best prospects. She will analyse your pipeline and suggest new targets.</div>
+            <div style={{ maxWidth: 380, margin: '0 auto', position: 'relative' }}>
+              <Search size={14} style={{ position: 'absolute', left: 12, top: 11, color: '#A0A0A0' }} />
+              <input placeholder="Search companies, sectors, or ask Kiko..." style={{ width: '100%', padding: '10px 12px 10px 34px', border: '1px solid rgba(0,0,0,0.10)', borderRadius: 8, fontSize: 13, fontFamily: 'Inter, system-ui, sans-serif', outline: 'none' }} />
             </div>
-            </>)}
+          </div>
+        )}
+
           </div>
 
           {/* RIGHT: Detail pane with Kiko brief */}
@@ -1032,7 +1082,6 @@ export default function OutreachIntelligence({ user }) {
                     </div>
                   ) : null}
 
-                  {/* EMAIL DRAFT — generated as a separate API call, not parsed from brief */}
                   {draftGenerating && (
                     <div style={{ marginTop: 14, padding: 16, background: 'rgba(0,0,0,0.02)', borderRadius: 8 }}>
                       <span className="dot" /><span className="dot" /><span className="dot" /> Drafting reply...
@@ -1045,7 +1094,6 @@ export default function OutreachIntelligence({ user }) {
                     </div>
                   )}
 
-                  {/* ACTION BUTTONS — below the composer */}
                   {!briefLoading && brief && (
                     <div className="cc-detail-actions" style={{ marginTop: 14 }}>
                       {selected.kind === 'task' && (

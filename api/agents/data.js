@@ -2,6 +2,9 @@
 // All CRM read operations: search, analytics, pipeline, news, partnerships, activities.
 // No Claude call needed — pure data handler/dispatcher.
 import { sbFetch } from '../kiko-tools.js';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
 

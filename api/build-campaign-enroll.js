@@ -41,7 +41,22 @@ export default async function handler(req, res) {
     }
 
     // ONLY enroll targets with VERIFIED real emails — never fabricate
-    const validTargets = targets.filter(t => isValidEmail(t.decision_maker_email));
+    // GUARDRAIL: Also check name/email match to prevent mis-routing
+    const validTargets = targets.filter(t => {
+      if (!isValidEmail(t.decision_maker_email)) return false;
+      // Check that the contact name matches the email local part
+      const name = (t.decision_maker_name || '').toLowerCase().trim();
+      if (!name) return true; // No name to check — allow through
+      const emailLocal = t.decision_maker_email.split('@')[0].toLowerCase().replace(/[._\-]/g, ' ');
+      const nameParts = name.split(/\s+/).filter(p => p.length > 2);
+      if (nameParts.length === 0) return true;
+      const nameMatchesEmail = nameParts.some(part => emailLocal.includes(part));
+      if (!nameMatchesEmail) {
+        console.warn(`[build-campaign-enroll] BLOCKED: Name "${t.decision_maker_name}" does not match email "${t.decision_maker_email}" — skipping to prevent mis-routing`);
+        return false;
+      }
+      return true;
+    });
     const noEmailTargets = targets.filter(t => !isValidEmail(t.decision_maker_email));
 
     const now = new Date().toISOString();
