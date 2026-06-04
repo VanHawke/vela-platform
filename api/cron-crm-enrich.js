@@ -66,11 +66,32 @@ export default async function handler(req, res) {
   let apolloExhausted = false; // Track if Apollo credits are gone
 
   try {
-    // Get all contacts
-    const contacts = await sbFetch('contacts?select=id,data&order=updated_at.asc&limit=200');
-    if (!contacts?.length) return res.json({ ok: true, enriched: 0, msg: 'no contacts' });
+    // Get contacts in priority rings:
+    // Ring 0: Deal contacts (most valuable)
+    // Ring 1: Campaign engagers
+    // Ring 2: Has email but never enriched
+    // Ring 3: No useful data (candidates for removal)
+    const contacts = await sbFetch('contacts?select=id,data&order=updated_at.asc&limit=2000');
+    const deals = await sbFetch('deals?select=data&limit=200');
+    const enrollments = await sbFetch('kiko_sequence_enrollments?select=contact_email&limit=500');
+    
+    const dealContacts = new Set((deals || []).map(d => (d.data?.contactName || '').toLowerCase()).filter(Boolean));
+    const campaignEmails = new Set((enrollments || []).map(e => (e.contact_email || '').toLowerCase()).filter(Boolean));
+    
+    // Sort by priority ring
+    const sorted = (contacts || []).sort((a, b) => {
+      const aName = `${a.data?.firstName || ''} ${a.data?.lastName || ''}`.trim().toLowerCase();
+      const bName = `${b.data?.firstName || ''} ${b.data?.lastName || ''}`.trim().toLowerCase();
+      const aEmail = (a.data?.email || '').toLowerCase();
+      const bEmail = (b.data?.email || '').toLowerCase();
+      const aRing = dealContacts.has(aName) ? 0 : campaignEmails.has(aEmail) ? 1 : aEmail ? 2 : 3;
+      const bRing = dealContacts.has(bName) ? 0 : campaignEmails.has(bEmail) ? 1 : bEmail ? 2 : 3;
+      return aRing - bRing;
+    });
+    
+    if (!sorted.length) return res.json({ ok: true, enriched: 0, msg: 'no contacts' });
 
-    for (const contact of contacts) {
+    for (const contact of sorted) {
       const d = contact.data || {};
       const email = d.email || d.workEmail;
       const name = `${d.firstName || ''} ${d.lastName || ''}`.trim();
