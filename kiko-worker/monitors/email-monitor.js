@@ -158,8 +158,12 @@ export async function runEmailMonitor() {
             skipLocalParts.test(localPart) ||
             skipSubjectPatterns.test(subject) ||
             !senderName || senderName.length <= 1;
+          
+          // Always allow known prospect/partner domains through
+          const alwaysAllowDomains = ['helsing.ai','ball.com','fiaformulae.com','haasf1team.com','alpine.com'];
+          const forceAllow = alwaysAllowDomains.some(d => domain.endsWith(d));
             
-          if (!shouldSkip) {
+          if (forceAllow || !shouldSkip) {
             // Auto-create contact in CRM
             const nameParts = senderName.split(' ');
             const firstName = nameParts[0] || senderName;
