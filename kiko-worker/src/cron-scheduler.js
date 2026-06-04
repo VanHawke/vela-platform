@@ -14,6 +14,7 @@ const SCHEDULES = [
   { schedule: '0 8-20/2 * * *',    path: '/api/cron-heartbeat',           name: 'heartbeat' },
   { schedule: '0 */6 * * *',       path: '/api/cron-linkedin-keepalive',  name: 'linkedin-keepalive' },
   { schedule: '*/30 8-20 * * 1-5', path: '/api/cron-linkedin-monitor',    name: 'linkedin-monitor' },
+  { schedule: '0 3 * * *',          path: '/api/cron-crm-enrich',         name: 'crm-enrich' },
   { schedule: '0 8 * * *',         path: '/linkedin-queue/sync-cookies',  name: 'linkedin-sync', local: true },
 
   // ═══ CAMPAIGN ENGINE (sends emails + LinkedIn on schedule) ═══

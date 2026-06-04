@@ -95,6 +95,25 @@ export default async function handler(req, res) {
             });
             signalsCreated++;
             console.log(`[linkedin-monitor] ${identity}: Message from ${convo.name}`);
+
+            // Auto-draft a reply for LinkedIn messages
+            try {
+              await sbFetch('kiko_draft_actions', {
+                method: 'POST',
+                body: JSON.stringify({
+                  action_type: 'linkedin_reply',
+                  payload: {
+                    entity: convo.name,
+                    context: `${convo.name} sent you a LinkedIn message. Preview: "${convo.preview.slice(0, 300)}". Account: ${identity}.${match ? ` CRM: ${match.data?.name} at ${match.data?.company}` : ''}`,
+                    draft: `Hi ${(convo.name || '').split(' ')[0]},\n\nThank you for your message. [Review and personalise before sending]\n\nBest regards`,
+                    channel: 'linkedin',
+                    preview: convo.preview,
+                  },
+                  status: 'pending',
+                  user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+                }),
+              });
+            } catch (e) { console.warn(`[linkedin-monitor] Message draft failed:`, e.message); }
           }
         } catch (e) { console.warn(`[linkedin-monitor] ${identity} messaging check:`, e.message); }
 
