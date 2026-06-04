@@ -150,6 +150,27 @@ export default async function handler(req, res) {
             });
             signalsCreated++;
             console.log(`[linkedin-monitor] ${identity}: Connection accept from ${accept.name}`);
+
+            // Auto-draft a follow-up message for approved connection accepts
+            try {
+              const draftPayload = {
+                entity: accept.name,
+                context: `${accept.name} (${accept.headline}) accepted your LinkedIn connection request. Account: ${identity}. ${match ? `CRM match: ${match.data?.company}` : 'Not in CRM.'}`,
+                draft: `Hi ${(accept.name || '').split(' ')[0]},\n\nThank you for connecting. I noticed your work at ${accept.headline?.split(' at ')?.[1] || 'your company'} — would be great to find some time for a brief introduction.\n\nBest regards`,
+                channel: 'linkedin',
+                linkedin_public_id: accept.name,
+              };
+              await sbFetch('kiko_draft_actions', {
+                method: 'POST',
+                body: JSON.stringify({
+                  action_type: 'linkedin_followup',
+                  payload: draftPayload,
+                  status: 'pending',
+                  user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+                }),
+              });
+              console.log(`[linkedin-monitor] Auto-draft queued for ${accept.name}`);
+            } catch (e) { console.warn(`[linkedin-monitor] Draft creation failed:`, e.message); }
           }
         } catch (e) { console.warn(`[linkedin-monitor] ${identity} invitation check:`, e.message); }
 

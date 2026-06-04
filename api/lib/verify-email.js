@@ -62,7 +62,18 @@ export async function verifyEmail(email) {
   }
 
   // All DNS checks passed — email is plausible (domain receives mail)
-  // Cannot confirm mailbox exists without SMTP (port 25 blocked)
+  // Try Apollo verification if API key is configured (mailbox-level check)
+  if (process.env.APOLLO_API_KEY) {
+    try {
+      const { verifyEmailViaApollo } = await import('./apollo-client.js');
+      const apollo = await verifyEmailViaApollo(email);
+      if (apollo.verified === true) return { valid: true, reason: 'apollo_verified', mx: mxHost, checks: { ...checks, apollo: 'verified' } };
+      if (apollo.verified === false) return { valid: false, reason: `apollo_${apollo.email_status}`, mx: mxHost, checks: { ...checks, apollo: apollo.email_status } };
+      // null = not found in Apollo, fall through to DNS result
+    } catch { /* Apollo unavailable, fall through to DNS */ }
+  }
+
+  // DNS-only result (no Apollo or Apollo inconclusive)
   return { valid: true, reason: 'dns_verified', mx: mxHost, checks };
 }
 
