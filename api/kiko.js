@@ -1814,7 +1814,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
       try {
         const { saveMemory } = await import('./kiko-self-knowledge-lean.js');
         const compactResp = await anthropic.messages.create({
-          model: 'claude-haiku-4-5-20251001', max_tokens: 200,
+          model: 'claude-sonnet-4-6-20250514', max_tokens: 200, // Upgraded from Haiku — memory extraction needs nuance
           messages: [{ role: 'user', content: `Extract ONLY new facts, decisions, or state changes from this conversation that should update persistent memory. If nothing significant happened, respond with exactly "NONE".
 
 User said: ${(message || '').slice(0, 300)}
@@ -1832,10 +1832,14 @@ FACT: [new information learned]` }]
           try {
             let mem = fs.readFileSync(memPath, 'utf-8');
             const timestamp = new Date().toISOString().split('T')[0];
-            // Append to RECENT DECISIONS section
+            // Append to RECENT DECISIONS section (before OPERATIONAL HEALTH marker)
             const insertPoint = mem.indexOf('## OPERATIONAL HEALTH');
             if (insertPoint > 0) {
               mem = mem.slice(0, insertPoint) + `- ${timestamp}: ${extract.replace(/\n/g, '; ')}\n` + mem.slice(insertPoint);
+            } else {
+              // No marker found — append to end
+              mem += `\n- ${timestamp}: ${extract.replace(/\n/g, '; ')}`;
+              console.warn('[Compaction] No ## OPERATIONAL HEALTH marker found in KIKO_MEMORY.md — appended to end');
             }
             // Update the timestamp
             mem = mem.replace(/Last updated: .*/, `Last updated: ${new Date().toISOString()}`);
