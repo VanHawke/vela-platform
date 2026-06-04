@@ -113,7 +113,7 @@ async function triageUser(userId, email, token, today) {
     // Classify via Haiku
     const emailList = emails.map((e, i) => `[${i+1}] From: ${e.from} | Subject: ${e.subject} | Preview: ${e.snippet}`).join('\n');
     const triage = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001', max_tokens: 600,
+      model: 'claude-sonnet-4-6-20250514', max_tokens: 600, // Upgraded from Haiku — email triage needs context understanding
       system: 'You triage a CEO\'s inbox. Classify each email: ACTION_REQUIRED (needs response today), IMPORTANT (should read), or SKIP. Return ONLY valid JSON array: [{ "index": 1, "priority": "ACTION_REQUIRED|IMPORTANT|SKIP", "reason": "brief why" }]. Max 10 emails.',
       messages: [{ role: 'user', content: `Triage ${emails.length} unread emails:\n\n${emailList}` }],
     });
