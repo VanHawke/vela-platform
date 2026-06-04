@@ -113,8 +113,22 @@ export default async function handler(req, res) {
         } catch (e) { console.warn(`[gmail-sync] Error processing sent msg:`, e.message); }
       }
 
-      // ═══ PART 2: Scan INBOX for inbound from known contacts (last 2 hours) ═══
-      const inboxQuery = encodeURIComponent(`in:inbox is:unread after:${twoHoursAgo}`);
+      // ═══ PART 2: Scan INBOX for inbound from known contacts ═══
+      // FIX: Removed is:unread (drops replies read on phone before cron runs)
+      // FIX: Use high-water-mark from last successful sync instead of sliding 2h window
+      // FIX: Dedup by gmail_message_id to prevent double-processing
+      let inboxAfter = twoHoursAgo; // fallback
+      try {
+        const lastSync = await sbFetch('kiko_cron_heartbeats?cron_name=eq.cron-gmail-sync-inbox&select=last_success_at&limit=1');
+        if (lastSync?.[0]?.last_success_at) {
+          // Use last successful sync minus 5min buffer for overlap safety
+          inboxAfter = Math.floor((new Date(lastSync[0].last_success_at).getTime() - 5 * 60 * 1000) / 1000);
+        } else {
+          // First run or no record: look back 24 hours to catch anything missed
+          inboxAfter = Math.floor((Date.now() - 24 * 60 * 60 * 1000) / 1000);
+        }
+      } catch {} // fallback to twoHoursAgo
+      const inboxQuery = encodeURIComponent(`in:inbox after:${inboxAfter}`);
       const inboxList = await gmailFetch(token, `/messages?q=${inboxQuery}&maxResults=20`);
 
       for (const msg of (inboxList?.messages || [])) {
@@ -125,6 +139,10 @@ export default async function handler(req, res) {
           const fromHeader = full.payload?.headers?.find(h => h.name === 'From')?.value || '';
           const senderEmail = fromHeader.match(/<([^>]+)>/)?.[1] || fromHeader.split('<')[0]?.trim();
           if (!senderEmail || senderEmail.includes('vanhawke')) continue;
+
+          // Dedup: skip if we've already processed this exact message
+          const alreadyProcessed = await sbFetch(`kiko_email_tracking?gmail_message_id=eq.${msg.id}&limit=1`);
+          if (alreadyProcessed?.length > 0) continue;
 
           // Check if this is a reply to a tracked thread
           const tracked = await sbFetch(`kiko_email_tracking?gmail_thread_id=eq.${full.threadId}&replied_at=is.null&limit=1`);
@@ -259,6 +277,20 @@ export default async function handler(req, res) {
           }
         } catch (e) { console.warn(`[gmail-sync] Error processing inbox msg:`, e.message); }
       }
+    }
+
+    // Write high-water-mark for inbox sync so next run starts from here
+    try {
+      await sbFetch('kiko_cron_heartbeats', {
+        method: 'POST',
+        body: JSON.stringify({ cron_name: 'cron-gmail-sync-inbox', status: 'finished', last_success_at: new Date().toISOString() }),
+      });
+    } catch {
+      // If insert fails (duplicate), update instead
+      await sbFetch('kiko_cron_heartbeats?cron_name=eq.cron-gmail-sync-inbox', {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'finished', last_success_at: new Date().toISOString() }),
+      }).catch(() => {});
     }
 
     await cronHeartbeat('cron-gmail-sync', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: totalSynced });
