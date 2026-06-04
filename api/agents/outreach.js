@@ -27,7 +27,7 @@ async function draftEmail({ to, subject, body, cc, thread_id, contact_status = '
       try {
         const voicePrompt = voiceProfileToPrompt(voiceProfile);
         const alignRes = await anthropic.messages.create({
-          model: 'claude-haiku-4-5-20251001',
+          model: 'claude-sonnet-4-6-20250514' // Upgraded — outreach needs quality,
           max_tokens: 800,
           messages: [{ role: 'user', content: `${voicePrompt}\n\nRewrite the following email in the user's voice above. Preserve the meaning and structure but match tone, length, openings, closings, and avoid any forbidden phrases. Return ONLY the rewritten email body — no commentary, no subject line.\n\nEmail to rewrite:\n${body}` }],
         });
@@ -95,7 +95,7 @@ async function getRecipientStyle({ email, name: recipientName }, userEmail) {
     }
     if (!bodies.length) return `Found emails from ${email || recipientName} but could not extract body text.`;
     const res = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001', max_tokens: 600,
+      model: 'claude-sonnet-4-6-20250514' // Upgraded — outreach needs quality, max_tokens: 600,
       messages: [{ role: 'user', content: `Analyse the writing style of this person based on their emails. Return ONLY valid JSON.\n\nEmails (${bodies.length}):\n${bodies.map((b, i) => `[${i + 1}] ${b}`).join('\n\n---\n\n')}\n\nReturn JSON: { "formality": "formal|semi-formal|casual", "avg_length": "brief|medium|detailed", "tone": "warm|neutral|direct|terse|enthusiastic|guarded", "key_phrases": ["..."], "emotional_warmth": "high|medium|low", "draft_instructions": "2-3 sentence instruction on how to write TO this person" }` }]
     });
     const raw = res.content[0]?.text || '{}';
