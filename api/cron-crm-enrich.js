@@ -19,21 +19,39 @@ const MCP_SERVERS = [
 ];
 
 async function enrichViaMCP(name, company, email) {
+  // MCP servers not available via API — use web search tool instead
   try {
-    const resp = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 500,
-      mcp_servers: MCP_SERVERS,
-      messages: [{
-        role: 'user',
-        content: `Enrich this contact using available tools (Lusha, Vibe Prospecting, Bigdata). Return ONLY a JSON object with: email, email_verified (boolean), title, company, linkedin_url, phone, city, country. If a field is unknown, set null.\n\nName: ${name}\nCompany: ${company}\nEmail: ${email || 'unknown'}\n\nRespond with ONLY the JSON, no other text.`
-      }],
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 500,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{
+          role: 'user',
+          content: `Find the current job title, company, LinkedIn URL, and verified work email for: ${name}${company ? ` at ${company}` : ''}${email ? ` (email: ${email})` : ''}. Search LinkedIn and company websites. Return ONLY a JSON object: {"email":"...","email_verified":true/false,"title":"...","company":"...","linkedin_url":"...","phone":null,"city":"...","country":"..."}. If unknown, set null. JSON only, no other text.`
+        }],
+      }),
     });
-    const text = resp.content?.find(c => c.type === 'text')?.text || '';
+    if (!resp.ok) {
+      const errText = await resp.text();
+      throw new Error(`${resp.status} ${errText.slice(0, 200)}`);
+    }
+    const data = await resp.json();
+    const textBlocks = (data.content || []).filter(c => c.type === 'text').map(c => c.text);
+    const text = textBlocks.join('\n').trim();
     const clean = text.replace(/```json|```/g, '').trim();
-    return JSON.parse(clean);
+    // Find JSON in the response
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    return JSON.parse(jsonMatch[0]);
   } catch (e) {
-    console.warn('[crm-enrich] MCP fallback failed:', e.message);
+    console.warn('[crm-enrich] Web search fallback failed:', e.message);
     return null;
   }
 }
