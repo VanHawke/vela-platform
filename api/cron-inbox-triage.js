@@ -83,6 +83,13 @@ async function triageUser(userId, email, token, today) {
     const fromKnownProspects = emails.filter(e => e.knownContact);
     for (const e of fromKnownProspects) {
       try {
+        // PROVENANCE CHECK (Rule 8): Did we ever email them first?
+        const outbound = await sbFetch(`kiko_email_tracking?recipient_email=eq.${encodeURIComponent(e.fromEmail)}&limit=1`);
+        const enrolled = await sbFetch(`kiko_sequence_enrollments?contact_email=eq.${encodeURIComponent(e.fromEmail)}&limit=1`);
+        if (!(outbound?.length > 0) && !(enrolled?.length > 0)) {
+          console.log(`[inbox-triage] Skipping ${e.fromEmail} — known contact but no outbound history`);
+          continue;
+        }
         // Dedupe: don't fire alert if we already alerted for this gmail message id today
         const existingAlert = await sbFetch(`kiko_alerts?type=eq.reply_from_prospect&metadata->>gmail_id=eq.${e.id}&limit=1`);
         if (Array.isArray(existingAlert) && existingAlert.length) continue;
