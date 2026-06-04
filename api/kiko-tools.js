@@ -717,7 +717,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
       
       // Get connected accounts
       const tokens = input.include_connections !== false 
-        ? await sbFetch('user_tokens?select=user_email,provider,updated_at&order=user_email.asc')
+        ? await sbFetch('user_tokens?select=user_email,provider,scope,expires_at,updated_at&order=user_email.asc')
         : [];
 
       // Build response
@@ -734,6 +734,8 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
           entry.email = u.email;
           entry.connected_services = connections.map(c => ({
             service: c.provider === 'google' ? 'Google (Gmail + Calendar)' : c.provider === 'linkedin' ? 'LinkedIn' : c.provider,
+            scope: c.scope || 'NOT SET',
+            token_expires: c.expires_at,
             last_refreshed: c.updated_at,
           }));
           if (connections.length === 0) entry.connected_services = ['None — needs setup'];
