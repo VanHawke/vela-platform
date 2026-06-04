@@ -415,7 +415,7 @@ Be specific and practical. This knowledge will be used operationally.` }],
 
     // Step 2: Distil into operational knowledge via Haiku (cheap, fast)
     const distil = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001', max_tokens: 800,
+      model: 'claude-opus-4-8', max_tokens: 800, // OPUS — learning direction is strategic
       system: `You are distilling research into operational knowledge for an AI assistant (Kiko) that helps run a business. Convert this research into ACTIONABLE PRINCIPLES that Kiko can reference when helping with tasks. Format as JSON: { "principles": ["When doing X, apply Y because Z", ...], "frameworks": ["Framework name: brief description"], "applications": { "sponsorship": "how this applies", "negotiation": "how this applies", "strategy": "how this applies" }, "key_quote": "one memorable quote or rule" }. Max 8 principles. Be specific and practical, not academic.`,
       messages: [{ role: 'user', content: `Topic: ${topic}\nPillar: ${pillar.name}\n\nResearch:\n${researchText.slice(0, 4000)}` }],
     });

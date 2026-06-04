@@ -18,7 +18,7 @@ async function extractAndStore(messages, entityContext = '') {
 
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-opus-4-8' // OPUS — memory is the foundation,
       max_tokens: 400,
       messages: [{ role: 'user', content: `Extract important facts from this conversation that should be remembered long-term. Return ONLY valid JSON array. Each item: { "category": "decision|preference|deadline|contact_note|deal_update|pattern|instruction|objection|timing", "content": "the fact", "entity_name": "person or company if relevant, or null" }
 
@@ -198,7 +198,7 @@ async function getRelationshipSummary(entityName) {
   
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-opus-4-8' // OPUS — memory is the foundation,
       max_tokens: 300,
       messages: [{ role: 'user', content: `Based on this intelligence, write a 3-4 sentence relationship summary for "${entityName}". Include: current deal status, relationship strength, key contacts, last interaction, and recommended next move. Be direct and actionable.\n\n${context}` }]
     });

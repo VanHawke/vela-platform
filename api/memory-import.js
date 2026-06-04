@@ -59,7 +59,7 @@ export default async function handler(req, res) {
       if (preview.length < 50) continue;
 
       const extraction = await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20251001', max_tokens: 500,
+        model: 'claude-sonnet-4-6-20250514', max_tokens: 500, // Sonnet — memory import
         messages: [{ role: 'user', content: `Extract the KEY KNOWLEDGE from this conversation that would be useful for a business AI assistant managing F1 sponsorship deals, campaigns, and executive operations. Focus on: decisions made, preferences expressed, strategies discussed, contacts mentioned, and any business rules established.\n\nConversation: "${conv.title}"\n${preview.slice(0, 4000)}\n\nReturn JSON: { "summary": "...", "decisions": ["..."], "preferences": ["..."], "contacts": ["..."], "business_rules": ["..."], "domain": "general|strategy|campaign|crm|personal" }` }]
       });
 

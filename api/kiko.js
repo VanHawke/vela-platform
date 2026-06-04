@@ -187,7 +187,7 @@ async function extractConversationInsights(message, fullResponse, intent, userId
   if (['navigate', 'screen'].includes(intent)) return; // Skip trivial intents
   try {
     const extract = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001', max_tokens: 300,
+      model: 'claude-opus-4-8', max_tokens: 300, // OPUS — self-evaluation drives growth
       system: 'Extract key facts, decisions, and open threads from this conversation exchange. Return ONLY valid JSON: { "key_facts": ["..."], "decisions_made": ["..."], "open_threads": ["things left unresolved or to revisit"], "entities": ["company/person names mentioned"] }. Maximum 3 items per array. If nothing significant, return empty arrays.',
       messages: [{ role: 'user', content: `USER: ${message.slice(0, 300)}\n\nKIKO: ${fullResponse.slice(0, 600)}` }],
     });
@@ -1814,7 +1814,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
       try {
         const { saveMemory } = await import('./kiko-self-knowledge-lean.js');
         const compactResp = await anthropic.messages.create({
-          model: 'claude-sonnet-4-6-20250514', max_tokens: 200, // Upgraded from Haiku — memory extraction needs nuance
+          model: 'claude-opus-4-8', max_tokens: 200, // OPUS — memory extraction is the foundation of learning
           messages: [{ role: 'user', content: `Extract ONLY new facts, decisions, or state changes from this conversation that should update persistent memory. If nothing significant happened, respond with exactly "NONE".
 
 User said: ${(message || '').slice(0, 300)}
@@ -1872,7 +1872,7 @@ FACT: [new information learned]` }]
     if (isRegistered && !['navigate', 'screen'].includes(intent) && (responseText.length > 60 || hasMemoryCue || (message || '').length > 40)) {
       try {
         const extract = await anthropic.messages.create({
-          model: 'claude-haiku-4-5-20251001', max_tokens: 400,
+          model: 'claude-opus-4-8', max_tokens: 400, // OPUS — fact extraction IS learning
           system: `You extract VERIFIABLE FACTS that the user EXPLICITLY STATED in this exchange. Return ONLY JSON.
 
 ═══ ABSOLUTE RULES ═══
@@ -1995,7 +1995,7 @@ RETURN EMPTY ARRAYS rather than padding with weak inferences.
           const lastUserMsg = (message || '').slice(0, 200);
           const responseSnippet = sseBuffer.map(d => d.delta || '').join('').slice(0, 300);
           const selfEvalRes = await (new Anthropic({ apiKey: process.env.ANTHROPIC_KEY })).messages.create({
-            model: 'claude-haiku-4-5-20251001', max_tokens: 300,
+            model: 'claude-opus-4-8', max_tokens: 300, // OPUS — self-evaluation drives growth
             messages: [{ role: 'user', content: `Rate this AI response. User asked: "${lastUserMsg}" AI responded with: "${responseSnippet}". Return JSON only: {"quality": 1-10, "improvement": "one sentence on what to do better next time", "pattern": "one rule for future responses"}. Be harsh and specific.` }]
           });
           const evalText = selfEvalRes.content[0]?.text || '';

@@ -116,7 +116,7 @@ ${row.reply_snippet || '(snippet not available)'}
 
 Context: This is from the "${seqName}" campaign targeting ${persona}. Draft your reply.`;
         const result = await anthropic.messages.create({
-          model: 'claude-haiku-4-5-20251001',
+          model: 'claude-sonnet-4-6-20250514', // Sonnet — inbox understanding
           max_tokens: 400,
           messages: [{ role: 'user', content: prompt }],
         });

@@ -65,7 +65,7 @@ async function extractInsights(convo) {
   try {
     const msgText = convo.messages.slice(0, 20).map(m => `[${m.role}]: ${m.content.slice(0, 300)}`).join('\n');
     const res = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001', max_tokens: 400,
+      model: 'claude-sonnet-4-6-20250514', max_tokens: 400, // Sonnet — conversation understanding
       system: `Extract business intelligence from this conversation. This is from the CEO of Van Hawke Group (F1 sponsorship advisory + luxury eyewear). Return ONLY valid JSON: { "key_facts": ["max 5 facts"], "decisions": ["decisions made"], "entities": ["company/person names"], "topics": ["main topics"], "strategic_value": 1-10 }. If the conversation is casual/irrelevant, return strategic_value: 0.`,
       messages: [{ role: 'user', content: `Title: ${convo.title}\n\n${msgText}` }],
     });

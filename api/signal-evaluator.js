@@ -50,7 +50,7 @@ export async function evaluateSignal(signal, source, metadata = {}) {
 
     // Ask Haiku to score this signal
     const resp = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-opus-4-8', // OPUS — signal evaluation requires strategic judgment
       max_tokens: 200,
       messages: [{ role: 'user', content: `You evaluate business signals for urgency. Score this signal 0-10 against these goals.
 

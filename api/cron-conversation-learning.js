@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     ).join('\n');
 
     const synthesisRes = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-opus-4-8', // OPUS — learning patterns require deep reasoning
       max_tokens: 2000,
       messages: [{ role: 'user', content: `You are analysing 100 conversation summaries between a user (Sunny, CEO of Van Hawke Group, F1 sponsorship advisory) and his AI assistant (Kiko). Extract CROSS-CONVERSATION PATTERNS — things that repeat, preferences that emerge, communication styles that are consistent.
 

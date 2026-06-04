@@ -29,7 +29,7 @@ async function fetchAndExtract(source) {
 
     // Extract intelligence via Haiku
     const res = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001', max_tokens: 600,
+      model: 'claude-opus-4-8' // OPUS — knowledge ingestion shapes understanding, max_tokens: 600,
       system: `Extract business intelligence from this web page for Van Hawke Group (F1 sponsorship advisory + luxury eyewear). Category: ${source.category}. Return ONLY valid JSON: { "summary": "2-3 sentence summary", "key_facts": ["max 8 specific facts — numbers, names, dates"], "entities": ["company/person names"], "relevance": 1-10 (to F1 sponsorship / luxury brand / Van Hawke business), "actionable_insights": ["things Van Hawke could act on"] }`,
       messages: [{ role: 'user', content: `Source: ${source.name} (${source.url})\n\n${text}` }],
     });
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
       // If content provided (white paper, document), store directly
       if (content) {
         const extracted = await anthropic.messages.create({
-          model: 'claude-haiku-4-5-20251001', max_tokens: 600,
+          model: 'claude-opus-4-8' // OPUS — knowledge ingestion shapes understanding, max_tokens: 600,
           system: `Extract intelligence from this document for Van Hawke Group. Return JSON: { "summary": "...", "key_facts": ["..."], "entities": ["..."], "relevance": 1-10, "actionable_insights": ["..."] }`,
           messages: [{ role: 'user', content: `Document: ${name}\n\n${content.slice(0, 8000)}` }],
         });

@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   try {
     // Use Haiku to extract correction patterns (fast + cheap)
     const analysis = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-opus-4-8', // OPUS — correction detection drives self-improvement
       max_tokens: 512,
       messages: [{ role: 'user', content: `Analyze the difference between an AI-generated email draft and the user's edited version. Extract correction patterns.
 
