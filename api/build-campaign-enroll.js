@@ -59,10 +59,28 @@ export default async function handler(req, res) {
     });
     const noEmailTargets = targets.filter(t => !isValidEmail(t.decision_maker_email));
 
+    // SMTP mailbox verification — reject emails that don't exist
+    const smtpVerified = [];
+    for (const t of validTargets) {
+      try {
+        const { verifyEmail } = await import('./lib/verify-email.js');
+        const result = await verifyEmail(t.decision_maker_email);
+        if (result.valid === false) {
+          console.warn(`[build-campaign-enroll] SMTP REJECTED: ${t.decision_maker_email} (${result.reason}) — skipping enrollment`);
+          continue;
+        }
+        // valid=true or valid=null (inconclusive) → allow through
+        smtpVerified.push(t);
+      } catch (e) {
+        // Verification failed — allow through rather than blocking enrollment
+        smtpVerified.push(t);
+      }
+    }
+
     const now = new Date().toISOString();
 
     // Enroll targets WITH verified emails — ready to send
-    const enrollments = validTargets.map(t => ({
+    const enrollments = smtpVerified.map(t => ({
       sequence_id: campaign_id,
       contact_email: t.decision_maker_email.trim(),
       contact_name: t.decision_maker_name || t.company_name,
