@@ -105,6 +105,19 @@ export async function runEmailMonitor() {
         // Check if sender is a known CRM contact
         else if (knownEmails.has(senderEmail)) {
           const contact = contactMap[senderEmail];
+          
+          // PROVENANCE CHECK (Rule 8): Did we ever email them first?
+          // If no outbound record, this is NOT a prospect reply — skip the alert
+          const outboundCheck = await sbFetch(`kiko_email_tracking?recipient_email=eq.${encodeURIComponent(senderEmail)}&limit=1`);
+          const enrollmentCheck = await sbFetch(`kiko_sequence_enrollments?contact_email=eq.${encodeURIComponent(senderEmail)}&limit=1`);
+          const hasOutbound = (outboundCheck?.length > 0) || (enrollmentCheck?.length > 0);
+          
+          if (!hasOutbound) {
+            // We never emailed them — this is inbound correspondence, not a prospect reply
+            console.log(`[email-monitor] Skipping ${senderEmail} — in CRM but no outbound history (not a prospect reply)`);
+            continue; // Skip, do not create alert
+          }
+          
           await createAlert({
             type: 'email_reply', severity: 'medium',
             title: `Reply from ${contact.name || senderName}${contact.company ? ` (${contact.company})` : ''}`,

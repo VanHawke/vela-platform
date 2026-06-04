@@ -61,6 +61,16 @@ async function recall(entityName) {
 
   // Search learning log
   const learnings = await sbFetch('kiko_learning_log?select=category,content,entity_name,created_at&order=created_at.desc&limit=30');
+  
+  // Apply memory decay — flag stale entries
+  function decayLabel(created_at) {
+    if (!created_at) return '[AGE UNKNOWN] ';
+    const ageMs = Date.now() - new Date(created_at).getTime();
+    const days = Math.floor(ageMs / 86400000);
+    if (days <= 30) return '';
+    if (days <= 90) return `[${days}d old — VERIFY BEFORE CITING] `;
+    return `[${days}d old — STALE, HISTORICAL ONLY] `;
+  }
   const matched = (learnings || []).filter(l =>
     l.entity_name?.toLowerCase().includes(q) ||
     l.content?.toLowerCase().includes(q)
@@ -110,7 +120,7 @@ async function recall(entityName) {
     out += `── Learning Log (${matched.length} entries) ──\n`;
     for (const l of matched.slice(0, 10)) {
       const date = new Date(l.created_at).toLocaleDateString('en-GB');
-      out += `[${l.category}] ${date}: ${l.content}\n`;
+      out += `${decayLabel(l.created_at)}[${l.category}] ${date}: ${l.content}\n`;
     }
     out += '\n';
   }
