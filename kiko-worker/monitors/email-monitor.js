@@ -117,10 +117,49 @@ export async function runEmailMonitor() {
           alertCount++;
         }
         // Unknown sender from a business domain — auto-create contact + alert
+        // BUT: filter out newsletters, marketing, transactional, personal services
         else {
           const domain = senderEmail.split('@')[1];
+          const localPart = senderEmail.split('@')[0].toLowerCase();
+          
+          // Skip consumer email providers
           const skipDomains = ['gmail.com','outlook.com','yahoo.com','hotmail.com','icloud.com','me.com','aol.com','protonmail.com','vanhawke.agency','vanhawke.com','googlemail.com','live.com','msn.com'];
-          if (domain && !skipDomains.includes(domain) && senderName && senderName.length > 1) {
+          
+          // Skip known newsletter/marketing/transactional/personal service domains
+          const skipServiceDomains = [
+            // Newsletters & content
+            'substack.com','medium.com','mailchimp.com','sendinblue.com','convertkit.com','beehiiv.com','ghost.io','buttondown.email','revue.email',
+            // Financial/banking
+            'revolut.com','wise.com','monzo.com','paypal.com','stripe.com','chase.com','hsbc.com','barclays.com','natwest.com','lloydsbank.com','santander.com','amex.com',
+            // Travel/hospitality
+            'booking.com','hotels.com','marriott.com','hilton.com','ihg.com','airbnb.com','expedia.com','fontainebleau.com','hyatt.com','accor.com',
+            // SaaS/tech notifications
+            'github.com','gitlab.com','vercel.com','netlify.com','heroku.com','aws.amazon.com','google.com','apple.com','microsoft.com','slack.com','notion.so','figma.com','linear.app','atlassian.com','jira.com','trello.com','asana.com','monday.com','zoom.us','calendly.com','loom.com',
+            // Social
+            'linkedin.com','twitter.com','facebook.com','instagram.com','tiktok.com','youtube.com','x.com',
+            // Shopping/retail
+            'amazon.com','ebay.com','shopify.com','etsy.com',
+            // Misc services
+            'uber.com','deliveroo.com','doordash.com','grubhub.com','postmates.com',
+            'supabase.io','supabase.com','anthropic.com','openai.com',
+            'customer.io','intercom.io','zendesk.com','freshdesk.com','hubspot.com','salesforce.com',
+            'apollo.io','lusha.com','zoominfo.com',
+          ];
+          
+          // Skip automated/marketing sender patterns
+          const skipLocalParts = /^(noreply|no-reply|no\.reply|donotreply|notifications?|newsletter|marketing|news|info|hello|support|help|billing|accounts?|updates?|team|admin|mailer|bounce|postmaster|system|automated|robot|alert|digest|weekly|daily|promo|offers?|deals|sales@)/i;
+          
+          // Skip subjects that indicate marketing/transactional
+          const skipSubjectPatterns = /unsubscribe|newsletter|weekly digest|daily digest|your order|your receipt|your invoice|payment received|subscription|renewal|terms|privacy|t&cs|account update|security alert|verify your|confirm your|welcome to|getting started|save .{0,5}\d+%|limited time|special offer|flash sale|don.t miss/i;
+          
+          const shouldSkip = !domain || 
+            skipDomains.includes(domain) || 
+            skipServiceDomains.includes(domain) ||
+            skipLocalParts.test(localPart) ||
+            skipSubjectPatterns.test(subject) ||
+            !senderName || senderName.length <= 1;
+            
+          if (!shouldSkip) {
             // Auto-create contact in CRM
             const nameParts = senderName.split(' ');
             const firstName = nameParts[0] || senderName;
