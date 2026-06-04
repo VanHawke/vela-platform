@@ -1,18 +1,21 @@
 // api/linkedin-client.js — JS-native LinkedIn voyager API wrapper
 //
-// ⚠️ DORMANT AS OF v0.0.70 (14 Apr 2026) — DO NOT CALL FROM CRONS OR USER-FACING CODE
-// ────────────────────────────────────────────────────────────────────────────────
-// LinkedIn voyager API access from Vercel is CONFIRMED IMPOSSIBLE. Cloudflare's bot
-// management (which protects LinkedIn's edge) flags Vercel's IP ranges as cloud
-// infrastructure and kills sessions within seconds. Every request after the first
-// receives a 302 redirect with `Set-Cookie: li_at=delete me; Expires=1970` and
-// `clear-site-data` headers. No amount of cookie rotation, retry logic, or fetch
-// tuning will fix this — the block is at the network layer, by source IP.
-//
-// FULL DIAGNOSTIC EVIDENCE: KIKO_MASTER_LOG.md "v0.0.66-v0.0.69.1" sections
-// AWAITING DECISION: which LinkedIn backend to integrate. Candidates under research:
-//   - Unipile API (developer-focused unified messaging)
-//   - HeyReach / Expandi / Dripify (cloud-based LinkedIn automation w/ residential proxies)
+// Voyager API calls routed through Decodo ISP proxy to avoid datacenter IP blocks.
+// The proxy is configured via PROXY_HOST, PROXY_PORT, PROXY_USER, PROXY_PASS env vars.
+
+import { sbFetch } from './kiko-tools.js';
+import { ProxyAgent, fetch as undiciFetch } from 'undici';
+
+// Build proxy dispatcher if proxy credentials are configured
+function getProxyDispatcher() {
+  const host = process.env.PROXY_HOST;
+  const port = process.env.PROXY_PORT;
+  const user = process.env.PROXY_USER;
+  const pass = process.env.PROXY_PASS;
+  if (!host || !port) return undefined;
+  const auth = user && pass ? `${user}:${pass}@` : '';
+  return new ProxyAgent(`http://${auth}${host}:${port}`);
+}
 //   - PhantomBuster (cloud LinkedIn agents)
 //   - LaGrowthMachine (multi-channel sequencing)
 // See OUTSTANDING_ITEMS.md "LinkedIn Backend Selection" for the live comparison matrix.
@@ -150,10 +153,13 @@ async function voyagerFetch(path, opts = {}) {
     try {
       // Force a fresh TCP connection on every attempt (works around Vercel
       // undici connection pool reusing a broken socket)
-      const res = await fetch(url, {
+      const proxyDispatcher = getProxyDispatcher();
+      const fetchFn = proxyDispatcher ? undiciFetch : fetch; // Use undici fetch when proxy is configured
+      const res = await fetchFn(url, {
         ...opts,
         signal: controller.signal,
-        redirect: 'manual', // Critical: do NOT follow 302s — LinkedIn redirects to /login when cookies are invalid
+        redirect: 'manual',
+        ...(proxyDispatcher ? { dispatcher: proxyDispatcher } : {}),
         headers: {
           ...getAuthHeaders(),
           'connection': 'close',
@@ -331,4 +337,42 @@ export async function linkedinSearch(query, { limit = 10 } = {}) {
 export async function linkedinGetConversations({ limit = 20 } = {}) {
   const data = await voyagerFetch(`/messaging/conversations?keyVersion=LEGACY_INBOX&count=${limit}`);
   return (data?.elements || []).map(c => ({ conversationUrn: c.entityUrn, lastActivityAt: c.lastActivityAt, unreadCount: c.unreadCount || 0, participants: (c.participants || []).map(p => p?.['com.linkedin.voyager.messaging.MessagingMember']?.miniProfile?.publicIdentifier).filter(Boolean) }));
+}
+
+// Get received invitations (pending + accepted) for monitoring connection accepts
+export async function linkedinGetInvitations({ limit = 50, status = 'ACCEPTED' } = {}) {
+  checkKillSwitch();
+  const data = await voyagerFetch(`/relationships/invitationViews?invitationType=CONNECTION&count=${limit}&q=receivedInvitation`);
+  return (data?.elements || []).map(inv => {
+    const invite = inv?.invitation || inv;
+    const fromMember = invite?.fromMember || invite?.['*fromMember'] || {};
+    const profile = fromMember?.miniProfile || fromMember;
+    return {
+      invitationId: invite?.entityUrn || inv?.entityUrn,
+      sentAt: invite?.sentTime || inv?.sentTime,
+      status: invite?.invitationState || 'unknown',
+      fromPublicId: profile?.publicIdentifier || null,
+      fromName: [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || null,
+      fromHeadline: profile?.occupation || null,
+    };
+  }).filter(i => i.fromPublicId);
+}
+
+// Get sent invitations to check for accepts
+export async function linkedinGetSentInvitations({ limit = 50 } = {}) {
+  checkKillSwitch();
+  const data = await voyagerFetch(`/relationships/sentInvitationViewsV2?invitationType=CONNECTION&count=${limit}&q=sentInvitation`);
+  return (data?.elements || []).map(inv => {
+    const invite = inv?.invitation || inv;
+    const toMember = invite?.toMember || invite?.['*toMember'] || {};
+    const profile = toMember?.miniProfile || toMember;
+    return {
+      invitationId: invite?.entityUrn || inv?.entityUrn,
+      sentAt: invite?.sentTime || inv?.sentTime,
+      status: invite?.invitationState || 'unknown',
+      toPublicId: profile?.publicIdentifier || null,
+      toName: [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || null,
+      toHeadline: profile?.occupation || null,
+    };
+  }).filter(i => i.toPublicId);
 }
