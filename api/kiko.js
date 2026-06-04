@@ -1634,7 +1634,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     const useHaikuForEmail = false; // NEVER downgrade email drafting.
     // Casual queries get web_search only (no heavy business tools) — keeps token count low while allowing current info
     const casualTools = casualQuery ? nativeTools : null;
-    const toolOpts = skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : casualQuery ? { lightTools: casualTools, maxTokens: 1500 } : isEmailIntent ? { lightTools: lightEmailTools, useHaiku: useHaikuForEmail } : {};
+    const toolOpts = skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : casualQuery ? { lightTools: casualTools, maxTokens: 1500 } : {}; // Email intents now get full tools — F1 sponsorship emails need strategy, deal, and negotiation agents
     // Command Centre: never use Haiku, always enough tokens for full brief + draft
     if (currentPage === 'command-centre') {
       toolOpts.maxTokens = 8192;
@@ -1668,7 +1668,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     // If reasoning engine loaded CRM data AND intent is outreach, skip tools — draft directly from pre-loaded context
     const reasoningHadData = shouldReason && messages[messages.length - 1]?.content?.includes('PRE-VERIFIED INTELLIGENCE');
     const skipToolsForDraft = isEmailIntent && reasoningHadData;
-    const finalToolOpts = skipToolsForDraft ? { noTools: false, lightTools: lightEmailTools } : toolOpts;
+    const finalToolOpts = toolOpts; // No tool restriction for drafts — full toolkit always available
 
     let response = await streamCall(messages, finalToolOpts);
     let toolRounds = 0;
