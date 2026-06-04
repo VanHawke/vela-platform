@@ -31,7 +31,7 @@ export default async function handler(req, res) {
 
     // Collect NEW signals since last heartbeat
     const [newAlerts, newReplies, newBounces, goals] = await Promise.all([
-      supabase.from('kiko_alerts').select('type, title, severity')
+      supabase.from('kiko_alerts').select('type, title, severity, metadata')
         .gte('created_at', since).eq('dismissed', false)
         .not('type', 'in', '(proactive_heartbeat,morning_briefing)')
         .limit(10),
@@ -51,11 +51,17 @@ export default async function handler(req, res) {
       return res.json({ ok: true, action: 'silent', signals: 0, duration_ms: Date.now() - start });
     }
 
-    // Format signals for Haiku evaluation
+    // Format signals for Haiku evaluation — EXCLUDE auto-created contacts (newsletters, personal emails, etc.)
+    const realAlerts = (newAlerts.data || []).filter(a => {
+      // Skip auto-created contacts — these are NOT prospect signals
+      if (a.type === 'new_contact' && a.metadata?.auto_created) return false;
+      return true;
+    });
+    
     const signalSummary = [
       ...(newReplies.data || []).map(r => `🟢 REPLY: ${r.recipient_name} (${r.company}) responded`),
       ...(newBounces.data || []).map(b => `🔴 BOUNCE: ${b.recipient_name} (${b.company})`),
-      ...(newAlerts.data || []).map(a => `[${a.severity}] ${a.title}`),
+      ...realAlerts.map(a => `[${a.severity}] ${a.title}`),
     ].join('\n');
 
     const goalsSummary = (goals.data || []).map(g => `[${g.priority}] ${g.title}`).join('\n');
@@ -94,6 +100,8 @@ RULES:
 - If something scores 7+, respond with a 1-2 sentence alert starting with "⚡"
 - Be extremely selective. Most signals are routine. Only interrupt for genuine urgency.
 - A reply from a prospect is ALWAYS 7+ (it's the entire goal of the campaign)
+- A "New contact" alert is NOT a prospect reply — it is an auto-created record from an inbound email and is almost always a newsletter, personal service, or spam. Score these 0. NEVER treat them as prospect engagement.
+- Only REPLY signals (🟢 REPLY) count as genuine prospect engagement.
 - A race within 3 days with unactioned prospects is 7+` }]
     });
 
