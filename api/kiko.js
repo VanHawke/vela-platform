@@ -507,7 +507,7 @@ const TOOL_LABELS = {
   manage_knowledge: 'Managing knowledge library...',
 };
 
-// ── Rate Limiter (in-memory, per Vercel instance) ──
+// ── Rate Limiter (in-memory, per Hetzner instance) ──
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const RATE_LIMIT_MAX = 30; // 30 requests per minute per user
@@ -626,7 +626,7 @@ export default async function handler(req, res) {
     } catch {}
   }
 
-  // ── Geo-location: read from Vercel IP headers (no permission popup) ──
+  // ── Geo-location: Vercel headers removed (Hetzner). Falls back to kiko_user_config location ──
   // Falls back to userConfig.location if headers missing (local dev / test).
   // Sunny spec 2026-04-12: Kiko should know location from browser/request context.
   const geoCity = req.headers?.['x-vercel-ip-city'] ? decodeURIComponent(req.headers['x-vercel-ip-city']) : null;
@@ -807,7 +807,7 @@ export default async function handler(req, res) {
     + (isSuperAdmin ? '' : `\n\n[MEMORY ISOLATION — CRITICAL: You may have memories stored from other users who share this system. You MUST completely ignore ALL memories that reference people, families, children, personal details, locations, or private matters that were NOT told to you by ${userConfig.display_name} in THIS conversation or in the personal context section above. If you have NO personal context items for this user, then you know NOTHING about their personal life — do not reference any memories about daughters, children, family, schools, addresses, books, legal matters, or any other personal details. Any such memories belong to a DIFFERENT user and are CONFIDENTIAL. Respond only with "I don't have any personal information about you yet" when asked about personal matters you have no data for.]`);
 
   // ── nostream mode (for kiko-async internal calls) — buffer SSE deltas, return JSON ──
-  // This avoids Vercel's SSE-over-fetch consumption issue when one serverless function
+  // SSE streaming — direct on Hetzner (no Vercel buffering issue)
   // calls another. Browser clients still get streaming.
   const noStream = req.query?.nostream === '1' || req.body?.nostream === true;
   const sseBuffer = [];
@@ -816,7 +816,7 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Vercel-No-Buffering', '1');
+    // X-Vercel-No-Buffering removed — not needed on Hetzner
     if (res.flushHeaders) res.flushHeaders();
   }
   const write = (d) => {
@@ -1645,7 +1645,10 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     // Only runs for substantive queries about specific entities — NOT for follow-ups, greetings, or simple commands
     const SKIP_REASONING = ['navigate', 'screen', 'calendar', 'self_monitor', 'identity', 'greeting', 'knowledge', 'conversation_search', 'code_review', 'email_read'];
     const isShortFollowUp = message.length < 40 && /^(yes|no|ok|sure|thanks|do it|go ahead|continue|proceed|sounds good|perfect|great|send it|approved)/i.test(message.trim());
-    const shouldReason = !isShortFollowUp && !SKIP_REASONING.includes(intent) && !casualQuery && !earlyGreeting; // RE-ENABLED: Pre-loads entity-specific CRM data
+    // Reasoning engine: HYBRID approach (Kiko's recommendation)
+    // Only run DB-half (no Haiku entity extraction) for email/outreach intents
+    // Skip entirely for everything else — Opus queries tools live per Rule 7
+    const shouldReason = !isShortFollowUp && isEmailIntent && !casualQuery && !earlyGreeting;
     if (shouldReason) {
       try {
         write({ toolStatus: 'Gathering intelligence...' });

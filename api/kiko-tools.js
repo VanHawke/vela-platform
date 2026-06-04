@@ -66,12 +66,45 @@ export const TOOL_DEFINITIONS = [
       instruction: { type: 'string', description: 'Full instruction — e.g. "move Decagon to Qualified", "create a task to call Ryan in 2 days"' },
     }, required: ['instruction'] },
   },
+  // ═══ SPLIT: ask_data_agent replaced with 5 purpose-specific tools (Kiko's design) ═══
   {
-    name: 'ask_data_agent',
-    description: 'CRM reads + analytics + CAMPAIGN ENGINE. Use for: searching contacts/companies/deals, pipeline stats, email analytics, news, partnership matrix. CAMPAIGNS: create_campaign (generate outreach sequence for a category), campaign_overview (all campaigns + stats), source_companies (find target companies via web search), source_contacts (find decision-makers at a company), bulk_enroll (add contacts to campaign), start_sequence (enroll single contact), sequence_status, pause/cancel. Also: company_intel, enrich_company, learning_search, warm_path, win_loss.',
+    name: 'crm_search',
+    description: 'CRM lookups — search contacts, companies, deals, get entity details, deal history, thread history, company intelligence.',
     input_schema: { type: 'object', properties: {
-      operation: { type: 'string', enum: ['search_contacts', 'search_companies', 'search_deals', 'entity_detail', 'alerts', 'email_analytics', 'outreach_intelligence', 'outreach_timing', 'stale_contacts', 'news', 'partnership_matrix', 'pipeline_notifications', 'deal_history', 'activity_feed', 'search_documents', 'past_conversations', 'recent_conversations', 'learning_search', 'learning_save', 'skills', 'bookmark', 'warm_path', 'win_loss', 'thread_history', 'deal_prediction', 'company_intel', 'enrich_company', 'start_sequence', 'sequence_status', 'pause_sequence', 'cancel_sequence', 'linkedin_queue', 'campaign_overview', 'create_campaign', 'source_companies', 'source_contacts', 'bulk_enroll', 'refresh_partnerships', 'update_partnership', 'campaign_health', 'optimize_campaign', 'list_goals', 'update_goal', 'record_outcome', 'review_outcomes', 'morning_briefing', 'run_morning_briefing', 'list_intents', 'create_intent', 'update_intent'], description: 'Which data operation to run. campaign_health: get latest campaign performance report and recommendations. optimize_campaign: analyse a specific campaign and get detailed improvement plan (pass campaign name). update_partnership: add or update a partnership in the matrix (pass team_id, partner_name, category_id, tier, status, start_year, notes). campaign_overview: show all campaigns with enrollment stats. create_campaign: generate a new outreach campaign for a category (pass category, team). source_companies: web-search for target companies in a category. source_contacts: find decision-makers at a specific company. bulk_enroll: enroll CRM contacts into a campaign (pass company or category + sequence name). start_sequence: enroll a single contact. sequence_status: show active enrollments. company_intel: get enriched data. enrich_company: research and save company intelligence.' },
-      params: { type: 'object', description: 'Operation params. update_partnership: team_id (e.g. mclaren), partner_name (e.g. Intel), category_id (e.g. semiconductors), tier (title/principal/official/partner/supplier), status (confirmed/rumoured/expired), start_year, end_year, notes, source_url. Common: query (string), limit (number), company (string), category (string)' },
+      operation: { type: 'string', enum: ['search_contacts', 'search_companies', 'search_deals', 'entity_detail', 'company_intel', 'deal_history', 'thread_history', 'enrich_company', 'warm_path', 'stale_contacts'], description: 'CRM read operation' },
+      params: { type: 'object', description: 'query (search term), company (name), limit (number)' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'campaign_engine',
+    description: 'Campaign lifecycle — create campaigns, enroll contacts, check status, pause/cancel sequences, LinkedIn queue, source prospects.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['campaign_overview', 'create_campaign', 'source_companies', 'source_contacts', 'bulk_enroll', 'start_sequence', 'sequence_status', 'pause_sequence', 'cancel_sequence', 'linkedin_queue', 'campaign_health', 'optimize_campaign'], description: 'Campaign operation' },
+      params: { type: 'object', description: 'campaign/sequence name, company, category, team' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'pipeline_analytics',
+    description: 'Pipeline intelligence — email analytics, outreach timing, deal predictions, win/loss analysis, activity feed, partnership matrix.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['email_analytics', 'outreach_intelligence', 'outreach_timing', 'pipeline_notifications', 'activity_feed', 'deal_prediction', 'win_loss', 'alerts', 'news', 'partnership_matrix', 'refresh_partnerships', 'update_partnership'], description: 'Analytics operation' },
+      params: { type: 'object', description: 'query, team_id, partner_name, category_id, tier, status' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'knowledge_ops',
+    description: 'Knowledge management — search/save learnings, search documents, past conversations, skills, bookmarks.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['learning_search', 'learning_save', 'search_documents', 'past_conversations', 'recent_conversations', 'skills', 'bookmark', 'morning_briefing', 'run_morning_briefing'], description: 'Knowledge operation' },
+      params: { type: 'object', description: 'query (search term)' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'goals_intents',
+    description: 'Goals and intents — list/update goals, create/update intents, record/review outcomes.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['list_goals', 'update_goal', 'record_outcome', 'review_outcomes', 'list_intents', 'create_intent', 'update_intent'], description: 'Goals/intents operation' },
+      params: { type: 'object', description: 'title, status, priority, description, next_action, due_date' },
     }, required: ['operation'] },
   },
   {
@@ -891,7 +924,7 @@ Document:\n${document_text.slice(0, 25000)}` }],
   }
 
   // ── Data Agent ──
-  if (name === 'ask_data_agent') {
+  if (name === 'ask_data_agent' || name === 'crm_search' || name === 'campaign_engine' || name === 'pipeline_analytics' || name === 'knowledge_ops' || name === 'goals_intents') {
     // Super admin only operations
     if (['update_partnership', 'refresh_partnerships', 'create_campaign', 'bulk_enroll'].includes(input.operation)) {
       const userRows = await sbFetch(`users?id=eq.${userId}&select=role&limit=1`); const userRow = userRows?.[0];
