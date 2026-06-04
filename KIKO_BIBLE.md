@@ -474,7 +474,15 @@ This is mandatory from Supabase's Data API change (enforced Oct 30, 2026). All 1
 - New sw.js: self.skipWaiting() + self.registration.unregister() on activate
 
 **KNOWN ISSUES (flagged by Kiko, not yet fixed):**
-- cron-gmail-sync.js INBOX scan: is:unread filter drops read replies; 2-hour window with no high-water-mark; only matches known contacts
-- Matt's Google scope is NULL — drafts can't send
-- Auto-close cron may dismiss warm threads with inbound replies (needs investigation)
-- Evolution Plan phases 6-14 not formally tracked against completion
+- Voyager API still 302-blocked from Hetzner even via Decodo ISP proxy — Playwright-based approach is the working workaround
+- Voice/Pipecat migration (Phase 13) — not started, lowest priority per Sunny
+- Evolution Plan Phase 12 (preference synthesis weekly cron) — needs verification
+
+**LINKEDIN AMBIENT MONITORING — BUILT AND LIVE (Session 69):**
+- Cron: cron-linkedin-monitor.js — Playwright-based, scans both sunny and matt.smith accounts
+- Checks: messaging inbox (unread conversations), sent invitations (new accepts)
+- Filters: sponsored InMail excluded, dedup against existing kiko_alerts
+- CRM matching: cross-references contacts table for known prospects
+- Output: creates kiko_alerts with type linkedin_message or linkedin_connection_accepted
+- Schedule: every 30 minutes, weekdays 8-20 UTC via cron-scheduler.js
+- Engine methods added: linkedinGetInvitations(), linkedinGetSentInvitations()
