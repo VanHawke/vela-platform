@@ -839,10 +839,10 @@ export default async function handler(req, res) {
   const watchdog = setTimeout(() => {
     if (!finished) {
       finished = true;
-      write({ delta: '\n\nRequest timed out. Try a simpler question or try again.' });
+      write({ delta: '\n\n⏱ Response taking too long — recovering. Try again or simplify the request.' });
       finishResponse();
     }
-  }, 110000);
+  }, 45000); // 45s watchdog — was 110s (nearly 2 min of dead air)
 
   try {
     write({ toolStatus: 'Connecting...' });
@@ -1550,7 +1550,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
       // Tool rounds use Sonnet for speed. Only final synthesis uses Opus (if deep think).
       // fast: true forces Sonnet even if deep think was requested (used when time budget hit)
       // Only super_admin gets deep think (requires beta API)
-      const useDeep = isSuperAdmin && needsDeepThink && opts.noTools && !opts.fast;
+      const useDeep = isSuperAdmin && needsDeepThink && !opts.fast; // REMOVED opts.noTools gate — deep thinking should work WITH tools
       const useHaiku = opts.useHaiku === true;
       
       // Build tools array with cache_control on last tool (caches entire tool block)
@@ -1567,11 +1567,11 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
       
       const params = {
         model: useDeep ? MODEL : (useHaiku ? 'claude-haiku-4-5-20251001' : MODEL),
-        max_tokens: opts.maxTokens || (useDeep ? 32000 : 8192),
+        max_tokens: opts.maxTokens || (useDeep ? 32000 : 16384), // Was 8192 — increased to match Claude's natural range
         system: systemCached, messages: msgs, tools: toolsWithCache,
       };
       if (useDeep) {
-        params.thinking = { type: 'enabled', budget_tokens: 10000 };
+        params.thinking = { type: 'enabled', budget_tokens: 30000 }; // Was 10000 — increased for deeper strategic reasoning
         write({ toolStatus: 'Deep analysis...' });
       }
       // Non-super-admin: use non-beta API to prevent Anthropic memory injection
@@ -1697,13 +1697,14 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
         const heartbeat = setInterval(() => { try { write({ toolStatus: TOOL_LABELS[block.name] || `Still working...` }) } catch {} }, 8000);
         let result;
         try {
-          // Per-tool timeout: 35s default, 60s for complex tools (data queries, campaigns, documents)
+          // Per-tool timeout: 15s default, 30s for complex tools (AI generation, campaigns, documents)
           const toolPromise = block.name === 'memory'
             ? handleMemory(block.input, userId)
             : executeTool(block.name, block.input, userEmail, pageContext, userId);
-          // Complex tools need longer timeouts (data queries, AI generation, campaigns)
-          const LONG_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent', 'run_morning_briefing', 'ask_data_agent', 'build_campaign', 'generate_document', 'kiko_self_modify', 'ask_content_agent', 'ask_document_agent'];
-          const toolTimeoutMs = LONG_TOOLS.includes(block.name) ? 120000 : 60000;
+          // Complex tools need longer timeouts (AI generation, campaigns, documents)
+          // kiko_self_modify removed — shell commands should complete in seconds, not minutes
+          const LONG_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent', 'run_morning_briefing', 'crm_search', 'campaign_engine', 'pipeline_analytics', 'build_campaign', 'generate_document', 'ask_content_agent', 'ask_document_agent'];
+          const toolTimeoutMs = LONG_TOOLS.includes(block.name) ? 30000 : 15000;
           result = await Promise.race([
             toolPromise,
             new Promise((_, reject) => setTimeout(() => reject(new Error(`Tool timeout: ${block.name} took longer than ${toolTimeoutMs/1000}s`)), toolTimeoutMs))
@@ -1978,14 +1979,14 @@ RETURN EMPTY ARRAYS rather than padding with weak inferences.
           if (!str || typeof str !== 'string') return true;
           if (str.length < 15) return true;
           const trimmed = str.trim();
+          // Keep anti-speculation and anti-psychoanalysis filters (these are always valid)
           if (SPECULATION_REGEX.test(trimmed)) return true;
           if (SPECULATION_KEYWORDS.test(str)) return true;
-          if (BEHAVIOURAL_PATTERN.test(trimmed)) return true;
-          if (TRANSIENT_STATE.test(str)) return true;
-          if (BEHAVIOURAL_VERB_START.test(trimmed)) return true;
-          if (STRAGGLER_PATTERNS.test(trimmed)) return true;
           if (META_NARRATIVE.test(str)) return true;
-          if (!hasConcreteness(str)) return true;
+          if (TRANSIENT_STATE.test(str)) return true;
+          // REMOVED: BEHAVIOURAL_PATTERN, BEHAVIOURAL_VERB_START, STRAGGLER_PATTERNS, CONCRETENESS_CHECK
+          // These were Haiku-era guardrails that block legitimate business facts.
+          // With Opus extraction, the quality is already high — over-filtering destroys value.
           return false;
         };
 
