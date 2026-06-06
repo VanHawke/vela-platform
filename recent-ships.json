@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-06-06T16:47:19.194Z",
+  "generated_at": "2026-06-06T16:57:27.420Z",
   "commits": [
+    {
+      "hash": "c0eea12",
+      "subject": "Concurrent chats: buffer sync fix, completed session restore, stream ref reset on switch",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "5826091",
       "subject": "Concurrent chats: background streaming continues when switching chats, session state saved/restored",
-      "when": "30 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "56d531d",
       "subject": "Revert sidebar to collapsed by default",
-      "when": "47 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "756ca3e",
       "subject": "UI: sidebar open by default, scroll fix with programmatic flag + 200px threshold",
-      "when": "59 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "dc4acee",
       "subject": "Fix scroll during streaming: programmatic scroll flag, 200px threshold, requestAnimationFrame, respects user scroll position",
-      "when": "70 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "82d27aa",
@@ -39,7 +44,7 @@
     {
       "hash": "31309a4",
       "subject": "Session 69 deep dive: all restrictions removed (deep think+tools, tokens 16K, thinking 30K, memory filters, timeouts, dead crons, server.js imports)",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "93ed8a5",
@@ -94,11 +99,6 @@
     {
       "hash": "5d9839f",
       "subject": "Consolidate 4 intelligence crons into 1 daily-intelligence (Kiko designed: 3-phase ingest/reason/publish, ~30/month savings)",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "df9d1a2",
-      "subject": "Fix heartbeat: filter auto-created junk from signal evaluation, update prompt to reject new_contact as prospect replies",
       "when": "2 days ago"
     }
   ]

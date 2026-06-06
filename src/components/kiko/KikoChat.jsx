@@ -40,7 +40,7 @@ import { useDynamicChips } from '@/hooks/useDynamicChips'
 
 // Theme imported from @/lib/theme.js
 
-const mdCache = new Map()
+const mdCache = null // md() function removed — KikoMessage handles all markdown rendering
 function stripToolXml(t) {
   if (!t) return ''
   return t
@@ -61,47 +61,9 @@ function stripToolXml(t) {
     })
     .trim()
 }
-function md(text) {
-  if (!text) return ''
-  if (mdCache.has(text)) return mdCache.get(text)
-  let h = text
-    // Fix missing spaces after periods (sentences running together)
-    .replace(/\.([A-Z])/g, '. $1')
-    .replace(/\:([A-Z])/g, ': $1')
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    // Supabase generated-files image → inline preview
-    .replace(/\[View\/Download\]\((https:\/\/[^\s)]*generated-files[^\s)]*\.png[^\s)]*)\)/g, '<div style="margin:8px 0"><a href="$1" target="_blank" rel="noopener"><img src="$1" style="max-width:100%;max-height:360px;border-radius:12px;border:0.5px solid rgba(0,0,0,0.04);box-shadow:0 4px 16px rgba(0,0,0,0.3)" /></a></div>')
-    // Supabase generated-files links → download buttons
-    .replace(/\[([^\]]+)\]\((https:\/\/[^\s)]*generated-files[^\s)]*)\)/g, '<a href="$2" target="_blank" download="$1" style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;margin:6px 0;background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.08);color:rgba(90,100,112,0.8);font-size:13px;font-weight:400;text-decoration:none">📄 $1 <span style="font-size:11px">↓</span></a>')
-    // Regular markdown links
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:rgba(90,100,112,0.7);text-decoration:none;border-bottom:1px solid rgba(90,100,112,0.2)">$1</a>')
-    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(0,0,0,0.03);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto;margin:8px 0;border:0.5px solid rgba(0,0,0,0.08)"><code>$1</code></pre>')
-    .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.03);padding:2px 6px;border-radius:4px;font-size:12px">$1</code>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#0A0A0A;font-weight:500">$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^[-\u2013\u2022] (.+)$/gm, '<li style="margin-left:16px;list-style:disc">$1</li>')
-    .replace(/^(\d+)\. (.+)$/gm, '<li style="margin-left:16px;list-style:decimal">$2</li>')
-    .replace(/^## (.+)$/gm, '<div style="font-size:15px;font-weight:500;color:#0A0A0A;margin:16px 0 8px">$1</div>')
-    .replace(/^---$/gm, '<hr style="border:none;border-top:0.5px solid rgba(0,0,0,0.08);margin:16px 0"/>')
-    .replace(/\n/g, '<br/>')
-  // Split thinking text from response BEFORE collapsing
-  const plainText = h.replace(/<[^>]+>/g, '')
-  const thinkCount = (plainText.match(/(?:I'll |Let me |Now let me |I need to |I see |I found |Looking |Searching |Now I'll |Perfect!|I'm going to )/gi) || []).length
-  if (thinkCount >= 2) {
-    const markers = [/Here(&.+?;|')s /, /I(&.+?;|')ve drafted/, /I(&.+?;|')ve created/, /Email Draft/, /EMAIL DRAFT/, /Subject\s*:/, /SUGGESTED DRAFT/, /STRATEGIC/, /ANALYSIS/, /RECOMMENDATION/, /###\s/, /##\s/]
-    let splitIdx = -1
-    for (const m of markers) { const idx = h.search(m); if (idx > 30) { splitIdx = idx; break } }
-    if (splitIdx > 0) {
-      const thinkHtml = h.slice(0, splitIdx).trim()
-      const respHtml = h.slice(splitIdx).trim()
-      const steps = (thinkHtml.replace(/<[^>]+>/g, '').match(/(?:Let me|Now let|I'll|I need|Checking|Searching|Looking|I found|I see)/gi) || []).length
-      h = `<details style="margin:0 0 8px;cursor:pointer"><summary style="font-size:12px;color:#A0A0A0;font-weight:500;padding:8px 0;list-style:none;display:flex;align-items:center;gap:8px"><span style="display:inline-flex;width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);font-size:10px;align-items:center;justify-content:center;flex-shrink:0;color:rgba(0,0,0,0.10)">›</span><span style="color:rgba(90,100,112,0.5)">Kiko's reasoning</span> <span style="color:#A0A0A0">· ${steps} steps</span></summary><div style="font-size:13px;color:#A0A0A0;padding:8px 12px;line-height:1.7;border-left:2px solid rgba(0,0,0,0.05);margin:4px 0 8px 7px;background:rgba(0,0,0,0.03);border-radius:0 6px 6px 0">${thinkHtml}</div></details>${respHtml}`
-    }
-  }
-  const result = DOMPurify.sanitize(h, { ADD_TAGS: ['details', 'summary'] })
-  if (text.length < 50000) { mdCache.set(text, result); if (mdCache.size > 200) mdCache.delete(mdCache.keys().next().value) }
-  return result
-}
+// md() function REMOVED — all markdown rendering handled by KikoMessage component
+// which uses ReactMarkdown + remarkGfm with custom components for code blocks (copy button),
+// tables, blockquotes, headings, links, and artifact rendering (interactive HTML/SVG iframes).
 
 function getGreeting() {
   const h = new Date().getHours()
@@ -725,6 +687,18 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   }, [])
 
   useEffect(() => { if (initialMessage && !messages.length) handleSubmit(initialMessage) }, [])
+
+  // ═══ KEYBOARD SHORTCUTS — Cmd+N new chat, Cmd+K toggle sidebar ═══
+  useEffect(() => {
+    const handler = (e) => {
+      const isMeta = e.metaKey || e.ctrlKey
+      if (!isMeta) return
+      if (e.key === 'n' || e.key === 'N') { e.preventDefault(); startNewChat() }
+      if (e.key === 'k' || e.key === 'K') { e.preventDefault(); toggleHistory() }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [startNewChat])
 
   // Fetch morning briefing on mount
   useEffect(() => {
