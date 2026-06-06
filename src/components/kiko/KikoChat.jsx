@@ -203,7 +203,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [thinkingSteps, setThinkingSteps] = useState([])
   const [showSteps, setShowSteps] = useState(false)
   const [expandedSteps, setExpandedSteps] = useState(null)
-  const [historyOpen, setHistoryOpen] = useState(true) // Open by default like Claude
+  const [historyOpen, setHistoryOpen] = useState(false) // Collapsed by default
   const [morningBriefing, setMorningBriefing] = useState(null)
   const [briefingExpanded, setBriefingExpanded] = useState(false)
   const [insightsOpen, setInsightsOpen] = useState(false)
