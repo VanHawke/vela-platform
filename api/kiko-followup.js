@@ -80,7 +80,7 @@ export async function generateFollowup(input, userEmail) {
     let styleProfile = '';
     if (recipientMsgs.length >= 2) {
       const styleRes = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6-20250514', max_tokens: 300, // Sonnet — follow-up reasoning
+        model: 'claude-sonnet-4-20250514', max_tokens: 300, // Sonnet — follow-up reasoning
         messages: [{ role: 'user', content: `Analyse this person's writing style in 3 sentences. Focus on: formality level, typical length, how they signal interest vs disinterest, and what tone to match when writing back to them.
 
 Their emails:
@@ -109,7 +109,7 @@ Return only 3 plain sentences. No bullet points. No JSON.` }]
       : 'No prior email history found.';
 
     const draftRes = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6-20250514', max_tokens: 800, // Sonnet — follow-up drafting
+      model: 'claude-sonnet-4-20250514', max_tokens: 800, // Sonnet — follow-up drafting
       system: `You are drafting a follow-up email for Sunny Sidhu, CEO of Van Hawke Group — an F1/Formula E sponsorship advisory firm.
 
 SUNNY'S STYLE (always match this):

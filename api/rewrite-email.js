@@ -45,7 +45,7 @@ export default async function handler(req, res) {
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-6-20250514', // Sonnet — email quality
+      model: 'claude-sonnet-4-20250514', // Sonnet — email quality
       max_tokens: 1024,
       messages: [{
         role: 'user',
