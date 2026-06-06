@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-06-06T16:57:27.420Z",
+  "generated_at": "2026-06-06T17:13:11.586Z",
   "commits": [
+    {
+      "hash": "c197a7a",
+      "subject": "Remove 40 lines dead md() code, add Cmd+N/Cmd+K keyboard shortcuts",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "c0eea12",
       "subject": "Concurrent chats: buffer sync fix, completed session restore, stream ref reset on switch",
-      "when": "9 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "5826091",
       "subject": "Concurrent chats: background streaming continues when switching chats, session state saved/restored",
-      "when": "40 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "56d531d",
       "subject": "Revert sidebar to collapsed by default",
-      "when": "57 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "756ca3e",
       "subject": "UI: sidebar open by default, scroll fix with programmatic flag + 200px threshold",
-      "when": "69 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "dc4acee",
       "subject": "Fix scroll during streaming: programmatic scroll flag, 200px threshold, requestAnimationFrame, respects user scroll position",
-      "when": "80 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "82d27aa",
@@ -94,11 +99,6 @@
     {
       "hash": "3e66f5e",
       "subject": "Kiko intelligence upgrade: Sonnet for classification, verification doctrine Rule 7, signal classification Rule 8, cron consolidation",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "5d9839f",
-      "subject": "Consolidate 4 intelligence crons into 1 daily-intelligence (Kiko designed: 3-phase ingest/reason/publish, ~30/month savings)",
       "when": "2 days ago"
     }
   ]

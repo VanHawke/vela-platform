@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import T from '@/lib/theme'
 import { ChevronRight, ChevronLeft, Plus, Trash2, MoreHorizontal, Pencil, MessageCircle, Search } from 'lucide-react'
@@ -104,7 +104,33 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
     setRenamingId(null)
   }
 
-  const recents = allConvos.slice(0, 20)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // ═══ TIME GROUPING — Today / Yesterday / Previous 7 Days / Older ═══
+  const groupedConvos = useMemo(() => {
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1)
+    const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7)
+
+    const filtered = searchQuery.trim()
+      ? allConvos.filter(c => (c.title || '').toLowerCase().includes(searchQuery.toLowerCase()))
+      : allConvos
+
+    const groups = { today: [], yesterday: [], week: [], older: [] }
+    for (const conv of filtered.slice(0, 50)) {
+      const d = new Date(conv.date || 0)
+      if (d >= today) groups.today.push(conv)
+      else if (d >= yesterday) groups.yesterday.push(conv)
+      else if (d >= weekAgo) groups.week.push(conv)
+      else groups.older.push(conv)
+    }
+    return groups
+  }, [allConvos, searchQuery])
+
+  const GroupLabel = ({ label }) => (
+    <div style={{ padding: '10px 12px 4px', fontSize: 11, fontWeight: 500, color: '#A0A0A0', fontFamily: T.font, letterSpacing: '0.03em' }}>{label}</div>
+  )
 
   // Collapsed strip — positioned absolute so it doesn't shift content centering
   if (!open) return (
@@ -177,19 +203,33 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
         </div>
       </div>
 
-      {/* Recents label */}
-      <div style={{ padding: '4px 16px 8px', fontSize: 11, fontWeight: 500, color: '#A0A0A0', fontFamily: T.font, letterSpacing: '0.03em' }}>
-        Recents
+      {/* Search input */}
+      <div style={{ padding: '0 10px 8px' }}>
+        <div style={{ position: 'relative' }}>
+          <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#A0A0A0', pointerEvents: 'none' }} />
+          <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search chats..."
+            style={{ width: '100%', padding: '7px 10px 7px 30px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.06)', background: 'rgba(0,0,0,0.02)', fontSize: 12, fontFamily: T.font, color: '#0A0A0A', outline: 'none', boxSizing: 'border-box' }}
+            onFocus={e => e.target.style.borderColor = 'rgba(0,0,0,0.15)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(0,0,0,0.06)'}
+          />
+        </div>
       </div>
 
-      {/* Recent conversations — top 20 */}
+      {/* Time-grouped conversations */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 6px' }}>
         {loading ? (
           <p style={{ textAlign: 'center', padding: 20, color: '#A0A0A0', fontSize: 13, fontFamily: T.font }}>Loading…</p>
-        ) : recents.length === 0 ? (
+        ) : (allConvos.length === 0) ? (
           <p style={{ textAlign: 'center', padding: 20, color: '#A0A0A0', fontSize: 13, fontFamily: T.font }}>No conversations yet</p>
+        ) : searchQuery && !groupedConvos.today.length && !groupedConvos.yesterday.length && !groupedConvos.week.length && !groupedConvos.older.length ? (
+          <p style={{ textAlign: 'center', padding: 20, color: '#A0A0A0', fontSize: 13, fontFamily: T.font }}>No matches</p>
         ) : (
-          recents.map(conv => <ConvRow key={conv.id} conv={conv} />)
+          <>
+            {groupedConvos.today.length > 0 && <><GroupLabel label="Today" />{groupedConvos.today.map(c => <ConvRow key={c.id} conv={c} />)}</>}
+            {groupedConvos.yesterday.length > 0 && <><GroupLabel label="Yesterday" />{groupedConvos.yesterday.map(c => <ConvRow key={c.id} conv={c} />)}</>}
+            {groupedConvos.week.length > 0 && <><GroupLabel label="Previous 7 Days" />{groupedConvos.week.map(c => <ConvRow key={c.id} conv={c} />)}</>}
+            {groupedConvos.older.length > 0 && <><GroupLabel label="Older" />{groupedConvos.older.map(c => <ConvRow key={c.id} conv={c} />)}</>}
+          </>
         )}
       </div>
 
