@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-06-06T18:29:47.364Z",
+  "generated_at": "2026-06-06T18:40:24.374Z",
   "commits": [
+    {
+      "hash": "ba79ba9",
+      "subject": "Fix white screen: move highlight.js CSS to CDN, add chat search + time-grouped sidebar",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "623b4d6",
       "subject": "Chat search, time-grouped sidebar, syntax highlighting (CDN CSS, no bundle)",
-      "when": "5 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "4829d99",
       "subject": "Chat search, time-grouped sidebar (Today/Yesterday/Week/Older), syntax highlighting (rehype-highlight)",
-      "when": "72 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "c197a7a",
@@ -29,7 +34,7 @@
     {
       "hash": "56d531d",
       "subject": "Revert sidebar to collapsed by default",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "756ca3e",
@@ -94,11 +99,6 @@
     {
       "hash": "9a4048a",
       "subject": "CRITICAL FIX: casualQuery regex was silently downgrading business queries — unbounded words (buy/read/book/order/coffee/pool) matched anywhere, stripping Kiko of tools+context+knowledge. Fixed to only",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "7138c55",
-      "subject": "Provenance check added to inbox-triage (second false-positive path closed)",
       "when": "2 days ago"
     }
   ]

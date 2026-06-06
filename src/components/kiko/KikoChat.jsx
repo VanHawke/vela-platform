@@ -40,7 +40,6 @@ import { useDynamicChips } from '@/hooks/useDynamicChips'
 
 // Theme imported from @/lib/theme.js
 
-const mdCache = null // md() function removed — KikoMessage handles all markdown rendering
 function stripToolXml(t) {
   if (!t) return ''
   return t
