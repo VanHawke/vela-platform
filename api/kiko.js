@@ -12,7 +12,10 @@ import { callEAAgent } from './agents/ea.js';
 
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
-const MODEL = 'claude-opus-4-8';
+// Model selection — configurable via env so Kiko can upgrade herself
+const MODEL = process.env.KIKO_BRAIN_MODEL || 'claude-opus-4-8';
+const SONNET = process.env.KIKO_COGNITIVE_MODEL || SONNET;
+const HAIKU = process.env.KIKO_UTILITY_MODEL || HAIKU;
 
 // ── User config loader — replaces all hardcoded user references ──
 const userConfigCache = new Map();
@@ -550,7 +553,7 @@ export default async function handler(req, res) {
   // ── Title generation ──
   if (action === 'title') {
     try {
-      const titleRes = await anthropic.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 20, messages: [{ role: 'user', content: `Generate a 3-5 word title for: "${(message || '').slice(0, 200)}". Reply with ONLY the title.` }] });
+      const titleRes = await anthropic.messages.create({ model: HAIKU, max_tokens: 20, messages: [{ role: 'user', content: `Generate a 3-5 word title for: "${(message || '').slice(0, 200)}". Reply with ONLY the title.` }] });
       return res.status(200).json({ title: titleRes.content?.[0]?.text?.trim() || message?.slice(0, 40) });
     } catch { return res.status(200).json({ title: message?.slice(0, 40) }); }
   }
@@ -1566,7 +1569,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
       }
       
       const params = {
-        model: useDeep ? MODEL : (useHaiku ? 'claude-haiku-4-5-20251001' : MODEL),
+        model: useDeep ? MODEL : (useHaiku ? HAIKU : MODEL),
         max_tokens: opts.maxTokens || (useDeep ? 32000 : 16384), // Was 8192 — increased to match Claude's natural range
         system: systemCached, messages: msgs, tools: toolsWithCache,
       };
@@ -1786,7 +1789,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
 
     // Include cache stats in meta for cost tracking
     const usage = response?.usage || {};
-    const actualModel = needsDeepThink ? 'claude-opus-4-6' : (useHaikuForGreeting ? 'claude-haiku-4-5-20251001' : MODEL);
+    const actualModel = needsDeepThink ? 'claude-opus-4-6' : (useHaikuForGreeting ? HAIKU : MODEL);
     const totalDuration = Date.now() - queryStartTime;
     write({ meta: { done: true, model: actualModel, toolRounds, intent, version: 'v16.3',
       cache: { write: usage.cache_creation_input_tokens || 0, read: usage.cache_read_input_tokens || 0, input: usage.input_tokens || 0, output: usage.output_tokens || 0 }
