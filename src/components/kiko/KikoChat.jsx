@@ -598,14 +598,24 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     // Check if this chat has saved background state
     const saved = chatSessionsRef.current.get(conv.id)
     if (saved && saved.streaming) {
-      // Restore background streaming state
+      // Restore background streaming state + reset buffer refs to prevent display sync issues
       setMessages(saved.messages || msgs.map(m => ({ role: m.role, content: m.content })))
       setStreamText(saved.streamText || '')
       setStreaming(true)
       streamingRef.current = true
       streamTextRef.current = saved.streamText || ''
+      streamBufferRef.current = []
+      streamDisplayRef.current = saved.streamText || ''
+      if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
       setToolStatus(saved.toolStatus || null)
       setThinkingSteps(saved.thinkingSteps || [])
+    } else if (saved && !saved.streaming) {
+      // Background chat completed — restore final state
+      setMessages(saved.messages || msgs.map(m => ({ role: m.role, content: m.content })))
+      setStreamText(''); setStreaming(false)
+      streamingRef.current = false; streamTextRef.current = ''
+      setToolStatus(null); setThinkingSteps([])
+      chatSessionsRef.current.delete(conv.id) // Clean up completed session
     } else {
       justLoadedRef.current = true
       setMessages(msgs.map(m => ({ role: m.role, content: m.content })))
@@ -697,6 +707,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     activeChatIdRef.current = newChatId
     setMessages([]); setActiveConvId(null); setStreamText(''); setStreaming(false); setInput('')
     streamingRef.current = false; streamTextRef.current = ''
+    streamBufferRef.current = []; streamDisplayRef.current = ''
+    if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
     setToolStatus(null); setThinkingSteps([])
     setVoiceActive(false); setVoiceMessages([])
     if (voiceMicStream) { voiceMicStream.getTracks().forEach(t => t.stop()); setVoiceMicStream(null) }

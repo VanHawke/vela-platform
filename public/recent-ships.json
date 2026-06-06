@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-06-06T16:16:52.900Z",
+  "generated_at": "2026-06-06T16:47:19.194Z",
   "commits": [
+    {
+      "hash": "5826091",
+      "subject": "Concurrent chats: background streaming continues when switching chats, session state saved/restored",
+      "when": "30 minutes ago"
+    },
     {
       "hash": "56d531d",
       "subject": "Revert sidebar to collapsed by default",
-      "when": "16 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "756ca3e",
       "subject": "UI: sidebar open by default, scroll fix with programmatic flag + 200px threshold",
-      "when": "29 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "dc4acee",
       "subject": "Fix scroll during streaming: programmatic scroll flag, 200px threshold, requestAnimationFrame, respects user scroll position",
-      "when": "39 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "82d27aa",
       "subject": "Fix Sonnet model string across platform",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "a0a8118",
       "subject": "Centralised model config: api/lib/models.js — Kiko can self-upgrade her own model",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "77f4cdc",
@@ -94,11 +99,6 @@
     {
       "hash": "df9d1a2",
       "subject": "Fix heartbeat: filter auto-created junk from signal evaluation, update prompt to reject new_contact as prospect replies",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "e75f975",
-      "subject": "Email monitor: allowlist for prospect domains (Helsing, Ball, FIA, Haas, Alpine)",
       "when": "2 days ago"
     }
   ]
