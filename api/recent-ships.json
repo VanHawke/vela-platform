@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-06-06T15:36:03.510Z",
+  "generated_at": "2026-06-06T15:47:27.614Z",
   "commits": [
+    {
+      "hash": "dc4acee",
+      "subject": "Fix scroll during streaming: programmatic scroll flag, 200px threshold, requestAnimationFrame, respects user scroll position",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "82d27aa",
       "subject": "Fix Sonnet model string across platform",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a0a8118",
@@ -94,11 +99,6 @@
     {
       "hash": "d00862a",
       "subject": "CRM enrichment: ring-priority processing (deals->campaign->all), web search fallback, 2K batch",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "f78000a",
-      "subject": "CRM enrich: web search fallback when Apollo credits exhausted (MCP not available via API)",
       "when": "2 days ago"
     }
   ]
