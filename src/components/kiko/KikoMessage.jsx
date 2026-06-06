@@ -5,7 +5,7 @@ import React, { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
-import 'highlight.js/styles/github.css' // Light theme syntax highlighting
+// CSS loaded via CDN in index.html — NOT bundled (avoids Vite crash)
 
 // Strip tool calls, tool responses, and internal narration from display text
 // Extract tool names from message for collapsible display

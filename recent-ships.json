@@ -1,55 +1,60 @@
 {
-  "generated_at": "2026-06-06T17:13:11.586Z",
+  "generated_at": "2026-06-06T18:24:36.210Z",
   "commits": [
+    {
+      "hash": "4829d99",
+      "subject": "Chat search, time-grouped sidebar (Today/Yesterday/Week/Older), syntax highlighting (rehype-highlight)",
+      "when": "67 minutes ago"
+    },
     {
       "hash": "c197a7a",
       "subject": "Remove 40 lines dead md() code, add Cmd+N/Cmd+K keyboard shortcuts",
-      "when": "13 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "c0eea12",
       "subject": "Concurrent chats: buffer sync fix, completed session restore, stream ref reset on switch",
-      "when": "25 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "5826091",
       "subject": "Concurrent chats: background streaming continues when switching chats, session state saved/restored",
-      "when": "56 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "56d531d",
       "subject": "Revert sidebar to collapsed by default",
-      "when": "73 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "756ca3e",
       "subject": "UI: sidebar open by default, scroll fix with programmatic flag + 200px threshold",
-      "when": "85 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "dc4acee",
       "subject": "Fix scroll during streaming: programmatic scroll flag, 200px threshold, requestAnimationFrame, respects user scroll position",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "82d27aa",
       "subject": "Fix Sonnet model string across platform",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "a0a8118",
       "subject": "Centralised model config: api/lib/models.js — Kiko can self-upgrade her own model",
-      "when": "10 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "77f4cdc",
       "subject": "Rebuild spec v2: clean slate, zero constraints, 550 lines target",
-      "when": "10 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "31309a4",
       "subject": "Session 69 deep dive: all restrictions removed (deep think+tools, tokens 16K, thinking 30K, memory filters, timeouts, dead crons, server.js imports)",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "93ed8a5",
@@ -94,11 +99,6 @@
     {
       "hash": "ca4f06a",
       "subject": "Provenance check: email monitor checks outbound history before flagging replies. Memory decay: stale entries flagged in memory engine.",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "3e66f5e",
-      "subject": "Kiko intelligence upgrade: Sonnet for classification, verification doctrine Rule 7, signal classification Rule 8, cron consolidation",
       "when": "2 days ago"
     }
   ]

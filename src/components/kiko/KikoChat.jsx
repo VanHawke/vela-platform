@@ -154,47 +154,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(initialMessage)
 
-  // ═══ CONCURRENT CHAT SESSIONS ═══
-  // Stores background chat states so streaming continues when user switches chats
-  const chatSessionsRef = useRef(new Map()) // Map<chatId, { messages, streamText, streaming, toolStatus, thinkingSteps, convId }>
-  const activeChatIdRef = useRef('default') // tracks which chat is currently displayed
-  const bgStreamingChats = useRef(new Set()) // chat IDs that are streaming in background
-
-  const saveCurrentChatState = useCallback(() => {
-    const chatId = activeChatIdRef.current
-    chatSessionsRef.current.set(chatId, {
-      messages: messages,
-      streamText: streamTextRef.current || '',
-      streaming: streamingRef.current,
-      toolStatus: toolStatus,
-      thinkingSteps: thinkingSteps,
-      convId: activeConvId,
-    })
-  }, [messages, toolStatus, thinkingSteps, activeConvId])
-
-  const loadChatState = useCallback((chatId) => {
-    const saved = chatSessionsRef.current.get(chatId)
-    if (saved) {
-      setMessages(saved.messages || [])
-      setStreamText(saved.streamText || '')
-      setStreaming(saved.streaming || false)
-      streamingRef.current = saved.streaming || false
-      streamTextRef.current = saved.streamText || ''
-      setToolStatus(saved.toolStatus || null)
-      setThinkingSteps(saved.thinkingSteps || [])
-      setActiveConvId(saved.convId || null)
-    } else {
-      setMessages([])
-      setStreamText('')
-      setStreaming(false)
-      streamingRef.current = false
-      streamTextRef.current = ''
-      setToolStatus(null)
-      setThinkingSteps([])
-    }
-    activeChatIdRef.current = chatId
-  }, [])
-  // ═══ END CONCURRENT CHAT SESSIONS ═══
+  // ═══ CONCURRENT CHAT SESSIONS — Refs ═══
+  const chatSessionsRef = useRef(new Map())
+  const activeChatIdRef = useRef('default')
+  const bgStreamingChats = useRef(new Set())
+  // ═══ Callbacks defined after all state declarations (see below) ═══
   const [typewriterText, setTypewriterText] = useState('')
   const typewriterDone = useRef(false)
   const [streaming, setStreaming] = useState(false)
@@ -281,6 +245,29 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const scrollRef = useRef(null)
   const scrollContainerRef = useRef(null)
   const [showScrollDown, setShowScrollDown] = useState(false)
+
+  // ═══ CONCURRENT CHAT SESSIONS — Callbacks (after all state declarations) ═══
+  const saveCurrentChatState = useCallback(() => {
+    const chatId = activeChatIdRef.current
+    chatSessionsRef.current.set(chatId, {
+      messages, streamText: streamTextRef.current || '', streaming: streamingRef.current,
+      toolStatus, thinkingSteps, convId: activeConvId,
+    })
+  }, [messages, toolStatus, thinkingSteps, activeConvId])
+
+  const loadChatState = useCallback((chatId) => {
+    const saved = chatSessionsRef.current.get(chatId)
+    if (saved) {
+      setMessages(saved.messages || []); setStreamText(saved.streamText || '')
+      setStreaming(saved.streaming || false); streamingRef.current = saved.streaming || false
+      streamTextRef.current = saved.streamText || ''; setToolStatus(saved.toolStatus || null)
+      setThinkingSteps(saved.thinkingSteps || []); setActiveConvId(saved.convId || null)
+    } else {
+      setMessages([]); setStreamText(''); setStreaming(false); streamingRef.current = false
+      streamTextRef.current = ''; setToolStatus(null); setThinkingSteps([])
+    }
+    activeChatIdRef.current = chatId
+  }, [])
 
   // Auto-scroll to bottom during streaming — respects user scroll position
   const userScrolledUp = useRef(false)
