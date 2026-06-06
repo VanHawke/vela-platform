@@ -278,14 +278,22 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const scrollContainerRef = useRef(null)
   const [showScrollDown, setShowScrollDown] = useState(false)
 
-  // Auto-scroll to bottom during streaming — like ChatGPT/Claude
+  // Auto-scroll to bottom during streaming — respects user scroll position
   const userScrolledUp = useRef(false)
+  const isProgrammaticScroll = useRef(false)
   useEffect(() => {
     if (!streaming) { userScrolledUp.current = false; return }
     if (userScrolledUp.current) return
     const el = scrollContainerRef.current
     if (!el) return
-    el.scrollTop = el.scrollHeight
+    // Only auto-scroll if user is near the bottom (within 200px)
+    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+    if (distFromBottom > 200) { userScrolledUp.current = true; return }
+    isProgrammaticScroll.current = true
+    requestAnimationFrame(() => {
+      if (el) el.scrollTop = el.scrollHeight
+      setTimeout(() => { isProgrammaticScroll.current = false }, 50)
+    })
   }, [streamText, toolStatus, streaming])
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -1892,8 +1900,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         </div>
       )}
       <div ref={scrollContainerRef} onScroll={(e) => {
+        if (isProgrammaticScroll.current) return // Don't update scroll state during auto-scroll
         const el = e.currentTarget
-        const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+        const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100
         setShowScrollDown(!atBottom)
         if (streaming && !atBottom) userScrolledUp.current = true
         if (streaming && atBottom) userScrolledUp.current = false

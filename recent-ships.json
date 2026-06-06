@@ -1,1 +1,105 @@
-{"generated_at":"2026-06-04T13:02:38.368Z","commits":[]}
+{
+  "generated_at": "2026-06-06T15:36:03.510Z",
+  "commits": [
+    {
+      "hash": "82d27aa",
+      "subject": "Fix Sonnet model string across platform",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "a0a8118",
+      "subject": "Centralised model config: api/lib/models.js — Kiko can self-upgrade her own model",
+      "when": "9 hours ago"
+    },
+    {
+      "hash": "77f4cdc",
+      "subject": "Rebuild spec v2: clean slate, zero constraints, 550 lines target",
+      "when": "9 hours ago"
+    },
+    {
+      "hash": "31309a4",
+      "subject": "Session 69 deep dive: all restrictions removed (deep think+tools, tokens 16K, thinking 30K, memory filters, timeouts, dead crons, server.js imports)",
+      "when": "9 hours ago"
+    },
+    {
+      "hash": "93ed8a5",
+      "subject": "FUNDAMENTAL: All brain functions (memory, learning, self-eval, knowledge, signals) upgraded to Opus. Cognitive functions to Sonnet. Only utility tasks remain on Haiku.",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "ba04745",
+      "subject": "Memory system fix: KIKO_MEMORY.md updated with Session 69 facts, extraction upgraded to Sonnet, fallback insertion, error logging",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "ae375ea",
+      "subject": "ask_data_agent split into 5 purpose-specific tools (Kiko design), reasoning engine hybrid (email-only), Vercel dead code cleaned",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "b22de06",
+      "subject": "Deep dive fixes: self_modify path fixed to kiko-worker, reasoning engine re-enabled, deal+outreach agents upgraded to Sonnet, dead code cleaned",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "fd1b996",
+      "subject": "CRITICAL: self_modify path fixed (was reading stale vela-platform instead of live kiko-worker). Reasoning engine re-enabled. Email tools unrestricted.",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "d932564",
+      "subject": "Remove email tool restriction — full 47-tool toolkit now available for all requests including email drafting",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "9a4048a",
+      "subject": "CRITICAL FIX: casualQuery regex was silently downgrading business queries — unbounded words (buy/read/book/order/coffee/pool) matched anywhere, stripping Kiko of tools+context+knowledge. Fixed to only",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "7138c55",
+      "subject": "Provenance check added to inbox-triage (second false-positive path closed)",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "ca4f06a",
+      "subject": "Provenance check: email monitor checks outbound history before flagging replies. Memory decay: stale entries flagged in memory engine.",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "3e66f5e",
+      "subject": "Kiko intelligence upgrade: Sonnet for classification, verification doctrine Rule 7, signal classification Rule 8, cron consolidation",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "5d9839f",
+      "subject": "Consolidate 4 intelligence crons into 1 daily-intelligence (Kiko designed: 3-phase ingest/reason/publish, ~30/month savings)",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "df9d1a2",
+      "subject": "Fix heartbeat: filter auto-created junk from signal evaluation, update prompt to reject new_contact as prospect replies",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "e75f975",
+      "subject": "Email monitor: allowlist for prospect domains (Helsing, Ball, FIA, Haas, Alpine)",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "23c27b9",
+      "subject": "Fix email monitor: massive junk filter — blocks newsletters, banks, hotels, SaaS, social, marketing emails from auto-creating contacts",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "d00862a",
+      "subject": "CRM enrichment: ring-priority processing (deals->campaign->all), web search fallback, 2K batch",
+      "when": "2 days ago"
+    },
+    {
+      "hash": "f78000a",
+      "subject": "CRM enrich: web search fallback when Apollo credits exhausted (MCP not available via API)",
+      "when": "2 days ago"
+    }
+  ]
+}
