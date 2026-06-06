@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-06-06T18:24:36.210Z",
+  "generated_at": "2026-06-06T18:29:47.364Z",
   "commits": [
+    {
+      "hash": "623b4d6",
+      "subject": "Chat search, time-grouped sidebar, syntax highlighting (CDN CSS, no bundle)",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "4829d99",
       "subject": "Chat search, time-grouped sidebar (Today/Yesterday/Week/Older), syntax highlighting (rehype-highlight)",
-      "when": "67 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "c197a7a",
       "subject": "Remove 40 lines dead md() code, add Cmd+N/Cmd+K keyboard shortcuts",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "c0eea12",
@@ -94,11 +99,6 @@
     {
       "hash": "7138c55",
       "subject": "Provenance check added to inbox-triage (second false-positive path closed)",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "ca4f06a",
-      "subject": "Provenance check: email monitor checks outbound history before flagging replies. Memory decay: stale entries flagged in memory engine.",
       "when": "2 days ago"
     }
   ]
