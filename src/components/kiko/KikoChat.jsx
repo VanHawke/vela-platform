@@ -191,6 +191,48 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const dynamicChips = useDynamicChips('home', false)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(initialMessage)
+
+  // ═══ CONCURRENT CHAT SESSIONS ═══
+  // Stores background chat states so streaming continues when user switches chats
+  const chatSessionsRef = useRef(new Map()) // Map<chatId, { messages, streamText, streaming, toolStatus, thinkingSteps, convId }>
+  const activeChatIdRef = useRef('default') // tracks which chat is currently displayed
+  const bgStreamingChats = useRef(new Set()) // chat IDs that are streaming in background
+
+  const saveCurrentChatState = useCallback(() => {
+    const chatId = activeChatIdRef.current
+    chatSessionsRef.current.set(chatId, {
+      messages: messages,
+      streamText: streamTextRef.current || '',
+      streaming: streamingRef.current,
+      toolStatus: toolStatus,
+      thinkingSteps: thinkingSteps,
+      convId: activeConvId,
+    })
+  }, [messages, toolStatus, thinkingSteps, activeConvId])
+
+  const loadChatState = useCallback((chatId) => {
+    const saved = chatSessionsRef.current.get(chatId)
+    if (saved) {
+      setMessages(saved.messages || [])
+      setStreamText(saved.streamText || '')
+      setStreaming(saved.streaming || false)
+      streamingRef.current = saved.streaming || false
+      streamTextRef.current = saved.streamText || ''
+      setToolStatus(saved.toolStatus || null)
+      setThinkingSteps(saved.thinkingSteps || [])
+      setActiveConvId(saved.convId || null)
+    } else {
+      setMessages([])
+      setStreamText('')
+      setStreaming(false)
+      streamingRef.current = false
+      streamTextRef.current = ''
+      setToolStatus(null)
+      setThinkingSteps([])
+    }
+    activeChatIdRef.current = chatId
+  }, [])
+  // ═══ END CONCURRENT CHAT SESSIONS ═══
   const [typewriterText, setTypewriterText] = useState('')
   const typewriterDone = useRef(false)
   const [streaming, setStreaming] = useState(false)
@@ -542,18 +584,38 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   const loadConversation = async (conv) => {
     if (!conv?.id) return
+    // ── CONCURRENT: Save current chat state before switching ──
+    saveCurrentChatState()
+    if (streaming) bgStreamingChats.current.add(activeChatIdRef.current)
+    activeChatIdRef.current = conv.id // switch active chat ID
+
     let msgs = conv.messages
-    // If messages not populated, fetch from conversations table (JSONB column)
     if (!msgs || msgs.length === 0) {
       const { data } = await supabase.from('conversations').select('messages, title').eq('id', conv.id).single()
       msgs = data?.messages || []
       if (!conv.title && data?.title) conv.title = data.title
     }
-    justLoadedRef.current = true
-    setMessages(msgs.map(m => ({ role: m.role, content: m.content })))
+    // Check if this chat has saved background state
+    const saved = chatSessionsRef.current.get(conv.id)
+    if (saved && saved.streaming) {
+      // Restore background streaming state
+      setMessages(saved.messages || msgs.map(m => ({ role: m.role, content: m.content })))
+      setStreamText(saved.streamText || '')
+      setStreaming(true)
+      streamingRef.current = true
+      streamTextRef.current = saved.streamText || ''
+      setToolStatus(saved.toolStatus || null)
+      setThinkingSteps(saved.thinkingSteps || [])
+    } else {
+      justLoadedRef.current = true
+      setMessages(msgs.map(m => ({ role: m.role, content: m.content })))
+      setStreamText(''); setStreaming(false)
+      streamingRef.current = false; streamTextRef.current = ''
+      setToolStatus(null); setThinkingSteps([])
+    }
     setActiveConvId(conv.id)
     if (conv.title) setConvTitle(conv.title)
-    setStreamText(''); setStreaming(false); setShowAllMsgs(false)
+    setShowAllMsgs(false)
   }
 
   // Listen for cross-thread switch events from ThreadIndicator
@@ -628,7 +690,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   }
 
   const startNewChat = () => {
+    // ── CONCURRENT: Save current chat state before creating new chat ──
+    saveCurrentChatState()
+    if (streaming) bgStreamingChats.current.add(activeChatIdRef.current)
+    const newChatId = 'new_' + Date.now()
+    activeChatIdRef.current = newChatId
     setMessages([]); setActiveConvId(null); setStreamText(''); setStreaming(false); setInput('')
+    streamingRef.current = false; streamTextRef.current = ''
+    setToolStatus(null); setThinkingSteps([])
     setVoiceActive(false); setVoiceMessages([])
     if (voiceMicStream) { voiceMicStream.getTracks().forEach(t => t.stop()); setVoiceMicStream(null) }
     inputRef.current?.focus()
@@ -802,6 +871,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     // Include pending attachment if present
     const allAttachments = [...fileAttachments, ...pendingAttachments]
     if ((!msg && !allAttachments.length) || streaming) return
+    // ── CONCURRENT: Track which chat this submit belongs to ──
+    const thisChatId = activeChatIdRef.current
+    const isActiveChat = () => activeChatIdRef.current === thisChatId
     // Stop dictation on submit
     if (transcribing) { transcribeRef.current.active = false; if (transcribeRef.current.sr) { try { transcribeRef.current.sr.stop() } catch {} transcribeRef.current.sr = null }; setTranscribing(false) }
     const effectiveMsg = msg || (allAttachments.length ? `Analyse this file: "${allAttachments[0].name || 'uploaded file'}"` : '')
@@ -889,9 +961,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           const d = line.slice(6); if (d === '[DONE]') continue
           try {
             const j = JSON.parse(d)
-            if (j.delta) { full += j.delta; pushStreamChunk(j.delta); streamTextRef.current = full }
-            if (j.thinking) { setThinkingSteps(prev => prev.some(s => s.label === 'Reasoning...') ? prev : [...prev, { label: 'Reasoning...', time: Date.now() }]) }
-            if (j.toolStatus !== undefined) { setToolStatus(j.toolStatus); if (j.toolStatus && j.toolStatus !== 'Connecting...' && j.toolStatus !== 'Composing response...') setThinkingSteps(prev => prev.some(s => s.label === j.toolStatus) ? prev : [...prev, { label: j.toolStatus, time: Date.now() }]) }
+            if (j.delta) { full += j.delta; if (isActiveChat()) { pushStreamChunk(j.delta) }; streamTextRef.current = full }
+            if (j.thinking && isActiveChat()) { setThinkingSteps(prev => prev.some(s => s.label === 'Reasoning...') ? prev : [...prev, { label: 'Reasoning...', time: Date.now() }]) }
+            if (j.toolStatus !== undefined && isActiveChat()) { setToolStatus(j.toolStatus); if (j.toolStatus && j.toolStatus !== 'Connecting...' && j.toolStatus !== 'Composing response...') setThinkingSteps(prev => prev.some(s => s.label === j.toolStatus) ? prev : [...prev, { label: j.toolStatus, time: Date.now() }]) }
+            // ── CONCURRENT: Update background session ref if user switched away ──
+            if (!isActiveChat()) { chatSessionsRef.current.set(thisChatId, { messages: [...messages, userMsg], streamText: full, streaming: true, toolStatus: j.toolStatus, thinkingSteps: [], convId: activeConvId }) }
             if (j.navigate) pendingNav = j.navigate
           } catch {}
         }
@@ -901,8 +975,18 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       if (!full.trim()) console.warn('[KikoChat] Empty response from API — stream may have dropped')
       const kikoMsg = { role: 'assistant', content: responseContent, timestamp: Date.now(), steps: thinkingSteps.length > 0 ? [...thinkingSteps] : undefined }
       const updated = [...messages, userMsg, kikoMsg]
-      setMessages(prev => [...prev, kikoMsg]); setStreamText(''); setToolStatus(null)
-      setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+
+      // ── CONCURRENT: Handle completion for active vs background chat ──
+      if (isActiveChat()) {
+        setMessages(prev => [...prev, kikoMsg]); setStreamText(''); setToolStatus(null)
+        setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+      } else {
+        // Streaming completed in background — save final state to ref
+        chatSessionsRef.current.set(thisChatId, { messages: updated, streamText: '', streaming: false, toolStatus: null, thinkingSteps: [], convId: activeConvId })
+        bgStreamingChats.current.delete(thisChatId)
+        // Dispatch event so sidebar can show completion indicator
+        window.dispatchEvent(new CustomEvent('kiko-chat-updated'))
+      }
       const newId = await saveConversation(updated.map(m => ({ role: m.role, content: m.content })), activeConvId, msg, full)
       if (newId && !activeConvId) setActiveConvId(newId)
       if (pendingNav) {
@@ -928,7 +1012,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }
       setStreamText('')
     }
-    finally { clearTimeout(hardTimeout); try { clearInterval(inactivityCheckId) } catch {}; flushStreamBuffer(); setStreaming(false); streamingRef.current = false; setToolStatus(null); setStreamText('') }
+    finally { clearTimeout(hardTimeout); try { clearInterval(inactivityCheckId) } catch {}; if (isActiveChat()) { flushStreamBuffer(); setStreaming(false); setToolStatus(null); setStreamText('') }; streamingRef.current = false; bgStreamingChats.current.delete(thisChatId) }
   }, [input, streaming, messages, user, activeConvId, pendingAttachments])
 
   const processFileForKiko = async (file) => {
