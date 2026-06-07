@@ -730,7 +730,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   useEffect(() => {
     if (typewriterDone.current) return
     typewriterDone.current = true
-    const phrase = 'Ask me anything....'
+    const phrase = 'Ask Kiko anything — deals, contacts, drafts, strategy…'
     let i = 0
     const timer = setInterval(() => {
       i++
@@ -1863,6 +1863,18 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   {alertCount || 0} {alertCount === 1 ? 'action needed' : 'actions needed'}
                 </button>}
                 {/* Dynamic chips removed — only alert pill shown */}
+                {USE_REDESIGN_DASHBOARD && ['Brief me', 'Pipeline value', 'Draft a follow-up', 'Partnership conflicts'].map(chip => (
+                  <button key={chip} onClick={() => { setInput(chip); handleSubmit(chip) }} style={{
+                    padding: '5px 14px', borderRadius: 50,
+                    border: '1px solid rgba(0,0,0,0.08)', background: '#fff',
+                    fontSize: 12, color: '#6B6B6B', cursor: 'pointer',
+                    fontFamily: C.font, fontWeight: 450,
+                    transition: 'all 150ms ease', whiteSpace: 'nowrap',
+                  }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.18)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'none' }}
+                  >{chip}</button>
+                ))}
               </div>}
 
           {/* Redesign: Priority Actions + Bento Stats + Calendar + Next Race */}
