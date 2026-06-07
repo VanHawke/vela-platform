@@ -580,7 +580,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
 
   // Voice mode now stays inside float — no more full-page takeover
 
-  const panelW = 340
+  const panelW = 380
 
   return (
     <>
@@ -592,8 +592,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         <div key={panelKey} className={`kiko-panel ${open ? 'entering' : ''}`}
           onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
           style={{
-          position: 'fixed', bottom: 88, right: 24, width: panelW,
-          zIndex: 100, borderRadius: 24,
+          position: 'fixed', bottom: 88, right: 20, width: panelW,
+          zIndex: 100, borderRadius: 14,
           background: '#FFFFFF',
           border: `1px solid rgba(0,0,0,0.08)`,
           borderTop: `1px solid rgba(0,0,0,0.06)`,
@@ -610,7 +610,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               <div style={{ width: 24, height: 12, overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)', maskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)' }}>
                 <KikoAvatar size={12} state="idle" />
               </div>
-              <span style={{ fontSize: 14, fontWeight: 500, color: C.text, fontFamily: C.font }}>Kiko</span>
+              <span style={{ fontSize: 16, fontWeight: 400, color: C.text, fontFamily: "'Source Serif 4', Georgia, serif" }}>Kiko</span>
               {voiceOpen && (
                 <span style={{ fontSize: 10, fontWeight: 500, color: voiceSpeaking ? '#06D6A0' : voiceStatus === 'thinking' ? '#7C9CF6' : voiceStatus === 'error' ? '#FF5050' : '#A0A0A0', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: voiceSpeaking ? '#06D6A0' : voiceStatus === 'connecting' ? '#F59E0B' : '#06D6A0', animation: voiceSpeaking ? 'none' : 'pulse 1.5s ease-in-out infinite' }} />
