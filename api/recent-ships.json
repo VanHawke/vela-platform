@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-06-07T20:07:35.275Z",
+  "generated_at": "2026-06-07T20:20:58.964Z",
   "commits": [
+    {
+      "hash": "4fa618d",
+      "subject": "fix(redesign): Homepage — submit button BLACK default/ORANGE on input, greeting ABOVE date (matching sandbox), correct 2026 F1 calendar from official sources (Canadian GP was May 22-24, Monaco today J",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "8f8accb",
       "subject": "feat(redesign): Homepage — remove bento stats, dynamic F1 race calendar (shows next race), hide Kiko float on homepage, remove voice avatar/dots, restore attach/mic/voice icons in prompt bar, send but",
-      "when": "13 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "5561662",
       "subject": "fix(redesign): KikoFloat panel — width 380 (was 340), borderRadius 14 (was 24), right 20 (was 24), header 'Kiko' in Source Serif 4 16px weight 400 — matching sandbox render",
-      "when": "51 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "9201863",
       "subject": "fix(redesign): Home prompt bar — hide +/mic/voice buttons, show always-visible black circle send button (36px, #0A0A0A) matching sandbox render exactly. Position absolute right:6 with padding to accom",
-      "when": "67 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "f0de0b6",
       "subject": "fix(redesign): KikoFloat now shown on home page — Layout.jsx condition changed from !isHome to always show. Float is 48x48 black circle with chat SVG icon",
-      "when": "79 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6abe004",
       "subject": "fix(redesign): KikoFloat — now visible on home page (was hidden), 48x48 black circle with chat SVG icon matching sandbox, removed pulse rings. PromptBar — borderRadius 24 (pill) in welcome mode",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "df07514",
@@ -94,11 +99,6 @@
     {
       "hash": "4432d92",
       "subject": "fix: archived deals filter was excluding ALL deals — NULL archived field caused .not() to filter everything. Use .or() for NULL-safe check",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "fff84e9",
-      "subject": "fix: replace service worker registration with unregistration — prevents stale cache blocking deployments",
       "when": "4 hours ago"
     }
   ]

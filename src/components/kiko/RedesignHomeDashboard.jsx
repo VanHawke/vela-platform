@@ -95,7 +95,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
               title: `Reply — ${a.entity_name || 'Unknown'}`,
               detail: a.title || a.detail || '',
               time: timeAgo(a.created_at),
-              onClick: () => nav('/'),
+              onClick: () => { window.dispatchEvent(new CustomEvent('kiko_prefill', { detail: { text: `Brief me on the reply from ${a.entity_name || 'this prospect'} and suggest next steps` } })); nav('/') },
             })
           })
 
@@ -110,6 +110,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
             title: `Overdue — ${t.data?.title || 'Task'}`,
             detail: t.data?.description || '',
             time: timeAgo(t.data?.dueDate || t.data?.due_date),
+            onClick: () => { window.dispatchEvent(new CustomEvent('kiko_prefill', { detail: { text: `What do I need to do about the overdue task: ${t.data?.title || 'this task'}?` } })); nav('/') },
           })
         })
 
@@ -125,7 +126,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
             title: `Stale — ${d.data?.company || 'Deal'}`,
             detail: `${days} days since last activity`,
             time: `${days}d`,
-            onClick: () => nav('/pipeline'),
+            onClick: () => { window.dispatchEvent(new CustomEvent('kiko_prefill', { detail: { text: `Brief me on ${d.data?.company || 'this deal'} — it has been stale for ${days} days. What should I do?` } })); nav('/') },
           })
         })
 
@@ -136,6 +137,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
             title: `Draft pending — ${d.payload?.entity || d.action_type || 'Action'}`,
             detail: d.payload?.subject || 'Review and approve',
             time: timeAgo(d.created_at),
+            onClick: () => { window.dispatchEvent(new CustomEvent('kiko_prefill', { detail: { text: `Show me the pending draft for ${d.payload?.entity || 'this prospect'} so I can review and approve it` } })); nav('/') },
           })
         })
 

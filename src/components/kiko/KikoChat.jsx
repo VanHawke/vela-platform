@@ -678,6 +678,19 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   useEffect(() => { if (initialMessage && !messages.length) handleSubmit(initialMessage) }, [])
 
+  // Listen for priority action clicks that prefill and auto-submit
+  useEffect(() => {
+    const handler = (e) => {
+      const text = e.detail?.text
+      if (text) {
+        setInput(text)
+        setTimeout(() => handleSubmit(text), 100)
+      }
+    }
+    window.addEventListener('kiko_prefill', handler)
+    return () => window.removeEventListener('kiko_prefill', handler)
+  }, [handleSubmit])
+
   // ═══ KEYBOARD SHORTCUTS — Cmd+N new chat, Cmd+K toggle sidebar ═══
   useEffect(() => {
     const handler = (e) => {
@@ -1105,8 +1118,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         display: 'flex', flexDirection: 'column',
         background: isMobile ? '#F5F4F1' : '#FFFFFF',
         backdropFilter: 'none', WebkitBackdropFilter: 'none',
-        borderRadius: isMobile ? 28 : (welcome ? 24 : 16),
-        padding: isMobile ? '10px 10px 10px 22px' : (welcome ? '0' : '14px 16px 10px'),
+        borderRadius: isMobile ? 28 : (welcome ? 28 : 16),
+        padding: isMobile ? '10px 10px 10px 22px' : (welcome ? (USE_REDESIGN_DASHBOARD ? '0' : '0') : '14px 16px 10px'),
         minHeight: isMobile ? 52 : (welcome ? 48 : undefined),
         position: 'relative',
         border: isMobile ? '1px solid rgba(0,0,0,0.10)' : `1px solid ${promptFocused ? 'rgba(0,0,0,0.18)' : transcribing ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.08)'}`,
@@ -1149,7 +1162,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
         {welcome ? (
         /* ── HOMEPAGE: Single row [+menu] [textarea] [mic] [EQ] [send] ── */
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 6, position: 'relative', zIndex: 2, padding: USE_REDESIGN_DASHBOARD ? '12px 14px 12px 14px' : undefined }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 6, position: 'relative', zIndex: 2, padding: USE_REDESIGN_DASHBOARD ? '14px 14px 14px 20px' : undefined }}>
           {!isMobile && <div style={{ position: 'relative', flexShrink: 0 }}>
             <button onClick={() => setMenuOpen(!menuOpen)} disabled={fileUploading || streaming} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(0,0,0,0.04)', border: `1px solid ${menuOpen ? 'rgba(90,100,112,0.2)' : C.border}`, color: '#0A0A0A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}`, transform: menuOpen ? 'rotate(45deg)' : 'rotate(0deg)' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = '#2A2A30'; e.currentTarget.style.color = '#b4b4b4'; e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)' }}
@@ -1778,7 +1791,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ fontSize: 36, fontWeight: 300, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center', lineHeight: 1.1 }}>
               {getGreeting()}, {firstName}
             </div>
-            <p style={{ color: '#6B6B6B', fontSize: 13, marginBottom: 28, fontWeight: 450, textAlign: 'center' }}>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            <p style={{ color: '#6B6B6B', fontSize: 13, margin: '0 0 28px', fontWeight: 450, textAlign: 'center' }}>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
           </div>
 
           {/* Daily Briefing Card — hidden when redesign dashboard is active (replaced by priority actions) */}
