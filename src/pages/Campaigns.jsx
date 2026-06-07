@@ -140,7 +140,7 @@ export default function Campaigns({ user }) {
     })
     setCampaigns(arr)
     setLoading(false)
-    if (!selectedId && arr.length > 0) setSelectedId(arr[0].id)
+    if (!selectedId && arr.length > 0) { /* Don't auto-select — show overview card list */ }
     setPageContext({ page: 'campaigns', summary: `Campaigns: ${arr.length} sequences` })
   }, [selectedId])
 
@@ -529,6 +529,68 @@ export default function Campaigns({ user }) {
   const headerCell = { ...cell, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#A0A0A0', fontWeight: 500, background: '#FAFAF8', position: 'sticky', top: 0, zIndex: 1, borderBottom: '1px solid rgba(0,0,0,0.06)' }
 
   // ── render ──
+
+  // ── OVERVIEW MODE: No campaign selected → show card list matching sandbox render ──
+  if (!selectedId && !buildOpen) {
+    const pct = (n, d) => d > 0 ? Math.round((n / d) * 100) : 0
+    return (
+      <div style={{ fontFamily: C.font, color: C.text, background: C.bg, minHeight: 'calc(100vh - 56px)' }}>
+        {/* PageHead matching sandbox render */}
+        <div style={{ padding: '24px 44px 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 10 }}>
+                <span style={{ color: '#0A0A0A', fontWeight: 600 }}>OUTREACH</span>
+              </div>
+              <h1 style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 300, fontSize: 36, letterSpacing: '-0.018em', lineHeight: 1.0, margin: 0 }}>Campaigns</h1>
+              <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 8 }}>{campaigns.length} sequences · {campaigns.reduce((s, c) => s + (c.prospects?.length || 0), 0)} enrolled</p>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => { setBuildOpen(true); setBuildPhase('idle') }} style={{ height: 32, padding: '0 14px', background: '#0A0A0A', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: 4, fontSize: 12, fontWeight: 500, fontFamily: C.font }}>+ New Campaign</button>
+            </div>
+          </div>
+        </div>
+        {/* Campaign cards */}
+        <div style={{ padding: '0 44px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {campaigns.filter(c => !c.archived).map(c => {
+            const total = c.prospects?.length || 0
+            const sent = c.prospects?.filter(p => p.status !== 'needs_email' && p.status !== 'new').length || 0
+            const opened = c.prospects?.filter(p => p.opened_count > 0).length || 0
+            const replied = c.prospects?.filter(p => p.replied_count > 0).length || 0
+            const bounced = c.prospects?.filter(p => p.status === 'bounced').length || 0
+            const openRate = pct(opened, sent)
+            const replyRate = pct(replied, sent)
+            return (
+              <div key={c.id} onClick={() => setSelectedId(c.id)} style={{ padding: '14px 16px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, cursor: 'pointer', transition: 'border-color 0.15s, box-shadow 0.2s, transform 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.05)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 14, fontWeight: 500 }}>{c.name}</span>
+                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', background: c.is_active ? 'rgba(125,138,100,0.12)' : 'rgba(0,0,0,0.04)', color: c.is_active ? '#7d8a64' : '#A0A0A0' }}>{c.is_active ? 'active' : 'draft'}</span>
+                    {c.metadata?.is_test && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', background: 'rgba(184,156,92,0.12)', color: '#B89C5C' }}>TEST</span>}
+                  </div>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+                <div style={{ display: 'flex', gap: 24 }}>
+                  {[{ l: 'Enrolled', v: total }, { l: 'Sent', v: sent }, { l: 'Open', v: `${openRate}%` }, { l: 'Reply', v: `${replyRate}%` }, { l: 'Bounced', v: bounced }].map(s => (
+                    <div key={s.l}>
+                      <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: 18, fontWeight: 300 }}>{s.v}</div>
+                      <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>{s.l}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+          {campaigns.filter(c => !c.archived).length === 0 && (
+            <div style={{ textAlign: 'center', padding: 40, color: '#A0A0A0', fontSize: 13 }}>No campaigns yet. Click + New Campaign to create your first.</div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 56px)', fontFamily: C.font, color: C.text, background: C.bg }}>
 
