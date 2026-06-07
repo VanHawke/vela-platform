@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import { Plus, Search, X, Building2, Globe, ChevronLeft, ChevronRight, Users, Linkedin, Send, ExternalLink, ChevronDown, RefreshCw } from 'lucide-react'
 import PageHeader from '@/components/layout/PageHeader'
+import { ConflictBadge } from '@/hooks/usePartnershipConflict'
 import DocumentSection from '@/components/documents/DocumentSection'
 
 const PAGE_SIZE = 50
@@ -608,6 +609,7 @@ export default function Organisations({ user }) {
                     <div>
                       <h2 style={{ fontSize: 17, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{selectedOrg.name}</h2>
                       {selectedOrg.industry && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{selectedOrg.industry}</p>}
+                      <div style={{ marginTop: 4 }}><ConflictBadge companyName={selectedOrg.name} /></div>
                     </div>
                   </div>
                   <button onClick={closePanel} style={{ background: '#FFFFFF', border: 'none', borderRadius: 50, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-tertiary)', flexShrink: 0 }}>

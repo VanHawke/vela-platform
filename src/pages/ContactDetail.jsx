@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Mail, Phone, Linkedin, Building2, Clock, Edit3, X, ExternalLink, Send, Inbox, CalendarCheck, ChevronRight } from 'lucide-react'
 import DocumentSection from '@/components/documents/DocumentSection'
 import PageHeader from '@/components/layout/PageHeader'
+import { ConflictBadge } from '@/hooks/usePartnershipConflict'
 
 export default function ContactDetail() {
   const { id } = useParams()
@@ -203,6 +204,7 @@ export default function ContactDetail() {
           <div>
             <h1 style={{ fontSize: 19, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</h1>
             {contact.title && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
+            {contact.company && <div style={{ marginTop: 4 }}><ConflictBadge companyName={contact.company} /></div>}
             {campaignHistory.length > 0 && (
               <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 50, background: 'rgba(0,0,0,0.06)', border: '0.5px solid rgba(0,0,0,0.10)', color: '#0A0A0A', fontSize: 10, fontWeight: 500, fontFamily: 'var(--font)' }}>
