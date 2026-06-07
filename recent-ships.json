@@ -1,30 +1,40 @@
 {
-  "generated_at": "2026-06-07T20:32:33.295Z",
+  "generated_at": "2026-06-07T20:53:55.239Z",
   "commits": [
+    {
+      "hash": "8614d09",
+      "subject": "feat(kiko-brain): Intelligence Doctrine — codified core operating principle for data access by role (super_admin sees ALL channels for ALL users, regular users see own data + CRM), mandatory 7-step pr",
+      "when": "10 minutes ago"
+    },
+    {
+      "hash": "591b5ea",
+      "subject": "fix(redesign): prompt bar borderRadius 9999 (full pill capsule shape matching sandbox), greeting/date spacing tightened",
+      "when": "21 minutes ago"
+    },
     {
       "hash": "e1d9863",
       "subject": "fix: remove handleSubmit from kiko_prefill useEffect dependency array — was causing 'Cannot access rt before initialization' crash",
-      "when": "8 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "e1a8bb1",
       "subject": "feat(redesign): Homepage — prompt bar borderRadius 28 (more pill), greeting/date spacing fixed (margin 0 0 6px / 0 0 28px), priority actions wired to Kiko via kiko_prefill events (stale/reply/draft/ta",
-      "when": "11 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "4fa618d",
       "subject": "fix(redesign): Homepage — submit button BLACK default/ORANGE on input, greeting ABOVE date (matching sandbox), correct 2026 F1 calendar from official sources (Canadian GP was May 22-24, Monaco today J",
-      "when": "24 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "8f8accb",
       "subject": "feat(redesign): Homepage — remove bento stats, dynamic F1 race calendar (shows next race), hide Kiko float on homepage, remove voice avatar/dots, restore attach/mic/voice icons in prompt bar, send but",
-      "when": "38 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "5561662",
       "subject": "fix(redesign): KikoFloat panel — width 380 (was 340), borderRadius 14 (was 24), right 20 (was 24), header 'Kiko' in Source Serif 4 16px weight 400 — matching sandbox render",
-      "when": "76 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "9201863",
@@ -44,12 +54,12 @@
     {
       "hash": "df07514",
       "subject": "fix(redesign): Messenger header — replaced colored Audio/Video/Meet buttons with sandbox-style icon buttons (Call/Search/Files). 32px transparent squares matching sandbox render exactly",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "3acddf9",
       "subject": "fix(redesign): Home — chips overflow fixed (visible not hidden), flexWrap, paddingTop 4, chip text matches sandbox exactly (5 chips incl 'Helsing status' and 'Draft follow-up for Ball Corp'), added Ca",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "5080389",
@@ -74,12 +84,12 @@
     {
       "hash": "e1d06d8",
       "subject": "style(redesign): Campaigns OUTREACH eyebrow label added to sidebar header, matching design system",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "3fd468a",
       "subject": "feat(redesign): Add suggestion chips below prompt bar, update placeholder to match sandbox render. Chips: Brief me, Pipeline value, Draft a follow-up, Partnership conflicts",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "efade29",
@@ -89,16 +99,6 @@
     {
       "hash": "be0c9c8",
       "subject": "style(redesign): Messenger — dark monochrome bubbles replacing orange, rounder 18px radius, more padding",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "a571af5",
-      "subject": "style(redesign): Pipeline — white column bg, larger headers, bigger dots, more card gap, spacious body padding",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "5600bd3",
-      "subject": "style(redesign): Campaigns sidebar title Source Serif 4, larger prospect table cells, tighter letter spacing",
       "when": "4 hours ago"
     }
   ]
