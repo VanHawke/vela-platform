@@ -1,50 +1,55 @@
 {
-  "generated_at": "2026-06-07T17:26:02.405Z",
+  "generated_at": "2026-06-07T17:29:24.020Z",
   "commits": [
+    {
+      "hash": "50c4d2d",
+      "subject": "feat(redesign): Campaigns card-list overview matching sandbox render — PageHead with OUTREACH eyebrow, full-width campaign cards with Source Serif 4 metrics, click to drill into detail",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "e1d06d8",
       "subject": "style(redesign): Campaigns OUTREACH eyebrow label added to sidebar header, matching design system",
-      "when": "6 minutes ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "3fd468a",
       "subject": "feat(redesign): Add suggestion chips below prompt bar, update placeholder to match sandbox render. Chips: Brief me, Pipeline value, Draft a follow-up, Partnership conflicts",
-      "when": "10 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "efade29",
       "subject": "style(redesign): Pipeline deal card values — Source Serif 4, 14px, weight 400, serif numerals. Verified via screenshot.",
-      "when": "28 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "be0c9c8",
       "subject": "style(redesign): Messenger — dark monochrome bubbles replacing orange, rounder 18px radius, more padding",
-      "when": "55 minutes ago"
+      "when": "58 minutes ago"
     },
     {
       "hash": "a571af5",
       "subject": "style(redesign): Pipeline — white column bg, larger headers, bigger dots, more card gap, spacious body padding",
-      "when": "58 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "5600bd3",
       "subject": "style(redesign): Campaigns sidebar title Source Serif 4, larger prospect table cells, tighter letter spacing",
-      "when": "61 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "236eec4",
       "subject": "style(redesign): Campaign detail stat bar — 28px Source Serif 4, more padding, stronger colour accents. Verified via browser screenshot.",
-      "when": "69 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "4432d92",
       "subject": "fix: archived deals filter was excluding ALL deals — NULL archived field caused .not() to filter everything. Use .or() for NULL-safe check",
-      "when": "74 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "fff84e9",
       "subject": "fix: replace service worker registration with unregistration — prevents stale cache blocking deployments",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "35cf976",
@@ -94,11 +99,6 @@
     {
       "hash": "d0a8a53",
       "subject": "fix(redesign): Pipeline excludes archived deals — honest kanban showing only live deals",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "2f7fddf",
-      "subject": "feat(redesign): data cleanup SQL + filter archived deals from home dashboard",
       "when": "4 hours ago"
     }
   ]

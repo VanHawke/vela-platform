@@ -543,7 +543,7 @@ export default function Campaigns({ user }) {
                 <span style={{ color: '#0A0A0A', fontWeight: 600 }}>OUTREACH</span>
               </div>
               <h1 style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 300, fontSize: 36, letterSpacing: '-0.018em', lineHeight: 1.0, margin: 0 }}>Campaigns</h1>
-              <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 8 }}>{campaigns.length} sequences · {campaigns.reduce((s, c) => s + (c.prospects?.length || 0), 0)} enrolled</p>
+              <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 8 }}>{campaigns.length} sequences · {campaigns.reduce((s, c) => s + (c.counts?.total || 0), 0)} enrolled</p>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => { setBuildOpen(true); setBuildPhase('idle') }} style={{ height: 32, padding: '0 14px', background: '#0A0A0A', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: 4, fontSize: 12, fontWeight: 500, fontFamily: C.font }}>+ New Campaign</button>
@@ -553,13 +553,8 @@ export default function Campaigns({ user }) {
         {/* Campaign cards */}
         <div style={{ padding: '0 44px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {campaigns.filter(c => !c.archived).map(c => {
-            const total = c.prospects?.length || 0
-            const sent = c.prospects?.filter(p => p.status !== 'needs_email' && p.status !== 'new').length || 0
-            const opened = c.prospects?.filter(p => p.opened_count > 0).length || 0
-            const replied = c.prospects?.filter(p => p.replied_count > 0).length || 0
-            const bounced = c.prospects?.filter(p => p.status === 'bounced').length || 0
-            const openRate = pct(opened, sent)
-            const replyRate = pct(replied, sent)
+            const ct = c.counts || { total: 0, active: 0, replied: 0, bounced: 0 }
+            const replyRate = ct.total > 0 ? Math.round((ct.replied / ct.total) * 100) : 0
             return (
               <div key={c.id} onClick={() => setSelectedId(c.id)} style={{ padding: '14px 16px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, cursor: 'pointer', transition: 'border-color 0.15s, box-shadow 0.2s, transform 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.05)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
@@ -573,7 +568,7 @@ export default function Campaigns({ user }) {
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
                 <div style={{ display: 'flex', gap: 24 }}>
-                  {[{ l: 'Enrolled', v: total }, { l: 'Sent', v: sent }, { l: 'Open', v: `${openRate}%` }, { l: 'Reply', v: `${replyRate}%` }, { l: 'Bounced', v: bounced }].map(s => (
+                  {[{ l: 'Enrolled', v: ct.total }, { l: 'Active', v: ct.active }, { l: 'Replied', v: ct.replied }, { l: 'Reply', v: `${replyRate}%` }, { l: 'Bounced', v: ct.bounced }].map(s => (
                     <div key={s.l}>
                       <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: 18, fontWeight: 300 }}>{s.v}</div>
                       <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>{s.l}</div>
