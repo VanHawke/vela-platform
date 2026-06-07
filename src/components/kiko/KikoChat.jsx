@@ -1784,8 +1784,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ fontSize: 19, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</div>
           </div>
 
-          {/* Daily Briefing Card */}
-          {!voiceActive && morningBriefing && (
+          {/* Daily Briefing Card — hidden when redesign dashboard is active (replaced by priority actions) */}
+          {!voiceActive && morningBriefing && !USE_REDESIGN_DASHBOARD && (
             <div style={{
               width: '100%', maxWidth: 680, margin: '20px auto 0',
               background: '#FAFAF9', border: '1px solid rgba(0,0,0,0.06)',
@@ -1843,8 +1843,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
                 flexWrap: 'nowrap',
               }}>
-                {/* Alerts pill — only visible when there are alerts */}
-                {alertCount > 0 && <button onClick={() => window.location.href = '/command-centre'} style={{
+                {/* Alerts pill — hidden when redesign dashboard is active (replaced by priority actions) */}
+                {alertCount > 0 && !USE_REDESIGN_DASHBOARD && <button onClick={() => window.location.href = '/command-centre'} style={{
                   padding: '6px 14px', borderRadius: 50,
                   background: alertCount > 0 ? '#E8700A' : 'rgba(184,100,62,0.10)',
                   border: alertCount > 0 ? '1px solid #E8700A' : '1px solid rgba(184,100,62,0.20)',
