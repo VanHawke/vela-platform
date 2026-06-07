@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-06-07T19:16:03.795Z",
+  "generated_at": "2026-06-07T19:53:53.538Z",
   "commits": [
+    {
+      "hash": "5561662",
+      "subject": "fix(redesign): KikoFloat panel — width 380 (was 340), borderRadius 14 (was 24), right 20 (was 24), header 'Kiko' in Source Serif 4 16px weight 400 — matching sandbox render",
+      "when": "37 minutes ago"
+    },
     {
       "hash": "9201863",
       "subject": "fix(redesign): Home prompt bar — hide +/mic/voice buttons, show always-visible black circle send button (36px, #0A0A0A) matching sandbox render exactly. Position absolute right:6 with padding to accom",
-      "when": "16 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "f0de0b6",
       "subject": "fix(redesign): KikoFloat now shown on home page — Layout.jsx condition changed from !isHome to always show. Float is 48x48 black circle with chat SVG icon",
-      "when": "28 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "6abe004",
       "subject": "fix(redesign): KikoFloat — now visible on home page (was hidden), 48x48 black circle with chat SVG icon matching sandbox, removed pulse rings. PromptBar — borderRadius 24 (pill) in welcome mode",
-      "when": "33 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "df07514",
       "subject": "fix(redesign): Messenger header — replaced colored Audio/Video/Meet buttons with sandbox-style icon buttons (Call/Search/Files). 32px transparent squares matching sandbox render exactly",
-      "when": "55 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "3acddf9",
       "subject": "fix(redesign): Home — chips overflow fixed (visible not hidden), flexWrap, paddingTop 4, chip text matches sandbox exactly (5 chips incl 'Helsing status' and 'Draft follow-up for Ball Corp'), added Ca",
-      "when": "64 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "5080389",
       "subject": "fix(redesign): Home greeting 36px (was 48px), removed 'What would you like to work on' subtitle — matching sandbox render exactly. Saved REDESIGN_COMPARISON.md for systematic cross-referencing",
-      "when": "76 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f93d893",
@@ -49,17 +54,17 @@
     {
       "hash": "e1d06d8",
       "subject": "style(redesign): Campaigns OUTREACH eyebrow label added to sidebar header, matching design system",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "3fd468a",
       "subject": "feat(redesign): Add suggestion chips below prompt bar, update placeholder to match sandbox render. Chips: Brief me, Pipeline value, Draft a follow-up, Partnership conflicts",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "efade29",
       "subject": "style(redesign): Pipeline deal card values — Source Serif 4, 14px, weight 400, serif numerals. Verified via screenshot.",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "be0c9c8",
@@ -79,27 +84,22 @@
     {
       "hash": "236eec4",
       "subject": "style(redesign): Campaign detail stat bar — 28px Source Serif 4, more padding, stronger colour accents. Verified via browser screenshot.",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "4432d92",
       "subject": "fix: archived deals filter was excluding ALL deals — NULL archived field caused .not() to filter everything. Use .or() for NULL-safe check",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "fff84e9",
       "subject": "fix: replace service worker registration with unregistration — prevents stale cache blocking deployments",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "35cf976",
       "subject": "style(redesign): Organisations — 14px card radius, Source Serif 4 weight 300 org name, increased toolbar padding",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "900ccd0",
-      "subject": "style(redesign): Contacts.css — 14px card radius, hover shadow matching Pipeline tokens",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     }
   ]
 }

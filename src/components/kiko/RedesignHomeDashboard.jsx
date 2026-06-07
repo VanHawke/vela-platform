@@ -224,52 +224,53 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
         </div>
       )}
 
-      {/* Next Race Card — matching sandbox render */}
-      <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'border-color 0.15s, box-shadow 0.2s', marginBottom: 4 }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.05)' }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.boxShadow = 'none' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="1.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 500 }}>Canadian Grand Prix</div>
-            <div style={{ fontSize: 12, color: '#6B6B6B' }}>June 15 · Circuit Gilles Villeneuve, Montreal</div>
+      {/* Next Race Card — dynamically shows the next upcoming F1 race */}
+      {(() => {
+        const F1_2026 = [
+          { date: '2026-03-08', name: 'Australian Grand Prix', circuit: 'Albert Park, Melbourne' },
+          { date: '2026-03-22', name: 'Chinese Grand Prix', circuit: 'Shanghai International Circuit' },
+          { date: '2026-04-05', name: 'Japanese Grand Prix', circuit: 'Suzuka Circuit' },
+          { date: '2026-04-19', name: 'Bahrain Grand Prix', circuit: 'Bahrain International Circuit, Sakhir' },
+          { date: '2026-05-03', name: 'Saudi Arabian Grand Prix', circuit: 'Jeddah Corniche Circuit' },
+          { date: '2026-05-17', name: 'Miami Grand Prix', circuit: 'Miami International Autodrome' },
+          { date: '2026-05-24', name: 'Emilia Romagna Grand Prix', circuit: 'Autodromo Enzo e Dino Ferrari, Imola' },
+          { date: '2026-05-31', name: 'Monaco Grand Prix', circuit: 'Circuit de Monaco, Monte Carlo' },
+          { date: '2026-06-14', name: 'Canadian Grand Prix', circuit: 'Circuit Gilles Villeneuve, Montreal' },
+          { date: '2026-06-28', name: 'Spanish Grand Prix', circuit: 'Circuit de Barcelona-Catalunya' },
+          { date: '2026-07-05', name: 'Austrian Grand Prix', circuit: 'Red Bull Ring, Spielberg' },
+          { date: '2026-07-19', name: 'British Grand Prix', circuit: 'Silverstone Circuit' },
+          { date: '2026-08-02', name: 'Belgian Grand Prix', circuit: 'Circuit de Spa-Francorchamps' },
+          { date: '2026-08-30', name: 'Dutch Grand Prix', circuit: 'Circuit Zandvoort' },
+          { date: '2026-09-06', name: 'Italian Grand Prix', circuit: 'Autodromo di Monza' },
+          { date: '2026-09-20', name: 'Azerbaijan Grand Prix', circuit: 'Baku City Circuit' },
+          { date: '2026-10-04', name: 'Singapore Grand Prix', circuit: 'Marina Bay Street Circuit' },
+          { date: '2026-10-18', name: 'United States Grand Prix', circuit: 'Circuit of the Americas, Austin' },
+          { date: '2026-10-25', name: 'Mexico City Grand Prix', circuit: 'Autódromo Hermanos Rodríguez' },
+          { date: '2026-11-08', name: 'São Paulo Grand Prix', circuit: 'Interlagos, São Paulo' },
+          { date: '2026-11-22', name: 'Qatar Grand Prix', circuit: 'Lusail International Circuit, Doha' },
+          { date: '2026-12-06', name: 'Abu Dhabi Grand Prix', circuit: 'Yas Marina Circuit' },
+        ]
+        const now = new Date()
+        const next = F1_2026.find(r => new Date(r.date) > now) || F1_2026[0]
+        const days = Math.max(0, Math.ceil((new Date(next.date) - now) / 86400000))
+        const dateLabel = new Date(next.date).toLocaleDateString('en-GB', { month: 'long', day: 'numeric' })
+        return (
+          <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'border-color 0.15s, box-shadow 0.2s', marginBottom: 4 }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.05)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.boxShadow = 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="1.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 500 }}>{next.name}</div>
+                <div style={{ fontSize: 12, color: '#6B6B6B' }}>{dateLabel} · {next.circuit}</div>
+              </div>
+            </div>
+            <span style={{ fontSize: 12, color: '#A0A0A0', fontWeight: 500 }}>{days} days</span>
           </div>
-        </div>
-        <span style={{ fontSize: 12, color: '#A0A0A0', fontWeight: 500 }}>{Math.max(0, Math.ceil((new Date('2026-06-15') - new Date()) / 86400000))} days</span>
-      </div>
+        )
+      })()}
 
-      {/* Bento stats row — pipeline + hot replies */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-        <div style={cardStyle} onClick={() => nav('/pipeline')} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-          <div style={{ fontSize: 10.5, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
-            <TrendingUp size={11} /> Pipeline
-          </div>
-          <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 300, fontSize: 28, letterSpacing: '-0.022em', color: '#0A0A0A' }}>
-            {loading ? '—' : fmtCurrency(weighted)}
-          </div>
-          <div style={{ fontSize: 11.5, color: '#6B6B6B', marginTop: 4 }}>{deals.length} active deals · weighted</div>
-        </div>
-        <div style={cardStyle} onClick={() => nav('/')} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-          <div style={{ fontSize: 10.5, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
-            <Mail size={11} /> Replies · 7d
-          </div>
-          <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 300, fontSize: 28, letterSpacing: '-0.022em', color: '#0A0A0A' }}>
-            {loading ? '—' : hotReplies.length}
-          </div>
-          <div style={{ fontSize: 11.5, color: '#6B6B6B', marginTop: 4 }}>
-            {hotReplies[0]?.entity_name ? `Latest: ${hotReplies[0].entity_name}` : 'No replies'}
-          </div>
-        </div>
-        <div style={cardStyle} onClick={() => nav('/pipeline')} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-          <div style={{ fontSize: 10.5, color: tasks.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < new Date()).length > 0 ? '#b8643e' : '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
-            <AlertTriangle size={11} /> Tasks
-          </div>
-          <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 300, fontSize: 28, letterSpacing: '-0.022em', color: tasks.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < new Date()).length > 0 ? '#b8643e' : '#0A0A0A' }}>
-            {loading ? '—' : tasks.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < new Date()).length}
-          </div>
-          <div style={{ fontSize: 11.5, color: '#6B6B6B', marginTop: 4 }}>{tasks.length} total open</div>
-        </div>
-      </div>
+      {/* Bento stats removed per Sunny's direction — not needed on homepage */}
 
       {/* Calendar strip */}
       {calendarEvents.length > 0 && (
