@@ -30,6 +30,7 @@ const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
 const Messages = lazy(() => import('@/pages/Messages'))
 const MobileVoicePage = lazy(() => import('@/pages/MobileVoicePage'))
 const DocumentLibrary = lazy(() => import('@/pages/DocumentLibrary'))
+const Records = lazy(() => import('@/pages/Records'))
 
 const INACTIVITY_MS   = 20 * 60 * 1000
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
@@ -136,6 +137,8 @@ export default function App() {
           <Route path="contacts" element={<PermissionGate pageKey="contacts" user={user}><Contacts user={user} /></PermissionGate>} />
           <Route path="contacts/:id" element={<PermissionGate pageKey="contacts" user={user}><ContactDetail user={user} /></PermissionGate>} />
           <Route path="organisations" element={<PermissionGate pageKey="organisations" user={user}><Organisations user={user} /></PermissionGate>} />
+          <Route path="records" element={<Records user={user} />} />
+          <Route path="records/contact/:id" element={<PermissionGate pageKey="contacts" user={user}><ContactDetail user={user} /></PermissionGate>} />
           <Route path="companies" element={<Navigate to="/organisations" replace />} />
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
           <Route path="tasks" element={<Navigate to="/command-centre" replace />} />
