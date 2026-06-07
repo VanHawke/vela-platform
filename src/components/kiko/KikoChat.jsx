@@ -1225,7 +1225,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming ? (
             <button onClick={stopKiko} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
           ) : (
-            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: isMobile ? 38 : 30, height: isMobile ? 38 : 30, borderRadius: 9999, background: hasContent ? '#E8700A' : 'rgba(0,0,0,0.04)', border: hasContent ? 'none' : `1px solid ${C.border}`, color: hasContent ? '#FFFFFF' : '#A0A0A0', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(232,112,10,0.3)' : '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
+            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: isMobile ? 38 : 30, height: isMobile ? 38 : 30, borderRadius: 9999, background: hasContent ? '#E8700A' : '#0A0A0A', border: 'none', color: '#FFFFFF', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: 1, boxShadow: hasContent ? '0 4px 16px rgba(232,112,10,0.3)' : '0 1px 3px rgba(0,0,0,0.2)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
               <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           )}
@@ -1775,12 +1775,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1)',
             overflow: 'hidden',
           }}>
-            <div style={{ textAlign: 'center', marginBottom: 12, fontSize: 11, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B' }}>
-              <span style={{ color: '#0A0A0A', fontWeight: 600 }}>TODAY</span><span style={{ color: '#C0C0C0', margin: '0 8px' }}>·</span>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </div>
             <div style={{ fontSize: 36, fontWeight: 300, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center', lineHeight: 1.1 }}>
               {getGreeting()}, {firstName}
             </div>
+            <p style={{ color: '#6B6B6B', fontSize: 13, marginBottom: 28, fontWeight: 450, textAlign: 'center' }}>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
           </div>
 
           {/* Daily Briefing Card — hidden when redesign dashboard is active (replaced by priority actions) */}

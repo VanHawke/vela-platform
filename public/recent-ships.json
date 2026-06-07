@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-06-07T19:53:53.538Z",
+  "generated_at": "2026-06-07T20:07:35.275Z",
   "commits": [
+    {
+      "hash": "8f8accb",
+      "subject": "feat(redesign): Homepage — remove bento stats, dynamic F1 race calendar (shows next race), hide Kiko float on homepage, remove voice avatar/dots, restore attach/mic/voice icons in prompt bar, send but",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "5561662",
       "subject": "fix(redesign): KikoFloat panel — width 380 (was 340), borderRadius 14 (was 24), right 20 (was 24), header 'Kiko' in Source Serif 4 16px weight 400 — matching sandbox render",
-      "when": "37 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "9201863",
       "subject": "fix(redesign): Home prompt bar — hide +/mic/voice buttons, show always-visible black circle send button (36px, #0A0A0A) matching sandbox render exactly. Position absolute right:6 with padding to accom",
-      "when": "54 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "f0de0b6",
       "subject": "fix(redesign): KikoFloat now shown on home page — Layout.jsx condition changed from !isHome to always show. Float is 48x48 black circle with chat SVG icon",
-      "when": "66 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "6abe004",
       "subject": "fix(redesign): KikoFloat — now visible on home page (was hidden), 48x48 black circle with chat SVG icon matching sandbox, removed pulse rings. PromptBar — borderRadius 24 (pill) in welcome mode",
-      "when": "71 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "df07514",
@@ -39,17 +44,17 @@
     {
       "hash": "f93d893",
       "subject": "feat(redesign): Messenger — flat Slack-style message rows replacing iMessage bubbles, matching sandbox render. All messages left-aligned with avatar+name+time, no bubble backgrounds",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2606bcc",
       "subject": "fix(redesign): Campaigns overview — use c.counts enrollment data instead of c.prospects (which doesn't exist in overview mode)",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "50c4d2d",
       "subject": "feat(redesign): Campaigns card-list overview matching sandbox render — PageHead with OUTREACH eyebrow, full-width campaign cards with Source Serif 4 metrics, click to drill into detail",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e1d06d8",
@@ -69,17 +74,17 @@
     {
       "hash": "be0c9c8",
       "subject": "style(redesign): Messenger — dark monochrome bubbles replacing orange, rounder 18px radius, more padding",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "a571af5",
       "subject": "style(redesign): Pipeline — white column bg, larger headers, bigger dots, more card gap, spacious body padding",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "5600bd3",
       "subject": "style(redesign): Campaigns sidebar title Source Serif 4, larger prospect table cells, tighter letter spacing",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "236eec4",
@@ -95,11 +100,6 @@
       "hash": "fff84e9",
       "subject": "fix: replace service worker registration with unregistration — prevents stale cache blocking deployments",
       "when": "4 hours ago"
-    },
-    {
-      "hash": "35cf976",
-      "subject": "style(redesign): Organisations — 14px card radius, Source Serif 4 weight 300 org name, increased toolbar padding",
-      "when": "5 hours ago"
     }
   ]
 }
