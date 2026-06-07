@@ -692,6 +692,7 @@ export default function Pipeline({ user }) {
                       {dealCompany.industry}{dealCompany.country ? ` · ${dealCompany.country}` : ''}
                     </p>
                   )}
+                  <div style={{ marginTop: 4 }}><ConflictBadge companyName={selectedDeal.company || selectedDeal.title} /></div>
                 </div>
               </div>
               <button onClick={closePanel} className="pl-panel-close">
