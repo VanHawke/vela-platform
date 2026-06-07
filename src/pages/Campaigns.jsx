@@ -536,6 +536,7 @@ export default function Campaigns({ user }) {
       <aside style={{ width: 280, flexShrink: 0, borderRight: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '18px 18px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
+            <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 4 }}><span style={{ color: '#0A0A0A', fontWeight: 600 }}>OUTREACH</span></div>
             <div style={{ fontSize: 16, fontWeight: 300, color: C.text, fontFamily: "'Source Serif 4', Georgia, serif" }}>Campaigns</div>
             <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{campaigns.length} total</div>
           </div>

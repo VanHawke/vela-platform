@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-06-07T17:15:16.275Z",
+  "generated_at": "2026-06-07T17:19:47.709Z",
   "commits": [
+    {
+      "hash": "3fd468a",
+      "subject": "feat(redesign): Add suggestion chips below prompt bar, update placeholder to match sandbox render. Chips: Brief me, Pipeline value, Draft a follow-up, Partnership conflicts",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "efade29",
       "subject": "style(redesign): Pipeline deal card values — Source Serif 4, 14px, weight 400, serif numerals. Verified via screenshot.",
-      "when": "18 minutes ago"
+      "when": "22 minutes ago"
     },
     {
       "hash": "be0c9c8",
       "subject": "style(redesign): Messenger — dark monochrome bubbles replacing orange, rounder 18px radius, more padding",
-      "when": "44 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "a571af5",
       "subject": "style(redesign): Pipeline — white column bg, larger headers, bigger dots, more card gap, spacious body padding",
-      "when": "48 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "5600bd3",
       "subject": "style(redesign): Campaigns sidebar title Source Serif 4, larger prospect table cells, tighter letter spacing",
-      "when": "50 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "236eec4",
       "subject": "style(redesign): Campaign detail stat bar — 28px Source Serif 4, more padding, stronger colour accents. Verified via browser screenshot.",
-      "when": "58 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "4432d92",
       "subject": "fix: archived deals filter was excluding ALL deals — NULL archived field caused .not() to filter everything. Use .or() for NULL-safe check",
-      "when": "63 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "fff84e9",
       "subject": "fix: replace service worker registration with unregistration — prevents stale cache blocking deployments",
-      "when": "76 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "35cf976",
@@ -94,11 +99,6 @@
     {
       "hash": "f6c70be",
       "subject": "feat(redesign): KikoCompanyInsight on organisation detail — conflicts, research, warm path, strategic analysis",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "41ceec8",
-      "subject": "feat(redesign): KikoContactInsight on contact detail — relationship warmth, research, cognitive analysis",
       "when": "4 hours ago"
     }
   ]
