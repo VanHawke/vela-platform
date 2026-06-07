@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-06-06T18:40:24.374Z",
+  "generated_at": "2026-06-07T14:32:18.829Z",
   "commits": [
     {
-      "hash": "ba79ba9",
-      "subject": "Fix white screen: move highlight.js CSS to CDN, add chat search + time-grouped sidebar",
-      "when": "10 minutes ago"
+      "hash": "347bf29",
+      "subject": "feat(redesign): ConflictBadge in Pipeline deal detail panel header — conflicts visible on click-into as well as kanban cards",
+      "when": "48 minutes ago"
     },
     {
-      "hash": "623b4d6",
-      "subject": "Chat search, time-grouped sidebar, syntax highlighting (CDN CSS, no bundle)",
-      "when": "15 minutes ago"
+      "hash": "6686b73",
+      "subject": "fix(redesign): Records toggle persists via URL params — survives back-navigation from contact/org detail",
+      "when": "53 minutes ago"
     },
     {
-      "hash": "4829d99",
-      "subject": "Chat search, time-grouped sidebar (Today/Yesterday/Week/Older), syntax highlighting (rehype-highlight)",
-      "when": "83 minutes ago"
+      "hash": "7a86d2d",
+      "subject": "feat(redesign): TEST badge on campaigns with metadata.is_test — visually flags test artefacts so metrics aren't mistaken for real data",
+      "when": "55 minutes ago"
     },
     {
-      "hash": "c197a7a",
-      "subject": "Remove 40 lines dead md() code, add Cmd+N/Cmd+K keyboard shortcuts",
+      "hash": "d0a8a53",
+      "subject": "fix(redesign): Pipeline excludes archived deals — honest kanban showing only live deals",
+      "when": "59 minutes ago"
+    },
+    {
+      "hash": "2f7fddf",
+      "subject": "feat(redesign): data cleanup SQL + filter archived deals from home dashboard",
+      "when": "61 minutes ago"
+    },
+    {
+      "hash": "f6c70be",
+      "subject": "feat(redesign): KikoCompanyInsight on organisation detail — conflicts, research, warm path, strategic analysis",
+      "when": "63 minutes ago"
+    },
+    {
+      "hash": "41ceec8",
+      "subject": "feat(redesign): KikoContactInsight on contact detail — relationship warmth, research, cognitive analysis",
+      "when": "64 minutes ago"
+    },
+    {
+      "hash": "521ca99",
+      "subject": "fix(redesign): calendar strip uses /api/calendar-events endpoint instead of unreliable Kiko JSON parsing",
+      "when": "76 minutes ago"
+    },
+    {
+      "hash": "ead5e76",
+      "subject": "docs: update REDESIGN_BUILD_SPEC.md — mark all completed phases with commit refs, track pending items",
+      "when": "80 minutes ago"
+    },
+    {
+      "hash": "b894f81",
+      "subject": "feat(redesign): add freshness timestamp to Partnership Matrix header — shows last loaded time",
+      "when": "82 minutes ago"
+    },
+    {
+      "hash": "39acb4a",
+      "subject": "fix(redesign): dedup priority actions by entity name — prevents duplicate items when task + draft reference same entity",
+      "when": "84 minutes ago"
+    },
+    {
+      "hash": "3d455d7",
+      "subject": "fix(redesign): hide daily briefing card and alert pill when redesign dashboard active — replaced by priority actions",
+      "when": "87 minutes ago"
+    },
+    {
+      "hash": "a98b857",
+      "subject": "fix(redesign): nav active state — Records highlights for /contacts and /organisations, Campaigns for /campaigns/:id and /sequences/:id",
       "when": "2 hours ago"
     },
     {
-      "hash": "c0eea12",
-      "subject": "Concurrent chats: buffer sync fix, completed session restore, stream ref reset on switch",
+      "hash": "bae4b42",
+      "subject": "fix(redesign): adjust home page vertical centering — push greeting lower when dashboard is active",
       "when": "2 hours ago"
     },
     {
-      "hash": "5826091",
-      "subject": "Concurrent chats: background streaming continues when switching chats, session state saved/restored",
+      "hash": "1a727ad",
+      "subject": "feat(redesign): Phase 3 — ConflictBadge on Contact + Organisation detail views",
       "when": "2 hours ago"
     },
     {
-      "hash": "56d531d",
-      "subject": "Revert sidebar to collapsed by default",
+      "hash": "cc6571d",
+      "subject": "feat(redesign): Phase 2 — partnership conflict badges on Pipeline deal cards",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "0f2d918",
+      "subject": "feat(redesign): Phase 1 — RedesignHomeDashboard with priority actions, bento stats, calendar strip, next race",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "dcb907d",
+      "subject": "feat(redesign): add Records page (merged Contacts + Organisations) with People/Companies toggle + /records route",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "5a154b6",
+      "subject": "feat(redesign): Phase 0 — new RedesignTopNav with 6-tab icon+label pills, feature-flagged in Layout.jsx",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "c1989a7",
+      "subject": "docs: add comprehensive UI redesign build spec v1.0 — 6-tab nav, page-by-page specification, Kiko architectural notes, data cleanup tasks",
       "when": "3 hours ago"
-    },
-    {
-      "hash": "756ca3e",
-      "subject": "UI: sidebar open by default, scroll fix with programmatic flag + 200px threshold",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "dc4acee",
-      "subject": "Fix scroll during streaming: programmatic scroll flag, 200px threshold, requestAnimationFrame, respects user scroll position",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "82d27aa",
-      "subject": "Fix Sonnet model string across platform",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "a0a8118",
-      "subject": "Centralised model config: api/lib/models.js — Kiko can self-upgrade her own model",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "77f4cdc",
-      "subject": "Rebuild spec v2: clean slate, zero constraints, 550 lines target",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "31309a4",
-      "subject": "Session 69 deep dive: all restrictions removed (deep think+tools, tokens 16K, thinking 30K, memory filters, timeouts, dead crons, server.js imports)",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "93ed8a5",
-      "subject": "FUNDAMENTAL: All brain functions (memory, learning, self-eval, knowledge, signals) upgraded to Opus. Cognitive functions to Sonnet. Only utility tasks remain on Haiku.",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "ba04745",
-      "subject": "Memory system fix: KIKO_MEMORY.md updated with Session 69 facts, extraction upgraded to Sonnet, fallback insertion, error logging",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "ae375ea",
-      "subject": "ask_data_agent split into 5 purpose-specific tools (Kiko design), reasoning engine hybrid (email-only), Vercel dead code cleaned",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "b22de06",
-      "subject": "Deep dive fixes: self_modify path fixed to kiko-worker, reasoning engine re-enabled, deal+outreach agents upgraded to Sonnet, dead code cleaned",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "fd1b996",
-      "subject": "CRITICAL: self_modify path fixed (was reading stale vela-platform instead of live kiko-worker). Reasoning engine re-enabled. Email tools unrestricted.",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "d932564",
-      "subject": "Remove email tool restriction — full 47-tool toolkit now available for all requests including email drafting",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "9a4048a",
-      "subject": "CRITICAL FIX: casualQuery regex was silently downgrading business queries — unbounded words (buy/read/book/order/coffee/pool) matched anywhere, stripping Kiko of tools+context+knowledge. Fixed to only",
-      "when": "2 days ago"
     }
   ]
 }

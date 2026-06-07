@@ -18,7 +18,8 @@
   --border-subtle: rgba(0,0,0,0.05);
   --border-hover: rgba(0,0,0,0.14);
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-  --r-card: 10px;
+  --shadow-hover: 0 4px 16px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+  --r-card: 14px;
   --r-pill: 24px;
   --font-display: 'Source Serif 4', Georgia, serif;
 }
@@ -143,16 +144,16 @@
   background: #FFFFFF;
   border: 1px solid var(--border);
   border-radius: var(--r-card);
-  padding: 12px 14px;
+  padding: 14px 16px;
   cursor: grab;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  transition: border-color 0.15s, box-shadow 0.2s, transform 0.15s;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 .pl-deal:hover {
   border-color: var(--border-hover);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-hover);
   transform: translateY(-1px);
 }
 .pl-deal:active { cursor: grabbing; }
@@ -316,7 +317,7 @@
 .pl-board {
   flex: 1;
   display: flex;
-  padding: 0 16px 16px;
+  padding: 0 24px 24px;
   min-height: 0;
   overflow: hidden;
 }
@@ -394,10 +395,10 @@
 .pl-panel-mark img { width: 28px; height: 28px; object-fit: contain; }
 .pl-panel-title {
   font-family: 'Source Serif 4', Georgia, serif;
-  font-weight: 400;
-  font-size: 19px;
+  font-weight: 300;
+  font-size: 20px;
   margin: 0;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.015em;
   color: #0A0A0A;
   transition: color 0.15s;
 }
