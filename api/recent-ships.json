@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-06-07T20:20:58.964Z",
+  "generated_at": "2026-06-07T20:23:37.420Z",
   "commits": [
+    {
+      "hash": "e1a8bb1",
+      "subject": "feat(redesign): Homepage — prompt bar borderRadius 28 (more pill), greeting/date spacing fixed (margin 0 0 6px / 0 0 28px), priority actions wired to Kiko via kiko_prefill events (stale/reply/draft/ta",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "4fa618d",
       "subject": "fix(redesign): Homepage — submit button BLACK default/ORANGE on input, greeting ABOVE date (matching sandbox), correct 2026 F1 calendar from official sources (Canadian GP was May 22-24, Monaco today J",
-      "when": "13 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "8f8accb",
       "subject": "feat(redesign): Homepage — remove bento stats, dynamic F1 race calendar (shows next race), hide Kiko float on homepage, remove voice avatar/dots, restore attach/mic/voice icons in prompt bar, send but",
-      "when": "26 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "5561662",
       "subject": "fix(redesign): KikoFloat panel — width 380 (was 340), borderRadius 14 (was 24), right 20 (was 24), header 'Kiko' in Source Serif 4 16px weight 400 — matching sandbox render",
-      "when": "64 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "9201863",
       "subject": "fix(redesign): Home prompt bar — hide +/mic/voice buttons, show always-visible black circle send button (36px, #0A0A0A) matching sandbox render exactly. Position absolute right:6 with padding to accom",
-      "when": "81 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "f0de0b6",
@@ -94,11 +99,6 @@
     {
       "hash": "236eec4",
       "subject": "style(redesign): Campaign detail stat bar — 28px Source Serif 4, more padding, stronger colour accents. Verified via browser screenshot.",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "4432d92",
-      "subject": "fix: archived deals filter was excluding ALL deals — NULL archived field caused .not() to filter everything. Use .or() for NULL-safe check",
       "when": "4 hours ago"
     }
   ]

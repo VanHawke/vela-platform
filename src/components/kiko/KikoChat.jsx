@@ -689,7 +689,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     }
     window.addEventListener('kiko_prefill', handler)
     return () => window.removeEventListener('kiko_prefill', handler)
-  }, [handleSubmit])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ═══ KEYBOARD SHORTCUTS — Cmd+N new chat, Cmd+K toggle sidebar ═══
   useEffect(() => {
