@@ -6,6 +6,7 @@ import { setPageContext } from '@/lib/pageContext'
 import { Plus, Search, X, Building2, Globe, ChevronLeft, ChevronRight, Users, Linkedin, Send, ExternalLink, ChevronDown, RefreshCw } from 'lucide-react'
 import PageHeader from '@/components/layout/PageHeader'
 import { ConflictBadge } from '@/hooks/usePartnershipConflict'
+import KikoCompanyInsight from '@/components/kiko/KikoCompanyInsight'
 import DocumentSection from '@/components/documents/DocumentSection'
 
 const PAGE_SIZE = 50
@@ -618,6 +619,9 @@ export default function Organisations({ user }) {
                 </div>
 
                 {/* Fields - always visible */}
+                {/* Kiko Company Intelligence — partnership conflicts, research, warm path */}
+                <KikoCompanyInsight companyName={selectedOrg.name} />
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 14 }}>
                   <div>
                     <p style={fieldLabel}>Industry / Sector</p>
