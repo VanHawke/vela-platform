@@ -1,50 +1,55 @@
 {
-  "generated_at": "2026-06-07T15:01:53.159Z",
+  "generated_at": "2026-06-07T15:59:39.884Z",
   "commits": [
+    {
+      "hash": "35cf976",
+      "subject": "style(redesign): Organisations — 14px card radius, Source Serif 4 weight 300 org name, increased toolbar padding",
+      "when": "43 minutes ago"
+    },
     {
       "hash": "900ccd0",
       "subject": "style(redesign): Contacts.css — 14px card radius, hover shadow matching Pipeline tokens",
-      "when": "48 seconds ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "cd3f8aa",
       "subject": "style(redesign): Messenger — pill-style sidebar tabs, lighter chat header font weight, consistent with nav design language",
-      "when": "75 seconds ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "1d5d7d7",
       "subject": "style(redesign): Partnership Matrix — increased header padding, pill-style tab bar matching nav, cleaner spacing",
-      "when": "6 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "a23c932",
       "subject": "style(redesign): Campaigns — Source Serif 4 weight 300 for all stat values, 14px card radius, cleaner overview title, updated campaign detail stats bar",
-      "when": "11 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "0936d6c",
       "subject": "style(redesign): Pipeline — 14px card radius, enhanced hover shadows, weight 300 panel titles, increased spacing",
-      "when": "17 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "347bf29",
       "subject": "feat(redesign): ConflictBadge in Pipeline deal detail panel header — conflicts visible on click-into as well as kanban cards",
-      "when": "77 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6686b73",
       "subject": "fix(redesign): Records toggle persists via URL params — survives back-navigation from contact/org detail",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "7a86d2d",
       "subject": "feat(redesign): TEST badge on campaigns with metadata.is_test — visually flags test artefacts so metrics aren't mistaken for real data",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "d0a8a53",
       "subject": "fix(redesign): Pipeline excludes archived deals — honest kanban showing only live deals",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2f7fddf",
@@ -54,52 +59,47 @@
     {
       "hash": "f6c70be",
       "subject": "feat(redesign): KikoCompanyInsight on organisation detail — conflicts, research, warm path, strategic analysis",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "41ceec8",
       "subject": "feat(redesign): KikoContactInsight on contact detail — relationship warmth, research, cognitive analysis",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "521ca99",
       "subject": "fix(redesign): calendar strip uses /api/calendar-events endpoint instead of unreliable Kiko JSON parsing",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ead5e76",
       "subject": "docs: update REDESIGN_BUILD_SPEC.md — mark all completed phases with commit refs, track pending items",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "b894f81",
       "subject": "feat(redesign): add freshness timestamp to Partnership Matrix header — shows last loaded time",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "39acb4a",
       "subject": "fix(redesign): dedup priority actions by entity name — prevents duplicate items when task + draft reference same entity",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "3d455d7",
       "subject": "fix(redesign): hide daily briefing card and alert pill when redesign dashboard active — replaced by priority actions",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a98b857",
       "subject": "fix(redesign): nav active state — Records highlights for /contacts and /organisations, Campaigns for /campaigns/:id and /sequences/:id",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "bae4b42",
       "subject": "fix(redesign): adjust home page vertical centering — push greeting lower when dashboard is active",
-      "when": "2 hours ago"
-    },
-    {
-      "hash": "1a727ad",
-      "subject": "feat(redesign): Phase 3 — ConflictBadge on Contact + Organisation detail views",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     }
   ]
 }

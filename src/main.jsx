@@ -15,10 +15,10 @@ createRoot(document.getElementById('root')).render(
   </OrgProvider>,
 )
 
-// Register service worker for PWA
+// Unregister service worker — prevents stale cache on deployments
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => r.unregister())
   })
 }
 // build-bust 1775718796
