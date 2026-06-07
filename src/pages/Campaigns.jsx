@@ -525,8 +525,8 @@ export default function Campaigns({ user }) {
 
   // ── styles ──
   const C = T // color tokens shorthand
-  const cell = { padding: '10px 14px', fontSize: 12, color: C.text, borderBottom: `1px solid rgba(0,0,0,0.04)`, verticalAlign: 'middle', fontFamily: C.font }
-  const headerCell = { ...cell, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#A0A0A0', fontWeight: 500, background: '#FAFAF8', position: 'sticky', top: 0, zIndex: 1, borderBottom: '1px solid rgba(0,0,0,0.06)' }
+  const cell = { padding: '12px 16px', fontSize: 13, color: C.text, borderBottom: `1px solid rgba(0,0,0,0.04)`, verticalAlign: 'middle', fontFamily: C.font }
+  const headerCell = { ...cell, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#A0A0A0', fontWeight: 500, background: '#FAFAF8', position: 'sticky', top: 0, zIndex: 1, borderBottom: '1px solid rgba(0,0,0,0.06)' }
 
   // ── render ──
   return (
@@ -536,7 +536,7 @@ export default function Campaigns({ user }) {
       <aside style={{ width: 280, flexShrink: 0, borderRight: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '18px 18px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>Campaigns</div>
+            <div style={{ fontSize: 16, fontWeight: 300, color: C.text, fontFamily: "'Source Serif 4', Georgia, serif" }}>Campaigns</div>
             <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{campaigns.length} total</div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
