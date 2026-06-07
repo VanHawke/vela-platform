@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { showToast } from '@/components/ui/Toast'
 import PageHeader from '@/components/layout/PageHeader'
 import { ChevronDown, X, Check, Plus, GripVertical, Eye, EyeOff, Building2, Users, Mail, Calendar, Clock, ExternalLink, Activity, TrendingUp } from 'lucide-react'
+import { ConflictBadge } from '@/hooks/usePartnershipConflict'
 import './Pipeline.css'
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
@@ -628,6 +629,7 @@ export default function Pipeline({ user }) {
                       <div className="pl-deal-row1">
                         <div className="pl-deal-mark">{initials(company)}</div>
                         <div className="pl-deal-name">{company}</div>
+                        <ConflictBadge companyName={company} />
                       </div>
                       {d.contactName && <div className="pl-deal-contact">{d.contactName}</div>}
                       <div className="pl-deal-row3">
