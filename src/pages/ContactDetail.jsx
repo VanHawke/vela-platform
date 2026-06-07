@@ -5,6 +5,7 @@ import { ArrowLeft, Mail, Phone, Linkedin, Building2, Clock, Edit3, X, ExternalL
 import DocumentSection from '@/components/documents/DocumentSection'
 import PageHeader from '@/components/layout/PageHeader'
 import { ConflictBadge } from '@/hooks/usePartnershipConflict'
+import KikoContactInsight from '@/components/kiko/KikoContactInsight'
 
 export default function ContactDetail() {
   const { id } = useParams()
@@ -314,6 +315,9 @@ export default function ContactDetail() {
 
         {/* Right column */}
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Kiko's Intelligence — leads with analysis, not flat fields */}
+          <KikoContactInsight contactName={displayName(contact)} companyName={contact.company} />
+
           {/* Contact details / edit form */}
           <div style={card}>
             {editing ? (
