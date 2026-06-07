@@ -584,6 +584,7 @@ export default function Campaigns({ user }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: c.is_active ? '#0A0A0A' : 'rgba(148,163,184,0.4)' }} />
                   <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
+                  {c.metadata?.is_test && <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: 'rgba(160,160,160,0.15)', color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>TEST</span>}
                 </div>
                 <div style={{ fontSize: 10, color: C.textTertiary, display: 'flex', gap: 8, paddingLeft: 12 }}>
                   <span>{c.counts.total} prospects</span>
