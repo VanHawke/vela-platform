@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-06-07T18:19:59.756Z",
+  "generated_at": "2026-06-07T18:42:14.960Z",
   "commits": [
+    {
+      "hash": "df07514",
+      "subject": "fix(redesign): Messenger header — replaced colored Audio/Video/Meet buttons with sandbox-style icon buttons (Call/Search/Files). 32px transparent squares matching sandbox render exactly",
+      "when": "22 minutes ago"
+    },
     {
       "hash": "3acddf9",
       "subject": "fix(redesign): Home — chips overflow fixed (visible not hidden), flexWrap, paddingTop 4, chip text matches sandbox exactly (5 chips incl 'Helsing status' and 'Draft follow-up for Ball Corp'), added Ca",
-      "when": "8 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "5080389",
       "subject": "fix(redesign): Home greeting 36px (was 48px), removed 'What would you like to work on' subtitle — matching sandbox render exactly. Saved REDESIGN_COMPARISON.md for systematic cross-referencing",
-      "when": "20 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "f93d893",
       "subject": "feat(redesign): Messenger — flat Slack-style message rows replacing iMessage bubbles, matching sandbox render. All messages left-aligned with avatar+name+time, no bubble backgrounds",
-      "when": "46 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "2606bcc",
       "subject": "fix(redesign): Campaigns overview — use c.counts enrollment data instead of c.prospects (which doesn't exist in overview mode)",
-      "when": "50 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "50c4d2d",
       "subject": "feat(redesign): Campaigns card-list overview matching sandbox render — PageHead with OUTREACH eyebrow, full-width campaign cards with Source Serif 4 metrics, click to drill into detail",
-      "when": "53 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "e1d06d8",
       "subject": "style(redesign): Campaigns OUTREACH eyebrow label added to sidebar header, matching design system",
-      "when": "59 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "3fd468a",
       "subject": "feat(redesign): Add suggestion chips below prompt bar, update placeholder to match sandbox render. Chips: Brief me, Pipeline value, Draft a follow-up, Partnership conflicts",
-      "when": "64 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "efade29",
       "subject": "style(redesign): Pipeline deal card values — Source Serif 4, 14px, weight 400, serif numerals. Verified via screenshot.",
-      "when": "82 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "be0c9c8",
@@ -64,12 +69,12 @@
     {
       "hash": "4432d92",
       "subject": "fix: archived deals filter was excluding ALL deals — NULL archived field caused .not() to filter everything. Use .or() for NULL-safe check",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "fff84e9",
       "subject": "fix: replace service worker registration with unregistration — prevents stale cache blocking deployments",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "35cf976",
@@ -79,26 +84,21 @@
     {
       "hash": "900ccd0",
       "subject": "style(redesign): Contacts.css — 14px card radius, hover shadow matching Pipeline tokens",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "cd3f8aa",
       "subject": "style(redesign): Messenger — pill-style sidebar tabs, lighter chat header font weight, consistent with nav design language",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "1d5d7d7",
       "subject": "style(redesign): Partnership Matrix — increased header padding, pill-style tab bar matching nav, cleaner spacing",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "a23c932",
       "subject": "style(redesign): Campaigns — Source Serif 4 weight 300 for all stat values, 14px card radius, cleaner overview title, updated campaign detail stats bar",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "0936d6c",
-      "subject": "style(redesign): Pipeline — 14px card radius, enhanced hover shadows, weight 300 panel titles, increased spacing",
       "when": "4 hours ago"
     }
   ]

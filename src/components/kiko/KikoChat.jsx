@@ -1105,9 +1105,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         display: 'flex', flexDirection: 'column',
         background: isMobile ? '#F5F4F1' : '#FFFFFF',
         backdropFilter: 'none', WebkitBackdropFilter: 'none',
-        borderRadius: isMobile ? 28 : 16,
-        padding: isMobile ? '10px 10px 10px 22px' : '14px 16px 10px',
-        minHeight: isMobile ? 52 : undefined,
+        borderRadius: isMobile ? 28 : (welcome ? 24 : 16),
+        padding: isMobile ? '10px 10px 10px 22px' : (welcome ? '0' : '14px 16px 10px'),
+        minHeight: isMobile ? 52 : (welcome ? 48 : undefined),
         position: 'relative',
         border: isMobile ? '1px solid rgba(0,0,0,0.10)' : `1px solid ${promptFocused ? 'rgba(0,0,0,0.18)' : transcribing ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.08)'}`,
         boxShadow: isMobile ? '0 1px 4px rgba(0,0,0,0.06)' : (promptFocused

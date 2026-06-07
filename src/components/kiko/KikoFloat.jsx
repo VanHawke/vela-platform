@@ -576,7 +576,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   }
 
   // Hide KikoFloat entirely on homepage — Kiko IS the wave there
-  if (isHome && !voiceOpen) return null
+  // KikoFloat visible on all pages including home — matching sandbox render
 
   // Voice mode now stays inside float — no more full-page takeover
 
@@ -790,29 +790,16 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       )}
 
       {/* ── FAB button — Dark sphere with KikoAvatar, teal aura when speaking ── */}
-      <div className="kiko-float-trigger" style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101, width: 60, height: 60 }}>
-        {/* Teal aura rings — visible when voice is active */}
-        {voiceOpen && <>
-          <div style={{ position: 'absolute', inset: -5, borderRadius: '50%', border: '2px solid rgba(6,214,160,0.25)', animation: 'kikoPulseRing 2s ease-in-out infinite', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', inset: -12, borderRadius: '50%', border: '1.5px solid rgba(6,214,160,0.12)', animation: 'kikoPulseRing 2s ease-in-out 0.5s infinite', pointerEvents: 'none' }} />
-        </>}
-        {/* Idle breathing ring — subtle purple */}
-        {!open && !voiceOpen && <>
-          <div style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.10)', animation: 'kikoPulseRing 4s ease-in-out infinite', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', inset: -14, borderRadius: '50%', border: '1.5px solid rgba(0,0,0,0.08)', animation: 'kikoPulseRing 4s ease-in-out 1s infinite', pointerEvents: 'none' }} />
-        </>}
+      <div className="kiko-float-trigger" style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 101, width: 48, height: 48 }}>
+        {/* Pulse rings removed — sandbox render has clean button */}
         <button onClick={toggleOpen} className={fabClass} style={{
-          width: 60, height: 60, borderRadius: '50%',
-          background: voiceOpen
-            ? 'radial-gradient(circle at 40% 35%, rgba(10,28,24,1), rgba(8,8,12,1))'
-            : 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))',
-          border: voiceOpen ? '2px solid rgba(6,214,160,0.25)' : '2px solid rgba(0,0,0,0.14)',
-          color: '#0A0A0A',
+          width: 48, height: 48, borderRadius: '50%',
+          background: '#0A0A0A',
+          border: 'none',
+          color: '#FFFFFF',
           cursor: 'pointer',
-          boxShadow: voiceOpen
-            ? '0 0 0 3px rgba(6,214,160,0.08), 0 0 20px rgba(6,214,160,0.10), 0 6px 20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(0,0,0,0.08)'
-            : '0 0 0 3px rgba(0,0,0,0.04), 0 0 16px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(0,0,0,0.08)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+          display: 'grid', placeItems: 'center',
           overflow: 'hidden',
           transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
           transformOrigin: 'center',
@@ -821,11 +808,9 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'rgba(0,0,0,0.14)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 24px rgba(6,214,160,0.12), 0 8px 24px rgba(0,0,0,0.14)' : '0 0 0 4px rgba(0,0,0,0.05), 0 0 32px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.14)' }}}
           onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 3px rgba(6,214,160,0.08), 0 0 20px rgba(6,214,160,0.10), 0 6px 20px rgba(0,0,0,0.12)' : '0 0 0 2px rgba(0,0,0,0.03), 0 0 14px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.12)' }}}
         >
-          {voiceOpen
-            ? <div style={{ transform: open ? 'rotate(-45deg)' : 'none', transition: 'transform 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KikoAvatar size={20} state={voiceSpeaking ? 'responding' : 'thinking'} light /></div>
-            : open
-              ? <X size={18} />
-              : <KikoAvatar size={20} state="idle" light />
+          {open
+              ? <X size={18} color="#fff" />
+              : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
           }
         </button>
       </div>
