@@ -1729,7 +1729,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, minHeight: 0, padding: isMobile ? '0 24px' : '20px 32px 40px' }}>
 
           {/* Top spacer — desktop only, mobile content is naturally centred */}
-          {!isMobile && <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />}
+          {!isMobile && <div style={{ flex: voiceActive ? 1 : (USE_REDESIGN_DASHBOARD ? 0.3 : 0.5), transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />}
 
           {/* Wave — always visible, scales up in voice mode */}
           <div id="kikoWaveHome" style={{
