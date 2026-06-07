@@ -584,8 +584,8 @@ export default function Layout({ user }) {
       {!isMobile && <BackgroundTasksPanel user={user} />}
       {showOnboarding && <OnboardingModal user={user} onDismiss={() => setShowOnboarding(false)} />}
 
-      {/* Kiko floating — present on every page except home */}
-      {!isHome && !isMobile && (
+      {/* Kiko floating — present on every page including home, matching sandbox */}
+      {!isMobile && (
         <KikoFloat
           user={user}
           messages={kikoMessages}
