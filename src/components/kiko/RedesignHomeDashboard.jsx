@@ -138,10 +138,18 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
           })
         })
 
-        // Sort by priority (high first), limit to 5
+        // Sort by priority (high first), dedup by entity name, limit to 5
         const order = { high: 0, medium: 1, low: 2 }
         items.sort((a, b) => (order[a.priority] || 2) - (order[b.priority] || 2))
-        setPriorityItems(items.slice(0, 5))
+        // Dedup — if a task and draft reference the same entity, keep the higher-priority one
+        const seen = new Set()
+        const deduped = items.filter(item => {
+          const key = item.title.replace(/^(Reply|Overdue|Stale|Draft pending) — /, '').toLowerCase().trim()
+          if (seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        setPriorityItems(deduped.slice(0, 5))
 
         // Fetch calendar events for today via API
         try {
