@@ -317,7 +317,7 @@ export default function Organisations({ user }) {
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   useEffect(() => { setPage(0) }, [search])
 
-  const glass = { margin: '0 16px', padding: '12px 20px', borderRadius: 12, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 1px 2px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
+  const glass = { margin: '0 16px', padding: '14px 24px', borderRadius: 14, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 1px 2px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
   const listCard = { background: '#FFFFFF', borderRadius: 50, padding: '14px 18px', border: '0.5px solid rgba(0,0,0,0.08)', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'box-shadow 0.15s ease', cursor: 'pointer' }
   const inputStyle = { width: '100%', background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
   const sectionTitle = { fontSize: 12, fontWeight: 400, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.04em' }
@@ -603,12 +603,12 @@ export default function Organisations({ user }) {
           {selectedOrg && (
             <div style={{ width: 400, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
               {/* Header card */}
-              <div style={{ background: '#FFFFFF', borderRadius: 18, padding: '20px 20px 16px', border: '0.5px solid rgba(0,0,0,0.08)', boxShadow: 'none' }}>
+              <div style={{ background: '#FFFFFF', borderRadius: 14, padding: '20px 20px 16px', border: '0.5px solid rgba(0,0,0,0.08)', boxShadow: 'none' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <OrgLogo domain={orgDomain} name={selectedOrg.name} size={48} />
                     <div>
-                      <h2 style={{ fontSize: 17, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{selectedOrg.name}</h2>
+                      <h2 style={{ fontSize: 18, fontWeight: 300, color: 'var(--text)', margin: 0, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em' }}>{selectedOrg.name}</h2>
                       {selectedOrg.industry && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{selectedOrg.industry}</p>}
                       <div style={{ marginTop: 4 }}><ConflictBadge companyName={selectedOrg.name} /></div>
                     </div>
