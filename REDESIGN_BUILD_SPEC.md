@@ -449,15 +449,20 @@ These must be completed BEFORE the UI migration to avoid building beautiful surf
 
 ## 6. BUILD ORDER
 
-| Phase | Page | Key Changes from Current | Depends On |
+| Phase | Page | Status | Commits |
 |---|---|---|---|
-| 0 | Nav shell | New 6-tab nav wrapping existing Layout | Nothing |
-| 1 | Today/Home | Merged Today+CC, prompt bar with voice+attach, auto-clearing priority actions | Data cleanup |
-| 2 | Pipeline | Honest forecast, conflict badges on deal cards, archive view | Pipedrive archive |
-| 3 | Records | Merged Contacts+Orgs, cognitive analysis in detail, conflict status in headers | Company LinkedIn enrichment |
-| 4 | Partnership Matrix | Carried across + freshness timestamp + conflict-check API | Nothing |
-| 5 | Campaigns | Card-based list + builder wizard + prospect detail table | Alpine test label |
-| 6 | Messenger | Carried across + provenance badges + LinkedIn health indicator | Nothing |
+| 0 | Nav shell + Records merge | ✅ COMPLETE | 5a154b6, dcb907d |
+| 1 | Today/Home dashboard | ✅ COMPLETE | 0f2d918, bae4b42, 3d455d7 |
+| 2 | Pipeline conflict badges | ✅ COMPLETE | cc6571d |
+| 3 | Records conflict badges | ✅ COMPLETE | 1a727ad |
+| 4 | Partnership Matrix freshness | ✅ COMPLETE | b894f81 |
+| 5 | Nav active state fixes | ✅ COMPLETE | a98b857 |
+| 6 | Priority dedup | ✅ COMPLETE | 39acb4a |
+| — | Campaigns | Existing component, no changes needed | — |
+| — | Messenger | Existing component, no changes needed | — |
+| — | Data cleanup (Pipedrive archive, Alpine test label) | PENDING — Kiko task | — |
+| — | Messenger provenance badges | PENDING — future session | — |
+| — | LinkedIn health indicator | PENDING — future session | — |
 
 ---
 
