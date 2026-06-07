@@ -1778,10 +1778,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ textAlign: 'center', marginBottom: 12, fontSize: 11, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B' }}>
               <span style={{ color: '#0A0A0A', fontWeight: 600 }}>TODAY</span><span style={{ color: '#C0C0C0', margin: '0 8px' }}>·</span>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
-            <div style={{ fontSize: 48, fontWeight: 300, color: '#0A0A0A', margin: '0 0 10px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center', lineHeight: 1.1 }}>
+            <div style={{ fontSize: 36, fontWeight: 300, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center', lineHeight: 1.1 }}>
               {getGreeting()}, {firstName}
             </div>
-            <div style={{ fontSize: 19, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</div>
           </div>
 
           {/* Daily Briefing Card — hidden when redesign dashboard is active (replaced by priority actions) */}
