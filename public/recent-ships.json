@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-06-07T16:12:01.087Z",
+  "generated_at": "2026-06-07T16:15:30.767Z",
   "commits": [
+    {
+      "hash": "4432d92",
+      "subject": "fix: archived deals filter was excluding ALL deals — NULL archived field caused .not() to filter everything. Use .or() for NULL-safe check",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "fff84e9",
       "subject": "fix: replace service worker registration with unregistration — prevents stale cache blocking deployments",
-      "when": "12 minutes ago"
+      "when": "16 minutes ago"
     },
     {
       "hash": "35cf976",
       "subject": "style(redesign): Organisations — 14px card radius, Source Serif 4 weight 300 org name, increased toolbar padding",
-      "when": "55 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "900ccd0",
       "subject": "style(redesign): Contacts.css — 14px card radius, hover shadow matching Pipeline tokens",
-      "when": "71 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "cd3f8aa",
       "subject": "style(redesign): Messenger — pill-style sidebar tabs, lighter chat header font weight, consistent with nav design language",
-      "when": "71 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "1d5d7d7",
       "subject": "style(redesign): Partnership Matrix — increased header padding, pill-style tab bar matching nav, cleaner spacing",
-      "when": "76 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "a23c932",
       "subject": "style(redesign): Campaigns — Source Serif 4 weight 300 for all stat values, 14px card radius, cleaner overview title, updated campaign detail stats bar",
-      "when": "81 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "0936d6c",
       "subject": "style(redesign): Pipeline — 14px card radius, enhanced hover shadows, weight 300 panel titles, increased spacing",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "347bf29",
       "subject": "feat(redesign): ConflictBadge in Pipeline deal detail panel header — conflicts visible on click-into as well as kanban cards",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6686b73",
@@ -94,11 +99,6 @@
     {
       "hash": "3d455d7",
       "subject": "fix(redesign): hide daily briefing card and alert pill when redesign dashboard active — replaced by priority actions",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "a98b857",
-      "subject": "fix(redesign): nav active state — Records highlights for /contacts and /organisations, Campaigns for /campaigns/:id and /sequences/:id",
       "when": "3 hours ago"
     }
   ]

@@ -672,7 +672,7 @@ export default function Campaigns({ user }) {
         ) : (
           <>
             {/* Header */}
-            <div style={{ padding: '20px 28px 14px', borderBottom: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}` }}>
+            <div style={{ padding: '24px 28px 16px', borderBottom: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}` }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
@@ -746,9 +746,9 @@ export default function Campaigns({ user }) {
               return (
                 <div style={{ display: 'flex', gap: 0, padding: '0 28px', borderBottom: `1px solid ${C.border}` }}>
                   {stats.map((s, i) => (
-                    <div key={i} style={{ flex: 1, padding: '14px 0', textAlign: 'center', borderRight: i < stats.length - 1 ? `1px solid ${C.border}` : 'none' }}>
-                      <div style={{ fontSize: 20, fontWeight: 300, color: s.color, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em' }}>{s.value}</div>
-                      <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginTop: 2 }}>{s.label}</div>
+                    <div key={i} style={{ flex: 1, padding: '18px 0', textAlign: 'center', borderRight: i < stats.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                      <div style={{ fontSize: 28, fontWeight: 300, color: s.color, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.02em', lineHeight: 1 }}>{s.value}</div>
+                      <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500, marginTop: 6 }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
