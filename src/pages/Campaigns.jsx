@@ -602,7 +602,7 @@ export default function Campaigns({ user }) {
 
         {!selectedCampaign ? (
           <div style={{ flex: 1, padding: '32px 28px', overflowY: 'auto' }}>
-            <div style={{ fontSize: 20, fontWeight: 400, color: '#0A0A0A', marginBottom: 2, fontFamily: C.font, letterSpacing: '-0.01em' }}>Campaign Overview</div>
+            <div style={{ fontSize: 22, fontWeight: 300, color: '#0A0A0A', marginBottom: 2, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em' }}>Campaign Overview</div>
             <div style={{ fontSize: 12, color: '#A0A0A0', marginBottom: 20, fontFamily: C.font }}>Outreach performance across all campaigns</div>
             {/* Aggregate stats */}
             {(() => {
@@ -613,22 +613,22 @@ export default function Campaigns({ user }) {
               const replyRate = totalProspects > 0 ? Math.round((totalReplied / totalProspects) * 100) : 0
               const bounceRate = totalProspects > 0 ? Math.round((totalBounced / totalProspects) * 100) : 0
               return (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 24 }}>
-                  <div style={{ padding: '14px 18px', background: '#FAFAF8', border: '1px solid rgba(0,0,0,0.05)', borderRadius: 10 }}>
-                    <div style={{ fontSize: 22, fontWeight: 500, fontFamily: C.font }}>{active}</div>
-                    <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 2, fontFamily: C.font, letterSpacing: '0.03em' }}>Active campaigns</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+                  <div style={{ padding: '16px 18px', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
+                    <div style={{ fontSize: 24, fontWeight: 300, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em' }}>{active}</div>
+                    <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 4, fontFamily: C.font, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500 }}>Active campaigns</div>
                   </div>
-                  <div style={{ padding: '14px 18px', background: '#FAFAF8', border: '1px solid rgba(0,0,0,0.05)', borderRadius: 10 }}>
-                    <div style={{ fontSize: 22, fontWeight: 500, fontFamily: C.font }}>{totalProspects.toLocaleString()}</div>
-                    <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 2, fontFamily: C.font, letterSpacing: '0.03em' }}>Contacts enrolled</div>
+                  <div style={{ padding: '16px 18px', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
+                    <div style={{ fontSize: 24, fontWeight: 300, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em' }}>{totalProspects.toLocaleString()}</div>
+                    <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 4, fontFamily: C.font, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500 }}>Contacts enrolled</div>
                   </div>
-                  <div style={{ padding: '14px 18px', background: '#FAFAF8', border: '1px solid rgba(0,0,0,0.05)', borderRadius: 10 }}>
-                    <div style={{ fontSize: 22, fontWeight: 500, color: replyRate > 0 ? '#00B464' : '#0A0A0A', fontFamily: C.font }}>{replyRate}%</div>
-                    <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 2, fontFamily: C.font, letterSpacing: '0.03em' }}>Reply rate</div>
+                  <div style={{ padding: '16px 18px', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
+                    <div style={{ fontSize: 24, fontWeight: 300, color: replyRate > 0 ? '#7d8a64' : '#0A0A0A', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em' }}>{replyRate}%</div>
+                    <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 4, fontFamily: C.font, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500 }}>Reply rate</div>
                   </div>
-                  <div style={{ padding: '14px 18px', background: '#FAFAF8', border: '1px solid rgba(0,0,0,0.05)', borderRadius: 10 }}>
-                    <div style={{ fontSize: 22, fontWeight: 500, color: bounceRate > 5 ? '#f87171' : '#0A0A0A', fontFamily: C.font }}>{bounceRate}%</div>
-                    <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 2, fontFamily: C.font, letterSpacing: '0.03em' }}>Bounce rate</div>
+                  <div style={{ padding: '16px 18px', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
+                    <div style={{ fontSize: 24, fontWeight: 300, color: bounceRate > 5 ? '#b8643e' : '#0A0A0A', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em' }}>{bounceRate}%</div>
+                    <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 4, fontFamily: C.font, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500 }}>Bounce rate</div>
                   </div>
                 </div>
               )
@@ -676,7 +676,7 @@ export default function Campaigns({ user }) {
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                    <h1 style={{ fontSize: 18, fontWeight: 500, color: C.text, margin: 0, fontFamily: C.font, letterSpacing: '-0.01em' }}>{selectedCampaign.name}</h1>
+                    <h1 style={{ fontSize: 20, fontWeight: 300, color: C.text, margin: 0, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em' }}>{selectedCampaign.name}</h1>
                     {selectedCampaign.is_active ? (
                       <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(0,180,100,0.08)', color: '#00B464', border: '1px solid rgba(0,180,100,0.2)', fontWeight: 500 }}>Active</span>
                     ) : (
@@ -746,9 +746,9 @@ export default function Campaigns({ user }) {
               return (
                 <div style={{ display: 'flex', gap: 0, padding: '0 28px', borderBottom: `1px solid ${C.border}` }}>
                   {stats.map((s, i) => (
-                    <div key={i} style={{ flex: 1, padding: '12px 0', textAlign: 'center', borderRight: i < stats.length - 1 ? `1px solid ${C.border}` : 'none' }}>
-                      <div style={{ fontSize: 18, fontWeight: 600, color: s.color, fontFamily: C.font }}>{s.value}</div>
-                      <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 1 }}>{s.label}</div>
+                    <div key={i} style={{ flex: 1, padding: '14px 0', textAlign: 'center', borderRight: i < stats.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                      <div style={{ fontSize: 20, fontWeight: 300, color: s.color, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em' }}>{s.value}</div>
+                      <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginTop: 2 }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
