@@ -151,25 +151,21 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
         })
         setPriorityItems(deduped.slice(0, 5))
 
-        // Fetch calendar events for today via API
+        // Fetch calendar events for today via dedicated API endpoint
         try {
-          const calRes = await fetch('https://api.vanhawke.agency/api/kiko', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              message: 'Return today\'s calendar events as JSON array with fields: time, title, type. No explanation, just the JSON.',
-              userEmail: user?.email || 'sunny@vanhawke.com',
-              currentPage: 'home',
-              responseFormat: 'json',
-            }),
-          })
-          const calData = await calRes.json()
-          // Try to parse calendar events from Kiko's response
-          if (calData?.message) {
-            try {
-              const parsed = JSON.parse(calData.message)
-              if (Array.isArray(parsed)) setCalendarEvents(parsed.slice(0, 5))
-            } catch { /* Kiko returned prose, not JSON — skip calendar strip */ }
+          const today = new Date().toISOString().split('T')[0]
+          const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+          const calRes = await fetch(`https://api.vanhawke.agency/api/calendar-events?email=${encodeURIComponent(user?.email || 'sunny@vanhawke.com')}&timeMin=${today}T00:00:00Z&timeMax=${tomorrow}T00:00:00Z`)
+          if (calRes.ok) {
+            const calData = await calRes.json()
+            if (Array.isArray(calData)) {
+              const events = calData.slice(0, 5).map(ev => ({
+                time: ev.start?.dateTime ? new Date(ev.start.dateTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ev.start?.date || '',
+                title: ev.summary || 'Untitled',
+                type: ev.organizer?.self ? 'meeting' : 'event',
+              }))
+              if (!cancelled) setCalendarEvents(events)
+            }
           }
         } catch { /* Calendar fetch failed silently */ }
 
