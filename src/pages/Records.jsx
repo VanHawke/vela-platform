@@ -3,12 +3,20 @@
 // Wraps existing Contacts.jsx and Organisations.jsx components
 // until they're fully migrated into the redesigned layout
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Contacts from './Contacts'
 import Organisations from './Organisations'
 
 export default function Records({ user }) {
-  const [view, setView] = useState('people')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [view, setView] = useState(() => searchParams.get('view') || 'people')
+
+  // Persist view in URL params so it survives navigation
+  const switchView = (v) => {
+    setView(v)
+    setSearchParams({ view: v }, { replace: true })
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -26,7 +34,7 @@ export default function Records({ user }) {
           {['people', 'companies'].map(v => (
             <button
               key={v}
-              onClick={() => setView(v)}
+              onClick={() => switchView(v)}
               style={{
                 padding: '6px 18px', borderRadius: 24,
                 border: 'none', cursor: 'pointer',
