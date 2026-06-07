@@ -30,6 +30,10 @@ import ChatHistory from './ChatHistory'
 import AllChatsView from './AllChatsView'
 import KikoAvatar from './KikoAvatar'
 import HomeDashboard from './HomeDashboard'
+import RedesignHomeDashboard from './RedesignHomeDashboard'
+
+// Feature flag — matches Layout.jsx USE_REDESIGN_NAV
+const USE_REDESIGN_DASHBOARD = true
 // DraftPreview disabled — EmailDraft handles all email drafts
 import KikoInsights, { InsightsBadge } from './KikoInsights'
 import { useKikoLive } from '@/contexts/KikoLiveContext'
@@ -1860,6 +1864,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 </button>}
                 {/* Dynamic chips removed — only alert pill shown */}
               </div>}
+
+          {/* Redesign: Priority Actions + Bento Stats + Calendar + Next Race */}
+          {!isMobile && !voiceActive && USE_REDESIGN_DASHBOARD && (
+            <RedesignHomeDashboard user={user} onPromptClick={(msg) => { setInput(msg); handleSubmit(msg) }} />
+          )}
 
           {/* Bottom spacer — desktop only, mobile has prompt bar at bottom */}
           {!isMobile && <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />}
