@@ -354,8 +354,8 @@ export default function Messages({ user }) {
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px' }}>
           {/* Sidebar tabs: Chats / Calls */}
           <div style={{ display: 'flex', gap: 0, padding: '4px 8px 8px', borderBottom: `1px solid ${C.borderLight}`, marginBottom: 4 }}>
-            <button onClick={() => setSidebarTab('chats')} style={{ flex: 1, padding: '6px 0', fontSize: 11, fontWeight: sidebarTab === 'chats' ? 600 : 400, color: sidebarTab === 'chats' ? C.accent : C.muted, background: 'none', border: 'none', borderBottom: sidebarTab === 'chats' ? `2px solid ${C.accent}` : '2px solid transparent', cursor: 'pointer', fontFamily: C.font }}>Chats</button>
-            <button onClick={() => { setSidebarTab('calls'); loadCallHistory() }} style={{ flex: 1, padding: '6px 0', fontSize: 11, fontWeight: sidebarTab === 'calls' ? 600 : 400, color: sidebarTab === 'calls' ? C.accent : C.muted, background: 'none', border: 'none', borderBottom: sidebarTab === 'calls' ? `2px solid ${C.accent}` : '2px solid transparent', cursor: 'pointer', fontFamily: C.font }}>Calls</button>
+            <button onClick={() => setSidebarTab('chats')} style={{ flex: 1, padding: '6px 12px', fontSize: 12, fontWeight: sidebarTab === 'chats' ? 500 : 450, color: sidebarTab === 'chats' ? C.text : C.muted, background: sidebarTab === 'chats' ? 'rgba(0,0,0,0.06)' : 'transparent', border: 'none', borderRadius: 24, cursor: 'pointer', fontFamily: C.font, transition: 'all 0.15s' }}>Chats</button>
+            <button onClick={() => { setSidebarTab('calls'); loadCallHistory() }} style={{ flex: 1, padding: '6px 12px', fontSize: 12, fontWeight: sidebarTab === 'calls' ? 500 : 450, color: sidebarTab === 'calls' ? C.text : C.muted, background: sidebarTab === 'calls' ? 'rgba(0,0,0,0.06)' : 'transparent', border: 'none', borderRadius: 24, cursor: 'pointer', fontFamily: C.font, transition: 'all 0.15s' }}>Calls</button>
           </div>
 
           {sidebarTab === 'calls' ? (
@@ -450,7 +450,7 @@ export default function Messages({ user }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {activeChannelData.channel_type === 'group' ? <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(124,58,237,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>👥</div> : <Avatar name={getChannelDisplayName(activeChannelData)} size={32} status={getPresenceStatus(activeChannelData)} />}
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>{getChannelDisplayName(activeChannelData)}</div>
+                <div style={{ fontSize: 14, fontWeight: 500 }}>{getChannelDisplayName(activeChannelData)}</div>
                 {(() => { const st = getPresenceStatus(activeChannelData); if (!st) return <div style={{ fontSize: 11, color: C.muted }}>{activeChannelData.members?.length || 0} members</div>; return <div style={{ fontSize: 11, color: STATUS_COLORS[st], display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: STATUS_COLORS[st] }} />{st === 'online' ? 'Online' : st === 'away' ? 'Away' : st === 'busy' ? 'Do Not Disturb' : 'Offline'}</div> })()}
               </div>
             </div>
