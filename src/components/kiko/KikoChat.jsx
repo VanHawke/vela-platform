@@ -1833,14 +1833,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
               {/* Alerts pill (permanent sage, left) + 4 dynamic chips — hidden on mobile */}
               {!isMobile && <div id="kikoChipsWrap" style={{
-                display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center',
+                display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center',
+                flexWrap: 'wrap',
                 width: '100%', maxWidth: 660,
                 marginBottom: voiceActive ? 0 : 20,
-                opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 44,
+                paddingTop: 4,
+                opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 80,
                 transform: voiceActive ? 'translateY(30px)' : 'translateY(0)',
                 transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.1s',
-                overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
-                flexWrap: 'nowrap',
+                overflow: voiceActive ? 'hidden' : 'visible', pointerEvents: voiceActive ? 'none' : 'auto',
               }}>
                 {/* Alerts pill — hidden when redesign dashboard is active (replaced by priority actions) */}
                 {alertCount > 0 && !USE_REDESIGN_DASHBOARD && <button onClick={() => window.location.href = '/command-centre'} style={{
@@ -1862,7 +1863,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   {alertCount || 0} {alertCount === 1 ? 'action needed' : 'actions needed'}
                 </button>}
                 {/* Dynamic chips removed — only alert pill shown */}
-                {USE_REDESIGN_DASHBOARD && ['Brief me', 'Pipeline value', 'Draft a follow-up', 'Partnership conflicts'].map(chip => (
+                {USE_REDESIGN_DASHBOARD && ['Brief me', 'Helsing status', 'Draft follow-up for Ball Corp', 'Pipeline value', 'Partnership conflicts'].map(chip => (
                   <button key={chip} onClick={() => { setInput(chip); handleSubmit(chip) }} style={{
                     padding: '5px 14px', borderRadius: 50,
                     border: '1px solid rgba(0,0,0,0.08)', background: '#fff',

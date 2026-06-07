@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-06-07T17:59:22.955Z",
+  "generated_at": "2026-06-07T18:11:46.712Z",
   "commits": [
+    {
+      "hash": "5080389",
+      "subject": "fix(redesign): Home greeting 36px (was 48px), removed 'What would you like to work on' subtitle — matching sandbox render exactly. Saved REDESIGN_COMPARISON.md for systematic cross-referencing",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "f93d893",
       "subject": "feat(redesign): Messenger — flat Slack-style message rows replacing iMessage bubbles, matching sandbox render. All messages left-aligned with avatar+name+time, no bubble backgrounds",
-      "when": "25 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "2606bcc",
       "subject": "fix(redesign): Campaigns overview — use c.counts enrollment data instead of c.prospects (which doesn't exist in overview mode)",
-      "when": "29 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "50c4d2d",
       "subject": "feat(redesign): Campaigns card-list overview matching sandbox render — PageHead with OUTREACH eyebrow, full-width campaign cards with Source Serif 4 metrics, click to drill into detail",
-      "when": "33 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "e1d06d8",
       "subject": "style(redesign): Campaigns OUTREACH eyebrow label added to sidebar header, matching design system",
-      "when": "39 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "3fd468a",
       "subject": "feat(redesign): Add suggestion chips below prompt bar, update placeholder to match sandbox render. Chips: Brief me, Pipeline value, Draft a follow-up, Partnership conflicts",
-      "when": "43 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "efade29",
       "subject": "style(redesign): Pipeline deal card values — Source Serif 4, 14px, weight 400, serif numerals. Verified via screenshot.",
-      "when": "62 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "be0c9c8",
       "subject": "style(redesign): Messenger — dark monochrome bubbles replacing orange, rounder 18px radius, more padding",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a571af5",
@@ -94,11 +99,6 @@
     {
       "hash": "347bf29",
       "subject": "feat(redesign): ConflictBadge in Pipeline deal detail panel header — conflicts visible on click-into as well as kanban cards",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "6686b73",
-      "subject": "fix(redesign): Records toggle persists via URL params — survives back-navigation from contact/org detail",
       "when": "4 hours ago"
     }
   ]

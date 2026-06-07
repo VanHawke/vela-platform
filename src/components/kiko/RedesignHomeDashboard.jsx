@@ -224,6 +224,20 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
         </div>
       )}
 
+      {/* Next Race Card — matching sandbox render */}
+      <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'border-color 0.15s, box-shadow 0.2s', marginBottom: 4 }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.05)' }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.boxShadow = 'none' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="1.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 500 }}>Canadian Grand Prix</div>
+            <div style={{ fontSize: 12, color: '#6B6B6B' }}>June 15 · Circuit Gilles Villeneuve, Montreal</div>
+          </div>
+        </div>
+        <span style={{ fontSize: 12, color: '#A0A0A0', fontWeight: 500 }}>{Math.max(0, Math.ceil((new Date('2026-06-15') - new Date()) / 86400000))} days</span>
+      </div>
+
       {/* Bento stats row — pipeline + hot replies */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         <div style={cardStyle} onClick={() => nav('/pipeline')} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
