@@ -57,6 +57,7 @@ export default function PartnershipMatrix({ user }) {
   const [showAdd, setShowAdd] = useState(false)
   const [addForm, setAddForm] = useState({ team_id: '', partner_name: '', category_id: '', tier: 'partner' })
   const [alerts, setAlerts] = useState([])
+  const [lastRefresh, setLastRefresh] = useState('')
 
   const fetchAlerts = useCallback(async () => {
     try {
@@ -83,7 +84,7 @@ export default function PartnershipMatrix({ user }) {
       setData(d)
       if (!selectedTeam && d.teams?.length) setSelectedTeam(d.teams[0].id)
     } catch (e) { console.error('[Matrix]', e) }
-    finally { setLoading(false) }
+    finally { setLoading(false); setLastRefresh(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })) }
     setPageContext({ page: 'partnership-matrix', summary: `Partnership Matrix: ${data?.partnerships?.length || 0} partnerships, ${data?.gaps?.length || 0} gaps` })
   }
 
@@ -130,7 +131,7 @@ export default function PartnershipMatrix({ user }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 300, margin: 0, letterSpacing: '-0.018em', fontFamily: "'Source Serif 4', Georgia, serif" }}>Partnership Matrix</h1>
-            <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0' }}>{partnerships.length} partnerships · {teams.length} teams · {totalGaps} gaps · Auto-scanned daily 7am</p>
+            <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0' }}>{partnerships.length} partnerships · {teams.length} teams · {totalGaps} gaps · Auto-scanned daily 7am{lastRefresh ? ` · Last loaded ${lastRefresh}` : ''}</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <select value={filterTeam} onChange={e => setFilterTeam(e.target.value)} style={{ fontSize: 12, padding: '5px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, fontFamily: T.font, color: T.textSecondary }}>
