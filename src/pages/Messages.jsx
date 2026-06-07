@@ -579,15 +579,15 @@ export default function Messages({ user }) {
             const isFile = msg.content?.includes('📎 [')
 
             return (
-              <div key={msg.id} style={{ display: 'flex', flexDirection: isMine ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 8, marginTop: showAvatar ? 14 : 1 }}
-                onMouseEnter={() => setHoveredMsg(msg.id)} onMouseLeave={() => { setHoveredMsg(null); setShowReactions(null) }}>
-                <div style={{ width: 26, flexShrink: 0, cursor: showAvatar && !isMine ? 'pointer' : 'default' }} onClick={() => { if (showAvatar && !isMine) { const member = TEAM_MEMBERS.find(m => m.name === msg.from_name); if (member) setContactCard(member) } }}>
-                  {showAvatar && !isMine && <Avatar name={msg.from_name} size={26} color={isBot ? C.purple : undefined} status={presence[msg.from_user_id]?.status} />}</div>
-                <div style={{ maxWidth: '52%', position: 'relative' }}>
-                  {showAvatar && !isMine && <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 3, marginLeft: 2, color: isBot ? C.purple : C.sub }}>{msg.from_name}{isBot && <span style={{ background: 'rgba(124,58,237,0.12)', color: C.purple, padding: '1px 6px', borderRadius: 4, fontSize: 9, marginLeft: 5 }}>AI</span>}</div>}
+              <div key={msg.id} style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: 10, padding: '4px 4px', borderRadius: 8, marginTop: showAvatar ? 12 : 1 }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.015)'; setHoveredMsg(msg.id) }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; setHoveredMsg(null); setShowReactions(null) }}>
+                <div style={{ width: 32, flexShrink: 0, cursor: showAvatar ? 'pointer' : 'default' }} onClick={() => { if (showAvatar && !isMine) { const member = TEAM_MEMBERS.find(m => m.name === msg.from_name); if (member) setContactCard(member) } }}>
+                  {showAvatar && <Avatar name={msg.from_name} size={32} color={isBot ? C.purple : isMine ? '#0A0A0A' : undefined} status={!isMine ? presence[msg.from_user_id]?.status : undefined} />}</div>
+                <div style={{ flex: 1, position: 'relative' }}>
+                  {showAvatar && <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}><span style={{ fontSize: 13, fontWeight: 600, color: isBot ? C.purple : C.sub }}>{msg.from_name}{isBot && <span style={{ background: 'rgba(124,58,237,0.12)', color: C.purple, padding: '1px 6px', borderRadius: 4, fontSize: 9, marginLeft: 5 }}>AI</span>}</span><span style={{ fontSize: 11, color: C.muted }}>{new Date(msg.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div>}
                   {msg.pinned && <div style={{ fontSize: 10, color: C.accent, marginBottom: 3, display: 'flex', alignItems: 'center', gap: 3 }}><Icon name="pin" size={12} color={C.accent} /> Pinned</div>}
                   {replyMsg && <div style={{ fontSize: 11, color: C.muted, padding: '4px 8px', borderLeft: `2px solid ${C.accent}`, marginBottom: 4, borderRadius: '0 4px 4px 0', background: 'rgba(0,0,0,0.02)' }}><span style={{ fontWeight: 600 }}>{replyMsg.from_name}:</span> {replyMsg.content?.slice(0, 60)}</div>}
-                  <div style={{ padding: isFile ? '4px' : '10px 16px', borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isDeleted ? 'rgba(0,0,0,0.02)' : isMine ? '#0A0A0A' : isBot ? 'rgba(124,58,237,0.07)' : C.card, border: isDeleted ? `1px solid ${C.borderLight}` : isMine ? 'none' : isBot ? '1px solid rgba(124,58,237,0.12)' : `1px solid ${C.borderLight}`, fontSize: 13, lineHeight: 1.6, color: isDeleted ? C.muted : isMine ? '#fff' : C.text, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontStyle: isDeleted ? 'italic' : 'normal', overflow: 'hidden' }}>
+                  <div style={{ padding: isFile ? '4px' : '2px 0', borderRadius: 0, background: 'transparent', border: 'none', fontSize: 13, lineHeight: 1.6, color: isDeleted ? C.muted : C.text, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontStyle: isDeleted ? 'italic' : 'normal', overflow: 'hidden' }}>
                     {isDeleted ? 'This message was deleted' : isFile ? <FileCard content={msg.content} isMine={isMine} /> :
                       editingMsg === msg.id ? (
                         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>

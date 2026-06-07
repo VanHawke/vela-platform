@@ -1,50 +1,55 @@
 {
-  "generated_at": "2026-06-07T17:29:24.020Z",
+  "generated_at": "2026-06-07T17:33:40.541Z",
   "commits": [
+    {
+      "hash": "2606bcc",
+      "subject": "fix(redesign): Campaigns overview — use c.counts enrollment data instead of c.prospects (which doesn't exist in overview mode)",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "50c4d2d",
       "subject": "feat(redesign): Campaigns card-list overview matching sandbox render — PageHead with OUTREACH eyebrow, full-width campaign cards with Source Serif 4 metrics, click to drill into detail",
-      "when": "3 minutes ago"
+      "when": "7 minutes ago"
     },
     {
       "hash": "e1d06d8",
       "subject": "style(redesign): Campaigns OUTREACH eyebrow label added to sidebar header, matching design system",
-      "when": "9 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "3fd468a",
       "subject": "feat(redesign): Add suggestion chips below prompt bar, update placeholder to match sandbox render. Chips: Brief me, Pipeline value, Draft a follow-up, Partnership conflicts",
-      "when": "14 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "efade29",
       "subject": "style(redesign): Pipeline deal card values — Source Serif 4, 14px, weight 400, serif numerals. Verified via screenshot.",
-      "when": "32 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "be0c9c8",
       "subject": "style(redesign): Messenger — dark monochrome bubbles replacing orange, rounder 18px radius, more padding",
-      "when": "58 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "a571af5",
       "subject": "style(redesign): Pipeline — white column bg, larger headers, bigger dots, more card gap, spacious body padding",
-      "when": "62 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "5600bd3",
       "subject": "style(redesign): Campaigns sidebar title Source Serif 4, larger prospect table cells, tighter letter spacing",
-      "when": "65 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "236eec4",
       "subject": "style(redesign): Campaign detail stat bar — 28px Source Serif 4, more padding, stronger colour accents. Verified via browser screenshot.",
-      "when": "72 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "4432d92",
       "subject": "fix: archived deals filter was excluding ALL deals — NULL archived field caused .not() to filter everything. Use .or() for NULL-safe check",
-      "when": "77 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "fff84e9",
@@ -59,12 +64,12 @@
     {
       "hash": "900ccd0",
       "subject": "style(redesign): Contacts.css — 14px card radius, hover shadow matching Pipeline tokens",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "cd3f8aa",
       "subject": "style(redesign): Messenger — pill-style sidebar tabs, lighter chat header font weight, consistent with nav design language",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "1d5d7d7",
@@ -94,11 +99,6 @@
     {
       "hash": "7a86d2d",
       "subject": "feat(redesign): TEST badge on campaigns with metadata.is_test — visually flags test artefacts so metrics aren't mistaken for real data",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "d0a8a53",
-      "subject": "fix(redesign): Pipeline excludes archived deals — honest kanban showing only live deals",
       "when": "4 hours ago"
     }
   ]
