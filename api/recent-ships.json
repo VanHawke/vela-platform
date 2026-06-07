@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-06-07T15:59:39.884Z",
+  "generated_at": "2026-06-07T16:12:01.087Z",
   "commits": [
+    {
+      "hash": "fff84e9",
+      "subject": "fix: replace service worker registration with unregistration — prevents stale cache blocking deployments",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "35cf976",
       "subject": "style(redesign): Organisations — 14px card radius, Source Serif 4 weight 300 org name, increased toolbar padding",
-      "when": "43 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "900ccd0",
       "subject": "style(redesign): Contacts.css — 14px card radius, hover shadow matching Pipeline tokens",
-      "when": "59 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "cd3f8aa",
       "subject": "style(redesign): Messenger — pill-style sidebar tabs, lighter chat header font weight, consistent with nav design language",
-      "when": "59 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "1d5d7d7",
       "subject": "style(redesign): Partnership Matrix — increased header padding, pill-style tab bar matching nav, cleaner spacing",
-      "when": "64 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "a23c932",
       "subject": "style(redesign): Campaigns — Source Serif 4 weight 300 for all stat values, 14px card radius, cleaner overview title, updated campaign detail stats bar",
-      "when": "69 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "0936d6c",
       "subject": "style(redesign): Pipeline — 14px card radius, enhanced hover shadows, weight 300 panel titles, increased spacing",
-      "when": "75 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "347bf29",
@@ -39,22 +44,22 @@
     {
       "hash": "6686b73",
       "subject": "fix(redesign): Records toggle persists via URL params — survives back-navigation from contact/org detail",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7a86d2d",
       "subject": "feat(redesign): TEST badge on campaigns with metadata.is_test — visually flags test artefacts so metrics aren't mistaken for real data",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "d0a8a53",
       "subject": "fix(redesign): Pipeline excludes archived deals — honest kanban showing only live deals",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2f7fddf",
       "subject": "feat(redesign): data cleanup SQL + filter archived deals from home dashboard",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f6c70be",
@@ -94,11 +99,6 @@
     {
       "hash": "a98b857",
       "subject": "fix(redesign): nav active state — Records highlights for /contacts and /organisations, Campaigns for /campaigns/:id and /sequences/:id",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "bae4b42",
-      "subject": "fix(redesign): adjust home page vertical centering — push greeting lower when dashboard is active",
       "when": "3 hours ago"
     }
   ]
