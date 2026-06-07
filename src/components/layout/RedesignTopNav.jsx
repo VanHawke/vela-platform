@@ -65,6 +65,10 @@ export default function RedesignTopNav({ user, profile, customLogo, onSearchClic
 
   const isActive = (path) => {
     if (path === '/') return loc.pathname === '/' || loc.pathname === '/home' || loc.pathname === '/dashboard'
+    // Records tab should also highlight for /contacts and /organisations routes
+    if (path === '/records') return loc.pathname === '/records' || loc.pathname.startsWith('/records/') || loc.pathname === '/contacts' || loc.pathname.startsWith('/contacts/') || loc.pathname === '/organisations' || loc.pathname.startsWith('/organisations/')
+    // Campaigns tab should highlight for /campaigns/:id and /sequences/:id
+    if (path === '/campaigns') return loc.pathname === '/campaigns' || loc.pathname.startsWith('/campaigns/') || loc.pathname.startsWith('/sequences/')
     return loc.pathname === path || loc.pathname.startsWith(path + '/')
   }
 
