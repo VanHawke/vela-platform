@@ -44,6 +44,10 @@ import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
 import CommandPalette from './CommandPalette'
 import LegoraTopNav from './LegoraTopNav'
+import RedesignTopNav from './RedesignTopNav'
+
+// Feature flag — flip to true to use the redesigned 6-tab nav
+const USE_REDESIGN_NAV = true
 import useMobile from '@/hooks/useMobile'
 import AuroraCanvas from '../AuroraCanvas'
 import { useKikoPolish } from '@/lib/useKikoPolish'
@@ -480,17 +484,26 @@ export default function Layout({ user }) {
       {/* Aurora gradient orbs */}
       {/* AuroraCanvas removed — user requested clean white background */}
 
-      {/* Legora top nav — hidden on mobile, replaced by bottom tab bar */}
-      {!isMobile && <LegoraTopNav
-        user={user}
-        profile={profile}
-        customLogo={customLogo}
-        hasNotifications={notifCount > 0}
-        notifCount={notifCount}
-        isAdmin={isSuperAdmin}
-        onSearchClick={() => setPaletteOpen(true)}
-        onNotificationsClick={() => setNotifOpen(!notifOpen)}
-      />}
+      {/* Top nav — feature-flagged: redesign or legacy */}
+      {!isMobile && (USE_REDESIGN_NAV ? (
+        <RedesignTopNav
+          user={user}
+          profile={profile}
+          customLogo={customLogo}
+          onSearchClick={() => setPaletteOpen(true)}
+        />
+      ) : (
+        <LegoraTopNav
+          user={user}
+          profile={profile}
+          customLogo={customLogo}
+          hasNotifications={notifCount > 0}
+          notifCount={notifCount}
+          isAdmin={isSuperAdmin}
+          onSearchClick={() => setPaletteOpen(true)}
+          onNotificationsClick={() => setNotifOpen(!notifOpen)}
+        />
+      ))}
 
 
       {/* Notification dropdown */}
