@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-06-07T20:23:37.420Z",
+  "generated_at": "2026-06-07T20:32:33.295Z",
   "commits": [
+    {
+      "hash": "e1d9863",
+      "subject": "fix: remove handleSubmit from kiko_prefill useEffect dependency array — was causing 'Cannot access rt before initialization' crash",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "e1a8bb1",
       "subject": "feat(redesign): Homepage — prompt bar borderRadius 28 (more pill), greeting/date spacing fixed (margin 0 0 6px / 0 0 28px), priority actions wired to Kiko via kiko_prefill events (stale/reply/draft/ta",
-      "when": "2 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "4fa618d",
       "subject": "fix(redesign): Homepage — submit button BLACK default/ORANGE on input, greeting ABOVE date (matching sandbox), correct 2026 F1 calendar from official sources (Canadian GP was May 22-24, Monaco today J",
-      "when": "15 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "8f8accb",
       "subject": "feat(redesign): Homepage — remove bento stats, dynamic F1 race calendar (shows next race), hide Kiko float on homepage, remove voice avatar/dots, restore attach/mic/voice icons in prompt bar, send but",
-      "when": "29 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "5561662",
       "subject": "fix(redesign): KikoFloat panel — width 380 (was 340), borderRadius 14 (was 24), right 20 (was 24), header 'Kiko' in Source Serif 4 16px weight 400 — matching sandbox render",
-      "when": "67 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "9201863",
       "subject": "fix(redesign): Home prompt bar — hide +/mic/voice buttons, show always-visible black circle send button (36px, #0A0A0A) matching sandbox render exactly. Position absolute right:6 with padding to accom",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f0de0b6",
@@ -49,7 +54,7 @@
     {
       "hash": "5080389",
       "subject": "fix(redesign): Home greeting 36px (was 48px), removed 'What would you like to work on' subtitle — matching sandbox render exactly. Saved REDESIGN_COMPARISON.md for systematic cross-referencing",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f93d893",
@@ -79,7 +84,7 @@
     {
       "hash": "efade29",
       "subject": "style(redesign): Pipeline deal card values — Source Serif 4, 14px, weight 400, serif numerals. Verified via screenshot.",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "be0c9c8",
@@ -94,11 +99,6 @@
     {
       "hash": "5600bd3",
       "subject": "style(redesign): Campaigns sidebar title Source Serif 4, larger prospect table cells, tighter letter spacing",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "236eec4",
-      "subject": "style(redesign): Campaign detail stat bar — 28px Source Serif 4, more padding, stronger colour accents. Verified via browser screenshot.",
       "when": "4 hours ago"
     }
   ]

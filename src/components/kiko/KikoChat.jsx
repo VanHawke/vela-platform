@@ -1118,7 +1118,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         display: 'flex', flexDirection: 'column',
         background: isMobile ? '#F5F4F1' : '#FFFFFF',
         backdropFilter: 'none', WebkitBackdropFilter: 'none',
-        borderRadius: isMobile ? 28 : (welcome ? 28 : 16),
+        borderRadius: isMobile ? 28 : (welcome ? 9999 : 16),
         padding: isMobile ? '10px 10px 10px 22px' : (welcome ? (USE_REDESIGN_DASHBOARD ? '0' : '0') : '14px 16px 10px'),
         minHeight: isMobile ? 52 : (welcome ? 48 : undefined),
         position: 'relative',
