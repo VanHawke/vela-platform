@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-06-07T16:24:09.272Z",
+  "generated_at": "2026-06-07T16:26:55.181Z",
   "commits": [
+    {
+      "hash": "5600bd3",
+      "subject": "style(redesign): Campaigns sidebar title Source Serif 4, larger prospect table cells, tighter letter spacing",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "236eec4",
       "subject": "style(redesign): Campaign detail stat bar — 28px Source Serif 4, more padding, stronger colour accents. Verified via browser screenshot.",
-      "when": "7 minutes ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "4432d92",
       "subject": "fix: archived deals filter was excluding ALL deals — NULL archived field caused .not() to filter everything. Use .or() for NULL-safe check",
-      "when": "12 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "fff84e9",
       "subject": "fix: replace service worker registration with unregistration — prevents stale cache blocking deployments",
-      "when": "24 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "35cf976",
       "subject": "style(redesign): Organisations — 14px card radius, Source Serif 4 weight 300 org name, increased toolbar padding",
-      "when": "67 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "900ccd0",
       "subject": "style(redesign): Contacts.css — 14px card radius, hover shadow matching Pipeline tokens",
-      "when": "83 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "cd3f8aa",
       "subject": "style(redesign): Messenger — pill-style sidebar tabs, lighter chat header font weight, consistent with nav design language",
-      "when": "84 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "1d5d7d7",
       "subject": "style(redesign): Partnership Matrix — increased header padding, pill-style tab bar matching nav, cleaner spacing",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a23c932",
@@ -94,11 +99,6 @@
     {
       "hash": "b894f81",
       "subject": "feat(redesign): add freshness timestamp to Partnership Matrix header — shows last loaded time",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "39acb4a",
-      "subject": "fix(redesign): dedup priority actions by entity name — prevents duplicate items when task + draft reference same entity",
       "when": "3 hours ago"
     }
   ]
