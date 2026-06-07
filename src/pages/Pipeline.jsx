@@ -241,7 +241,7 @@ export default function Pipeline({ user }) {
     ;(async () => {
       setLoading(true)
       const [dealsRes, pipelinesRes, companiesRes] = await Promise.all([
-        supabase.from('deals').select('id, data, updated_at, org_id').order('updated_at', { ascending: false }),
+        supabase.from('deals').select('id, data, updated_at, org_id').not('data->>archived', 'eq', 'true').order('updated_at', { ascending: false }),
         supabase.from('pipelines').select('*').eq('org_id', ORG_ID),
         supabase.from('companies').select('id, data').eq('org_id', ORG_ID).limit(500),
       ])
