@@ -54,6 +54,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
         const [dealsRes, tasksRes, repliesRes, raceRes, draftsRes, followupsRes] = await Promise.all([
           supabase.from('deals').select('id, data, updated_at')
             .not('data->>status', 'in', '("won","lost")')
+            .not('data->>archived', 'eq', 'true')
             .order('updated_at', { ascending: false }),
           supabase.from('tasks').select('id, data, updated_at')
             .order('updated_at', { ascending: false }).limit(50),
