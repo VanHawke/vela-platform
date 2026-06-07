@@ -127,8 +127,8 @@ export default function PartnershipMatrix({ user }) {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', fontFamily: T.font, background: 'transparent', color: T.text, overflow: 'hidden' }}>
       {/* Header */}
-      <div style={{ padding: '12px 20px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+      <div style={{ padding: '16px 24px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 300, margin: 0, letterSpacing: '-0.018em', fontFamily: "'Source Serif 4', Georgia, serif" }}>Partnership Matrix</h1>
             <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0' }}>{partnerships.length} partnerships · {teams.length} teams · {totalGaps} gaps · Auto-scanned daily 7am{lastRefresh ? ` · Last loaded ${lastRefresh}` : ''}</p>
@@ -153,8 +153,8 @@ export default function PartnershipMatrix({ user }) {
         <div style={{ display: 'flex', gap: 4 }}>
           {TABS.map(t => { const I = t.icon; return (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 13, fontWeight: tab === t.id ? 600 : 400, transition: 'all 0.15s',
-              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? '#FFFFFF' : T.textSecondary,
+              display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 24, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 13, fontWeight: tab === t.id ? 500 : 450, transition: 'all 0.15s',
+              background: tab === t.id ? 'rgba(0,0,0,0.06)' : 'transparent', color: tab === t.id ? T.text : T.textSecondary,
             }}><I size={13} />{t.label}</button>
           )})}
         </div>
