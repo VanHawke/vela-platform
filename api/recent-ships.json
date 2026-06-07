@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-06-07T16:26:55.181Z",
+  "generated_at": "2026-06-07T16:30:50.998Z",
   "commits": [
+    {
+      "hash": "a571af5",
+      "subject": "style(redesign): Pipeline — white column bg, larger headers, bigger dots, more card gap, spacious body padding",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "5600bd3",
       "subject": "style(redesign): Campaigns sidebar title Source Serif 4, larger prospect table cells, tighter letter spacing",
-      "when": "2 minutes ago"
+      "when": "6 minutes ago"
     },
     {
       "hash": "236eec4",
       "subject": "style(redesign): Campaign detail stat bar — 28px Source Serif 4, more padding, stronger colour accents. Verified via browser screenshot.",
-      "when": "9 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "4432d92",
       "subject": "fix: archived deals filter was excluding ALL deals — NULL archived field caused .not() to filter everything. Use .or() for NULL-safe check",
-      "when": "15 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "fff84e9",
       "subject": "fix: replace service worker registration with unregistration — prevents stale cache blocking deployments",
-      "when": "27 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "35cf976",
       "subject": "style(redesign): Organisations — 14px card radius, Source Serif 4 weight 300 org name, increased toolbar padding",
-      "when": "70 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "900ccd0",
       "subject": "style(redesign): Contacts.css — 14px card radius, hover shadow matching Pipeline tokens",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "cd3f8aa",
       "subject": "style(redesign): Messenger — pill-style sidebar tabs, lighter chat header font weight, consistent with nav design language",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "1d5d7d7",
@@ -94,11 +99,6 @@
     {
       "hash": "ead5e76",
       "subject": "docs: update REDESIGN_BUILD_SPEC.md — mark all completed phases with commit refs, track pending items",
-      "when": "3 hours ago"
-    },
-    {
-      "hash": "b894f81",
-      "subject": "feat(redesign): add freshness timestamp to Partnership Matrix header — shows last loaded time",
       "when": "3 hours ago"
     }
   ]
