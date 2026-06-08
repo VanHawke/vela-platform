@@ -12,6 +12,7 @@ import PermissionGate from '@/components/PermissionGate'
 const Pipeline = lazy(() => import('@/pages/Pipeline'))
 const Contacts = lazy(() => import('@/pages/Contacts'))
 const ContactDetail = lazy(() => import('@/pages/ContactDetail'))
+const CompanyDetail = lazy(() => import('@/pages/CompanyDetail'))
 const Organisations = lazy(() => import('@/pages/Organisations'))
 const OutreachIntelligence = lazy(() => import('@/pages/OutreachIntelligence'))
 const PartnershipMatrix = lazy(() => import('@/pages/PartnershipMatrix'))
@@ -139,6 +140,7 @@ export default function App() {
           <Route path="organisations" element={<PermissionGate pageKey="organisations" user={user}><Organisations user={user} /></PermissionGate>} />
           <Route path="records" element={<Records user={user} />} />
           <Route path="records/contact/:id" element={<PermissionGate pageKey="contacts" user={user}><ContactDetail user={user} /></PermissionGate>} />
+          <Route path="records/company/:id" element={<CompanyDetail />} />
           <Route path="companies" element={<Navigate to="/organisations" replace />} />
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
           <Route path="tasks" element={<Navigate to="/command-centre" replace />} />

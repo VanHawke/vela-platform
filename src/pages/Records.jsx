@@ -15,6 +15,16 @@ function initials(name) {
   return p.length === 1 ? p[0][0].toUpperCase() : (p[0][0] + p[p.length - 1][0]).toUpperCase()
 }
 
+function fmtMoney(val) {
+  if (!val) return '—'
+  const num = typeof val === 'string' ? parseFloat(val.replace(/[^0-9.]/g, '')) : val
+  if (isNaN(num)) return val
+  if (num >= 1e9) return `$${(num / 1e9).toFixed(1)}bn`
+  if (num >= 1e6) return `$${(num / 1e6).toFixed(0)}m`
+  if (num >= 1e3) return `$${(num / 1e3).toFixed(0)}k`
+  return `$${num}`
+}
+
 function statusBadge(s) {
   if (!s) return null
   const m = {
@@ -58,9 +68,19 @@ export default function Records({ user }) {
           from += 1000
         }
       })()
-      // Load companies
-      const { data: companiesData } = await supabase.from('companies').select('*')
-      if (!cancelled) setCompanies(companiesData || [])
+      // Load companies (paginate — no 1000 cap)
+      const { data: initialCompanies } = await supabase.from('companies').select('*').order('data->>name', { ascending: true }).range(0, 999)
+      if (!cancelled) setCompanies(initialCompanies || [])
+      ;(async () => {
+        let from = 1000
+        while (!cancelled) {
+          const { data: batch } = await supabase.from('companies').select('*').order('data->>name', { ascending: true }).range(from, from + 999)
+          if (!batch || batch.length === 0 || cancelled) break
+          setCompanies(prev => [...prev, ...batch])
+          if (batch.length < 1000) break
+          from += 1000
+        }
+      })()
     })()
     return () => { cancelled = true }
   }, [user?.id])
@@ -75,7 +95,7 @@ export default function Records({ user }) {
         company: d.company || '', sector: d.sector || d.industry || '',
         picture: d.picture || d.profilePicture || d.avatar || null,
         linkedin: d.linkedin || d.linkedinUrl || null,
-        lastContacted: d.lastActivity ? new Date(d.lastActivity).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : (c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''),
+        lastContacted: d.lastActivity ? new Date(d.lastActivity).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''),
         daysSinceActivity: d.lastActivity ? Math.floor((Date.now() - new Date(d.lastActivity)) / 86400000) : null,
       }
     })
@@ -167,7 +187,7 @@ export default function Records({ user }) {
           <thead><tr>
             {view === 'people'
               ? ['Name', 'Company', 'Title', 'Sector', 'Last contacted'].map(h => <th key={h} style={thStyle}>{h}</th>)
-              : ['Company', 'Industry', 'Size', 'Location', 'Deals', 'Contacts'].map(h => <th key={h} style={thStyle}>{h}</th>)
+              : ['Company', 'Industry', 'Size', 'Location', 'Funding', 'Revenue'].map(h => <th key={h} style={thStyle}>{h}</th>)
             }
           </tr></thead>
           <tbody>
@@ -188,15 +208,15 @@ export default function Records({ user }) {
                 <td style={{ ...tdStyle, color: '#A0A0A0', fontSize: 11 }}>{c.lastContacted || '—'}</td>
               </tr>
             )) : paged.map(c => (
-              <tr key={c.id} onClick={() => nav(`/organisations?org=${c.id}`)} style={{ cursor: 'pointer' }}
+              <tr key={c.id} onClick={() => nav(`/records/company/${c.id}`)} style={{ cursor: 'pointer' }}
                 onMouseEnter={e => { for (const td of e.currentTarget.children) td.style.background = '#F5F4F1' }}
                 onMouseLeave={e => { for (const td of e.currentTarget.children) td.style.background = 'transparent' }}>
                 <td style={{ ...tdStyle, fontWeight: 500 }}>{c.name}</td>
                 <td style={{ ...tdStyle, color: '#6B6B6B' }}>{c.industry || '—'}</td>
                 <td style={{ ...tdStyle, color: '#A0A0A0', fontSize: 11 }}>{c.size || '—'}</td>
                 <td style={{ ...tdStyle, color: '#A0A0A0', fontSize: 11 }}>{c.location || '—'}</td>
-                <td style={tdStyle}>{c.deals || 0}</td>
-                <td style={tdStyle}>{c.contacts || 0}</td>
+                <td style={{ ...tdStyle, fontSize: 11 }}>{c.totalFunding || '—'}</td>
+                <td style={{ ...tdStyle, fontSize: 11 }}>{c.revenueEst || '—'}</td>
               </tr>
             ))}
           </tbody>
