@@ -190,48 +190,32 @@ export default function ContactDetail() {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <PageHeader
-        eyebrowCategory="DATABASE"
-        eyebrowSuffix={contact.company || 'Contact'}
-        title={displayName(contact)}
-        subtitle={contact.title || ''}
-      />
-      {/* Glass toolbar */}
-      <div style={{ margin: '0 16px 8px', padding: '10px 20px', borderRadius: 18, ...glass, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Header — redesign v2 back-button pattern */}
+      <div style={{ padding: '16px 44px', borderBottom: '1px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={() => nav('/contacts')} style={{ background: 'rgba(0,0,0,0.03)', border: 'none', borderRadius: 50, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-            <ArrowLeft style={{ width: 16, height: 16 }} />
+          <button onClick={() => nav('/records')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}>
+            <ArrowLeft size={18} stroke="#6B6B6B" />
           </button>
           <div>
-            <h1 style={{ fontSize: 19, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</h1>
-            {contact.title && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
+            <h1 style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 300, fontSize: 22, letterSpacing: '-0.015em', margin: 0, color: '#0A0A0A' }}>{displayName(contact)}</h1>
+            <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 2 }}>{contact.title}{contact.title && contact.company ? ' at ' : ''}{contact.company}</div>
             {contact.company && <div style={{ marginTop: 4 }}><ConflictBadge companyName={contact.company} /></div>}
-            {campaignHistory.length > 0 && (
-              <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 50, background: 'rgba(0,0,0,0.06)', border: '0.5px solid rgba(0,0,0,0.10)', color: '#0A0A0A', fontSize: 10, fontWeight: 500, fontFamily: 'var(--font)' }}>
-                  Previously in CRM · {campaignHistory.length} campaign{campaignHistory.length === 1 ? '' : 's'}
-                </span>
-                {campaignHistory.slice(0, 3).map(ct => (
-                  <span key={ct.id} onClick={() => nav(`/sequences/${ct.campaign_id}`)} style={{ cursor: 'pointer', padding: '3px 9px', borderRadius: 50, background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(0,0,0,0.08)', color: 'var(--text-secondary)', fontSize: 10, fontFamily: 'var(--font)' }} title={ct.kiko_sequences?.is_active ? 'Active campaign' : 'Paused campaign'}>
-                    {ct.kiko_sequences?.name || 'Campaign'} {ct.verification_status === 'verified_at_company' ? '✓' : ''}
-                  </span>
-                ))}
-                {campaignHistory.length > 3 && (
-                  <span style={{ padding: '3px 9px', color: 'var(--text-tertiary)', fontSize: 10, fontFamily: 'var(--font)' }}>
-                    +{campaignHistory.length - 3} more
-                  </span>
-                )}
-              </div>
-            )}
           </div>
         </div>
-        <button onClick={() => setEditing(!editing)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, background: editing ? 'transparent' : 'var(--accent)', color: editing ? 'var(--text-secondary)' : '#fff', padding: '6px 14px', borderRadius: 50, border: editing ? '1px solid var(--border)' : 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
-          {editing ? <><X style={{ width: 14, height: 14 }} /> Cancel</> : <><Edit3 style={{ width: 14, height: 14 }} /> Edit</>}
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {campaignHistory.length > 0 && (
+            <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(0,0,0,0.08)', color: '#6B6B6B', fontSize: 10, fontWeight: 500 }}>
+              {campaignHistory.length} campaign{campaignHistory.length === 1 ? '' : 's'}
+            </span>
+          )}
+          <button onClick={() => setEditing(!editing)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: editing ? 'transparent' : '#0A0A0A', color: editing ? '#6B6B6B' : '#fff', padding: '7px 14px', borderRadius: 8, border: editing ? '1px solid rgba(0,0,0,0.08)' : 'none', cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif" }}>
+            {editing ? <><X style={{ width: 14, height: 14 }} /> Cancel</> : <><Edit3 style={{ width: 14, height: 14 }} /> Edit</>}
+          </button>
+        </div>
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 44px', display: 'flex', gap: 20, alignItems: 'flex-start' }}>
         {/* Left column */}
         <div style={{ width: 340, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Avatar + name card */}
