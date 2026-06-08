@@ -98,6 +98,8 @@ export default function Campaigns({ user }) {
   // Build-campaign modal state
   const [buildOpen, setBuildOpen] = useState(false)
   const [bulkEditOpen, setBulkEditOpen] = useState(false)
+  // Campaign wizard state
+  const [wizardOpen, setWizardOpen] = useState(false)
   const [buildCategory, setBuildCategory] = useState('ai_data')
   const [buildTeam, setBuildTeam] = useState('auto') // 'auto' or a team id
   const [buildPhase, setBuildPhase] = useState('idle') // idle, building, review, enrolling, done, error
@@ -531,7 +533,7 @@ export default function Campaigns({ user }) {
   // ── render ──
 
   // ── OVERVIEW MODE: No campaign selected → show card list matching sandbox render ──
-  if (!selectedId && !buildOpen) {
+  if (!selectedId && !buildOpen && !wizardOpen) {
     const pct = (n, d) => d > 0 ? Math.round((n / d) * 100) : 0
     return (
       <div style={{ fontFamily: C.font, color: C.text, background: C.bg, minHeight: 'calc(100vh - 56px)' }}>
@@ -546,7 +548,7 @@ export default function Campaigns({ user }) {
               <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 8 }}>{campaigns.length} sequences · {campaigns.reduce((s, c) => s + (c.counts?.total || 0), 0)} enrolled</p>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => { setBuildOpen(true); setBuildPhase('idle') }} style={{ height: 32, padding: '0 14px', background: '#0A0A0A', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: 4, fontSize: 12, fontWeight: 500, fontFamily: C.font }}>+ New Campaign</button>
+              <button onClick={() => setWizardOpen(true)} style={{ height: 32, padding: '0 14px', background: '#0A0A0A', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: 4, fontSize: 12, fontWeight: 500, fontFamily: C.font }}>+ New Campaign</button>
             </div>
           </div>
         </div>
@@ -584,6 +586,11 @@ export default function Campaigns({ user }) {
         </div>
       </div>
     )
+  }
+
+  // ── WIZARD MODE: 4-step campaign builder ──
+  if (wizardOpen) {
+    return <CampaignWizard C={C} onBack={() => setWizardOpen(false)} onCreated={async (newId) => { setWizardOpen(false); await loadCampaigns(); if (newId) setSelectedId(newId) }} />
   }
 
   return (
@@ -1457,6 +1464,164 @@ export default function Campaigns({ user }) {
     </div>
   )
 }
+
+// ── Campaign Wizard: 4-step builder matching redesign spec ──
+function CampaignWizard({ C, onBack, onCreated }) {
+  const [step, setStep] = useState(1)
+  const [name, setName] = useState('')
+  const [audience, setAudience] = useState('')
+  const [steps, setSteps] = useState([{ type: 'Email', subject: '', delay: 'Day 0', body: '' }])
+  const [sendStart, setSendStart] = useState('09:00')
+  const [sendEnd, setSendEnd] = useState('17:00')
+  const [timezone, setTimezone] = useState('Asia/Qatar')
+  const [dailyLimit, setDailyLimit] = useState(30)
+  const [launching, setLaunching] = useState(false)
+  const totalSteps = 4
+
+  const addStep = () => setSteps(prev => [...prev, { type: 'Email', subject: '', delay: `+${prev.length * 3} days`, body: '' }])
+  const removeStep = (idx) => setSteps(prev => prev.filter((_, i) => i !== idx))
+  const updateStep = (idx, field, value) => setSteps(prev => { const n = [...prev]; n[idx] = { ...n[idx], [field]: value }; return n })
+
+  const handleLaunch = async () => {
+    if (!name.trim()) return
+    setLaunching(true)
+    try {
+      const { data, error } = await supabase.from('kiko_sequences').insert({
+        name: name.trim(),
+        steps: steps.map((s, i) => ({ step: i + 1, channel: s.type.toLowerCase(), subject: s.subject, body: s.body, delay: s.delay })),
+        is_active: true,
+        metadata: { audience, send_window: { start: sendStart, end: sendEnd }, timezone, daily_limit: dailyLimit, created_via: 'wizard' },
+      }).select('id').single()
+      if (error) throw error
+      onCreated(data?.id)
+    } catch (err) {
+      console.error('Failed to create campaign:', err)
+      setLaunching(false)
+    }
+  }
+
+  const font = "'Source Serif 4', Georgia, serif"
+  const inputStyle = { width: '100%', padding: '11px 14px', border: `1px solid rgba(0,0,0,0.08)`, borderRadius: 8, fontSize: 13, fontFamily: C.font, fontWeight: 450, outline: 'none', boxSizing: 'border-box', background: '#fff' }
+  const labelStyle = { fontSize: 11, fontWeight: 500, color: '#6B6B6B', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 6 }
+
+  return (
+    <div style={{ fontFamily: C.font, color: '#0A0A0A', background: '#FEFEFC', minHeight: 'calc(100vh - 56px)' }}>
+      {/* Header */}
+      <div style={{ padding: '16px 44px', borderBottom: '1px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: 12, background: '#fff' }}>
+        <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="1.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </button>
+        <h1 style={{ fontFamily: font, fontWeight: 300, fontSize: 22, letterSpacing: '-0.015em', margin: 0 }}>New Campaign</h1>
+      </div>
+
+      <div style={{ padding: '24px 44px 24px' }}>
+        {/* Progress bar */}
+        <div style={{ display: 'flex', gap: 4, marginBottom: 28, maxWidth: 620 }}>
+          {['Name & Target', 'Sequence', 'Timing', 'Review'].map((s, i) => (
+            <div key={i} style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ height: 3, borderRadius: 2, background: i + 1 <= step ? '#0A0A0A' : 'rgba(0,0,0,0.06)', marginBottom: 6, transition: 'background 0.2s' }} />
+              <span style={{ fontSize: 11, color: i + 1 <= step ? '#0A0A0A' : '#A0A0A0', fontWeight: i + 1 === step ? 600 : 400 }}>{s}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Step 1: Name & Target */}
+        {step === 1 && (
+          <div style={{ maxWidth: 560 }}>
+            <label style={labelStyle}>Campaign Name</label>
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Haas 2026 — Financial Services" style={{ ...inputStyle, marginBottom: 20 }} />
+            <label style={labelStyle}>Target Audience</label>
+            <textarea value={audience} onChange={e => setAudience(e.target.value)} placeholder="Describe ideal prospects — industry, seniority, geography…" rows={3} style={{ ...inputStyle, resize: 'none', lineHeight: 1.6, marginBottom: 16 }} />
+            <label style={labelStyle}>Or select segment</label>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {['Defence & Aerospace VPs', 'Technology CMOs', 'Financial Services Directors', 'Luxury Brand Heads'].map(s => (
+                <button key={s} onClick={() => setAudience(s)} style={{ padding: '6px 12px', borderRadius: 24, border: audience === s ? '1px solid #0A0A0A' : '1px solid rgba(0,0,0,0.08)', background: audience === s ? 'rgba(0,0,0,0.06)' : '#fff', fontSize: 12, color: audience === s ? '#0A0A0A' : '#6B6B6B', cursor: 'pointer', fontFamily: C.font, fontWeight: 450 }}>{s}</button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Sequence Builder */}
+        {step === 2 && (
+          <div style={{ maxWidth: 620 }}>
+            <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 16, fontWeight: 400 }}>Build your outreach sequence. Each step is an email or LinkedIn touch.</p>
+            {steps.map((s, i) => (
+              <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'flex-start' }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 600, color: '#6B6B6B', flexShrink: 0, marginTop: 8 }}>{i + 1}</div>
+                <div style={{ flex: 1, padding: 14, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                    <select value={s.type} onChange={e => updateStep(i, 'type', e.target.value)} style={{ padding: '6px 10px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 12, fontFamily: C.font, background: '#FEFEFC', outline: 'none' }}>
+                      <option>Email</option><option>LinkedIn</option>
+                    </select>
+                    <input value={s.delay} onChange={e => updateStep(i, 'delay', e.target.value)} style={{ width: 90, padding: '6px 10px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 12, fontFamily: C.font, fontWeight: 450, outline: 'none' }} />
+                    {steps.length > 1 && <button onClick={() => removeStep(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto', color: '#A0A0A0' }}><X size={14} /></button>}
+                  </div>
+                  <input value={s.subject} onChange={e => updateStep(i, 'subject', e.target.value)} placeholder="Subject line…" style={{ ...inputStyle, marginBottom: 6 }} />
+                  {s.type === 'Email' && (
+                    <textarea value={s.body} onChange={e => updateStep(i, 'body', e.target.value)} placeholder="Email body — under 150 words…" rows={3} style={{ ...inputStyle, fontSize: 12, fontWeight: 400, resize: 'none', lineHeight: 1.6 }} />
+                  )}
+                </div>
+              </div>
+            ))}
+            <button onClick={addStep} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px', borderRadius: 24, border: '1px dashed rgba(0,0,0,0.08)', background: 'transparent', fontSize: 12, color: '#6B6B6B', cursor: 'pointer', fontFamily: C.font, fontWeight: 450 }}>
+              <Plus size={12} /> Add step
+            </button>
+          </div>
+        )}
+
+        {/* Step 3: Timing */}
+        {step === 3 && (
+          <div style={{ maxWidth: 480 }}>
+            <label style={labelStyle}>Send Window</label>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+              <input value={sendStart} onChange={e => setSendStart(e.target.value)} type="time" style={{ padding: '8px 10px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 13, fontFamily: C.font }} />
+              <span style={{ alignSelf: 'center', color: '#A0A0A0' }}>to</span>
+              <input value={sendEnd} onChange={e => setSendEnd(e.target.value)} type="time" style={{ padding: '8px 10px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 13, fontFamily: C.font }} />
+            </div>
+            <label style={labelStyle}>Timezone</label>
+            <select value={timezone} onChange={e => setTimezone(e.target.value)} style={{ padding: '8px 10px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 13, fontFamily: C.font, fontWeight: 450, width: '100%', marginBottom: 20, background: '#fff' }}>
+              <option>Asia/Qatar</option><option>Europe/London</option><option>America/New_York</option><option>America/Los_Angeles</option>
+            </select>
+            <label style={labelStyle}>Daily Send Limit</label>
+            <input value={dailyLimit} onChange={e => setDailyLimit(Number(e.target.value))} type="number" style={{ padding: '8px 10px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 13, fontFamily: C.font, fontWeight: 450, width: 100 }} />
+            <p style={{ fontSize: 12, color: '#A0A0A0', marginTop: 4, fontWeight: 400 }}>Maximum emails per day via Gmail (Matt Smith's account)</p>
+          </div>
+        )}
+
+        {/* Step 4: Review */}
+        {step === 4 && (
+          <div style={{ maxWidth: 560 }}>
+            <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
+              <div style={{ fontFamily: font, fontSize: 20, fontWeight: 300, marginBottom: 4 }}>{name || 'Untitled Campaign'}</div>
+              <div style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 16 }}>
+                {steps.length} steps · {steps.filter(s => s.type === 'Email').length} emails · {steps.filter(s => s.type === 'LinkedIn').length} LinkedIn touches · {sendStart}–{sendEnd} {timezone}
+              </div>
+              {steps.map((s, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < steps.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 600, color: '#6B6B6B' }}>{i + 1}</div>
+                  <span style={{ fontSize: 12, color: '#A0A0A0', width: 60 }}>{s.delay}</span>
+                  <span style={{ fontSize: 11, color: '#5A6470', fontWeight: 500, width: 60 }}>{s.type}</span>
+                  <span style={{ fontSize: 13 }}>{s.subject || '(no subject)'}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Nav buttons */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 28, maxWidth: 620 }}>
+          <button onClick={() => step > 1 ? setStep(step - 1) : onBack()} style={{ padding: '8px 18px', borderRadius: 24, border: '1px solid rgba(0,0,0,0.08)', background: 'transparent', fontSize: 13, color: '#6B6B6B', cursor: 'pointer', fontFamily: C.font, fontWeight: 450 }}>
+            {step > 1 ? 'Back' : 'Cancel'}
+          </button>
+          <button onClick={() => step < totalSteps ? setStep(step + 1) : handleLaunch()} disabled={launching || (step === 4 && !name.trim())} style={{ padding: '8px 20px', borderRadius: 24, border: 'none', background: launching ? '#6B6B6B' : '#0A0A0A', color: '#fff', fontSize: 13, fontWeight: 500, cursor: launching ? 'default' : 'pointer', fontFamily: C.font, opacity: (step === 4 && !name.trim()) ? 0.4 : 1 }}>
+            {launching ? 'Creating…' : step < totalSteps ? 'Continue' : 'Launch Campaign'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // v0.0.38 (Sunny spec 2026-04-12): polls /api/job-status?id={jobId} every 1.5s
 // for real backend stage progress instead of frontend timer estimation.
 // Falls back to timer mode if no jobId is provided (backward compat).
