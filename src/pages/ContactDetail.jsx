@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Mail, Phone, Linkedin, Building2, Clock, Edit3, X, ExternalLink, Send, Inbox, CalendarCheck, ChevronRight } from 'lucide-react'
 import DocumentSection from '@/components/documents/DocumentSection'
+import EmailDraft from '@/components/kiko/EmailDraft'
 import PageHeader from '@/components/layout/PageHeader'
 import { ConflictBadge } from '@/hooks/usePartnershipConflict'
 import KikoContactInsight from '@/components/kiko/KikoContactInsight'
@@ -19,6 +20,9 @@ export default function ContactDetail() {
   const [dealInfo, setDealInfo] = useState(null)
   const [campaignHistory, setCampaignHistory] = useState([])
   const [companyData, setCompanyData] = useState(null)
+  const [rightPanel, setRightPanel] = useState('overview') // overview | email | linkedin | edit
+  const [kikoDraft, setKikoDraft] = useState(null)
+  const [draftLoading, setDraftLoading] = useState(false)
 
   useEffect(() => { load() }, [id])
 
@@ -180,6 +184,33 @@ export default function ContactDetail() {
   }
 
 
+  // ── Draft with Kiko ──
+  const handleDraftWithKiko = async () => {
+    setDraftLoading(true)
+    setRightPanel('email')
+    try {
+      const context = `Draft a cold outreach email to ${displayName(contact)}, ${contact.title || ''} at ${contact.company || ''}. Sector: ${contact.sector || contact.industry || ''}. ${companyData?.totalFunding ? `Company funding: ${companyData.totalFunding}.` : ''} ${companyData?.revenueEst ? `Revenue: ${companyData.revenueEst}.` : ''} ${daysSinceActivity ? `Last contact: ${daysAgo(contact.lastActivity)} ago.` : 'No prior contact.'} Position F1 sponsorship as a strategic platform. Under 150 words. USD only.`
+      const res = await fetch('https://api.vanhawke.agency/api/kiko', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: context, userId: 'sunny', mode: 'draft' })
+      })
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let fullText = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = decoder.decode(value)
+        const lines = chunk.split('\n').filter(l => l.startsWith('data: '))
+        for (const line of lines) {
+          try { const parsed = JSON.parse(line.slice(6)); if (parsed.delta) fullText += parsed.delta } catch {}
+        }
+      }
+      setKikoDraft(fullText)
+    } catch (e) { console.error('Draft failed:', e) }
+    setDraftLoading(false)
+  }
+
   // ── Engagement score (computed from activities) ──
   const opens = activities.filter(a => a.type === 'emailsOpened').length
   const clicks = activities.filter(a => a.type === 'emailsClicked').length
@@ -223,75 +254,69 @@ export default function ContactDetail() {
             </div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#6B6B6B', fontSize: 11, fontWeight: 500, textDecoration: 'none' }}><Mail size={12} /> Email</a>}
-          {(contact.linkedin || contact.linkedinUrl) && <a href={contact.linkedin || contact.linkedinUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: 'rgba(0,119,181,0.06)', border: '1px solid rgba(0,119,181,0.15)', color: '#0077B5', fontSize: 11, fontWeight: 500, textDecoration: 'none' }}><Linkedin size={12} /> LinkedIn</a>}
-          <button onClick={() => setEditing(!editing)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: editing ? 'transparent' : '#0A0A0A', color: editing ? '#6B6B6B' : '#fff', border: editing ? '1px solid rgba(0,0,0,0.08)' : '1px solid #0A0A0A', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
-            {editing ? <><X size={12} /> Cancel</> : <><Edit3 size={12} /> Edit</>}
+        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+          {[
+            { id: 'overview', label: 'Overview', icon: <Building2 size={12} />, style: {} },
+            { id: 'email', label: 'Email', icon: <Mail size={12} />, style: {} },
+            { id: 'linkedin', label: 'LinkedIn', icon: <Linkedin size={12} />, style: { background: rightPanel === 'linkedin' ? 'rgba(0,119,181,0.12)' : 'rgba(0,119,181,0.06)', border: rightPanel === 'linkedin' ? '1px solid rgba(0,119,181,0.3)' : '1px solid rgba(0,119,181,0.15)', color: '#0077B5' } },
+          ].map(b => (
+            <button key={b.id} onClick={() => { setRightPanel(b.id); if (b.id !== 'edit') setEditing(false) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: rightPanel === b.id && b.id !== 'linkedin' ? 'rgba(0,0,0,0.06)' : 'rgba(0,0,0,0.03)', border: rightPanel === b.id && b.id !== 'linkedin' ? '1px solid rgba(0,0,0,0.14)' : '1px solid rgba(0,0,0,0.08)', color: rightPanel === b.id && b.id !== 'linkedin' ? '#0A0A0A' : '#6B6B6B', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', ...b.style }}>
+              {b.icon} {b.label}
+            </button>
+          ))}
+          <button onClick={() => { setRightPanel('edit'); setEditing(true) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: '#0A0A0A', color: '#fff', border: '1px solid #0A0A0A', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <Edit3 size={12} /> Edit
           </button>
         </div>
       </div>
 
-      {/* ═══ Content — single column ═══ */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 44px', maxWidth: 720 }}>
+      {/* ═══ Content — two-column: left = metrics/info, right = dynamic panel ═══ */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 44px', display: 'flex', gap: 20 }}>
 
-        {/* ── Metric tiles ── */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          <div style={{ flex: 1, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
-            <div style={{ fontFamily: F, fontSize: 22, fontWeight: 300, color: engagementScore < 30 ? '#b8643e' : engagementScore < 60 ? '#B89C5C' : '#7d8a64' }}>{engagementScore}</div>
-            <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginTop: 6 }}>Engagement</div>
-            <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 4 }}>{opens} open{opens !== 1 ? 's' : ''} · {replies} repl{replies !== 1 ? 'ies' : 'y'} · {clicks} click{clicks !== 1 ? 's' : ''}</div>
+        {/* ── LEFT COLUMN: metrics, Kiko action, contact info ── */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Metric tiles */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            <div style={{ flex: 1, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
+              <div style={{ fontFamily: F, fontSize: 22, fontWeight: 300, color: engagementScore < 30 ? '#b8643e' : engagementScore < 60 ? '#B89C5C' : '#7d8a64' }}>{engagementScore}</div>
+              <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginTop: 6 }}>Engagement</div>
+              <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 4 }}>{opens} open{opens !== 1 ? 's' : ''} · {replies} repl{replies !== 1 ? 'ies' : 'y'}</div>
+            </div>
+            <div style={{ flex: 1, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
+              <div style={{ fontFamily: F, fontSize: 22, fontWeight: 300, color: warmthColor }}>{warmthLabel}</div>
+              <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginTop: 6 }}>Warmth</div>
+              <div style={{ height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.06)', marginTop: 6, overflow: 'hidden' }}><div style={{ height: '100%', width: `${engagementScore}%`, borderRadius: 2, background: warmthColor }} /></div>
+            </div>
+            <div style={{ flex: 1, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
+              <div style={{ fontFamily: F, fontSize: 22, fontWeight: 300 }}>{daysSinceActivity !== null ? daysAgo(contact.lastActivity) : '—'}</div>
+              <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginTop: 6 }}>Since contact</div>
+              {daysSinceActivity > 30 && <div style={{ fontSize: 10, color: '#b8643e', marginTop: 4 }}>Overdue</div>}
+            </div>
           </div>
-          <div style={{ flex: 1, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
-            <div style={{ fontFamily: F, fontSize: 22, fontWeight: 300, color: warmthColor }}>{warmthLabel}</div>
-            <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginTop: 6 }}>Warmth</div>
-            <div style={{ height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.06)', marginTop: 6, overflow: 'hidden' }}><div style={{ height: '100%', width: `${engagementScore}%`, borderRadius: 2, background: warmthColor }} /></div>
-          </div>
-          <div style={{ flex: 1, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
-            <div style={{ fontFamily: F, fontSize: 22, fontWeight: 300 }}>{daysSinceActivity !== null ? daysAgo(contact.lastActivity) : '—'}</div>
-            <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginTop: 6 }}>Since contact</div>
-            {daysSinceActivity > 30 && <div style={{ fontSize: 10, color: '#b8643e', marginTop: 4 }}>Overdue</div>}
-          </div>
-        </div>
 
-        {/* ── Suggested next action ── */}
-        {nextTask && (
-          <>
-            <h2 style={sh}>Suggested next action <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 6px', borderRadius: 4, background: 'rgba(125,138,100,0.12)', color: '#7d8a64', marginLeft: 6, fontFamily: "'Inter', sans-serif" }}>Kiko</span></h2>
-            <div style={{ background: '#fff', border: '1.5px solid rgba(125,138,100,0.3)', borderRadius: 14, padding: '14px 16px', marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-              <div style={sigI('rgba(125,138,100,0.10)')}><ExternalLink size={12} color="#7d8a64" /></div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 3 }}>{nextTask.label} — {nextTask.urgency === 'overdue' ? 'overdue' : nextTask.urgency}</div>
-                <div style={{ fontSize: 12, color: '#6B6B6B', lineHeight: 1.5 }}>
-                  {hasReply ? `${displayName(contact)} replied — follow up promptly via ${preferredChannel.toLowerCase()}.` :
-                   daysSinceActivity > 30 ? `No activity for ${daysAgo(contact.lastActivity)}. Consider a fresh approach via ${preferredChannel.toLowerCase()}${companyData?.totalFunding ? `, referencing ${contact.company}'s ${companyData.totalFunding} funding` : ''}.` :
-                   `Check-in via ${preferredChannel.toLowerCase()} to maintain momentum.`}
-                </div>
-                <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
-                  <button style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#fff', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Draft with Kiko</button>
-                  <button style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', background: 'transparent', color: '#6B6B6B', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Dismiss</button>
+          {/* Suggested next action */}
+          {nextTask && (
+            <>
+              <h2 style={sh}>Suggested next action <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 6px', borderRadius: 4, background: 'rgba(125,138,100,0.12)', color: '#7d8a64', marginLeft: 6, fontFamily: "'Inter', sans-serif" }}>Kiko</span></h2>
+              <div style={{ background: '#fff', border: '1.5px solid rgba(125,138,100,0.3)', borderRadius: 14, padding: '14px 16px', marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <div style={sigI('rgba(125,138,100,0.10)')}><ExternalLink size={12} color="#7d8a64" /></div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 3 }}>{nextTask.label}</div>
+                  <div style={{ fontSize: 12, color: '#6B6B6B', lineHeight: 1.5 }}>
+                    {hasReply ? `${displayName(contact)} replied — follow up via ${preferredChannel.toLowerCase()}.` :
+                     daysSinceActivity > 30 ? `No activity for ${daysAgo(contact.lastActivity)}. Fresh approach via ${preferredChannel.toLowerCase()}${companyData?.totalFunding ? `, referencing ${contact.company}'s ${companyData.totalFunding} funding` : ''}.` :
+                     `Check-in via ${preferredChannel.toLowerCase()} to maintain momentum.`}
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                    <button onClick={handleDraftWithKiko} disabled={draftLoading} style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#fff', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', opacity: draftLoading ? 0.5 : 1 }}>{draftLoading ? 'Drafting...' : 'Draft with Kiko'}</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
 
-
-        {/* ── Contact information / Edit form ── */}
-        <h2 style={sh}>Contact information</h2>
-        {editing ? (
-          <div style={{ ...crd, padding: '16px 14px' }}>
-            <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-              <div style={{ flex: 1 }}><p style={labelSt}>First name</p><input value={form.firstName} onChange={e => setForm(p => ({ ...p, firstName: e.target.value }))} style={inputSt} /></div>
-              <div style={{ flex: 1 }}><p style={labelSt}>Last name</p><input value={form.lastName} onChange={e => setForm(p => ({ ...p, lastName: e.target.value }))} style={inputSt} /></div>
-            </div>
-            {[{ key: 'title', label: 'Job title' }, { key: 'company', label: 'Company' }, { key: 'email', label: 'Email' }, { key: 'phone', label: 'Phone' }, { key: 'linkedin', label: 'LinkedIn URL' }].map(f => (
-              <div key={f.key} style={{ marginBottom: 10 }}><p style={labelSt}>{f.label}</p><input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputSt} /></div>
-            ))}
-            <div style={{ marginBottom: 10 }}><p style={labelSt}>Notes</p><textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={3} style={{ ...inputSt, resize: 'none' }} /></div>
-            <button onClick={save} style={{ padding: '7px 18px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Save changes</button>
-          </div>
-        ) : (
+          {/* Contact information */}
+          <h2 style={sh}>Contact information</h2>
           <div style={crd}>
             <div style={field}><span style={fl}>Email</span><span style={fv}>{contact.email ? <a href={`mailto:${contact.email}`} style={{ color: '#0077B5', textDecoration: 'none', fontSize: 12 }}>{contact.email}</a> : '—'}</span></div>
             <div style={field}><span style={fl}>Phone</span><span style={fv}>{contact.phone || '—'}</span></div>
@@ -301,94 +326,140 @@ export default function ContactDetail() {
             <div style={field}><span style={fl}>LinkedIn</span><span style={fv}>{(contact.linkedin || contact.linkedinUrl) ? <a href={contact.linkedin || contact.linkedinUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0077B5', textDecoration: 'none', fontSize: 12 }}>View profile</a> : '—'}</span></div>
             <div style={{ ...field, borderBottom: 'none' }}><span style={fl}>Preferred channel</span><span style={fv}>{preferredChannel}</span></div>
           </div>
-        )}
+        </div>
 
-        {/* ── Company context snapshot ── */}
-        {companyData && (
-          <>
-            <h2 style={sh}>Company context</h2>
-            <div onClick={() => orgId && nav(`/records/company/${orgId}`)} style={{ padding: '10px 14px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, marginBottom: 16, cursor: orgId ? 'pointer' : 'default' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span style={{ fontSize: 13, fontWeight: 500 }}>{companyData.name || contact.company}</span>
-                {orgId && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>}
-              </div>
-              <div style={{ display: 'flex', gap: 20 }}>
-                {[{ l: 'Industry', v: companyData.industry || companyData.sector }, { l: 'Funding', v: companyData.totalFunding }, { l: 'Revenue', v: companyData.revenueEst }, { l: 'Headcount', v: companyData.employees || companyData.size }].map(s => s.v ? (
-                  <div key={s.l}><div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>{s.l}</div><div style={{ fontSize: 12, marginTop: 2 }}>{s.v}</div></div>
-                ) : null)}
-              </div>
-            </div>
-          </>
-        )}
+        {/* ── RIGHT COLUMN: dynamic panel ── */}
+        <div style={{ flex: 1, minWidth: 0 }}>
 
-        {/* ── Correspondence history ── */}
-        <h2 style={sh}>Correspondence history</h2>
-        <div style={{ ...crd, padding: '4px 0' }}>
-          {activities.length > 0 ? activities.filter(a => ['emailsSent', 'emailsReplied', 'emailsOpened', 'emailsBounced', 'linkedinSent', 'linkedinReplied', 'linkedinInviteDone'].includes(a.type)).slice(0, 10).map((a, i) => {
-            const isReply = a.type?.includes('Replied')
-            const isLinkedin = a.type?.startsWith('linkedin')
-            const isBounce = a.type?.includes('Bounced')
-            const dotColor = isReply ? '#7d8a64' : isLinkedin ? '#0077B5' : isBounce ? '#b8643e' : '#0A0A0A'
-            return (
-              <div key={a.id || i} style={sig}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0, marginTop: 5 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 12, fontWeight: 500 }}>{activityLabel(a.type)}{a.email_subject ? ` — "${a.email_subject}"` : ''}</span>
-                    <span style={{ fontSize: 10, color: '#A0A0A0' }}>{formatDate(a.created_at)}</span>
-                  </div>
-                  {a.campaign_name && <div style={{ marginTop: 4 }}>
-                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: isLinkedin ? 'rgba(0,119,181,0.08)' : isReply ? 'rgba(125,138,100,0.12)' : 'rgba(0,0,0,0.04)', color: isLinkedin ? '#0077B5' : isReply ? '#7d8a64' : '#6B6B6B', fontWeight: 500, display: 'inline-block', marginRight: 4 }}>{isLinkedin ? 'LinkedIn' : isReply ? 'Reply' : 'Email'}</span>
-                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', color: '#6B6B6B', fontWeight: 500, display: 'inline-block' }}>{a.campaign_name}</span>
-                  </div>}
+          {/* OVERVIEW panel */}
+          {rightPanel === 'overview' && (<>
+            {companyData && (<>
+              <h2 style={sh}>Company context</h2>
+              <div onClick={() => orgId && nav(`/records/company/${orgId}`)} style={{ padding: '10px 14px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, marginBottom: 16, cursor: orgId ? 'pointer' : 'default' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 500 }}>{companyData.name || contact.company}</span>
+                  {orgId && <ChevronRight size={12} color="#A0A0A0" />}
+                </div>
+                <div style={{ display: 'flex', gap: 20 }}>
+                  {[{ l: 'Industry', v: companyData.industry || companyData.sector }, { l: 'Funding', v: companyData.totalFunding }, { l: 'Revenue', v: companyData.revenueEst }, { l: 'Headcount', v: companyData.employees || companyData.size }].map(s => s.v ? (
+                    <div key={s.l}><div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>{s.l}</div><div style={{ fontSize: 12, marginTop: 2 }}>{s.v}</div></div>
+                  ) : null)}
                 </div>
               </div>
-            )
-          }) : (
-            <div style={{ padding: 14, color: '#A0A0A0', fontSize: 12, textAlign: 'center' }}>No correspondence logged yet</div>
-          )}
-        </div>
+            </>)}
 
-        {/* ── Campaign enrollment ── */}
-        <h2 style={sh}>Campaign enrollment</h2>
-        <div style={{ ...crd, padding: '4px 0' }}>
-          {campaigns.length > 0 ? campaigns.map(c => (
-            <div key={c.name} style={sig}>
-              <div style={sigI('rgba(125,138,100,0.10)')}><Send size={12} color="#7d8a64" /></div>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 500 }}>{c.name}</div>
-                <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 1 }}>{c.events} event{c.events !== 1 ? 's' : ''}{c.lastEvent ? ` · Last: ${formatDate(c.lastEvent)}` : ''}</div>
+            <h2 style={sh}>Correspondence history</h2>
+            <div style={{ ...crd, padding: '4px 0' }}>
+              {activities.filter(a => ['emailsSent', 'emailsReplied', 'emailsOpened', 'emailsBounced', 'linkedinSent', 'linkedinReplied', 'linkedinInviteDone'].includes(a.type)).slice(0, 10).length > 0 ? activities.filter(a => ['emailsSent', 'emailsReplied', 'emailsOpened', 'emailsBounced', 'linkedinSent', 'linkedinReplied', 'linkedinInviteDone'].includes(a.type)).slice(0, 10).map((a, i) => {
+                const isReply = a.type?.includes('Replied')
+                const isLinkedin = a.type?.startsWith('linkedin')
+                const isBounce = a.type?.includes('Bounced')
+                const dotColor = isReply ? '#7d8a64' : isLinkedin ? '#0077B5' : isBounce ? '#b8643e' : '#0A0A0A'
+                return (
+                  <div key={a.id || i} style={sig}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0, marginTop: 5 }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 12, fontWeight: 500 }}>{activityLabel(a.type)}</span>
+                        <span style={{ fontSize: 10, color: '#A0A0A0' }}>{formatDate(a.created_at)}</span>
+                      </div>
+                      {a.campaign_name && <div style={{ marginTop: 4 }}><span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', color: '#6B6B6B', fontWeight: 500 }}>{a.campaign_name}</span></div>}
+                    </div>
+                  </div>
+                )
+              }) : <div style={{ padding: 14, color: '#A0A0A0', fontSize: 12, textAlign: 'center' }}>No correspondence logged yet</div>}
+            </div>
+
+            <h2 style={sh}>Campaign enrollment</h2>
+            <div style={{ ...crd, padding: '4px 0' }}>
+              {campaigns.length > 0 ? campaigns.map(c => (
+                <div key={c.name} style={sig}>
+                  <div style={sigI('rgba(125,138,100,0.10)')}><Send size={12} color="#7d8a64" /></div>
+                  <div><div style={{ fontSize: 12, fontWeight: 500 }}>{c.name}</div><div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 1 }}>{c.events} event{c.events !== 1 ? 's' : ''}{c.lastEvent ? ` · Last: ${formatDate(c.lastEvent)}` : ''}</div></div>
+                </div>
+              )) : <div style={{ padding: 14, color: '#A0A0A0', fontSize: 12, textAlign: 'center' }}>No campaigns yet</div>}
+            </div>
+
+            <DocumentSection linkedCompanyId={orgId} companyName={contact?.company} entityLabel="Documents shared" />
+
+            <h2 style={{ ...sh, marginTop: 16 }}>Activity & tasks</h2>
+            <div style={{ ...crd, padding: '4px 0' }}>
+              {nextTask && (
+                <div style={sig}>
+                  <div style={sigI('rgba(184,100,62,0.10)')}><CalendarCheck size={12} color="#b8643e" /></div>
+                  <div><div style={{ fontSize: 12, fontWeight: 500, color: nextTask.urgency === 'overdue' ? '#b8643e' : '#0A0A0A' }}>{nextTask.label}</div><div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 1 }}>{nextTask.channel} · Last: {contact.lastActivity ? formatDate(contact.lastActivity) : '—'}</div></div>
+                </div>
+              )}
+              <div style={{ ...sig, borderBottom: 'none' }}>
+                <div style={sigI('rgba(0,0,0,0.04)')}><Clock size={12} color="#6B6B6B" /></div>
+                <div><div style={{ fontSize: 12, fontWeight: 500 }}>Preferred channel: {preferredChannel}</div><div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 1 }}>{emailInteractions + linkedinInteractions} touchpoint{emailInteractions + linkedinInteractions !== 1 ? 's' : ''}</div></div>
               </div>
             </div>
-          )) : (
-            <div style={{ padding: 14, color: '#A0A0A0', fontSize: 12, textAlign: 'center' }}>No campaigns yet</div>
-          )}
-        </div>
+          </>)}
 
-        {/* ── Documents shared ── */}
-        <DocumentSection linkedCompanyId={orgId} companyName={contact?.company} entityLabel="Documents shared" />
-
-        {/* ── Activity & tasks ── */}
-        <h2 style={sh}>Activity & tasks</h2>
-        <div style={{ ...crd, padding: '4px 0' }}>
-          {nextTask && (
-            <div style={sig}>
-              <div style={sigI('rgba(184,100,62,0.10)')}><CalendarCheck size={12} color="#b8643e" /></div>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 500, color: nextTask.urgency === 'overdue' ? '#b8643e' : '#0A0A0A' }}>{nextTask.label} {nextTask.urgency === 'overdue' ? '— overdue' : ''}</div>
-                <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 1 }}>{nextTask.channel} · Last activity: {contact.lastActivity ? formatDate(contact.lastActivity) : '—'}{contact.createdAt ? ` · Created: ${formatDate(contact.createdAt)}` : ''}</div>
-              </div>
-            </div>
-          )}
-          <div style={{ ...sig, borderBottom: 'none' }}>
-            <div style={sigI('rgba(0,0,0,0.04)')}><Clock size={12} color="#6B6B6B" /></div>
+          {/* EMAIL panel — reuses existing EmailDraft component */}
+          {rightPanel === 'email' && (
             <div>
-              <div style={{ fontSize: 12, fontWeight: 500 }}>Preferred contact channel: {preferredChannel}</div>
-              <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 1 }}>Based on interaction history · {emailInteractions + linkedinInteractions} touchpoint{emailInteractions + linkedinInteractions !== 1 ? 's' : ''}</div>
+              <h2 style={sh}>Compose email</h2>
+              {draftLoading ? (
+                <div style={{ ...crd, padding: '40px 16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 12, color: '#7d8a64' }}>Kiko is drafting...</div>
+                </div>
+              ) : kikoDraft ? (
+                <EmailDraft text={kikoDraft} defaultTo={contact.email} defaultSender={null} />
+              ) : (
+                <EmailDraft text={`Subject: \nTo: ${contact.email || ''}\n\n`} defaultTo={contact.email} defaultSender={null} />
+              )}
             </div>
-          </div>
-        </div>
+          )}
 
+          {/* LINKEDIN panel */}
+          {rightPanel === 'linkedin' && (
+            <div>
+              <h2 style={{ ...sh, color: '#0077B5' }}>LinkedIn</h2>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <a href={contact.linkedin || contact.linkedinUrl || '#'} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: '14px', background: '#fff', border: '1px solid rgba(0,119,181,0.15)', borderRadius: 14, cursor: 'pointer', textAlign: 'center', textDecoration: 'none', color: '#0A0A0A' }}>
+                  <ExternalLink size={18} color="#0077B5" style={{ marginBottom: 4 }} />
+                  <div style={{ fontSize: 11, fontWeight: 500 }}>View profile</div>
+                  <div style={{ fontSize: 10, color: '#6B6B6B' }}>Opens new tab</div>
+                </a>
+                <div onClick={() => { setRightPanel('email'); setKikoDraft(null) }} style={{ flex: 1, padding: '14px', background: 'rgba(0,119,181,0.04)', border: '1.5px solid rgba(0,119,181,0.2)', borderRadius: 14, cursor: 'pointer', textAlign: 'center' }}>
+                  <Send size={18} color="#0077B5" style={{ marginBottom: 4 }} />
+                  <div style={{ fontSize: 11, fontWeight: 500 }}>Draft message</div>
+                  <div style={{ fontSize: 10, color: '#6B6B6B' }}>Via Matt's account · tracked</div>
+                </div>
+              </div>
+              {(contact.linkedin || contact.linkedinUrl) && (
+                <div style={crd}>
+                  <div style={field}><span style={fl}>LinkedIn URL</span><span style={fv}><a href={contact.linkedin || contact.linkedinUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0077B5', textDecoration: 'none', fontSize: 12 }}>{(contact.linkedin || contact.linkedinUrl || '').replace('https://www.linkedin.com/in/', '')}</a></span></div>
+                  <div style={{ ...field, borderBottom: 'none' }}><span style={fl}>Connection status</span><span style={fv}>{activities.some(a => a.type === 'linkedinInviteDone') ? 'Connected' : 'Not connected'}</span></div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* EDIT panel */}
+          {rightPanel === 'edit' && editing && (
+            <div>
+              <h2 style={sh}>Edit contact</h2>
+              <div style={{ ...crd, padding: '16px 14px' }}>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+                  <div style={{ flex: 1 }}><p style={labelSt}>First name</p><input value={form.firstName} onChange={e => setForm(p => ({ ...p, firstName: e.target.value }))} style={inputSt} /></div>
+                  <div style={{ flex: 1 }}><p style={labelSt}>Last name</p><input value={form.lastName} onChange={e => setForm(p => ({ ...p, lastName: e.target.value }))} style={inputSt} /></div>
+                </div>
+                {[{ key: 'title', label: 'Job title' }, { key: 'company', label: 'Company' }, { key: 'email', label: 'Email' }, { key: 'phone', label: 'Phone' }, { key: 'linkedin', label: 'LinkedIn URL' }].map(f => (
+                  <div key={f.key} style={{ marginBottom: 10 }}><p style={labelSt}>{f.label}</p><input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputSt} /></div>
+                ))}
+                <div style={{ marginBottom: 10 }}><p style={labelSt}>Notes</p><textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={3} style={{ ...inputSt, resize: 'none' }} /></div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={save} style={{ padding: '7px 18px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Save changes</button>
+                  <button onClick={() => { setEditing(false); setRightPanel('overview') }} style={{ padding: '7px 18px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', background: 'transparent', color: '#6B6B6B', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
       </div>
     </div>
   )
