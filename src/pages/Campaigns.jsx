@@ -589,8 +589,8 @@ export default function Campaigns({ user }) {
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 56px)', fontFamily: C.font, color: C.text, background: C.bg }}>
 
-      {/* ─── LEFT RAIL: Campaign list ─── */}
-      <aside style={{ width: 280, flexShrink: 0, borderRight: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* ─── LEFT RAIL: Campaign list (hidden in drill-in view) ─── */}
+      {!selectedCampaign && <aside style={{ width: 280, flexShrink: 0, borderRight: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '18px 18px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 4 }}><span style={{ color: '#0A0A0A', fontWeight: 600 }}>OUTREACH</span></div>
@@ -653,7 +653,7 @@ export default function Campaigns({ user }) {
             )
           })}
         </div>
-      </aside>
+      </aside>}
 
       {/* ─── MAIN: Prospecting table for selected campaign ─── */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
@@ -729,23 +729,28 @@ export default function Campaigns({ user }) {
           </div>
         ) : (
           <>
-            {/* Header */}
-            <div style={{ padding: '24px 28px 16px', borderBottom: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}` }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                    <h1 style={{ fontSize: 20, fontWeight: 300, color: C.text, margin: 0, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em' }}>{selectedCampaign.name}</h1>
+            {/* Header — full-page drill-in with back button */}
+            <div style={{ padding: '16px 44px', borderBottom: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <button onClick={() => { setSelectedId(null); setSelectedProspect(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="1.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                </button>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <h1 style={{ fontSize: 22, fontWeight: 300, color: C.text, margin: 0, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em' }}>{selectedCampaign.name}</h1>
                     {selectedCampaign.is_active ? (
-                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(0,180,100,0.08)', color: '#00B464', border: '1px solid rgba(0,180,100,0.2)', fontWeight: 500 }}>Active</span>
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(125,138,100,0.12)', color: '#7d8a64', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Active</span>
                     ) : (
-                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', color: '#6B6B6B', border: '1px solid rgba(0,0,0,0.08)', fontWeight: 500 }}>Draft</span>
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', color: '#A0A0A0', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Draft</span>
                     )}
+                    {selectedCampaign.metadata?.is_test && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', background: 'rgba(184,156,92,0.12)', color: '#B89C5C' }}>TEST</span>}
                   </div>
-                  <div style={{ fontSize: 12, color: C.textTertiary }}>
-                    {totalSteps} steps · {selectedCampaign.target_persona || 'No persona set'} · {prospects.length} prospects enrolled
+                  <div style={{ fontSize: 12, color: '#A0A0A0', marginTop: 2 }}>
+                    {totalSteps} steps · {prospects.length} enrolled
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button
                     onClick={() => toggleCampaign(selectedCampaign)}
                     style={{ padding: '7px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
@@ -778,7 +783,6 @@ export default function Campaigns({ user }) {
                     style={{ padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(248,113,113,0.25)', background: 'rgba(248,113,113,0.06)', color: '#f87171', fontSize: 12, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
                   ><Trash2 size={12} /> Delete</button>
                 </div>
-              </div>
             </div>
 
             {/* Campaign performance stats bar */}
@@ -802,11 +806,11 @@ export default function Campaigns({ user }) {
                 { label: 'Bounced', value: `${bounceRate}%`, color: bounceRate > 5 ? '#B8643E' : '#A0A0A0' },
               ]
               return (
-                <div style={{ display: 'flex', gap: 0, padding: '0 28px', borderBottom: `1px solid ${C.border}` }}>
+                <div style={{ display: 'flex', gap: 8, padding: '20px 44px', flexWrap: 'wrap' }}>
                   {stats.map((s, i) => (
-                    <div key={i} style={{ flex: 1, padding: '18px 0', textAlign: 'center', borderRight: i < stats.length - 1 ? `1px solid ${C.border}` : 'none' }}>
-                      <div style={{ fontSize: 28, fontWeight: 300, color: s.color, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.02em', lineHeight: 1 }}>{s.value}</div>
-                      <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500, marginTop: 6 }}>{s.label}</div>
+                    <div key={i} style={{ flex: '1 1 80px', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
+                      <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: 22, fontWeight: 300, color: s.color, letterSpacing: '-0.015em', lineHeight: 1 }}>{s.value}</div>
+                      <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginTop: 6 }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -814,7 +818,7 @@ export default function Campaigns({ user }) {
             })()}
 
             {/* Filter bar */}
-            <div style={{ padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}` }}>
+            <div style={{ padding: '12px 44px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}` }}>
               <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
                 <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: C.textTertiary }} />
                 <input
