@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { showToast } from '@/components/ui/Toast'
 import { ChevronDown, X, Check, Plus, GripVertical, Eye, EyeOff, Building2, Users, Mail, Calendar, Clock, ExternalLink, Activity, TrendingUp } from 'lucide-react'
 import { ConflictBadge } from '@/hooks/usePartnershipConflict'
+import { setPageContext } from '@/lib/pageContext'
 import './Pipeline.css'
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
@@ -253,8 +254,7 @@ export default function Pipeline({ user }) {
         updated_at: d.updated_at,
       }))
       setDeals(normalized)
-
-      // Pipelines list
+      setPageContext({ page: 'pipeline', summary: `Pipeline: ${normalized.length} deals` })
       const pls = pipelinesRes.data || []
       setPipelines(pls.length > 0 ? pls : [
         { id: 'haas-f1',  name: 'Haas F1',     visible: true, org_id: ORG_ID },

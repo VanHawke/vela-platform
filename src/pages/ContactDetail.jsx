@@ -5,6 +5,7 @@ import { ArrowLeft, Mail, Linkedin, Building2, Clock, Edit3, ExternalLink, Send,
 import DocumentSection from '@/components/documents/DocumentSection'
 import EmailDraft from '@/components/kiko/EmailDraft'
 import { ConflictBadge } from '@/hooks/usePartnershipConflict'
+import { setPageContext } from '@/lib/pageContext'
 
 export default function ContactDetail() {
   const { id } = useParams()
@@ -31,6 +32,7 @@ export default function ContactDetail() {
       const c = { id: data.id, ...data.data, updated_at: data.updated_at }
       setContact(c)
       setForm({ firstName: c.firstName || '', lastName: c.lastName || '', email: c.email || '', phone: c.phone || '', company: c.company || '', title: c.title || '', linkedin: c.linkedin || '', notes: c.notes || '' })
+      setPageContext({ page: 'contact_detail', summary: `Viewing ${c.firstName || ''} ${c.lastName || ''} — ${c.title || ''} at ${c.company || ''}`, contact: { name: `${c.firstName || ''} ${c.lastName || ''}`, company: c.company, email: c.email, title: c.title } })
 
       // Find linked organisation + company data
       if (c.companyId) {

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, ExternalLink, TrendingUp, DollarSign, Shield, Flag, Users, AlertTriangle, Building2 } from 'lucide-react'
+import { setPageContext } from '@/lib/pageContext'
 
 export default function CompanyDetail() {
   const { id } = useParams()
@@ -19,6 +20,7 @@ export default function CompanyDetail() {
     const { data } = await supabase.from('companies').select('id, data').eq('id', id).single()
     if (data) {
       setCompany({ id: data.id, ...data.data })
+      setPageContext({ page: 'company_detail', summary: `Viewing ${data.data?.name || 'Company'} — ${data.data?.industry || ''}, ${data.data?.employees || ''} employees`, company: { name: data.data?.name, industry: data.data?.industry, funding: data.data?.totalFunding } })
       // Load contacts at this company
       const companyName = data.data?.name
       if (companyName) {

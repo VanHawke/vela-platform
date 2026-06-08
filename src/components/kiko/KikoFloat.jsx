@@ -618,15 +618,6 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 </span>
               )}
             </div>
-            <button onClick={() => {
-              const md = messages.map(m => m.role === 'user' ? '**You:** ' + m.content : '**Kiko:** ' + m.content).join('\n\n---\n\n')
-              const blob = new Blob([md], { type: 'text/markdown' })
-              const url = URL.createObjectURL(blob)
-              const a = document.createElement('a'); a.href = url; a.download = 'kiko-chat-' + new Date().toISOString().slice(0,10) + '.md'; a.click()
-              URL.revokeObjectURL(url)
-            }} title="Export chat" style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTer, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </button>
             <button onClick={toggleOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTer, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
               <X size={13} />
             </button>

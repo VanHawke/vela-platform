@@ -325,7 +325,7 @@
 }
 .pl-board.with-panel {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr clamp(340px, 30vw, 520px);
   gap: 14px;
 }
 .pl-cols-wrap {
@@ -378,7 +378,10 @@
   font-family: var(--font);
   display: flex;
   flex-direction: column;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.pl-panel::-webkit-scrollbar { display: none; }
 .pl-panel-h {
   display: flex; align-items: center; gap: 10px;
   padding-bottom: 14px;

@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import T from '@/lib/theme'
+import { setPageContext } from '@/lib/pageContext'
 
 const PAGE_SIZE = 50
 const C = T // color shorthand
@@ -57,7 +58,7 @@ export default function Records({ user }) {
       setLoading(true)
       // Load contacts (first 500 fast, then stream rest)
       const { data: initialContacts } = await supabase.from('contacts').select('*').order('updated_at', { ascending: false }).range(0, 499)
-      if (!cancelled) { setContacts(initialContacts || []); setLoading(false) }
+      if (!cancelled) { setContacts(initialContacts || []); setLoading(false); setPageContext({ page: 'records', summary: `Records: ${(initialContacts||[]).length} contacts`, tab: 'people' }) }
       ;(async () => {
         let from = 500
         while (!cancelled) {

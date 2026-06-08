@@ -1,6 +1,7 @@
 // src/pages/Messages.jsx — Team messaging: presence, reactions, threading, Teams-quality file sharing
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { setPageContext } from '@/lib/pageContext'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useVoiceCall } from '../hooks/useVoiceCall'
@@ -149,7 +150,7 @@ export default function Messages({ user }) {
   const [callHistory, setCallHistory] = useState([]) // { recipientId, recipientName }
 
   const loadChannels = useCallback(async () => {
-    try { const res = await fetch(`${API}/api/team-messages?action=channels&userId=${userId}`); const d = await res.json(); setChannels(d.channels || []); if (!activeChannel && d.channels?.length) setActiveChannel(d.channels[0].id) } catch (e) {} finally { setLoading(false) }
+    try { const res = await fetch(`${API}/api/team-messages?action=channels&userId=${userId}`); const d = await res.json(); setChannels(d.channels || []); if (!activeChannel && d.channels?.length) setActiveChannel(d.channels[0].id); setPageContext({ page: 'messenger', summary: `Messenger: ${(d.channels||[]).length} channels` }) } catch (e) {} finally { setLoading(false) }
   }, [userId, activeChannel])
   const loadMessages = useCallback(async () => {
     if (!activeChannel) return
