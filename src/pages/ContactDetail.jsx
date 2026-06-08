@@ -18,6 +18,7 @@ export default function ContactDetail() {
   const [orgId, setOrgId] = useState(null)
   const [dealInfo, setDealInfo] = useState(null)
   const [campaignHistory, setCampaignHistory] = useState([])
+  const [companyData, setCompanyData] = useState(null)
 
   useEffect(() => { load() }, [id])
 
@@ -29,13 +30,15 @@ export default function ContactDetail() {
       setContact(c)
       setForm({ firstName: c.firstName || '', lastName: c.lastName || '', email: c.email || '', phone: c.phone || '', company: c.company || '', title: c.title || '', linkedin: c.linkedin || '', notes: c.notes || '' })
 
-      // Find linked organisation
+      // Find linked organisation + company data
       if (c.companyId) {
         setOrgId(c.companyId)
+        const { data: compRow } = await supabase.from('companies').select('id, data').eq('id', c.companyId).single()
+        if (compRow) setCompanyData(compRow.data)
       } else if (c.company) {
         const { data: orgs } = await supabase.from('companies').select('id, data')
           .filter('data->>name', 'eq', c.company).limit(1)
-        if (orgs && orgs.length > 0) setOrgId(orgs[0].id)
+        if (orgs && orgs.length > 0) { setOrgId(orgs[0].id); setCompanyData(orgs[0].data) }
       }
 
       // Load activities
@@ -176,262 +179,216 @@ export default function ContactDetail() {
     return map[type] || type
   }
 
-  const urgencyColor = (u) => u === 'overdue' ? '#ef4444' : u === 'high' ? '#f59e0b' : u === 'due' ? '#3b82f6' : 'var(--text-tertiary)'
 
-  const glass = { background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }
-  const card = { background: 'rgba(0,0,0,0.03)', borderRadius: 18, padding: 24, border: '0.5px solid rgba(0,0,0,0.08)', boxShadow: 'none' }
-  const inputStyle = { width: '100%', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
-  const labelStyle = { fontSize: 12, fontWeight: 500, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }
-  const sectionTitle = { fontSize: 13, fontWeight: 400, color: 'var(--text)', fontFamily: 'var(--font)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.04em' }
-  const emptyText = { fontSize: 13, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
+  // ── Engagement score (computed from activities) ──
+  const opens = activities.filter(a => a.type === 'emailsOpened').length
+  const clicks = activities.filter(a => a.type === 'emailsClicked').length
+  const replies = activities.filter(a => ['emailsReplied', 'linkedinReplied'].includes(a.type)).length
+  const liInteractions = activities.filter(a => a.type?.startsWith('linkedin')).length
+  const engagementScore = Math.min(100, Math.round((opens * 5) + (clicks * 15) + (replies * 40) + (liInteractions * 10)))
+  const warmthLabel = engagementScore >= 60 ? 'Hot' : engagementScore >= 30 ? 'Warm' : 'Cold'
+  const warmthColor = engagementScore >= 60 ? '#7d8a64' : engagementScore >= 30 ? '#B89C5C' : '#5A6470'
 
-  if (loading) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 24, height: 24, border: '2px solid rgba(0,0,0,0.08)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /></div>
-  if (!contact) return <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}><p style={{ fontSize: 15, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>Contact not found</p><button onClick={() => nav('/contacts')} style={{ fontSize: 14, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Back to Contacts</button></div>
+  // ── Styles (Legora tokens) ──
+  const F = "'Source Serif 4', Georgia, serif"
+  const sh = { fontFamily: F, fontWeight: 300, fontSize: 16, letterSpacing: '-0.01em', margin: '0 0 10px', color: '#0A0A0A' }
+  const crd = { background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '2px 0', marginBottom: 16 }
+  const field = { display: 'flex', justifyContent: 'space-between', padding: '7px 14px', borderBottom: '1px solid rgba(0,0,0,0.04)' }
+  const fl = { fontSize: 11, color: '#A0A0A0' }
+  const fv = { fontSize: 12, fontWeight: 450 }
+  const sig = { display: 'flex', alignItems: 'flex-start', gap: 8, padding: '8px 14px', borderBottom: '1px solid rgba(0,0,0,0.04)' }
+  const sigI = (bg) => ({ width: 24, height: 24, borderRadius: 6, display: 'grid', placeItems: 'center', flexShrink: 0, background: bg })
+  const inputSt = { width: '100%', padding: '8px 12px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 13, fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 450, outline: 'none', boxSizing: 'border-box' }
+  const labelSt = { fontSize: 11, fontWeight: 500, color: '#A0A0A0', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }
+
+  if (loading) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}><div style={{ color: '#A0A0A0', fontSize: 13 }}>Loading…</div></div>
+  if (!contact) return <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}><p style={{ fontSize: 13, color: '#A0A0A0' }}>Contact not found</p><button onClick={() => nav('/records')} style={{ fontSize: 12, color: '#0A0A0A', background: 'none', border: 'none', cursor: 'pointer', marginTop: 8 }}>Back to Records</button></div>
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Header — redesign v2 back-button pattern */}
-      <div style={{ padding: '16px 44px', borderBottom: '1px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', flexShrink: 0 }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: "'Inter', system-ui, sans-serif", color: '#0A0A0A', background: '#FEFEFC' }}>
+      {/* ═══ Header ═══ */}
+      <div style={{ padding: '14px 44px', borderBottom: '1px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={() => nav('/records')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}>
+          <button onClick={() => nav('/records')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex' }}>
             <ArrowLeft size={18} stroke="#6B6B6B" />
           </button>
-          <div>
-            <h1 style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 300, fontSize: 22, letterSpacing: '-0.015em', margin: 0, color: '#0A0A0A' }}>{displayName(contact)}</h1>
-            <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 2 }}>{contact.title}{contact.title && contact.company ? ' at ' : ''}{contact.company}</div>
-            {contact.company && <div style={{ marginTop: 4 }}><ConflictBadge companyName={contact.company} /></div>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {contact.picture ? (
+              <img src={contact.picture} alt="" referrerPolicy="no-referrer" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'grid') }} />
+            ) : null}
+            <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#F5F4F1', display: contact.picture ? 'none' : 'grid', placeItems: 'center', fontSize: 15, fontWeight: 400, color: '#6B6B6B' }}>{((contact.firstName || contact.name || '?')[0] || '?').toUpperCase()}{((contact.lastName || '')[0] || '').toUpperCase()}</div>
+            <div>
+              <h1 style={{ fontFamily: F, fontWeight: 300, fontSize: 22, letterSpacing: '-0.015em', margin: 0 }}>{displayName(contact)}</h1>
+              <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 2 }}>{contact.title}{contact.title && contact.company ? ' at ' : ''}{contact.company}</div>
+            </div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {campaignHistory.length > 0 && (
-            <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(0,0,0,0.08)', color: '#6B6B6B', fontSize: 10, fontWeight: 500 }}>
-              {campaignHistory.length} campaign{campaignHistory.length === 1 ? '' : 's'}
-            </span>
-          )}
-          <button onClick={() => setEditing(!editing)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: editing ? 'transparent' : '#0A0A0A', color: editing ? '#6B6B6B' : '#fff', padding: '7px 14px', borderRadius: 8, border: editing ? '1px solid rgba(0,0,0,0.08)' : 'none', cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif" }}>
-            {editing ? <><X style={{ width: 14, height: 14 }} /> Cancel</> : <><Edit3 style={{ width: 14, height: 14 }} /> Edit</>}
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#6B6B6B', fontSize: 11, fontWeight: 500, textDecoration: 'none' }}><Mail size={12} /> Email</a>}
+          {(contact.linkedin || contact.linkedinUrl) && <a href={contact.linkedin || contact.linkedinUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: 'rgba(0,119,181,0.06)', border: '1px solid rgba(0,119,181,0.15)', color: '#0077B5', fontSize: 11, fontWeight: 500, textDecoration: 'none' }}><Linkedin size={12} /> LinkedIn</a>}
+          <button onClick={() => setEditing(!editing)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: editing ? 'transparent' : '#0A0A0A', color: editing ? '#6B6B6B' : '#fff', border: editing ? '1px solid rgba(0,0,0,0.08)' : '1px solid #0A0A0A', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+            {editing ? <><X size={12} /> Cancel</> : <><Edit3 size={12} /> Edit</>}
           </button>
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 44px', display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-        {/* Left column */}
-        <div style={{ width: 340, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Avatar + name card */}
-          <div style={card}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-              {contact.picture ? (
-                <img src={contact.picture} alt="" style={{ width: 56, height: 56, borderRadius: 18, objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = `<span style="font-size:24px;font-weight:600;color:rgba(0,0,0,0.55)">${(contact.firstName || '?')[0]?.toUpperCase()}${(contact.lastName || '')[0]?.toUpperCase() || ''}</span>` }} />
-              ) : (
-                <div style={{ width: 56, height: 56, borderRadius: 18, background: 'rgba(0,0,0,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: 23, fontWeight: 400, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(contact.firstName || contact.lastName || '?')[0]?.toUpperCase()}</span>
+      {/* ═══ Content — single column ═══ */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 44px', maxWidth: 720 }}>
+
+        {/* ── Metric tiles ── */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <div style={{ flex: 1, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
+            <div style={{ fontFamily: F, fontSize: 22, fontWeight: 300, color: engagementScore < 30 ? '#b8643e' : engagementScore < 60 ? '#B89C5C' : '#7d8a64' }}>{engagementScore}</div>
+            <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginTop: 6 }}>Engagement</div>
+            <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 4 }}>{opens} open{opens !== 1 ? 's' : ''} · {replies} repl{replies !== 1 ? 'ies' : 'y'} · {clicks} click{clicks !== 1 ? 's' : ''}</div>
+          </div>
+          <div style={{ flex: 1, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
+            <div style={{ fontFamily: F, fontSize: 22, fontWeight: 300, color: warmthColor }}>{warmthLabel}</div>
+            <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginTop: 6 }}>Warmth</div>
+            <div style={{ height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.06)', marginTop: 6, overflow: 'hidden' }}><div style={{ height: '100%', width: `${engagementScore}%`, borderRadius: 2, background: warmthColor }} /></div>
+          </div>
+          <div style={{ flex: 1, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
+            <div style={{ fontFamily: F, fontSize: 22, fontWeight: 300 }}>{daysSinceActivity !== null ? daysAgo(contact.lastActivity) : '—'}</div>
+            <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500, marginTop: 6 }}>Since contact</div>
+            {daysSinceActivity > 30 && <div style={{ fontSize: 10, color: '#b8643e', marginTop: 4 }}>Overdue</div>}
+          </div>
+        </div>
+
+        {/* ── Suggested next action ── */}
+        {nextTask && (
+          <>
+            <h2 style={sh}>Suggested next action <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 6px', borderRadius: 4, background: 'rgba(125,138,100,0.12)', color: '#7d8a64', marginLeft: 6, fontFamily: "'Inter', sans-serif" }}>Kiko</span></h2>
+            <div style={{ background: '#fff', border: '1.5px solid rgba(125,138,100,0.3)', borderRadius: 14, padding: '14px 16px', marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <div style={sigI('rgba(125,138,100,0.10)')}><ExternalLink size={12} color="#7d8a64" /></div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 3 }}>{nextTask.label} — {nextTask.urgency === 'overdue' ? 'overdue' : nextTask.urgency}</div>
+                <div style={{ fontSize: 12, color: '#6B6B6B', lineHeight: 1.5 }}>
+                  {hasReply ? `${displayName(contact)} replied — follow up promptly via ${preferredChannel.toLowerCase()}.` :
+                   daysSinceActivity > 30 ? `No activity for ${daysAgo(contact.lastActivity)}. Consider a fresh approach via ${preferredChannel.toLowerCase()}${companyData?.totalFunding ? `, referencing ${contact.company}'s ${companyData.totalFunding} funding` : ''}.` :
+                   `Check-in via ${preferredChannel.toLowerCase()} to maintain momentum.`}
                 </div>
-              )}
-              <div>
-                <p style={{ fontSize: 17, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</p>
-                {contact.title && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
-                {contact.company && (
-                  <p onClick={() => orgId && nav(`/organisations?org=${orgId}`)} style={{ fontSize: 13, color: orgId ? 'var(--accent)' : 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 4, cursor: orgId ? 'pointer' : 'default' }}>
-                    <Building2 style={{ width: 11, height: 11 }} /> {contact.company} {orgId && <ChevronRight style={{ width: 10, height: 10 }} />}
-                  </p>
-                )}
+                <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                  <button style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#fff', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Draft with Kiko</button>
+                  <button style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', background: 'transparent', color: '#6B6B6B', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Dismiss</button>
+                </div>
               </div>
             </div>
-            {/* Quick actions */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.03)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(0,0,0,0.08)' }}><Mail style={{ width: 13, height: 13 }} /> Email</a>}
-              {contact.phone && <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.03)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(0,0,0,0.08)' }}><Phone style={{ width: 13, height: 13 }} /> Call</a>}
-              {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.03)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(0,0,0,0.08)' }}><Linkedin style={{ width: 13, height: 13 }} /> LinkedIn</a>}
-            </div>
-          </div>
+          </>
+        )}
 
-          {/* Tasks Due */}
-          <div style={card}>
-            <p style={sectionTitle}>Tasks Due</p>
-            {nextTask ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 50, border: `1px solid ${urgencyColor(nextTask.urgency)}20` }}>
-                <CalendarCheck style={{ width: 16, height: 16, color: urgencyColor(nextTask.urgency), flexShrink: 0 }} />
+
+        {/* ── Contact information / Edit form ── */}
+        <h2 style={sh}>Contact information</h2>
+        {editing ? (
+          <div style={{ ...crd, padding: '16px 14px' }}>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+              <div style={{ flex: 1 }}><p style={labelSt}>First name</p><input value={form.firstName} onChange={e => setForm(p => ({ ...p, firstName: e.target.value }))} style={inputSt} /></div>
+              <div style={{ flex: 1 }}><p style={labelSt}>Last name</p><input value={form.lastName} onChange={e => setForm(p => ({ ...p, lastName: e.target.value }))} style={inputSt} /></div>
+            </div>
+            {[{ key: 'title', label: 'Job title' }, { key: 'company', label: 'Company' }, { key: 'email', label: 'Email' }, { key: 'phone', label: 'Phone' }, { key: 'linkedin', label: 'LinkedIn URL' }].map(f => (
+              <div key={f.key} style={{ marginBottom: 10 }}><p style={labelSt}>{f.label}</p><input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputSt} /></div>
+            ))}
+            <div style={{ marginBottom: 10 }}><p style={labelSt}>Notes</p><textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={3} style={{ ...inputSt, resize: 'none' }} /></div>
+            <button onClick={save} style={{ padding: '7px 18px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Save changes</button>
+          </div>
+        ) : (
+          <div style={crd}>
+            <div style={field}><span style={fl}>Email</span><span style={fv}>{contact.email ? <a href={`mailto:${contact.email}`} style={{ color: '#0077B5', textDecoration: 'none', fontSize: 12 }}>{contact.email}</a> : '—'}</span></div>
+            <div style={field}><span style={fl}>Phone</span><span style={fv}>{contact.phone || '—'}</span></div>
+            <div style={field}><span style={fl}>Company</span><span style={fv}>{contact.company || '—'}</span></div>
+            <div style={field}><span style={fl}>Title</span><span style={fv}>{contact.title || '—'}</span></div>
+            <div style={field}><span style={fl}>Sector</span><span style={fv}>{contact.sector || contact.industry || '—'}</span></div>
+            <div style={field}><span style={fl}>LinkedIn</span><span style={fv}>{(contact.linkedin || contact.linkedinUrl) ? <a href={contact.linkedin || contact.linkedinUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0077B5', textDecoration: 'none', fontSize: 12 }}>View profile</a> : '—'}</span></div>
+            <div style={{ ...field, borderBottom: 'none' }}><span style={fl}>Preferred channel</span><span style={fv}>{preferredChannel}</span></div>
+          </div>
+        )}
+
+        {/* ── Company context snapshot ── */}
+        {companyData && (
+          <>
+            <h2 style={sh}>Company context</h2>
+            <div onClick={() => orgId && nav(`/records/company/${orgId}`)} style={{ padding: '10px 14px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, marginBottom: 16, cursor: orgId ? 'pointer' : 'default' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 500 }}>{companyData.name || contact.company}</span>
+                {orgId && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>}
+              </div>
+              <div style={{ display: 'flex', gap: 20 }}>
+                {[{ l: 'Industry', v: companyData.industry || companyData.sector }, { l: 'Funding', v: companyData.totalFunding }, { l: 'Revenue', v: companyData.revenueEst }, { l: 'Headcount', v: companyData.employees || companyData.size }].map(s => s.v ? (
+                  <div key={s.l}><div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>{s.l}</div><div style={{ fontSize: 12, marginTop: 2 }}>{s.v}</div></div>
+                ) : null)}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── Correspondence history ── */}
+        <h2 style={sh}>Correspondence history</h2>
+        <div style={{ ...crd, padding: '4px 0' }}>
+          {activities.length > 0 ? activities.filter(a => ['emailsSent', 'emailsReplied', 'emailsOpened', 'emailsBounced', 'linkedinSent', 'linkedinReplied', 'linkedinInviteDone'].includes(a.type)).slice(0, 10).map((a, i) => {
+            const isReply = a.type?.includes('Replied')
+            const isLinkedin = a.type?.startsWith('linkedin')
+            const isBounce = a.type?.includes('Bounced')
+            const dotColor = isReply ? '#7d8a64' : isLinkedin ? '#0077B5' : isBounce ? '#b8643e' : '#0A0A0A'
+            return (
+              <div key={a.id || i} style={sig}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0, marginTop: 5 }} />
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{nextTask.label}</p>
-                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{nextTask.channel} · {nextTask.urgency === 'overdue' ? 'Overdue' : nextTask.urgency === 'high' ? 'High priority' : nextTask.urgency === 'due' ? 'Due soon' : 'Upcoming'}</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 12, fontWeight: 500 }}>{activityLabel(a.type)}{a.email_subject ? ` — "${a.email_subject}"` : ''}</span>
+                    <span style={{ fontSize: 10, color: '#A0A0A0' }}>{formatDate(a.created_at)}</span>
+                  </div>
+                  {a.campaign_name && <div style={{ marginTop: 4 }}>
+                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: isLinkedin ? 'rgba(0,119,181,0.08)' : isReply ? 'rgba(125,138,100,0.12)' : 'rgba(0,0,0,0.04)', color: isLinkedin ? '#0077B5' : isReply ? '#7d8a64' : '#6B6B6B', fontWeight: 500, display: 'inline-block', marginRight: 4 }}>{isLinkedin ? 'LinkedIn' : isReply ? 'Reply' : 'Email'}</span>
+                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', color: '#6B6B6B', fontWeight: 500, display: 'inline-block' }}>{a.campaign_name}</span>
+                  </div>}
                 </div>
               </div>
-            ) : (
-              <p style={emptyText}>No tasks due</p>
-            )}
-          </div>
-
-          {/* Activity info */}
-          <div style={card}>
-            <p style={sectionTitle}>Activity</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {contact.lastActivity && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
-                  <Clock style={{ width: 13, height: 13, color: 'var(--text-tertiary)' }} />
-                  Last activity: {daysAgo(contact.lastActivity)} ({formatDate(contact.lastActivity)})
-                </div>
-              )}
-              {contact.createdAt && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
-                  <Clock style={{ width: 13, height: 13, color: 'var(--text-tertiary)' }} />
-                  Created: {formatDate(contact.createdAt)}
-                </div>
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
-                <ExternalLink style={{ width: 13, height: 13, color: 'var(--text-tertiary)' }} />
-                Preferred Contact Channel: <strong>{preferredChannel}</strong>
-              </div>
-            </div>
-          </div>
-
-          {/* Deal Pipeline */}
-          {dealInfo && (
-            <div style={card}>
-              <p style={sectionTitle}>Deal Pipeline</p>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 50 }}>
-                <p style={{ fontSize: 13, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{dealInfo.pipeline || '—'}</p>
-                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 50, background: dealInfo.stage === 'Closed Won' ? 'rgba(16,185,129,0.08)' : dealInfo.stage === 'Closed Lost' ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)', color: dealInfo.stage === 'Closed Won' ? '#10b981' : dealInfo.stage === 'Closed Lost' ? '#ef4444' : '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{dealInfo.stage || '—'}</span>
-              </div>
-            </div>
+            )
+          }) : (
+            <div style={{ padding: 14, color: '#A0A0A0', fontSize: 12, textAlign: 'center' }}>No correspondence logged yet</div>
           )}
         </div>
 
-        {/* Right column */}
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Kiko's Intelligence — leads with analysis, not flat fields */}
-          <KikoContactInsight contactName={displayName(contact)} companyName={contact.company} />
-
-          {/* Contact details / edit form */}
-          <div style={card}>
-            {editing ? (
-              <>
-                <p style={{ ...sectionTitle, marginBottom: 16 }}>Edit Contact</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ display: 'flex', gap: 10 }}>
-                    <div style={{ flex: 1 }}><p style={labelStyle}>First Name</p><input value={form.firstName} onChange={e => setForm(p => ({ ...p, firstName: e.target.value }))} style={inputStyle} /></div>
-                    <div style={{ flex: 1 }}><p style={labelStyle}>Last Name</p><input value={form.lastName} onChange={e => setForm(p => ({ ...p, lastName: e.target.value }))} style={inputStyle} /></div>
-                  </div>
-                  {[{ key: 'title', label: 'Job Title' }, { key: 'company', label: 'Company' }, { key: 'email', label: 'Email' }, { key: 'phone', label: 'Phone' }, { key: 'linkedin', label: 'LinkedIn URL' }].map(f => (
-                    <div key={f.key}><p style={labelStyle}>{f.label}</p><input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} /></div>
-                  ))}
-                  <div><p style={labelStyle}>Notes</p><textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={3} style={{ ...inputStyle, resize: 'none' }} /></div>
-                  <button onClick={save} style={{ alignSelf: 'flex-end', fontSize: 14, fontWeight: 500, background: 'var(--accent)', color: '#FFFFFF', padding: '8px 20px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Save Changes</button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p style={sectionTitle}>Contact Details</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                  {[
-                    { label: 'First Name', value: parseDisplayName(contact).first },
-                    { label: 'Last Name', value: parseDisplayName(contact).last },
-                    { label: 'Job Title', value: contact.title },
-                    { label: 'Company', value: contact.company, onClick: orgId ? () => nav(`/organisations?org=${orgId}`) : null },
-                    { label: 'Email', value: contact.email, link: contact.email ? `mailto:${contact.email}` : null },
-                    { label: 'Phone', value: contact.phone, link: contact.phone ? `tel:${contact.phone}` : null },
-                    { label: 'LinkedIn', value: contact.linkedin ? 'View Profile' : null, link: contact.linkedin },
-                    { label: 'Preferred Contact Channel', value: preferredChannel },
-                  ].map(f => (
-                    <div key={f.label}>
-                      <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: '0 0 4px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>{f.label}</p>
-                      {f.link ? (
-                        <a href={f.link} target={f.link?.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" style={{ fontSize: 14, color: 'var(--accent)', fontFamily: 'var(--font)', textDecoration: 'none' }}>{f.value || '—'}</a>
-                      ) : f.onClick ? (
-                        <p onClick={f.onClick} style={{ fontSize: 14, color: 'var(--accent)', margin: 0, fontFamily: 'var(--font)', cursor: 'pointer' }}>{f.value || '—'}</p>
-                      ) : (
-                        <p style={{ fontSize: 14, color: f.value ? 'var(--text)' : 'var(--text-tertiary)', margin: 0, fontFamily: 'var(--font)' }}>{f.value || '—'}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                {contact.notes && contact.notes !== '[]' && (
-                  <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(0,0,0,0.03)' }}>
-                    <p style={{ ...labelStyle, marginBottom: 8 }}>Notes</p>
-                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{contact.notes}</p>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Active Campaign */}
-          <div style={card}>
-            <p style={sectionTitle}>Active Campaign</p>
-            {campaigns.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {campaigns.slice(0, 1).map(c => (
-                  <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(59,130,246,0.04)', borderRadius: 50, border: '1px solid rgba(59,130,246,0.1)' }}>
-                    <Send style={{ width: 14, height: 14, color: '#3b82f6', flexShrink: 0 }} />
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
-                      {c.lastEvent && <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>Last event: {daysAgo(c.lastEvent)} · {c.events} event{c.events !== 1 ? 's' : ''}</p>}
-                    </div>
-                  </div>
-                ))}
+        {/* ── Campaign enrollment ── */}
+        <h2 style={sh}>Campaign enrollment</h2>
+        <div style={{ ...crd, padding: '4px 0' }}>
+          {campaigns.length > 0 ? campaigns.map(c => (
+            <div key={c.name} style={sig}>
+              <div style={sigI('rgba(125,138,100,0.10)')}><Send size={12} color="#7d8a64" /></div>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 500 }}>{c.name}</div>
+                <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 1 }}>{c.events} event{c.events !== 1 ? 's' : ''}{c.lastEvent ? ` · Last: ${formatDate(c.lastEvent)}` : ''}</div>
               </div>
-            ) : contact?.outreachStatus ? (
-              <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font)', margin: 0 }}>{contact.outreachStatus}</p>
-            ) : (
-              <p style={emptyText}>No active campaign</p>
-            )}
-          </div>
-
-          {/* Campaign History */}
-          <div style={card}>
-            <p style={sectionTitle}>Campaign History</p>
-            {campaigns.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {campaigns.map(c => (
-                  <div key={c.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 50 }}>
-                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {c.events > 0 && <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{c.events} events</span>}
-                      {c.lastEvent && <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{formatDate(c.lastEvent)}</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p style={emptyText}>No campaign history yet — data will appear as Lemlist events flow in</p>
-            )}
-          </div>
-
-          {/* Correspondence */}
-          <div style={card}>
-            <p style={sectionTitle}>Correspondence</p>
-            {lastSent || lastReceived ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {lastSent && (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 10 }}>
-                    <Send style={{ width: 14, height: 14, color: 'var(--text-tertiary)', flexShrink: 0, marginTop: 2 }} />
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last sent: {activityLabel(lastSent.type)}</p>
-                      {lastSent.email_subject && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{lastSent.email_subject}</p>}
-                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{formatDate(lastSent.created_at)} · {lastSent.campaign_name || ''}</p>
-                    </div>
-                  </div>
-                )}
-                {lastReceived && (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', background: 'rgba(16,185,129,0.04)', borderRadius: 50, border: '1px solid rgba(16,185,129,0.1)' }}>
-                    <Inbox style={{ width: 14, height: 14, color: '#10b981', flexShrink: 0, marginTop: 2 }} />
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last received: {activityLabel(lastReceived.type)}</p>
-                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{formatDate(lastReceived.created_at)} · {lastReceived.campaign_name || ''}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p style={emptyText}>No correspondence logged yet — data will appear as emails and messages are sent</p>
-            )}
-          </div>
-          <DocumentSection
-            linkedCompanyId={orgId}
-            companyName={contact?.company}
-            entityLabel="Documents"
-          />
+            </div>
+          )) : (
+            <div style={{ padding: 14, color: '#A0A0A0', fontSize: 12, textAlign: 'center' }}>No campaigns yet</div>
+          )}
         </div>
+
+        {/* ── Documents shared ── */}
+        <DocumentSection linkedCompanyId={orgId} companyName={contact?.company} entityLabel="Documents shared" />
+
+        {/* ── Activity & tasks ── */}
+        <h2 style={sh}>Activity & tasks</h2>
+        <div style={{ ...crd, padding: '4px 0' }}>
+          {nextTask && (
+            <div style={sig}>
+              <div style={sigI('rgba(184,100,62,0.10)')}><CalendarCheck size={12} color="#b8643e" /></div>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 500, color: nextTask.urgency === 'overdue' ? '#b8643e' : '#0A0A0A' }}>{nextTask.label} {nextTask.urgency === 'overdue' ? '— overdue' : ''}</div>
+                <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 1 }}>{nextTask.channel} · Last activity: {contact.lastActivity ? formatDate(contact.lastActivity) : '—'}{contact.createdAt ? ` · Created: ${formatDate(contact.createdAt)}` : ''}</div>
+              </div>
+            </div>
+          )}
+          <div style={{ ...sig, borderBottom: 'none' }}>
+            <div style={sigI('rgba(0,0,0,0.04)')}><Clock size={12} color="#6B6B6B" /></div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 500 }}>Preferred contact channel: {preferredChannel}</div>
+              <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 1 }}>Based on interaction history · {emailInteractions + linkedinInteractions} touchpoint{emailInteractions + linkedinInteractions !== 1 ? 's' : ''}</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   )
