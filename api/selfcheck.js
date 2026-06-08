@@ -172,15 +172,15 @@ export default async function handler(req, res) {
     };
   });
 
-  // ─── Recent partnership scrape — cron-partner-reconcile ran recently ───
-  await check('partner_reconcile_ran_recently', async () => {
-    const since = new Date(Date.now() - 72 * 3600000).toISOString();
-    const rows = await sbFetch(`kiko_cron_heartbeats?cron_name=eq.cron-partner-reconcile&started_at=gt.${since}&select=status,started_at&order=started_at.desc&limit=1`);
+  // ─── Recent partnership/intelligence scrape — daily-intelligence includes partnership scan (was cron-partner-reconcile, consolidated Jun 2026) ───
+  await check('daily_intelligence_ran_recently', async () => {
+    const since = new Date(Date.now() - 48 * 3600000).toISOString();
+    const rows = await sbFetch(`kiko_cron_heartbeats?or=(cron_name.eq.daily-intelligence,cron_name.eq.cron-partner-reconcile)&started_at=gt.${since}&select=status,started_at,cron_name&order=started_at.desc&limit=1`);
     const latest = (rows || [])[0];
     return {
       pass: !!latest,
-      actual: latest ? `${latest.status} at ${latest.started_at}` : 'no runs in 72h',
-      expected: 'ran in last 72h',
+      actual: latest ? `${latest.cron_name} ${latest.status} at ${latest.started_at}` : 'no intelligence run in 48h',
+      expected: 'daily-intelligence ran in last 48h',
     };
   });
 
