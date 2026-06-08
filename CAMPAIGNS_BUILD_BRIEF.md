@@ -1,13 +1,34 @@
 # CAMPAIGNS REDESIGN — BUILD BRIEF
-## Ready to execute next session. Priority 1.
+## COMPLETED June 8, 2026.
 
-### CURRENT STATE (verified)
-- Campaigns.jsx is 1644 lines at src/pages/Campaigns.jsx
-- Overview card-list mode ALREADY DONE (lines 533-590) — matches sandbox
-- PageHead "OUTREACH" eyebrow ALREADY DONE
-- Card metrics (Enrolled, Active, Replied, Reply%, Bounced) in Source Serif 4 ALREADY DONE
-- Click card → sets selectedId → currently falls to OLD sidebar layout (needs replacing)
-- AI auto-builder exists (different from sandbox 4-step wizard)
+### CURRENT STATE (verified June 8 2026)
+- Campaigns.jsx is ~1814 lines at src/pages/Campaigns.jsx (redesign-v2 branch)
+- Overview card-list mode DONE — matches sandbox
+- Campaign drill-in DONE — full-page with back button header + metric tile cards
+- Campaign Builder 4-Step Wizard DONE — writes to kiko_sequences
+- PageHead "OUTREACH" eyebrow DONE
+- All existing functionality preserved (bulk actions, prospect detail, pause/resume, archive, delete)
+- Visually verified in production via Chrome screenshots
+
+### WHAT WAS BUILT (June 8 2026)
+1. **Campaign Drill-In → Full-Page Layout** (commit 7f03f33)
+   - Removed left sidebar rail when campaign is selected
+   - Added back-button header (Source Serif 4 22px, status badge, toolbar)
+   - Replaced horizontal stats bar with individual metric tile cards
+   - Filter bar padding aligned to 44px
+   - All existing functionality preserved
+
+2. **Campaign Builder 4-Step Wizard** (commit d955d6c)
+   - Step 1: Name & Target (name input, audience textarea, segment pills)
+   - Step 2: Sequence Builder (Email/LinkedIn steps with delay, subject, body)
+   - Step 3: Timing (send window, timezone, daily send limit — Matt Smith's account)
+   - Step 4: Review summary + Launch Campaign button
+   - Writes to kiko_sequences (name, steps JSON, is_active, metadata)
+   - Launch disabled when no name entered
+
+3. **Kiko API Fix** (commit 7f03f33)
+   - Fixed thinking parameter: type:'enabled' → type:'adaptive' for Opus 4.8
+   - Deployed to Hetzner and verified working
 
 ### WHAT NEEDS BUILDING
 1. **Campaign Builder 4-Step Wizard** (MISSING — sandbox lines CampaignBuilder component)
