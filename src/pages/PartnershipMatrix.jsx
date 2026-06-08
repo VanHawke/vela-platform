@@ -126,12 +126,13 @@ export default function PartnershipMatrix({ user }) {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', fontFamily: T.font, background: 'transparent', color: T.text, overflow: 'hidden' }}>
-      {/* Header */}
-      <div style={{ padding: '16px 24px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+      {/* Header — redesign v2 pattern */}
+      <div style={{ padding: '20px 44px 14px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 12 }}>
           <div>
-            <h1 style={{ fontSize: 28, fontWeight: 300, margin: 0, letterSpacing: '-0.018em', fontFamily: "'Source Serif 4', Georgia, serif" }}>Partnership Matrix</h1>
-            <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0' }}>{partnerships.length} partnerships · {teams.length} teams · {totalGaps} gaps · Auto-scanned daily 7am{lastRefresh ? ` · Last loaded ${lastRefresh}` : ''}</p>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#0A0A0A', marginBottom: 10 }}>STRATEGY</div>
+            <h1 style={{ fontSize: 36, fontWeight: 300, margin: 0, letterSpacing: '-0.018em', fontFamily: "'Source Serif 4', Georgia, serif" }}>Partnership Matrix</h1>
+            <p style={{ fontSize: 12, color: T.textTertiary, margin: '6px 0 0' }}>{partnerships.length} partnerships · {teams.length} teams · {totalGaps} gaps · Auto-scanned daily 7am{lastRefresh ? ` · Last loaded ${lastRefresh}` : ''}</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <select value={filterTeam} onChange={e => setFilterTeam(e.target.value)} style={{ fontSize: 12, padding: '5px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, fontFamily: T.font, color: T.textSecondary }}>
