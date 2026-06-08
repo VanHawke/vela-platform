@@ -313,13 +313,9 @@ export default function Messages({ user }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 52px)', fontFamily: C.font, color: C.text, overflow: 'hidden' }}>
-      {/* Breadcrumb + Title bar — matches Pipeline, Command Centre, etc. */}
-      <div style={{ padding: '16px 24px 12px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
-        <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '1.1px', textTransform: 'uppercase', color: C.sub, marginBottom: 6 }}>
-          <span style={{ fontWeight: 600, color: C.text }}>Today</span>
-          <span style={{ margin: '0 6px', color: C.muted }}>/</span>
-          <span>Messenger</span>
-        </div>
+      {/* Header — redesign v2 pattern */}
+      <div style={{ padding: '20px 44px 14px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.10em', textTransform: 'uppercase', color: C.text, marginBottom: 10 }}>TEAM</div>
         <h1 style={{ fontSize: 36, fontWeight: 300, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', margin: 0, color: C.text }}>Messenger</h1>
       </div>
 
