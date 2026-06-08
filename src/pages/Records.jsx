@@ -73,8 +73,10 @@ export default function Records({ user }) {
       return {
         id: c.id, name: fullName, email: d.email || '', title: d.title || '',
         company: d.company || '', sector: d.sector || d.industry || '',
-        status: (d.status || '').toLowerCase().includes('active') ? 'active' : (d.status || '').toLowerCase() || '',
+        picture: d.picture || d.profilePicture || d.avatar || null,
+        linkedin: d.linkedin || d.linkedinUrl || null,
         lastContacted: d.lastActivity ? new Date(d.lastActivity).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : (c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''),
+        daysSinceActivity: d.lastActivity ? Math.floor((Date.now() - new Date(d.lastActivity)) / 86400000) : null,
       }
     })
   }, [contacts])
@@ -158,7 +160,7 @@ export default function Records({ user }) {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead><tr>
             {view === 'people'
-              ? ['Name', 'Company', 'Title', 'Status', 'Last contacted'].map(h => <th key={h} style={thStyle}>{h}</th>)
+              ? ['Name', 'Company', 'Title', 'Sector', 'Last contacted'].map(h => <th key={h} style={thStyle}>{h}</th>)
               : ['Company', 'Industry', 'Size', 'Location', 'Deals', 'Contacts'].map(h => <th key={h} style={thStyle}>{h}</th>)
             }
           </tr></thead>
@@ -167,10 +169,16 @@ export default function Records({ user }) {
               <tr key={c.id} onClick={() => nav(`/contacts/${c.id}`)} style={{ cursor: 'pointer' }}
                 onMouseEnter={e => { for (const td of e.currentTarget.children) td.style.background = '#F5F4F1' }}
                 onMouseLeave={e => { for (const td of e.currentTarget.children) td.style.background = 'transparent' }}>
-                <td style={tdStyle}><div style={{ display: 'flex', alignItems: 'center', gap: 7 }}><div style={{ width: 26, height: 26, borderRadius: '50%', background: `hsl(${c.name.charCodeAt(0) * 7 % 360}, 45%, 55%)`, display: 'grid', placeItems: 'center', fontSize: 9, fontWeight: 600, color: '#fff', flexShrink: 0 }}>{initials(c.name)}</div><span style={{ fontWeight: 500 }}>{c.name}</span></div></td>
+                <td style={tdStyle}><div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  {c.picture ? (
+                    <img src={c.picture} alt="" referrerPolicy="no-referrer" loading="lazy" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'grid' }} />
+                  ) : null}
+                  <div style={{ width: 26, height: 26, borderRadius: '50%', background: `hsl(${c.name.charCodeAt(0) * 7 % 360}, 45%, 55%)`, display: c.picture ? 'none' : 'grid', placeItems: 'center', fontSize: 9, fontWeight: 600, color: '#fff', flexShrink: 0 }}>{initials(c.name)}</div>
+                  <span style={{ fontWeight: 500 }}>{c.name}</span>
+                </div></td>
                 <td style={{ ...tdStyle, color: '#6B6B6B' }}>{c.company || '—'}</td>
                 <td style={{ ...tdStyle, color: '#6B6B6B' }}>{c.title || '—'}</td>
-                <td style={tdStyle}>{statusBadge(c.status)}</td>
+                <td style={{ ...tdStyle, color: '#A0A0A0', fontSize: 11 }}>{c.sector || '—'}</td>
                 <td style={{ ...tdStyle, color: '#A0A0A0', fontSize: 11 }}>{c.lastContacted || '—'}</td>
               </tr>
             )) : paged.map(c => (
