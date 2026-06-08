@@ -405,7 +405,7 @@ export default async function handler(req, res) {
     // ═══ STREAM — ALWAYS OPUS, FULL TOOLS, NO MODEL SWITCHING ═══
     const needsDeepThink = isSuperAdmin && (deepThink || (message && ['analyse', 'analyze', 'strategy', 'evaluate', 'compare', 'assess', 'deep dive', 'think through', 'review the', 'what should'].some(t => message.toLowerCase().includes(t))));
     const params = { model: MODEL, max_tokens: needsDeepThink ? 32000 : 16384, system: systemCached, messages, tools: toolsWithCache };
-    if (needsDeepThink) { params.thinking = { type: 'adaptive', budget_tokens: 30000 }; write({ toolStatus: 'Deep analysis...' }); }
+    if (needsDeepThink) { params.thinking = { type: 'enabled', budget_tokens: 30000 }; write({ toolStatus: 'Deep analysis...' }); }
 
     async function streamAndCapture(streamParams) {
       const s = isSuperAdmin ? anthropic.beta.messages.stream(streamParams) : anthropic.messages.stream(streamParams);

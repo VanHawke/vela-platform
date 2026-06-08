@@ -25,7 +25,7 @@ import gmailDraft from "./api/gmail-draft.js";
 import gmailSend from "./api/gmail-send.js";
 import captureCorrection from "./api/capture-correction.js";
 import gmailSync from "./api/cron-gmail-sync.js";
-import proactiveRecs from "./api/cron-proactive-recommendations.js";
+// import proactiveRecs from "./api/cron-proactive-recommendations.js"; // FILE MISSING — removed to prevent crash
 import contactReenrich from "./api/cron-contact-reenrich.js";
 import linkedinCookieImport from "./api/linkedin-cookie-import.js";
 import teamMessages from "./api/team-messages.js";
@@ -87,7 +87,7 @@ app.all("/api/org-bible", orgBible);
 app.post("/api/create-gmail-draft", gmailDraft);
 app.post("/api/gmail-send", gmailSend);
 app.post("/api/capture-correction", captureCorrection);
-app.post("/api/cron-proactive-recommendations", proactiveRecs);
+// app.post("/api/cron-proactive-recommendations", proactiveRecs); // FILE MISSING — disabled
 app.post("/api/cron-contact-reenrich", contactReenrich);
 app.post("/api/meeting-transcripts", meetingTranscripts);
 app.get("/api/kiko-selfcheck", selfcheck);
