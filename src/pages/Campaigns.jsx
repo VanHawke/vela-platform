@@ -10,7 +10,7 @@ import BulkEditStepsModal from '@/components/campaigns/BulkEditStepsModal'
 import {
   Mail, Linkedin, Eye, MousePointer, Reply, AlertTriangle, Clock,
   Pause, Play, Plus, Search, RefreshCw, X, ChevronRight, Trash2,
-  Archive, ArchiveRestore, UserPlus,
+  Archive, ArchiveRestore, UserPlus, Sparkles,
 } from 'lucide-react'
 
 // ── helpers ──
@@ -1465,10 +1465,24 @@ export default function Campaigns({ user }) {
   )
 }
 
-// ── Campaign Wizard: 4-step builder matching redesign spec ──
+// ── Campaign Wizard: comprehensive 4-step builder with Kiko drafting ──
+const SECTORS = ['Defence & Aerospace', 'Technology / SaaS', 'Financial Services', 'Energy', 'Cybersecurity', 'Luxury & Lifestyle', 'iGaming', 'Sustainability / ESG']
+const PIPELINES = ['Haas F1 2026', 'Formula E']
+const DEFAULT_STEPS = [
+  { type: 'Email', subject: '', delay: 'Day 0', body: '' },
+  { type: 'LinkedIn', subject: '', delay: '+2 days', body: '' },
+  { type: 'Email', subject: '', delay: '+4 days', body: '' },
+  { type: 'LinkedIn', subject: '', delay: '+7 days', body: '' },
+  { type: 'Email', subject: '', delay: '+10 days', body: '' },
+  { type: 'LinkedIn', subject: '', delay: '+12 days', body: '' },
+  { type: 'Email', subject: '', delay: '+14 days', body: '' },
+]
+
 function CampaignWizard({ C, onBack, onCreated }) {
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
+  const [sector, setSector] = useState('')
+  const [pipeline, setPipeline] = useState('Haas F1 2026')
   const [audience, setAudience] = useState('')
   const [steps, setSteps] = useState([{ type: 'Email', subject: '', delay: 'Day 0', body: '' }])
   const [sendStart, setSendStart] = useState('09:00')
@@ -1476,21 +1490,66 @@ function CampaignWizard({ C, onBack, onCreated }) {
   const [timezone, setTimezone] = useState('Asia/Qatar')
   const [dailyLimit, setDailyLimit] = useState(30)
   const [launching, setLaunching] = useState(false)
+  const [drafting, setDrafting] = useState(false)
   const totalSteps = 4
 
   const addStep = () => setSteps(prev => [...prev, { type: 'Email', subject: '', delay: `+${prev.length * 3} days`, body: '' }])
   const removeStep = (idx) => setSteps(prev => prev.filter((_, i) => i !== idx))
   const updateStep = (idx, field, value) => setSteps(prev => { const n = [...prev]; n[idx] = { ...n[idx], [field]: value }; return n })
 
-  const handleLaunch = async () => {
+  // Kiko drafting: calls the API to generate sequence step content
+  const askKikoDraft = async () => {
+    if (!name && !sector) return
+    setDrafting(true)
+    try {
+      const prompt = `You are drafting outreach sequence steps for a campaign called "${name || sector + ' Partners'}" targeting ${sector || 'general'} sector prospects for ${pipeline}. The audience: ${audience || sector + ' decision-makers (VP/Director/C-suite)'}.\n\nGenerate a 7-step outreach sequence alternating between email and LinkedIn. For each step, output ONLY a JSON array with objects: { "type": "Email" or "LinkedIn", "delay": "Day 0" or "+N days", "subject": "..." (email only, under 10 words, empty string for LinkedIn), "body": "..." (under 150 words, formal/direct tone) }.\n\nOutput ONLY the JSON array. No markdown. No explanation.`
+      const res = await fetch('https://api.vanhawke.agency/api/kiko', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: prompt, userId: 'sunny', mode: 'chat' })
+      })
+      const reader = res.body.getReader()
+      let fullText = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = new TextDecoder().decode(value)
+        for (const line of chunk.split('\n').filter(l => l.startsWith('data: '))) {
+          try { const d = JSON.parse(line.slice(6)); if (d.delta) fullText += d.delta } catch {}
+        }
+      }
+      const jsonMatch = fullText.match(/\[[\s\S]*\]/)
+      if (jsonMatch) {
+        const drafted = JSON.parse(jsonMatch[0])
+        setSteps(drafted.map((s, i) => ({
+          type: s.type === 'LinkedIn' ? 'LinkedIn' : 'Email',
+          subject: s.type === 'LinkedIn' ? '' : (s.subject || ''),
+          delay: s.delay || (i === 0 ? 'Day 0' : `+${i * 2} days`),
+          body: s.body || ''
+        })))
+      }
+    } catch (err) { console.error('Kiko draft failed:', err) }
+    setDrafting(false)
+  }
+
+  // Apply 7-step template when sector is selected
+  const applySectorTemplate = (s) => {
+    setSector(s)
+    setSteps(DEFAULT_STEPS.map(st => ({ ...st })))
+    if (!name) setName(`${pipeline} — ${s}`)
+    if (!audience) setAudience(`${s} decision-makers — VP, Director, C-suite level`)
+  }
+
+  const handleSave = async () => {
     if (!name.trim()) return
     setLaunching(true)
     try {
       const { data, error } = await supabase.from('kiko_sequences').insert({
         name: name.trim(),
-        steps: steps.map((s, i) => ({ step: i + 1, channel: s.type.toLowerCase(), subject: s.subject, body: s.body, delay: s.delay })),
-        is_active: true,
-        metadata: { audience, send_window: { start: sendStart, end: sendEnd }, timezone, daily_limit: dailyLimit, created_via: 'wizard' },
+        steps: steps.map((s, i) => ({ step: i + 1, channel: s.type.toLowerCase(), subject: s.type === 'LinkedIn' ? null : s.subject, body: s.body, delay: s.delay })),
+        is_active: false,
+        category: sector || null,
+        metadata: { audience, pipeline, sector, send_window: { start: sendStart, end: sendEnd }, timezone, daily_limit: dailyLimit, created_via: 'wizard' },
       }).select('id').single()
       if (error) throw error
       onCreated(data?.id)
@@ -1501,7 +1560,7 @@ function CampaignWizard({ C, onBack, onCreated }) {
   }
 
   const font = "'Source Serif 4', Georgia, serif"
-  const inputStyle = { width: '100%', padding: '11px 14px', border: `1px solid rgba(0,0,0,0.08)`, borderRadius: 8, fontSize: 13, fontFamily: C.font, fontWeight: 450, outline: 'none', boxSizing: 'border-box', background: '#fff' }
+  const inputStyle = { width: '100%', padding: '11px 14px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 13, fontFamily: C.font, fontWeight: 450, outline: 'none', boxSizing: 'border-box', background: '#fff' }
   const labelStyle = { fontSize: 11, fontWeight: 500, color: '#6B6B6B', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 6 }
 
   return (
@@ -1517,7 +1576,7 @@ function CampaignWizard({ C, onBack, onCreated }) {
       <div style={{ padding: '24px 44px 24px' }}>
         {/* Progress bar */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 28, maxWidth: 620 }}>
-          {['Name & Target', 'Sequence', 'Timing', 'Review'].map((s, i) => (
+          {['Campaign Setup', 'Build Sequence', 'Timing', 'Review'].map((s, i) => (
             <div key={i} style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ height: 3, borderRadius: 2, background: i + 1 <= step ? '#0A0A0A' : 'rgba(0,0,0,0.06)', marginBottom: 6, transition: 'background 0.2s' }} />
               <span style={{ fontSize: 11, color: i + 1 <= step ? '#0A0A0A' : '#A0A0A0', fontWeight: i + 1 === step ? 600 : 400 }}>{s}</span>
@@ -1525,29 +1584,45 @@ function CampaignWizard({ C, onBack, onCreated }) {
           ))}
         </div>
 
-        {/* Step 1: Name & Target */}
+        {/* Step 1: Campaign Setup */}
         {step === 1 && (
           <div style={{ maxWidth: 560 }}>
             <label style={labelStyle}>Campaign Name</label>
             <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Haas 2026 — Financial Services" style={{ ...inputStyle, marginBottom: 20 }} />
-            <label style={labelStyle}>Target Audience</label>
-            <textarea value={audience} onChange={e => setAudience(e.target.value)} placeholder="Describe ideal prospects — industry, seniority, geography…" rows={3} style={{ ...inputStyle, resize: 'none', lineHeight: 1.6, marginBottom: 16 }} />
-            <label style={labelStyle}>Or select segment</label>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {['Defence & Aerospace VPs', 'Technology CMOs', 'Financial Services Directors', 'Luxury Brand Heads'].map(s => (
-                <button key={s} onClick={() => setAudience(s)} style={{ padding: '6px 12px', borderRadius: 24, border: audience === s ? '1px solid #0A0A0A' : '1px solid rgba(0,0,0,0.08)', background: audience === s ? 'rgba(0,0,0,0.06)' : '#fff', fontSize: 12, color: audience === s ? '#0A0A0A' : '#6B6B6B', cursor: 'pointer', fontFamily: C.font, fontWeight: 450 }}>{s}</button>
+
+            <label style={labelStyle}>Pipeline</label>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
+              {PIPELINES.map(p => (
+                <button key={p} onClick={() => setPipeline(p)} style={{ padding: '8px 16px', borderRadius: 8, border: pipeline === p ? '1.5px solid #0A0A0A' : '1px solid rgba(0,0,0,0.08)', background: pipeline === p ? 'rgba(0,0,0,0.04)' : '#fff', fontSize: 13, color: pipeline === p ? '#0A0A0A' : '#6B6B6B', cursor: 'pointer', fontFamily: C.font, fontWeight: pipeline === p ? 500 : 400 }}>{p}</button>
               ))}
             </div>
+
+            <label style={labelStyle}>Sector</label>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 20 }}>
+              {SECTORS.map(s => (
+                <button key={s} onClick={() => applySectorTemplate(s)} style={{ padding: '6px 14px', borderRadius: 24, border: sector === s ? '1.5px solid #0A0A0A' : '1px solid rgba(0,0,0,0.08)', background: sector === s ? 'rgba(0,0,0,0.04)' : '#fff', fontSize: 12, color: sector === s ? '#0A0A0A' : '#6B6B6B', cursor: 'pointer', fontFamily: C.font, fontWeight: sector === s ? 500 : 400 }}>{s}</button>
+              ))}
+            </div>
+
+            <label style={labelStyle}>Target Audience</label>
+            <textarea value={audience} onChange={e => setAudience(e.target.value)} placeholder="Describe ideal prospects — role, seniority, geography, company type…" rows={3} style={{ ...inputStyle, resize: 'none', lineHeight: 1.6 }} />
+
+            {sector && <p style={{ fontSize: 12, color: '#7d8a64', marginTop: 8, fontWeight: 450 }}>Selecting a sector pre-loads a 7-step sequence template. You can customise it in the next step.</p>}
           </div>
         )}
 
-        {/* Step 2: Sequence Builder */}
+        {/* Step 2: Build Sequence */}
         {step === 2 && (
-          <div style={{ maxWidth: 620 }}>
-            <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 16, fontWeight: 400 }}>Build your outreach sequence. Each step is an email or LinkedIn touch.</p>
+          <div style={{ maxWidth: 640 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <p style={{ fontSize: 13, color: '#6B6B6B', fontWeight: 400, margin: 0 }}>Each step is an email or LinkedIn touch. Kiko can draft messaging for you.</p>
+              <button onClick={askKikoDraft} disabled={drafting} style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', background: drafting ? 'rgba(0,0,0,0.04)' : '#fff', fontSize: 12, fontWeight: 500, cursor: drafting ? 'default' : 'pointer', fontFamily: C.font, color: drafting ? '#A0A0A0' : '#0A0A0A', display: 'flex', alignItems: 'center', gap: 6 }}>
+                {drafting ? <><RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> Kiko is drafting…</> : <><Sparkles size={12} /> Draft with Kiko</>}
+              </button>
+            </div>
             {steps.map((s, i) => (
               <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'flex-start' }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 600, color: '#6B6B6B', flexShrink: 0, marginTop: 8 }}>{i + 1}</div>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: s.type === 'LinkedIn' ? 'rgba(0,119,181,0.08)' : 'rgba(0,0,0,0.04)', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 600, color: s.type === 'LinkedIn' ? '#0077B5' : '#6B6B6B', flexShrink: 0, marginTop: 8 }}>{i + 1}</div>
                 <div style={{ flex: 1, padding: 14, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                     <select value={s.type} onChange={e => updateStep(i, 'type', e.target.value)} style={{ padding: '6px 10px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 12, fontFamily: C.font, background: '#FEFEFC', outline: 'none' }}>
@@ -1556,16 +1631,17 @@ function CampaignWizard({ C, onBack, onCreated }) {
                     <input value={s.delay} onChange={e => updateStep(i, 'delay', e.target.value)} style={{ width: 90, padding: '6px 10px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 12, fontFamily: C.font, fontWeight: 450, outline: 'none' }} />
                     {steps.length > 1 && <button onClick={() => removeStep(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto', color: '#A0A0A0' }}><X size={14} /></button>}
                   </div>
-                  <input value={s.subject} onChange={e => updateStep(i, 'subject', e.target.value)} placeholder="Subject line…" style={{ ...inputStyle, marginBottom: 6 }} />
                   {s.type === 'Email' && (
-                    <textarea value={s.body} onChange={e => updateStep(i, 'body', e.target.value)} placeholder="Email body — under 150 words…" rows={3} style={{ ...inputStyle, fontSize: 12, fontWeight: 400, resize: 'none', lineHeight: 1.6 }} />
+                    <input value={s.subject} onChange={e => updateStep(i, 'subject', e.target.value)} placeholder="Subject line…" style={{ ...inputStyle, marginBottom: 6 }} />
                   )}
+                  <textarea value={s.body} onChange={e => updateStep(i, 'body', e.target.value)} placeholder={s.type === 'LinkedIn' ? 'LinkedIn message — under 120 words…' : 'Email body — under 150 words…'} rows={3} style={{ ...inputStyle, fontSize: 12, fontWeight: 400, resize: 'none', lineHeight: 1.6 }} />
                 </div>
               </div>
             ))}
             <button onClick={addStep} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px', borderRadius: 24, border: '1px dashed rgba(0,0,0,0.08)', background: 'transparent', fontSize: 12, color: '#6B6B6B', cursor: 'pointer', fontFamily: C.font, fontWeight: 450 }}>
               <Plus size={12} /> Add step
             </button>
+            <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
           </div>
         )}
 
@@ -1591,30 +1667,37 @@ function CampaignWizard({ C, onBack, onCreated }) {
         {/* Step 4: Review */}
         {step === 4 && (
           <div style={{ maxWidth: 560 }}>
-            <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
-              <div style={{ fontFamily: font, fontSize: 20, fontWeight: 300, marginBottom: 4 }}>{name || 'Untitled Campaign'}</div>
-              <div style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 16 }}>
-                {steps.length} steps · {steps.filter(s => s.type === 'Email').length} emails · {steps.filter(s => s.type === 'LinkedIn').length} LinkedIn touches · {sendStart}–{sendEnd} {timezone}
+            <div style={{ padding: '18px 20px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
+              <div style={{ fontFamily: font, fontSize: 20, fontWeight: 300, marginBottom: 2 }}>{name || 'Untitled Campaign'}</div>
+              <div style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 4 }}>{pipeline}{sector ? ` · ${sector}` : ''}</div>
+              <div style={{ fontSize: 13, color: '#A0A0A0', marginBottom: 16 }}>
+                {steps.length} steps · {steps.filter(s => s.type === 'Email').length} emails · {steps.filter(s => s.type === 'LinkedIn').length} LinkedIn · {sendStart}–{sendEnd} {timezone}
               </div>
               {steps.map((s, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < steps.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
-                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 600, color: '#6B6B6B' }}>{i + 1}</div>
-                  <span style={{ fontSize: 12, color: '#A0A0A0', width: 60 }}>{s.delay}</span>
-                  <span style={{ fontSize: 11, color: '#5A6470', fontWeight: 500, width: 60 }}>{s.type}</span>
-                  <span style={{ fontSize: 13 }}>{s.subject || '(no subject)'}</span>
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: i < steps.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: s.type === 'LinkedIn' ? 'rgba(0,119,181,0.08)' : 'rgba(0,0,0,0.04)', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 600, color: s.type === 'LinkedIn' ? '#0077B5' : '#6B6B6B', flexShrink: 0, marginTop: 2 }}>{i + 1}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                      <span style={{ fontSize: 12, color: '#A0A0A0' }}>{s.delay}</span>
+                      <span style={{ fontSize: 11, color: s.type === 'LinkedIn' ? '#0077B5' : '#5A6470', fontWeight: 500 }}>{s.type}</span>
+                    </div>
+                    {s.type === 'Email' && s.subject && <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 2 }}>{s.subject}</div>}
+                    {s.body ? <div style={{ fontSize: 12, color: '#6B6B6B', lineHeight: 1.5 }}>{s.body.length > 120 ? s.body.slice(0, 120) + '…' : s.body}</div> : <div style={{ fontSize: 12, color: '#A0A0A0', fontStyle: 'italic' }}>(no content yet)</div>}
+                  </div>
                 </div>
               ))}
             </div>
+            <p style={{ fontSize: 12, color: '#A0A0A0', marginTop: 12, fontWeight: 400 }}>Campaign will be saved as a draft. Activate it from the campaign view when ready to send.</p>
           </div>
         )}
 
         {/* Nav buttons */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 28, maxWidth: 620 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 28, maxWidth: 640 }}>
           <button onClick={() => step > 1 ? setStep(step - 1) : onBack()} style={{ padding: '8px 18px', borderRadius: 24, border: '1px solid rgba(0,0,0,0.08)', background: 'transparent', fontSize: 13, color: '#6B6B6B', cursor: 'pointer', fontFamily: C.font, fontWeight: 450 }}>
             {step > 1 ? 'Back' : 'Cancel'}
           </button>
-          <button onClick={() => step < totalSteps ? setStep(step + 1) : handleLaunch()} disabled={launching || (step === 4 && !name.trim())} style={{ padding: '8px 20px', borderRadius: 24, border: 'none', background: launching ? '#6B6B6B' : '#0A0A0A', color: '#fff', fontSize: 13, fontWeight: 500, cursor: launching ? 'default' : 'pointer', fontFamily: C.font, opacity: (step === 4 && !name.trim()) ? 0.4 : 1 }}>
-            {launching ? 'Creating…' : step < totalSteps ? 'Continue' : 'Launch Campaign'}
+          <button onClick={() => step < totalSteps ? setStep(step + 1) : handleSave()} disabled={launching || (step === 4 && !name.trim())} style={{ padding: '8px 20px', borderRadius: 24, border: 'none', background: launching ? '#6B6B6B' : '#0A0A0A', color: '#fff', fontSize: 13, fontWeight: 500, cursor: launching ? 'default' : 'pointer', fontFamily: C.font, opacity: (step === 4 && !name.trim()) ? 0.4 : 1 }}>
+            {launching ? 'Saving…' : step < totalSteps ? 'Continue' : 'Save as Draft'}
           </button>
         </div>
       </div>
