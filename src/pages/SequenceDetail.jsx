@@ -812,24 +812,23 @@ RULES:
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <PageHeader
-        eyebrowCategory="OUTREACH"
-        eyebrowSuffix="Sequence detail"
-        title={seq?.name || 'New sequence'}
-      />
-      <div style={{ padding: '8px 28px 60px', fontFamily: C.font, color: C.text, maxWidth: 1300, margin: '0 auto', overflowY: 'auto', flex: 1 }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <button onClick={() => nav('/campaigns')} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', padding: 4 }}><ArrowLeft size={18} /></button>
-        <input value={seq?.name || ''} onChange={e => { setSeq({ ...seq, name: e.target.value }); setDirty(true) }} placeholder="Campaign name..." style={{ fontSize: 22, fontWeight: 300, background: 'none', border: 'none', color: C.text, fontFamily: C.fontDisplay, outline: 'none', flex: 1 }} />
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {dirty && <span style={{ fontSize: 11, color: C.amber }}>Unsaved</span>}
-          {!isNew && <button onClick={duplicateCampaign} title="Duplicate campaign" style={{ padding: '7px 8px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textTer, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Copy size={12} /></button>}
-          {!isNew && <button onClick={deleteCampaign} title="Delete campaign" style={{ padding: '7px 8px', borderRadius: 6, border: '1px solid rgba(184,100,62,0.15)', background: 'transparent', color: C.red, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Trash2 size={12} /></button>}
-          <button onClick={generateMultichannel} disabled={generating} style={{ padding: '7px 16px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, fontWeight: 500, cursor: generating ? 'wait' : 'pointer', fontFamily: C.font, opacity: generating ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5 }}><Sparkles size={12} />{generating ? 'Generating...' : 'Generate sequence'}</button>
-          <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5 }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
+      {/* Header — new style matching campaign drill-in */}
+      <div style={{ padding: '16px 44px', borderBottom: '1px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+          <button onClick={() => nav('/campaigns')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}>
+            <ArrowLeft size={18} stroke="#6B6B6B" />
+          </button>
+          <input value={seq?.name || ''} onChange={e => { setSeq({ ...seq, name: e.target.value }); setDirty(true) }} placeholder="Campaign name..." style={{ fontSize: 22, fontWeight: 300, background: 'none', border: 'none', color: C.text, fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.015em', outline: 'none', flex: 1, minWidth: 0 }} />
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+          {dirty && <span style={{ fontSize: 11, color: '#B89C5C', fontWeight: 500 }}>Unsaved</span>}
+          {!isNew && <button onClick={duplicateCampaign} title="Duplicate campaign" style={{ padding: '7px 8px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', background: 'transparent', color: '#A0A0A0', cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Copy size={12} /></button>}
+          {!isNew && <button onClick={deleteCampaign} title="Delete campaign" style={{ padding: '7px 8px', borderRadius: 8, border: '1px solid rgba(184,100,62,0.15)', background: 'transparent', color: '#b8643e', cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Trash2 size={12} /></button>}
+          <button onClick={generateMultichannel} disabled={generating} style={{ padding: '7px 16px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', background: 'transparent', color: '#0A0A0A', fontSize: 12, fontWeight: 500, cursor: generating ? 'wait' : 'pointer', fontFamily: C.font, opacity: generating ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5 }}><Sparkles size={12} />{generating ? 'Generating...' : 'Generate sequence'}</button>
+          <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5 }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
         </div>
       </div>
+      <div style={{ padding: '8px 44px 60px', fontFamily: C.font, color: C.text, maxWidth: 1300, margin: '0 auto', overflowY: 'auto', flex: 1, width: '100%', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
         <input value={seq?.target_persona || ''} onChange={e => { setSeq({ ...seq, target_persona: e.target.value }); setDirty(true) }} placeholder="Target persona" style={{ ...inputStyle, flex: 1 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -916,10 +915,10 @@ RULES:
           </div>
         )
       })()}
-      <div style={{ display: 'flex', gap: 2, marginBottom: 14, background: '#F5F4F1', borderRadius: 10, padding: 3, width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: 2, marginBottom: 14, padding: '4px 0' }}>
         {tabs.map(t => (
-          <button key={t.id} onClick={() => { setTab(t.id); setSelectedLead(null) }} style={{ padding: '7px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: C.font, fontSize: 12, background: tab === t.id ? '#FFFFFF' : 'transparent', color: tab === t.id ? C.text : C.textSec, fontWeight: tab === t.id ? 500 : 400, display: 'flex', alignItems: 'center', gap: 5, boxShadow: tab === t.id ? '0 1px 2px rgba(0,0,0,0.04)' : 'none', transition: 'all 0.15s' }}>
-            {t.label}{t.ct !== undefined && <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 10, background: tab === t.id ? '#F5F4F1' : 'rgba(0,0,0,0.04)', color: C.textSec }}>{t.ct}</span>}
+          <button key={t.id} onClick={() => { setTab(t.id); setSelectedLead(null) }} style={{ padding: '6px 14px', borderRadius: 24, border: 'none', cursor: 'pointer', fontFamily: C.font, fontSize: 12, background: tab === t.id ? 'rgba(0,0,0,0.06)' : 'transparent', color: tab === t.id ? '#0A0A0A' : '#6B6B6B', fontWeight: tab === t.id ? 500 : 400, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.12s' }}>
+            {t.label}{t.ct !== undefined && <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 10, background: tab === t.id ? 'rgba(0,0,0,0.06)' : 'rgba(0,0,0,0.03)', color: '#6B6B6B' }}>{t.ct}</span>}
           </button>
         ))}
       </div>
