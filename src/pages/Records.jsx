@@ -87,8 +87,14 @@ export default function Records({ user }) {
       const d = c.data || {}
       return {
         id: c.id, name: d.name || '—', industry: d.industry || d.sector || '',
-        size: d.employeeCount || d.size || '', location: d.location || d.hqLocation || '',
-        deals: d.dealCount || 0, contacts: d.contactCount || 0, website: d.website || d.domain || '',
+        size: d.employees || d.employeeCount || d.size || '', 
+        location: [d.address, d.country].filter(Boolean).join(', ') || d.location || d.hqLocation || '',
+        deals: (d.openDeals || 0) + (d.wonDeals || 0), 
+        contacts: d.peopleCount || d.contactCount || 0, 
+        website: d.website || d.domain || '',
+        founded: d.founded || '', revenueEst: d.revenueEst || '',
+        totalFunding: d.totalFunding || '', lastRound: d.lastRound || '',
+        valuation: d.valuation || '', competitors: d.competitors || '',
       }
     })
   }, [companies])
