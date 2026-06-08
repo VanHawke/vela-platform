@@ -446,7 +446,7 @@ export default async function handler(req, res) {
         let result;
         try {
           const toolPromise = block.name === 'memory' ? handleMemory(block.input, userId) : executeTool(block.name, block.input, userEmail, pageContext, userId);
-          const LONG_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent', 'crm_search', 'campaign_engine', 'pipeline_analytics', 'build_campaign', 'generate_document', 'ask_content_agent', 'ask_document_agent'];
+          const LONG_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent', 'crm_search', 'campaign_engine', 'pipeline_analytics', 'build_campaign', 'generate_document', 'ask_content_agent', 'ask_document_agent', 'ask_ea_agent', 'read_email', 'web_search', 'ask_signal_agent', 'knowledge_ops'];
           const timeoutMs = LONG_TOOLS.includes(block.name) ? 30000 : 15000;
           result = await Promise.race([toolPromise, new Promise((_, rej) => setTimeout(() => rej(new Error(`Tool timeout: ${block.name} > ${timeoutMs/1000}s`)), timeoutMs))]);
         } catch (toolErr) {
@@ -475,6 +475,8 @@ export default async function handler(req, res) {
 
       const nextMessages = [...messages, { role: 'assistant', content: response.content }, { role: 'user', content: toolResults }];
       const nextParams = { model: MODEL, max_tokens: 16384, system: systemCached, messages: nextMessages, tools: toolsWithCache };
+      // Ensure paragraph break between tool round output and next response
+      write({ delta: '\n\n' });
       response = await streamAndCapture(nextParams);
     }
 

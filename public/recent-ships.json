@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-06-08T05:33:03.877Z",
+  "generated_at": "2026-06-08T05:44:57.590Z",
   "commits": [
+    {
+      "hash": "6dd0ecc",
+      "subject": "fix(redesign): Remove legacy TV/background-task button (was importing @vercel/functions — dead code), conversation prompt bar now matches homepage (pill shape, BLACK/ORANGE send button, same placehold",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "663e59b",
       "subject": "docs: Update KIKO_MEMORY.md with full session changes — redesign, intelligence doctrine, all fixes",
@@ -34,7 +39,7 @@
     {
       "hash": "4fa618d",
       "subject": "fix(redesign): Homepage — submit button BLACK default/ORANGE on input, greeting ABOVE date (matching sandbox), correct 2026 F1 calendar from official sources (Canadian GP was May 22-24, Monaco today J",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "8f8accb",
@@ -69,7 +74,7 @@
     {
       "hash": "3acddf9",
       "subject": "fix(redesign): Home — chips overflow fixed (visible not hidden), flexWrap, paddingTop 4, chip text matches sandbox exactly (5 chips incl 'Helsing status' and 'Draft follow-up for Ball Corp'), added Ca",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "5080389",
@@ -94,11 +99,6 @@
     {
       "hash": "e1d06d8",
       "subject": "style(redesign): Campaigns OUTREACH eyebrow label added to sidebar header, matching design system",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "3fd468a",
-      "subject": "feat(redesign): Add suggestion chips below prompt bar, update placeholder to match sandbox render. Chips: Brief me, Pipeline value, Draft a follow-up, Partnership conflicts",
       "when": "12 hours ago"
     }
   ]
