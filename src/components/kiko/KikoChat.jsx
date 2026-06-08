@@ -33,7 +33,7 @@ import HomeDashboard from './HomeDashboard'
 import RedesignHomeDashboard from './RedesignHomeDashboard'
 
 // Feature flag — matches Layout.jsx USE_REDESIGN_NAV
-const USE_REDESIGN_DASHBOARD = true
+const USE_REDESIGN_DASHBOARD = true // PERMANENT — old code paths below this flag are dead weight, scheduled for removal
 // DraftPreview disabled — EmailDraft handles all email drafts
 import KikoInsights, { InsightsBadge } from './KikoInsights'
 import { useKikoLive } from '@/contexts/KikoLiveContext'
@@ -330,8 +330,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   }, [tickStreamBuffer])
 
   // Background task state (Phase 3)
-  const [bgTaskLoading, setBgTaskLoading] = useState(false)
-  const [bgTaskMsg, setBgTaskMsg] = useState('')
 
   // Voice mode state — inline, no overlay
   const [voiceActive, setVoiceActive] = useState(false)
@@ -623,33 +621,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   }, [activeConvId])
 
   // Phase 3: Run query in background
-  const runInBackground = async () => {
-    const query = input.trim()
-    if (!query || query.length > 8000 || !user?.id) return
-    setBgTaskLoading(true)
-    setBgTaskMsg('')
-    try {
-      const res = await fetch('https://api.vanhawke.agency/api/kiko-task-create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversation_id: activeConvId || null, query, user_id: user.id }),
-      })
-      const data = await res.json()
-      if (res.ok && data.task_id) {
-        setInput('')
-        setBgTaskMsg('Task started — see panel →')
-        setTimeout(() => setBgTaskMsg(''), 4000)
-      } else {
-        setBgTaskMsg(`Error: ${data.error || 'Unknown'}`)
-        setTimeout(() => setBgTaskMsg(''), 5000)
-      }
-    } catch (err) {
-      setBgTaskMsg(`Error: ${err.message}`)
-      setTimeout(() => setBgTaskMsg(''), 5000)
-    } finally {
-      setBgTaskLoading(false)
-    }
-  }
+  // runInBackground REMOVED — was legacy Vercel code (kiko-task-create.js deleted)
 
   const startNewChat = () => {
     // ── CONCURRENT: Save current chat state before creating new chat ──
@@ -1119,7 +1091,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         background: isMobile ? '#F5F4F1' : '#FFFFFF',
         backdropFilter: 'none', WebkitBackdropFilter: 'none',
         borderRadius: isMobile ? 28 : (welcome ? 9999 : 9999),
-        padding: isMobile ? '10px 10px 10px 22px' : (welcome ? (USE_REDESIGN_DASHBOARD ? '0' : '0') : '0'),
+        padding: isMobile ? '10px 10px 10px 22px' : (welcome ? ('0') : '0'),
         minHeight: isMobile ? 52 : (welcome ? 48 : undefined),
         position: 'relative',
         border: isMobile ? '1px solid rgba(0,0,0,0.10)' : `1px solid ${promptFocused ? 'rgba(0,0,0,0.18)' : transcribing ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.08)'}`,
@@ -1162,7 +1134,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
         {welcome ? (
         /* ── HOMEPAGE: Single row [+menu] [textarea] [mic] [EQ] [send] ── */
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 6, position: 'relative', zIndex: 2, padding: USE_REDESIGN_DASHBOARD ? '14px 14px 14px 20px' : undefined }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 6, position: 'relative', zIndex: 2, padding: '14px 14px 14px 20px' }}>
           {!isMobile && <div style={{ position: 'relative', flexShrink: 0 }}>
             <button onClick={() => setMenuOpen(!menuOpen)} disabled={fileUploading || streaming} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(0,0,0,0.04)', border: `1px solid ${menuOpen ? 'rgba(90,100,112,0.2)' : C.border}`, color: '#0A0A0A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}`, transform: menuOpen ? 'rotate(45deg)' : 'rotate(0deg)' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = '#2A2A30'; e.currentTarget.style.color = '#b4b4b4'; e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)' }}
@@ -1325,7 +1297,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           )}
         </div>
         )}
-        {!isMobile && bgTaskMsg && <div style={{ fontSize: 11, color: bgTaskMsg.startsWith('Error') ? C.red : C.purple, padding: '4px 0 0 12px', fontFamily: C.font, fontWeight: 400 }}>{bgTaskMsg}</div>}
       </div>
     )
   }
@@ -1732,7 +1703,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, minHeight: 0, padding: isMobile ? '0 24px' : '20px 32px 40px' }}>
 
           {/* Top spacer — desktop only, mobile content is naturally centred */}
-          {!isMobile && <div style={{ flex: voiceActive ? 1 : (USE_REDESIGN_DASHBOARD ? 0.3 : 0.5), transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />}
+          {!isMobile && <div style={{ flex: voiceActive ? 1 : (0.3), transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />}
 
           {/* Wave — hidden in redesign mode, carried over from past iteration */}
           {!USE_REDESIGN_DASHBOARD && <div id="kikoWaveHome" style={{

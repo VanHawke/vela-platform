@@ -21,7 +21,7 @@ export async function describeScreen(currentPage) {
     case 'tasks': return await describeTasks();
     case 'news': return 'News Signals has been replaced by the Partnership Detection Engine. Partnership announcements are now detected automatically and appear as alerts on the Home page. Say "show me the partnership matrix" to see the latest F1 partnerships.';
     case 'partnership-matrix': return await describeMatrix();
-    case 'lemlist': case 'campaigns': return await describeLemlist();
+    case 'campaigns': return await describeCampaigns();
     case 'calendar': return 'You are on the Race Calendar page. It shows F1 2026 and Formula E Season 12 race calendars with pre-race outreach windows and upcoming events.';
     case 'documents': return 'Knowledge Library has been removed. Documents can be uploaded directly in chat — just drag and drop a file and I will learn from it.';
     case 'home': return 'You are on the Home page — Kiko\'s main interface. You can ask me anything, use the quick action chips (Brief me, Pipeline update, Check emails, Race calendar), or navigate to any page.';
@@ -186,15 +186,15 @@ async function describeMatrix() {
   return out;
 }
 
-async function describeLemlist() {
+async function describeCampaigns() {
   // Summarise local sequence enrollments — live Lemlist stats need the ask_lemlist_live tool
   try {
     const seqs = await sbFetch('kiko_sequences?select=name,is_active&order=created_at.desc&limit=5');
     const enrollments = await sbFetch('kiko_sequence_enrollments?select=status&limit=200');
     const activeEnr = (enrollments || []).filter(e => e.status === 'active').length;
     const repliedEnr = (enrollments || []).filter(e => e.status === 'replied').length;
-    return `LEMLIST / CAMPAIGNS — ${(seqs||[]).length} local sequences, ${activeEnr} active enrollments, ${repliedEnr} replied.\n\nRecent: ${(seqs||[]).slice(0,5).map(s => `${s.name} ${s.is_active ? '[active]' : '[paused]'}`).join(', ')}\n\nFor live Lemlist campaign stats, say "show Lemlist campaign stats".`;
+    return `CAMPAIGNS — ${(seqs||[]).length} local sequences, ${activeEnr} active enrollments, ${repliedEnr} replied.\n\nRecent: ${(seqs||[]).slice(0,5).map(s => `${s.name} ${s.is_active ? '[active]' : '[paused]'}`).join(', ')}\n\nCampaign engine is native — all stats available directly.`;
   } catch {
-    return 'LEMLIST page is open. Say "show Lemlist campaign stats" for live performance data from the Lemlist API.';
+    return 'CAMPAIGNS page is open. All campaign data runs through the native outreach engine.';
   }
 }

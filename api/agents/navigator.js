@@ -59,7 +59,6 @@ RACE CALENDAR (id: calendar, path: /calendar)
 - Pre-race outreach windows, upcoming events
 - Event list view with meetings, calls, race weekends
 
-LEMLIST (id: lemlist, path: /lemlist)
 - Left: campaign list sorted by status (Running → Paused → Other) with lead counts
 - Middle: click campaign → stats bar (sent, opened, clicked, replied, bounced), sequence flow (email/LinkedIn steps), leads list with last activity
 - Right: click any lead → full activity timeline showing every email, LinkedIn action, open, reply
@@ -124,8 +123,6 @@ export async function callNavigator(instruction, pageContext = {}) {
       'calendar': 'calendar', 'schedule': 'calendar', 'race calendar': 'calendar', 'races': 'calendar', 'f1 calendar': 'calendar',
       'news': 'partnership-matrix', 'news signals': 'partnership-matrix', 'partnerships': 'partnership-matrix',
       'partnership matrix': 'partnership-matrix', 'matrix': 'partnership-matrix', 'partnerships': 'partnership-matrix',
-      'lemlist': 'lemlist', 'outreach campaigns': 'lemlist', 'campaigns': 'lemlist',
-      'lemlist': 'lemlist', 'campaigns': 'lemlist',
       'home': 'home', 'dashboard': 'home', 'homepage': 'home',
       'settings': 'settings',
     };

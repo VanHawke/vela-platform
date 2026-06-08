@@ -1,5 +1,5 @@
 // api/agents/outreach.js — Outreach Agent
-// Email drafting, Lemlist campaigns, follow-ups, recipient analysis.
+// Email drafting, campaigns, follow-ups, recipient analysis.
 // Uses voice profile learned from user's actual sent emails + global signature wrapper.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
@@ -109,46 +109,8 @@ async function getRecipientStyle({ email, name: recipientName }, userEmail) {
   } catch (e) { return `Style analysis error: ${e.message}`; }
 }
 
-// ── Lemlist ──
-const lemlistHeaders = () => {
-  const key = process.env.LEMLIST_KEY;
-  return { Authorization: `Basic ${Buffer.from(`:${key}`).toString('base64')}`, 'Content-Type': 'application/json' };
-};
 
-async function lemlistListCampaigns() {
-  const res = await fetch('https://api.lemlist.com/api/campaigns', { headers: lemlistHeaders() });
-  if (!res.ok) return `Lemlist API error: ${res.status}`;
-  const campaigns = await res.json();
-  if (!campaigns?.length) return 'No Lemlist campaigns found.';
-  return `LEMLIST CAMPAIGNS (${campaigns.length}):\n\n${campaigns.map(c => `• ${c.name} (ID: ${c._id}) — ${c.status || 'unknown'}`).join('\n')}`;
-}
 
-async function lemlistAddLead({ campaign_id, email, first_name, last_name, company_name, job_title }) {
-  const body = { email, firstName: first_name };
-  if (last_name) body.lastName = last_name;
-  if (company_name) body.companyName = company_name;
-  if (job_title) body.jobTitle = job_title;
-  const res = await fetch(`https://api.lemlist.com/api/campaigns/${campaign_id}/leads/`, { method: 'POST', headers: lemlistHeaders(), body: JSON.stringify(body) });
-  if (!res.ok) { const err = await res.text(); return `Lemlist add lead failed (${res.status}): ${err}`; }
-  const result = await res.json();
-  return `Lead added: ${first_name} ${last_name || ''} (${email}) to campaign "${result.campaignName || campaign_id}".`;
-}
-
-async function lemlistGetActivities({ campaign_id, type }) {
-  let url = 'https://api.lemlist.com/api/activities?limit=25';
-  if (campaign_id) url += `&campaignId=${campaign_id}`;
-  if (type) url += `&type=${type}`;
-  const res = await fetch(url, { headers: lemlistHeaders() });
-  if (!res.ok) return `Lemlist API error: ${res.status}`;
-  const activities = await res.json();
-  if (!activities?.length) return 'No recent Lemlist activities.';
-  let out = `LEMLIST ACTIVITIES (${activities.length}):\n\n`;
-  for (const a of activities) {
-    const date = new Date(a.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-    out += `${date} — ${a.type}: ${a.firstName || ''} ${a.lastName || ''} (${a.email || '?'})${a.campaignName ? ` [${a.campaignName}]` : ''}\n`;
-  }
-  return out;
-}
 
 // ── Main Dispatch ──
 export async function callOutreachAgent(operation, params = {}, userEmail = 'sunny@vanhawke.com', userId = null) {
@@ -158,10 +120,7 @@ export async function callOutreachAgent(operation, params = {}, userEmail = 'sun
       case 'recipient_style': return await getRecipientStyle(params, userEmail);
       case 'generate_followup': return await generateFollowup(params, userEmail);
       case 'get_followup_queue': return await getFollowupQueue(params, userEmail);
-      case 'lemlist_campaigns': return await lemlistListCampaigns();
-      case 'lemlist_add_lead': return await lemlistAddLead(params);
-      case 'lemlist_activities': return await lemlistGetActivities(params);
-      default: return `Unknown outreach operation: ${operation}. Available: draft_email, recipient_style, generate_followup, get_followup_queue, lemlist_campaigns, lemlist_add_lead, lemlist_activities`;
+      default: return `Unknown outreach operation: ${operation}. Available: draft_email, recipient_style, generate_followup, get_followup_queue`;
     }
   } catch (err) {
     return `Outreach Agent error (${operation}): ${err.message}`;

@@ -31,18 +31,14 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
   const loc = useLocation()
   const [moreOpen, setMoreOpen] = useState(false)
   const [avatarOpen, setAvatarOpen] = useState(false)
-  const [tasksOpen, setTasksOpen] = useState(false)
-  const [bgTasks, setBgTasks] = useState([])
   const moreRef = useRef(null)
   const avatarRef = useRef(null)
-  const tasksRef = useRef(null)
 
   // Fetch background tasks — Realtime subscription + fallback poll
   useEffect(() => {
     const loadTasks = async () => {
       try {
         const { data } = await supabase.from('kiko_background_jobs').select('id,title,status,job_type,result,queued_at,finished_at,related_entity_id,progress_pct,progress_message').order('queued_at', { ascending: false }).limit(10)
-        setBgTasks(data || [])
       } catch {}
     }
     loadTasks()
@@ -60,7 +56,6 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
 
   // Close tasks dropdown on outside click
   useEffect(() => {
-    const handler = (e) => { if (tasksRef.current && !tasksRef.current.contains(e.target)) setTasksOpen(false) }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
@@ -301,64 +296,7 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
             <span className="ltn-dot" style={{ background: '#E8700A' }}>{unreadMessages > 9 ? '9+' : unreadMessages}</span>
           )}
         </button>
-        <div ref={tasksRef} style={{ position: 'relative' }}>
-          <button className="ltn-icon" onClick={() => setTasksOpen(!tasksOpen)} title="Background tasks">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: bgTasks.filter(t => t.status === 'queued' || t.status === 'processing').length > 0 ? 1 : 0.6 }}>
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-            </svg>
-            {bgTasks.filter(t => t.status === 'queued' || t.status === 'processing').length > 0 && (
-              <span className="ltn-dot" style={{ background: '#7C5CFC' }}>{bgTasks.filter(t => t.status === 'queued' || t.status === 'processing').length}</span>
-            )}
-          </button>
-          {tasksOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 340, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', zIndex: 200, maxHeight: 420, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 500, fontSize: 13, color: '#0A0A0A' }}>Background Tasks</span>
-                {bgTasks.length > 0 && <button onClick={async () => { const ids = bgTasks.filter(t => t.status === 'completed' || t.status === 'failed' || t.status === 'cancelled').map(t => t.id); for (const id of ids) { await supabase.from('kiko_background_jobs').delete().eq('id', id) }; setBgTasks(prev => prev.filter(t => t.status === 'queued' || t.status === 'processing')) }} style={{ fontSize: 10, color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer' }}>Clear finished</button>}
-              </div>
-              <div style={{ flex: 1, overflowY: 'auto' }}>
-                {bgTasks.length === 0 && <div style={{ padding: '24px 16px', textAlign: 'center', color: '#A0A0A0', fontSize: 12 }}>No background tasks</div>}
-                {bgTasks.map(t => {
-                  const isActive = t.status === 'queued' || t.status === 'processing'
-                  const isCompleted = t.status === 'completed'
-                  const isFailed = t.status === 'failed'
-                  const elapsed = t.queued_at ? Math.round((Date.now() - new Date(t.queued_at).getTime()) / 60000) : 0
-                  return (<div key={t.id} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                      <span style={{ fontSize: 10 }}>{isCompleted ? '✅' : isActive ? '⏳' : isFailed ? '❌' : '○'}</span>
-                      <span style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</span>
-                    </div>
-                    {isActive && <div style={{ marginBottom: 4 }}>
-                      <div style={{ width: '100%', height: 3, background: 'rgba(0,0,0,0.06)', borderRadius: 2, overflow: 'hidden' }}><div style={{ width: `${t.progress_pct || (t.status === 'processing' ? 50 : 10)}%`, height: '100%', background: '#7C5CFC', borderRadius: 2, transition: 'width 1s' }} /></div>
-                      <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 3, display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.progress_message || (t.status === 'processing' ? 'Processing...' : 'Queued')} · {elapsed}m</span>
-                        <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_background_jobs').update({ status: 'cancelled', finished_at: new Date().toISOString() }).eq('id', t.id); setBgTasks(prev => prev.map(x => x.id === t.id ? { ...x, status: 'cancelled' } : x)) }} style={{ fontSize: 10, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Cancel</button>
-                      </div>
-                    </div>}
-                    {isCompleted && <div>
-                      <div style={{ fontSize: 10, color: '#6B6B6B' }}>{t.result ? (t.result.emails_found != null ? `${t.result.emails_found}/${t.result.total || '?'} emails found` : t.result.targets_added != null ? `${t.result.targets_added} targets, ${t.result.enrolled || 0} enrolled` : t.result.prospects_found != null ? `${t.result.prospects_found} prospects` : t.result.title || 'Done') : 'Done'} · {new Date(t.queued_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
-                      <div style={{ display: 'flex', gap: 8, marginTop: 3 }}>
-                        {t.related_entity_id && <button onClick={() => { nav(`/campaigns/${t.related_entity_id}`); setTasksOpen(false) }} style={{ fontSize: 10, color: '#7C5CFC', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 500 }}>View campaign →</button>}
-                        <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_background_jobs').delete().eq('id', t.id); setBgTasks(prev => prev.filter(x => x.id !== t.id)) }} style={{ fontSize: 10, color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Remove</button>
-                      </div>
-                    </div>}
-                    {isFailed && <div>
-                      <div style={{ fontSize: 10, color: '#f87171', marginBottom: 3 }}>{t.error_message?.slice(0, 80) || 'Failed'}</div>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_background_jobs').update({ status: 'queued', started_at: null, finished_at: null, error_message: null }).eq('id', t.id); setBgTasks(prev => prev.map(x => x.id === t.id ? { ...x, status: 'queued' } : x)) }} style={{ fontSize: 10, color: '#7C5CFC', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 500 }}>Retry</button>
-                        <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_background_jobs').delete().eq('id', t.id); setBgTasks(prev => prev.filter(x => x.id !== t.id)) }} style={{ fontSize: 10, color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Remove</button>
-                      </div>
-                    </div>}
-                    {t.status === 'cancelled' && <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ fontSize: 10, color: '#A0A0A0' }}>Cancelled</span>
-                      <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_background_jobs').delete().eq('id', t.id); setBgTasks(prev => prev.filter(x => x.id !== t.id)) }} style={{ fontSize: 10, color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Remove</button>
-                    </div>}
-                  </div>)
-                })}
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Background tasks UI REMOVED — Kiko handles this natively */}
 
 
         {/* Avatar with dropdown */}

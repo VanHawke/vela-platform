@@ -203,11 +203,10 @@ export default function Settings({ user }) {
                   { icon: 'gmail', name: 'Gmail · sunny@vanhawke.agency', meta: <>Connected · <strong>read & send</strong> · syncing every 2 min</> },
                   { icon: 'gcal', name: 'Google Calendar', meta: <>Connected · <strong>read & write</strong> · 4 meetings auto-prepped this week</> },
                   { icon: 'linkedin', name: 'LinkedIn', meta: <>Connected via Hetzner worker · <strong>178.104.73.22</strong> · 28 connections accepted this week</> },
-                  { icon: 'lemlist', name: 'Lemlist', meta: <>Connected · 5 active sequences · webhook last fired 3m ago</> },
                   { icon: 'supabase', name: 'Supabase · vanhawke-crm', meta: <>Connected · <strong>RLS enforced</strong> · 247 contacts · 8 isolation tests passed</> },
                 ].map(c => (
                   <div className="conn-row" key={c.icon}>
-                    <div className={`conn-icon ${c.icon}`}>{c.icon === 'gmail' ? 'M' : c.icon === 'gcal' ? 'G' : c.icon === 'linkedin' ? 'in' : c.icon === 'lemlist' ? 'L' : 'S'}</div>
+                    <div className={`conn-icon ${c.icon}`}>{c.icon === 'gmail' ? 'M' : c.icon === 'gcal' ? 'G' : c.icon === 'linkedin' ? 'in' : 'S'}</div>
                     <div className="conn-info">
                       <div className="conn-name">{c.name}</div>
                       <div className="conn-meta"><span className="conn-dot"></span>{c.meta}</div>
@@ -343,11 +342,10 @@ const SECTION_PANELS = {
         { icon: 'gmail', name: 'Gmail', state: 'Connected · sunny@vanhawke.agency', cta: 'Disconnect' },
         { icon: 'gcal', name: 'Google Calendar', state: 'Connected · 4 events synced today', cta: 'Disconnect' },
         { icon: 'linkedin', name: 'LinkedIn (via Hetzner worker)', state: 'Connected · 178.104.73.22', cta: 'Disconnect' },
-        { icon: 'lemlist', name: 'Lemlist', state: 'Connected · 5 active sequences', cta: 'Disconnect' },
         { icon: 'supabase', name: 'Supabase', state: 'Connected · vanhawke-crm · RLS enforced', cta: 'Manage' },
       ].map(c => (
         <div className="conn-row" key={c.icon}>
-          <div className={`conn-icon ${c.icon}`}>{c.icon === 'gmail' ? 'M' : c.icon === 'gcal' ? 'G' : c.icon === 'linkedin' ? 'in' : c.icon === 'lemlist' ? 'L' : 'S'}</div>
+          <div className={`conn-icon ${c.icon}`}>{c.icon === 'gmail' ? 'M' : c.icon === 'gcal' ? 'G' : c.icon === 'linkedin' ? 'in' : 'S'}</div>
           <div className="conn-info"><div className="conn-name">{c.name}</div><div className="conn-meta"><span className="conn-dot"></span>{c.state}</div></div>
           <button className="ghost-btn">{c.cta}</button>
         </div>
