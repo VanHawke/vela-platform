@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-06-07T20:53:55.239Z",
+  "generated_at": "2026-06-08T05:33:03.877Z",
   "commits": [
+    {
+      "hash": "663e59b",
+      "subject": "docs: Update KIKO_MEMORY.md with full session changes — redesign, intelligence doctrine, all fixes",
+      "when": "9 hours ago"
+    },
+    {
+      "hash": "2f1607f",
+      "subject": "fix(redesign): Conversation prompt bar — pill shape (borderRadius 9999), padding matched to homepage, width aligned with message content",
+      "when": "9 hours ago"
+    },
     {
       "hash": "8614d09",
       "subject": "feat(kiko-brain): Intelligence Doctrine — codified core operating principle for data access by role (super_admin sees ALL channels for ALL users, regular users see own data + CRM), mandatory 7-step pr",
-      "when": "10 minutes ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "591b5ea",
       "subject": "fix(redesign): prompt bar borderRadius 9999 (full pill capsule shape matching sandbox), greeting/date spacing tightened",
-      "when": "21 minutes ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "e1d9863",
       "subject": "fix: remove handleSubmit from kiko_prefill useEffect dependency array — was causing 'Cannot access rt before initialization' crash",
-      "when": "30 minutes ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "e1a8bb1",
       "subject": "feat(redesign): Homepage — prompt bar borderRadius 28 (more pill), greeting/date spacing fixed (margin 0 0 6px / 0 0 28px), priority actions wired to Kiko via kiko_prefill events (stale/reply/draft/ta",
-      "when": "32 minutes ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "4fa618d",
       "subject": "fix(redesign): Homepage — submit button BLACK default/ORANGE on input, greeting ABOVE date (matching sandbox), correct 2026 F1 calendar from official sources (Canadian GP was May 22-24, Monaco today J",
-      "when": "46 minutes ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "8f8accb",
       "subject": "feat(redesign): Homepage — remove bento stats, dynamic F1 race calendar (shows next race), hide Kiko float on homepage, remove voice avatar/dots, restore attach/mic/voice icons in prompt bar, send but",
-      "when": "59 minutes ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "5561662",
       "subject": "fix(redesign): KikoFloat panel — width 380 (was 340), borderRadius 14 (was 24), right 20 (was 24), header 'Kiko' in Source Serif 4 16px weight 400 — matching sandbox render",
-      "when": "2 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "9201863",
       "subject": "fix(redesign): Home prompt bar — hide +/mic/voice buttons, show always-visible black circle send button (36px, #0A0A0A) matching sandbox render exactly. Position absolute right:6 with padding to accom",
-      "when": "2 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "f0de0b6",
       "subject": "fix(redesign): KikoFloat now shown on home page — Layout.jsx condition changed from !isHome to always show. Float is 48x48 black circle with chat SVG icon",
-      "when": "2 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "6abe004",
       "subject": "fix(redesign): KikoFloat — now visible on home page (was hidden), 48x48 black circle with chat SVG icon matching sandbox, removed pulse rings. PromptBar — borderRadius 24 (pill) in welcome mode",
-      "when": "2 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "df07514",
       "subject": "fix(redesign): Messenger header — replaced colored Audio/Video/Meet buttons with sandbox-style icon buttons (Call/Search/Files). 32px transparent squares matching sandbox render exactly",
-      "when": "3 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "3acddf9",
       "subject": "fix(redesign): Home — chips overflow fixed (visible not hidden), flexWrap, paddingTop 4, chip text matches sandbox exactly (5 chips incl 'Helsing status' and 'Draft follow-up for Ball Corp'), added Ca",
-      "when": "3 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "5080389",
       "subject": "fix(redesign): Home greeting 36px (was 48px), removed 'What would you like to work on' subtitle — matching sandbox render exactly. Saved REDESIGN_COMPARISON.md for systematic cross-referencing",
-      "when": "3 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "f93d893",
       "subject": "feat(redesign): Messenger — flat Slack-style message rows replacing iMessage bubbles, matching sandbox render. All messages left-aligned with avatar+name+time, no bubble backgrounds",
-      "when": "3 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "2606bcc",
       "subject": "fix(redesign): Campaigns overview — use c.counts enrollment data instead of c.prospects (which doesn't exist in overview mode)",
-      "when": "3 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "50c4d2d",
       "subject": "feat(redesign): Campaigns card-list overview matching sandbox render — PageHead with OUTREACH eyebrow, full-width campaign cards with Source Serif 4 metrics, click to drill into detail",
-      "when": "3 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "e1d06d8",
       "subject": "style(redesign): Campaigns OUTREACH eyebrow label added to sidebar header, matching design system",
-      "when": "4 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "3fd468a",
       "subject": "feat(redesign): Add suggestion chips below prompt bar, update placeholder to match sandbox render. Chips: Brief me, Pipeline value, Draft a follow-up, Partnership conflicts",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "efade29",
-      "subject": "style(redesign): Pipeline deal card values — Source Serif 4, 14px, weight 400, serif numerals. Verified via screenshot.",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "be0c9c8",
-      "subject": "style(redesign): Messenger — dark monochrome bubbles replacing orange, rounder 18px radius, more padding",
-      "when": "4 hours ago"
+      "when": "12 hours ago"
     }
   ]
 }

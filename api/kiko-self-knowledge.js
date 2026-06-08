@@ -230,8 +230,8 @@ Day 30: Email (breakup — highest reply rate in any sequence)
 Day 35: LinkedIn message IF connected (soft re-engagement)
 Day 42: Email (resurrection — circumstances change)
 
-EVERY LinkedIn message MUST start with "Hi {firstName}," and end with "Best, {senderName}".
-EVERY email MUST start with "Dear {firstName}," and end with "Kind regards,\n\n{signature}".
+EVERY LinkedIn message MUST start with "Hi [actual first name]," and end with "Best, {senderName}".
+EVERY email draft MUST use the contact's ACTUAL first name — e.g. "Dear Mike," not "Dear {firstName},". The {firstName} template tag is ONLY for campaign sequence templates (cron-sequence-sender resolves them). In direct drafts and follow-ups, ALWAYS resolve the name yourself from the contact data.
 Emails: 50-100 words max. LinkedIn messages: 300 chars max.
 
 Sequence sender handles conditions automatically:

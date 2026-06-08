@@ -1290,7 +1290,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 setTimeout(() => { if (inputRef.current) { inputRef.current.style.height = 'auto'; inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 200) + 'px' } }, 0) 
               }}
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
-              placeholder={fileUploading ? "Processing file..." : pendingAttachments.length > 0 ? "Add a comment about your files..." : "Ask me anything...."}
+              placeholder={fileUploading ? "Processing file..." : pendingAttachments.length > 0 ? "Add a comment about your files..." : "Ask Kiko anything — deals, contacts, drafts, strategy…"}
               autoFocus rows={1}
               style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: isMobile ? 17 : 15, color: '#0A0A0A', fontFamily: C.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
           </div>
@@ -1315,21 +1315,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(90,100,112,0.6)" /><rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(90,100,112,0.8)" /><rect x="12" y="7" width="2" height="10" rx="1" fill="rgba(90,100,112,1)" /><rect x="16" y="4" width="2" height="16" rx="1" fill="rgba(90,100,112,0.8)" /><rect x="20" y="9" width="2" height="6" rx="1" fill="rgba(90,100,112,0.6)" /></svg>
             </button>
           </>}</>)}
-          {/* Phase 3: Run in background button — desktop only */}
-          {!isMobile && !streaming && !voiceActive && (
-            <button onClick={runInBackground} disabled={!input.trim() || bgTaskLoading} title="Run this query in the background"
-              style={{ width: 30, height: 30, borderRadius: 9999, background: input.trim() ? 'rgba(0,0,0,0.05)' : 'transparent', border: `1px solid ${input.trim() ? 'rgba(0,0,0,0.10)' : C.border}`, color: input.trim() ? C.purple : C.textMut, cursor: input.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: input.trim() ? 1 : 0.3, transition: 'all 200ms ease', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}
-              onMouseEnter={e => { if (input.trim()) { e.currentTarget.style.background = 'rgba(90,100,112,0.14)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.10)' }}}
-              onMouseLeave={e => { e.currentTarget.style.background = input.trim() ? 'rgba(0,0,0,0.05)' : 'transparent'; e.currentTarget.style.borderColor = input.trim() ? 'rgba(0,0,0,0.10)' : C.border }}>
-              {bgTaskLoading
-                ? <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1.5s linear infinite' }}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                : <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>}
-            </button>
-          )}
+          {/* Run-in-background button REMOVED — was legacy Vercel code importing @vercel/functions */}
           {streaming ? (
             <button onClick={stopKiko} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
           ) : (
-            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: isMobile ? 38 : 30, height: isMobile ? 38 : 30, borderRadius: 9999, background: hasContent ? 'linear-gradient(135deg, #5a6470, #0A0A0A)' : 'rgba(0,0,0,0.04)', border: hasContent ? 'none' : `1px solid ${C.border}`, color: hasContent ? '#FFFFFF' : '#A0A0A0', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(90,100,112,0.3)' : '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
+            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: isMobile ? 38 : 30, height: isMobile ? 38 : 30, borderRadius: 9999, background: hasContent ? '#E8700A' : '#0A0A0A', border: 'none', color: '#FFFFFF', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: 1, boxShadow: hasContent ? '0 4px 16px rgba(232,112,10,0.3)' : '0 1px 3px rgba(0,0,0,0.2)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
               <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           )}
@@ -2127,7 +2117,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       )}
       </>
       <div style={{ padding: compact ? 12 : (isMobile ? '8px 16px' : 16), paddingBottom: isMobile ? 'calc(8px + env(safe-area-inset-bottom, 0px))' : undefined, flexShrink: 0 }}>
-        <div style={{ maxWidth: compact ? '100%' : (isMobile ? '100%' : 720), margin: '0 auto' }}>
+        <div style={{ maxWidth: compact ? '100%' : (isMobile ? '100%' : 680), margin: '0 auto' }}>
           {PromptBar({})}
           {!isMobile && dictateError && (
             <p style={{ textAlign: 'center', fontSize: 12, color: '#C62828', fontFamily: C.font, margin: '6px 0 0' }}>{dictateError}</p>
