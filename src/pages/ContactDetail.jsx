@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Mail, Phone, Linkedin, Building2, Clock, Edit3, X, ExternalLink, Send, Inbox, CalendarCheck, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Mail, Linkedin, Building2, Clock, Edit3, ExternalLink, Send, CalendarCheck, ChevronRight } from 'lucide-react'
 import DocumentSection from '@/components/documents/DocumentSection'
 import EmailDraft from '@/components/kiko/EmailDraft'
-import PageHeader from '@/components/layout/PageHeader'
 import { ConflictBadge } from '@/hooks/usePartnershipConflict'
-import KikoContactInsight from '@/components/kiko/KikoContactInsight'
 
 export default function ContactDetail() {
   const { id } = useParams()
@@ -189,10 +187,10 @@ export default function ContactDetail() {
     setDraftLoading(true)
     setRightPanel('email')
     try {
-      const context = `Draft a cold outreach email to ${displayName(contact)}, ${contact.title || ''} at ${contact.company || ''}. Sector: ${contact.sector || contact.industry || ''}. ${companyData?.totalFunding ? `Company funding: ${companyData.totalFunding}.` : ''} ${companyData?.revenueEst ? `Revenue: ${companyData.revenueEst}.` : ''} ${daysSinceActivity ? `Last contact: ${daysAgo(contact.lastActivity)} ago.` : 'No prior contact.'} Position F1 sponsorship as a strategic platform. Under 150 words. USD only.`
+      const context = `Generate an email draft for ${displayName(contact)}, ${contact.title || ''} at ${contact.company || ''}. Sector: ${contact.sector || contact.industry || ''}. ${companyData?.totalFunding ? `Company funding: ${companyData.totalFunding}.` : ''} ${companyData?.revenueEst ? `Revenue: ${companyData.revenueEst}.` : ''} ${daysSinceActivity ? `Last contact: ${daysAgo(contact.lastActivity)} ago.` : 'No prior contact.'} Position F1 sponsorship as a strategic platform. Under 150 words. USD only. Format as: Subject: [subject line]\nTo: ${contact.email || ''}\n\n[body]`
       const res = await fetch('https://api.vanhawke.agency/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: context, userId: 'sunny', mode: 'draft' })
+        body: JSON.stringify({ message: context, userId: 'sunny', mode: 'chat' })
       })
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
