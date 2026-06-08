@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { supabase } from '@/lib/supabase'
 import { showToast } from '@/components/ui/Toast'
-import PageHeader from '@/components/layout/PageHeader'
 import { ChevronDown, X, Check, Plus, GripVertical, Eye, EyeOff, Building2, Users, Mail, Calendar, Clock, ExternalLink, Activity, TrendingUp } from 'lucide-react'
 import { ConflictBadge } from '@/hooks/usePartnershipConflict'
 import './Pipeline.css'
@@ -520,43 +519,41 @@ export default function Pipeline({ user }) {
 
   return (
     <div className="pl">
-      <PageHeader
-        eyebrowCategory="REVENUE"
-        eyebrowSuffix="Pipeline"
-        title="Pipeline"
-        stats={[
-          { value: activeDealCount, label: 'Active deals' },
-          { value: fmtCurrency(totalValue), label: 'Weighted' },
-          { value: `${pipelineAnalytics.winRate}%`, label: 'Win rate' },
-          { value: fmtCurrency(pipelineAnalytics.avgValue), label: 'Avg deal' },
-        ]}
-        toolbar={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12.5, color: '#6B6B6B' }}>
-              <input
-                type="checkbox"
-                checked={showClosed}
-                onChange={e => setShowClosed(e.target.checked)}
-                style={{ width: 14, height: 14, accentColor: '#0A0A0A' }}
-              />
-              Show closed
-            </label>
-            <button onClick={() => setShowAnalytics(v => !v)} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.08)', background: showAnalytics ? '#0A0A0A' : 'transparent', color: showAnalytics ? '#fff' : '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>
-              {showAnalytics ? 'Hide analytics' : 'Analytics'}
-            </button>
-            <PipelineManager
-              pipelines={pipelines}
-              activePipeline={pipelineFilter}
-              onSelect={setPipelineFilter}
-              onUpdate={setPipelines}
-            />
-            <button className="pl-pri-btn" onClick={() => setShowNewDeal(true)}>
-              <Plus size={12} />
-              New deal
-            </button>
+      {/* Header — redesign v2 pattern */}
+      <div style={{ padding: '24px 44px 18px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#0A0A0A', marginBottom: 10 }}>REVENUE</div>
+            <h1 style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 300, fontSize: 36, letterSpacing: '-0.018em', lineHeight: 1.0, margin: 0 }}>Pipeline</h1>
           </div>
-        }
-      />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'baseline' }}>
+              {[
+                { value: activeDealCount, label: 'Active deals' },
+                { value: fmtCurrency(totalValue), label: 'Weighted' },
+                { value: `${pipelineAnalytics.winRate || 0}%`, label: 'Win rate' },
+                { value: fmtCurrency(pipelineAnalytics.avgValue), label: 'Avg deal' },
+              ].map((s, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  <span style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 300, fontSize: 22, letterSpacing: '-0.014em' }}>{s.value}</span>
+                  <span style={{ fontSize: 11, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 500 }}>{s.label}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: '#6B6B6B' }}>
+                <input type="checkbox" checked={showClosed} onChange={e => setShowClosed(e.target.checked)} style={{ width: 14, height: 14, accentColor: '#0A0A0A' }} />
+                Show closed
+              </label>
+              <button onClick={() => setShowAnalytics(v => !v)} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.08)', background: showAnalytics ? '#0A0A0A' : 'transparent', color: showAnalytics ? '#fff' : '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>
+                {showAnalytics ? 'Hide analytics' : 'Analytics'}
+              </button>
+              <PipelineManager pipelines={pipelines} activePipeline={pipelineFilter} onSelect={setPipelineFilter} onUpdate={setPipelines} />
+              <button className="pl-pri-btn" onClick={() => setShowNewDeal(true)}><Plus size={12} /> New deal</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Analytics Panel — toggled from stats bar */}
       {showAnalytics && (
