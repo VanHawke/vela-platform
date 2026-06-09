@@ -260,7 +260,7 @@ export default function PartnershipMatrix({ user }) {
       {tab === 'teams' && (
         <div style={{ flex: 1, overflow: 'auto', display: 'flex' }}>
           {/* Team selector sidebar */}
-          <div style={{ width: 180, flexShrink: 0, borderRight: `1px solid ${T.border}`, background: T.surface, overflow: 'auto', padding: '8px 0' }}>
+          <div style={{ width: 140, flexShrink: 0, borderRight: `1px solid ${T.border}`, background: T.surface, overflow: 'auto', padding: '8px 0' }}>
             {filteredTeams.map(t => {
               const gaps = getTeamGaps(t.id).length
               return (
@@ -278,7 +278,7 @@ export default function PartnershipMatrix({ user }) {
           </div>
 
           {/* Team detail panel */}
-          <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+          <div style={{ flex: 1, overflow: 'auto', padding: '12px 20px 16px' }}>
             {(() => {
               const team = teams.find(t => t.id === selectedTeam)
               if (!team) return null
@@ -308,7 +308,7 @@ export default function PartnershipMatrix({ user }) {
                   </div>
 
                   {/* Filled categories */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, marginBottom: 16 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
                     {filled.map(({ cat, partners }) => (
                       <div key={cat.id} style={{ padding: '10px 12px', borderRadius: '0 10px 10px 0', background: T.surface, border: `1px solid ${T.border}`, borderLeft: `3px solid ${cat.color || T.blue}` }}>
                         <p style={{ fontSize: 10, fontWeight: 400, color: cat.color || T.textTertiary, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{cat.name}</p>
@@ -399,13 +399,13 @@ export default function PartnershipMatrix({ user }) {
             }
             gapAlerts.sort((a, b) => a.category.name.localeCompare(b.category.name))
             const allItems = [
-              ...alerts.filter(a => a.type !== 'category_recommendation').map(a => ({ ...a, isDynamic: false })),
+              ...alerts.filter(a => a.type !== 'category_recommendation' && !/\[MAISON\]/i.test(a.title) && !/maison|eyewear/i.test(a.title)).map(a => ({ ...a, isDynamic: false })),
               ...gapAlerts.map(g => ({ ...g, isDynamic: true })),
             ]
             if (allItems.length === 0) return <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontSize: 13 }}>No alerts or gaps detected.</div>
             return (<>
               {/* Intelligence alerts from kiko_alerts (partner changes, proactive intel) */}
-              {alerts.filter(a => a.type !== 'category_recommendation').map(a => {
+              {alerts.filter(a => a.type !== 'category_recommendation' && !/\[MAISON\]/i.test(a.title) && !/maison|eyewear/i.test(a.title)).map(a => {
                 const tc = { convergence: { border: T.blue, label: 'Partner Change' }, proactive_intel: { border: T.green, label: 'Intelligence' }, partnership_gap: { border: T.red, label: 'Gap Detected' } }[a.type] || { border: T.yellow, label: 'Alert' }
                 const age = Math.floor((Date.now() - new Date(a.created_at).getTime()) / 3600000)
                 const ageStr = age < 24 ? `${age}h ago` : `${Math.floor(age / 24)}d ago`
