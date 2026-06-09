@@ -526,3 +526,29 @@ Banking: Brookfield
 Watches: Tissot, Movado, MB&F
 Gaming: Epic Games, KRAFTON, Dream Games
 Whiskey: Bardstown Bourbon, Douglas Laing
+
+37. Brookfield ✅ — LEADERSHIP CHANGE: Connor Teskey new CEO of BAM (Feb 3, 2026, age 38). Bruce Flatt now Chairman of BAM / CEO of Brookfield Corp. Mark Carney resigned for Canadian politics (became PM). Connor Teskey added.
+38. State Street ✅ — Ron O'Hanley Chairman/CEO/President. Confirmed.
+
+### LEADERSHIP CHANGES DETECTED: 6 total
+1. Axonius: Dean Sysman → Exec Chairman, Joe Diamond CEO (Feb 2026)
+2. Snyk: Peter McKay → Advisor, Kenneth MacAskill Interim CEO (April 2026)
+3. BlueVoyant: Jim Rosenthal → Chairman, John Hernandez CEO (May 2026)
+4. Brookfield AM: Bruce Flatt → Chairman, Connor Teskey CEO (Feb 2026)
+5. DB Schenker: Acquired by DSV
+6. Wincanton: Acquired by GXO
+
+### FINAL CRM STATE:
+| Metric | Value |
+|--------|-------|
+| Total contacts | 4,226 |
+| Tier 1 (campaign ready) | 839 |
+| Verified C-suite | 36 |
+| With email | 89% |
+| With LinkedIn | 94% |
+| Sectors covered | 95% |
+| Gap-tagged | 1,258 |
+| Email inferred (flagged) | 24 |
+| Tier 1 without email | 0 |
+| Leadership changes caught | 6 |
+| Kiko updated | ✅ |
