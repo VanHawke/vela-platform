@@ -343,3 +343,16 @@ GlobalFoundries, ASML, Skyworks, Silicon Labs, DB Schenker (acquired), Wincanton
 **Watches:** Tissot, Movado, Venezianico, Armin Strom, MB&F
 **Whiskey:** Bardstown Bourbon, Douglas Laing
 **Gaming:** Epic Games, KRAFTON, Dream Games
+
+### Session 4 — Additional Companies Verified:
+22. Rubrik ✅ — Bipul Sinha CEO (NYSE: RBRK, Anthropic Project Glasswing partner). John Koo CMO. Both added.
+23. KKR ✅ — Joe Bae & Scott Nuttall Co-CEOs ($744B AUM). CRM has SVP Brand Marketing. Confirmed.
+24. Flexport ✅ — Ryan Petersen CEO & Founder ($8B valuation). Added.
+25. Forescout ✅ — Barry Mainz CEO (since Jan 2023). Added.
+26. Huntress ✅ — Kyle Hanslovan CEO ($1.5B valuation). Added.
+27. Jacob & Co ✅ — Benjamin Arabov CEO, Jacob Arabo Founder/Chairman. Both added.
+
+### RUNNING TOTAL:
+- Companies verified: 27 of 33+ remaining
+- C-suite contacts added: 32
+- CRM: 4,220 total | 833 Tier 1 | 1,254 gap-tagged
