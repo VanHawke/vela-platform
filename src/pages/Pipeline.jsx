@@ -297,10 +297,17 @@ export default function Pipeline({ user }) {
     return map
   }, [filteredDeals, activeStages])
 
+  // Safe numeric parser — strips non-numeric chars, caps at $1B to catch corruption
+  const safeVal = (v) => {
+    if (!v) return 0
+    const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/[^\d.]/g, ''))
+    return isNaN(n) || n > 1e9 ? 0 : n
+  }
+
   const totalValue = useMemo(() => {
     return filteredDeals.reduce((sum, d) => {
       if (d.stage === 'Closed Won' || d.stage === 'Closed Lost') return sum
-      return sum + parseFloat(d.value || 0)
+      return sum + safeVal(d.value)
     }, 0)
   }, [filteredDeals])
 
@@ -316,15 +323,15 @@ export default function Pipeline({ user }) {
     const totalClosed = closedWon.length + closedLost.length
     const winRate = totalClosed > 0 ? Math.round((closedWon.length / totalClosed) * 100) : 0
     const active = deals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost')
-    const avgValue = active.length > 0 ? Math.round(active.reduce((s, d) => s + parseFloat(d.value || 0), 0) / active.length) : 0
-    const wonValue = closedWon.reduce((s, d) => s + parseFloat(d.value || 0), 0)
+    const avgValue = active.length > 0 ? Math.round(active.reduce((s, d) => s + safeVal(d.value), 0) / active.length) : 0
+    const wonValue = closedWon.reduce((s, d) => s + safeVal(d.value), 0)
     // Stage distribution for funnel
     const stageCounts = {}
     const stageValues = {}
     deals.forEach(d => {
       const s = d.stage || 'Unknown'
       stageCounts[s] = (stageCounts[s] || 0) + 1
-      stageValues[s] = (stageValues[s] || 0) + parseFloat(d.value || 0)
+      stageValues[s] = (stageValues[s] || 0) + safeVal(d.value)
     })
     return { winRate, avgValue, wonValue, closedWon: closedWon.length, closedLost: closedLost.length, totalClosed, activeCount: active.length, stageCounts, stageValues }
   }, [deals])
@@ -612,7 +619,7 @@ export default function Pipeline({ user }) {
                 {(dealsByStage[stage.id] || []).map(d => {
                   const company = d.company || d.title || 'Untitled'
                   const sector = d.sector || d.industry || ''
-                  const value = parseFloat(d.value || 0)
+                  const value = safeVal(d.value)
                   const sectorClass = SECTOR_CLASS[sector] || ''
                   const isSel = selectedDeal && selectedDeal._id === d._id
                   return (
