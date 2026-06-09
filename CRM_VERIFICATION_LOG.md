@@ -90,3 +90,44 @@
 - Telecoms: all companies to verify
 - Mover detection: cross-reference all 4,194 contacts for role changes
 - Archive pass: flag irrelevant contacts
+
+### 6. Wincanton (Logistics — 7 teams open) ⚠️ POSSIBLE GXO ACQUISITION
+**CRM has:** Jamie Newton (Head of Marketing), Sally-Anne Canning (Director of Marketing & Comms)
+**Verified leadership (June 2026):**
+- James Wroath — CEO (since Sept 2019) ✅
+- Tom Hinton — CFO (since 2022) ✅
+- Ian Keilty — COO (since 2020) ✅
+- Paul Durkin — Chief Customer & Innovation Officer ✅
+- ⚠️ Leadership page redirects to GXO — possible acquisition
+**ADD:** James Wroath (CEO), Tom Hinton (CFO)
+
+---
+## FULL CRM CLEANUP SUMMARY — 9 June 2026
+
+### Data Enrichment Completed:
+- 571 contacts enriched with inferred sectors (from company name keywords)
+- Sector coverage: 82% → 95% (4,010 of 4,201 now have sectors)
+- 1,237 contacts tagged with F1 gap categories (up from 1,143)
+- 11 new verified C-suite contacts added
+
+### Data Cleanup Completed:
+- 4 duplicate contacts removed
+- All 4,201 contacts tiered by priority:
+  - **Tier 1: 814** — Senior + gap match + email (CAMPAIGN READY)
+  - **Tier 2: 1,876** — Senior + email (warm prospects)
+  - **Tier 3: 1,056** — Has email, not senior (passive)
+  - **Tier 4: 455** — No email (archived)
+
+### Companies Verified (6 of 50):
+1. GlobalFoundries ✅ — 3 C-suite added
+2. ASML ✅ — 3 C-suite added
+3. Skyworks Solutions ✅ — 2 C-suite added
+4. Silicon Labs ✅ — 3 C-suite added
+5. DB Schenker ⚠️ — Acquired by DSV (contacts may have moved)
+6. Wincanton ⚠️ — Possible GXO acquisition (leadership page redirects)
+
+### Remaining (next session):
+- 44 more companies to verify (logistics, cybersecurity, banking, telecoms, fashion)
+- Mover detection for all 4,201 contacts
+- Email domain validation
+- Pipeline rebuild from Tier 1 contacts
