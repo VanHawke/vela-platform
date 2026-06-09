@@ -152,13 +152,13 @@ export default function PartnershipMatrix({ user }) {
           </div>
         </div>
 
-        {/* Tab bar */}
-        <div style={{ display: 'flex', gap: 4 }}>
+        {/* Tab bar — compact buttons matching render */}
+        <div style={{ display: 'flex', gap: 3 }}>
           {TABS.map(t => { const I = t.icon; return (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 24, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 13, fontWeight: tab === t.id ? 500 : 450, transition: 'all 0.15s',
-              background: tab === t.id ? 'rgba(0,0,0,0.06)' : 'transparent', color: tab === t.id ? T.text : T.textSecondary,
-            }}><I size={13} />{t.label}</button>
+              display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 12, fontWeight: 500, transition: 'all 0.15s',
+              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? '#FFFFFF' : T.textSecondary,
+            }}><I size={12} />{t.label}</button>
           )})}
         </div>
       </div>
@@ -191,24 +191,23 @@ export default function PartnershipMatrix({ user }) {
       {/* ═══ TAB: HEATMAP ═══ */}
       {tab === 'heatmap' && (
         <div style={{ flex: 1, overflow: 'auto', padding: '12px 44px 16px' }}>
-          <div style={{ background: T.surface, borderRadius: 18, border: `1px solid ${T.border}`, overflow: 'auto' }}>
-            <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 11, fontFamily: T.font, minWidth: 800 }}>
+          <div style={{ background: T.surface, borderRadius: 14, border: `1px solid ${T.border}`, overflow: 'auto' }}>
+            <table style={{ borderCollapse: 'separate', borderSpacing: 0, width: '100%', fontSize: 11, fontFamily: T.font, minWidth: 800 }}>
               <thead>
                 <tr>
-                  <th style={{ position: 'sticky', left: 0, background: T.surface, padding: '8px 12px', textAlign: 'left', fontWeight: 400, borderBottom: `1px solid ${T.border}`, zIndex: 2, minWidth: 120, fontSize: 12 }}>Team</th>
+                  <th style={{ position: 'sticky', left: 0, background: T.surface, padding: '6px 10px', textAlign: 'left', fontWeight: 600, fontSize: 8, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: `1px solid ${T.border}`, zIndex: 2, minWidth: 110 }}>Team</th>
                   {filteredCats.map(c => (
-                    <th key={c.id} style={{ padding: '6px 3px', fontWeight: 400, borderBottom: `1px solid ${T.border}`, color: c.color || T.textTertiary, writingMode: 'vertical-rl', textOrientation: 'mixed', height: 120, fontSize: 10, overflow: 'hidden' }}>
-                      {c.name.replace(/ \/ .*/,'')}
+                    <th key={c.id} style={{ padding: '4px 2px', fontWeight: 600, fontSize: 7, color: c.color || T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: `1px solid ${T.border}`, writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: 60, overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                      {c.name.replace(/ \/ .*/,'').replace(/ & .*/,'')}
                     </th>
                   ))}
-                  <th style={{ padding: '6px 8px', fontWeight: 400, borderBottom: `1px solid ${T.border}`, fontSize: 11 }}>Total</th>
-                  <th style={{ padding: '6px 8px', fontWeight: 400, borderBottom: `1px solid ${T.border}`, color: T.red, fontSize: 11 }}>Gaps</th>
+                  <th style={{ padding: '6px 8px', fontWeight: 600, fontSize: 8, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: `1px solid ${T.border}`, textAlign: 'center' }}>Total</th>
+                  <th style={{ padding: '6px 8px', fontWeight: 600, fontSize: 8, color: T.red, textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: `1px solid ${T.border}`, textAlign: 'center' }}>Gaps</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTeams.map(team => {
                   const tp = getTeamPartners(team.id)
-                  // Honor related_categories — e.g. RebelDot is category_id=software but also cybersecurity
                   const filledCats = new Set()
                   for (const p of tp) {
                     if (p.category_id) filledCats.add(p.category_id)
@@ -217,30 +216,42 @@ export default function PartnershipMatrix({ user }) {
                   const gapCount = filteredCats.filter(c => !filledCats.has(c.id)).length
                   return (
                     <tr key={team.id} style={{ borderBottom: `1px solid ${T.border}` }}>
-                      <td style={{ position: 'sticky', left: 0, background: T.surface, padding: '6px 12px', fontWeight: 400, zIndex: 1, fontSize: 12 }}>
+                      <td style={{ position: 'sticky', left: 0, background: T.surface, padding: '7px 10px', fontWeight: 500, zIndex: 1, fontSize: 12 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <TeamLogo team={team} size={22} />
+                          <TeamLogo team={team} size={20} />
                           {team.name}
                         </div>
                       </td>
                       {filteredCats.map(c => {
                         const cp = (matrix[team.id]?.categories[c.id]) || []
-                        const filled = cp.length > 0
+                        const count = cp.length
+                        const isDense = count >= 5
+                        const isFilled = count > 0
                         return (
-                          <td key={c.id} style={{ padding: 3, textAlign: 'center' }} title={filled ? cp.map(p => p.partner_name).join(', ') : `${team.name}: GAP — ${c.name}`}>
-                            <span style={{ display: 'inline-block', width: 16, height: 16, borderRadius: 3, fontSize: 9, lineHeight: '16px', fontWeight: 400,
-                              background: filled ? `${T.green}18` : `${T.red}12`, border: `1px solid ${filled ? T.green + '30' : T.red + '30'}`, color: filled ? T.green : T.red,
-                            }}>{filled ? cp.length : '—'}</span>
+                          <td key={c.id} style={{ padding: '2px 1px', textAlign: 'center' }} title={isFilled ? cp.map(p => p.partner_name).join(', ') : `${team.name}: GAP — ${c.name}`}>
+                            <div style={{
+                              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                              width: 24, height: 22, borderRadius: 4, fontSize: 9, fontWeight: 500,
+                              background: isDense ? 'rgba(125,138,100,0.25)' : isFilled ? 'rgba(125,138,100,0.12)' : 'rgba(184,100,62,0.08)',
+                              color: isDense ? '#5a6b3d' : isFilled ? T.green : T.red,
+                            }}>{isFilled ? count : '—'}</div>
                           </td>
                         )
                       })}
-                      <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 400 }}>{tp.length}</td>
-                      <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 400, color: gapCount > 10 ? T.red : gapCount > 5 ? T.yellow : T.green }}>{gapCount}</td>
+                      <td style={{ padding: '4px 10px', textAlign: 'center', fontWeight: 500, fontSize: 12 }}>{tp.length}</td>
+                      <td style={{ padding: '4px 10px', textAlign: 'center', fontWeight: 500, fontSize: 12, color: gapCount > 10 ? T.red : gapCount > 5 ? T.yellow : T.green }}>{gapCount}</td>
                     </tr>
                   )
                 })}
               </tbody>
             </table>
+          </div>
+          {/* Legend */}
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginTop: 8, fontSize: 10, color: T.textTertiary }}>
+            <span>Legend:</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><div style={{ width: 16, height: 14, borderRadius: 3, background: 'rgba(125,138,100,0.25)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 500, color: '#5a6b3d' }}>5+</div> Dense</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><div style={{ width: 16, height: 14, borderRadius: 3, background: 'rgba(125,138,100,0.12)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 500, color: T.green }}>1-4</div> Active</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><div style={{ width: 16, height: 14, borderRadius: 3, background: 'rgba(184,100,62,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 500, color: T.red }}>—</div> Open gap</span>
           </div>
         </div>
       )}
