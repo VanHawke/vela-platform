@@ -308,7 +308,7 @@ export default function PartnershipMatrix({ user }) {
                   </div>
 
                   {/* Filled categories */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 16 }}>
                     {filled.map(({ cat, partners }) => (
                       <div key={cat.id} style={{ padding: '10px 12px', borderRadius: '0 10px 10px 0', background: T.surface, border: `1px solid ${T.border}`, borderLeft: `3px solid ${cat.color || T.blue}` }}>
                         <p style={{ fontSize: 10, fontWeight: 400, color: cat.color || T.textTertiary, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{cat.name}</p>
