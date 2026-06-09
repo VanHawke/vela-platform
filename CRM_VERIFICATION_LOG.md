@@ -479,3 +479,30 @@ Banking: Brookfield, State Street
 Watches: Tissot, Movado, MB&F
 Gaming: Epic Games, KRAFTON
 Whiskey: Bardstown Bourbon, Douglas Laing
+
+### EMAIL VERIFICATION STATUS:
+22 emails inferred from company domain patterns (flagged email_inferred=true):
+- Zscaler: flast@zscaler.com (93% match rate per RocketReach/Clay)
+- Huntress: first.last@huntress.com (80%)
+- Rubrik: first.last@rubrik.com
+- Flexport: first.last@flexport.com
+- Symbotic: first.last@symbotic.com
+- Capital.com: first.last@capital.com
+- Axonius: first.last@axonius.com
+- Forescout: first.last@forescout.com
+- Snyk: first.last@snyk.io
+- Nuveen: first.last@nuveen.com
+- Heaven Hill: first.last@heavenhill.com
+- Jacob & Co: first.last@jacobandco.com
+- Locus Robotics: first.last@locusrobotics.com
+
+HONEST ASSESSMENT:
+- These are INFERRED emails based on company patterns, not individually verified
+- Pattern match rates range 80-93% depending on company
+- For highest-confidence outreach: verify via LinkedIn InMail first, then email
+- All inferred emails flagged in CRM with email_inferred=true
+
+### KIKO UPDATED:
+- kiko-self-knowledge.js updated with current CRM stats
+- Leadership changes (Axonius, Snyk, DB Schenker, Wincanton) now in Kiko's knowledge
+- PM2 restarted — changes live
