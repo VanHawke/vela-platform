@@ -132,7 +132,9 @@ export default function PartnershipMatrix({ user }) {
           <div>
             <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#0A0A0A', marginBottom: 10 }}>STRATEGY</div>
             <h1 style={{ fontSize: 36, fontWeight: 300, margin: 0, letterSpacing: '-0.018em', fontFamily: "'Source Serif 4', Georgia, serif" }}>Partnership Matrix</h1>
-            <p style={{ fontSize: 12, color: T.textTertiary, margin: '6px 0 0' }}>{partnerships.length} partnerships · {teams.length} teams · {totalGaps} gaps · Auto-scanned daily 7am{lastRefresh ? ` · Last loaded ${lastRefresh}` : ''}</p>
+            <p style={{ fontSize: 12, color: T.textTertiary, margin: '6px 0 0' }}>
+              <span style={{ fontFamily: T.fontDisplay, fontWeight: 300, fontSize: 15, color: T.text }}>{partnerships.length}</span> partnerships · <span style={{ fontFamily: T.fontDisplay, fontWeight: 300, fontSize: 15, color: T.text }}>{teams.length}</span> teams · <span style={{ fontFamily: T.fontDisplay, fontWeight: 300, fontSize: 15, color: T.red }}>{totalGaps}</span> gaps · Auto-scanned daily 7am{lastRefresh ? ` · Last loaded ${lastRefresh}` : ''}
+            </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <select value={filterTeam} onChange={e => setFilterTeam(e.target.value)} style={{ fontSize: 12, padding: '5px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, fontFamily: T.font, color: T.textSecondary }}>
@@ -146,7 +148,7 @@ export default function PartnershipMatrix({ user }) {
             <button onClick={fetchMatrix} style={{ fontSize: 12, padding: '5px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer' }}><RefreshCw size={12} /></button>
             <a href={`/api/partnership-report?format=html${filterTeam !== 'all' ? `&team=${filterTeam}` : ''}`} target="_blank" rel="noopener"
               style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3 }}><FileDown size={11} />Export</a>
-            <button onClick={() => setShowAdd(true)} style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, border: `1px solid ${T.blue}`, background: 'rgba(0,122,255,0.06)', color: T.blue, cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}><Plus size={11} style={{ marginRight: 3, verticalAlign: -1 }} />Add</button>
+            <button onClick={() => setShowAdd(true)} style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, border: `1px solid ${T.accent}`, background: T.accent, color: '#FFFFFF', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}><Plus size={11} style={{ marginRight: 3, verticalAlign: -1 }} />Add</button>
           </div>
         </div>
 
@@ -188,7 +190,7 @@ export default function PartnershipMatrix({ user }) {
 
       {/* ═══ TAB: HEATMAP ═══ */}
       {tab === 'heatmap' && (
-        <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+        <div style={{ flex: 1, overflow: 'auto', padding: '12px 44px 16px' }}>
           <div style={{ background: T.surface, borderRadius: 18, border: `1px solid ${T.border}`, overflow: 'auto' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 11, fontFamily: T.font, minWidth: 800 }}>
               <thead>
@@ -287,10 +289,10 @@ export default function PartnershipMatrix({ user }) {
                         {team.website && <> · <a href={team.website} target="_blank" rel="noopener" style={{ color: T.blue, textDecoration: 'none' }}>Partners page <ExternalLink size={8} style={{ verticalAlign: -1 }} /></a></>}
                       </p>
                     </div>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 50, background: T.filled, color: T.green, fontWeight: 500 }}>{tp.length} partners</span>
-                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 50, background: T.accentSoft, color: T.textSecondary, fontWeight: 500 }}>{filled.length}/{categories.length} categories</span>
-                      {gaps.length > 0 && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 50, background: T.gap, color: T.red, fontWeight: 500 }}>{gaps.length} gaps</span>}
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <div><span style={{ fontFamily: T.fontDisplay, fontWeight: 300, fontSize: 18 }}>{tp.length}</span> <span style={{ fontSize: 10, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.04em' }}>partners</span></div>
+                      <div><span style={{ fontFamily: T.fontDisplay, fontWeight: 300, fontSize: 18 }}>{filled.length}/{categories.length}</span> <span style={{ fontSize: 10, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.04em' }}>categories</span></div>
+                      {gaps.length > 0 && <div><span style={{ fontFamily: T.fontDisplay, fontWeight: 300, fontSize: 18, color: T.red }}>{gaps.length}</span> <span style={{ fontSize: 10, color: T.red, textTransform: 'uppercase', letterSpacing: '0.04em' }}>gaps</span></div>}
                     </div>
                   </div>
 
@@ -308,21 +310,14 @@ export default function PartnershipMatrix({ user }) {
                         )})}
                       </div>
                     ))}
-                  </div>
-
-                  {/* Gaps section */}
-                  {gaps.length > 0 && (
-                    <div style={{ background: T.gap, borderRadius: 14, padding: 14, border: `1px solid ${T.gapBorder}` }}>
-                      <p style={{ fontSize: 11, fontWeight: 500, color: T.red, textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 8px' }}>
-                        {gaps.length} open categories — Van Hawke targeting opportunity
-                      </p>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {gaps.map(c => (
-                          <span key={c.id} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, background: '#FFFFFF', color: T.red, border: `1px solid ${T.gapBorder}`, fontWeight: 500 }}>{c.name}</span>
-                        ))}
+                    {/* Gap cards inline — dashed border */}
+                    {gaps.map(c => (
+                      <div key={`gap-${c.id}`} style={{ padding: '10px 12px', borderRadius: 14, background: 'rgba(184,100,62,0.02)', border: `1px dashed ${T.gapBorder}`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <p style={{ fontSize: 10, fontWeight: 500, color: T.red, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{c.name} — Open gap</p>
+                        <p style={{ fontSize: 11, color: T.textTertiary, margin: 0 }}>No partner. <span onClick={() => window.location.href = '/campaigns'} style={{ color: T.red, cursor: 'pointer', fontWeight: 500 }}>Launch campaign →</span></p>
                       </div>
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
               )
             })()}
@@ -332,7 +327,7 @@ export default function PartnershipMatrix({ user }) {
 
       {/* ═══ TAB: GAP TARGETING ═══ */}
       {tab === 'gaps' && (
-        <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+        <div style={{ flex: 1, overflow: 'auto', padding: '12px 44px 16px' }}>
           <div style={{ maxWidth: 900 }}>
             {/* Team legend with logos */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', marginBottom: 8, background: T.surface, borderRadius: 14, border: `1px solid ${T.border}`, flexWrap: 'wrap' }}>
@@ -394,38 +389,42 @@ export default function PartnershipMatrix({ user }) {
 
       {/* ── ALERTS TAB ── */}
       {tab === 'alerts' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ flex: 1, overflow: 'auto', padding: '12px 44px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {alerts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontSize: 13, fontFamily: T.font }}>No active partnership alerts. Kiko scans for opportunities daily.</div>
+            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontSize: 13, fontFamily: T.font }}>No active partnership alerts. Kiko scans for opportunities daily at 8am and 2pm.</div>
           ) : alerts.map(a => {
             const typeColors = {
-              category_recommendation: { bg: 'rgba(184,156,92,0.08)', border: 'rgba(184,156,92,0.20)', icon: '🎯', label: 'Category Gap' },
-              convergence: { bg: 'rgba(90,100,112,0.08)', border: 'rgba(90,100,112,0.20)', icon: '🔗', label: 'Convergence' },
-              partnership_gap: { bg: 'rgba(184,100,62,0.08)', border: 'rgba(184,100,62,0.20)', icon: '📊', label: 'Gap Detected' },
-              proactive_intel: { bg: 'rgba(125,138,100,0.08)', border: 'rgba(125,138,100,0.20)', icon: '💡', label: 'Intelligence' },
+              category_recommendation: { bg: 'rgba(184,100,62,0.04)', border: T.red, label: 'Category Gap' },
+              convergence: { bg: 'rgba(90,100,112,0.04)', border: T.blue, label: 'Convergence' },
+              partnership_gap: { bg: 'rgba(184,100,62,0.04)', border: T.red, label: 'Gap Detected' },
+              proactive_intel: { bg: 'rgba(125,138,100,0.04)', border: T.green, label: 'Intelligence' },
             }
             const tc = typeColors[a.type] || typeColors.proactive_intel
             const age = Math.floor((Date.now() - new Date(a.created_at).getTime()) / 3600000)
             const ageStr = age < 1 ? 'Just now' : age < 24 ? `${age}h ago` : `${Math.floor(age / 24)}d ago`
             return (
-              <div key={a.id} style={{ border: `1px solid ${tc.border}`, borderRadius: 10, background: tc.bg, padding: '14px 18px', fontFamily: T.font }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                  <span style={{ fontSize: 18 }}>{tc.icon}</span>
+              <div key={a.id} style={{ borderRadius: '0 14px 14px 0', background: tc.bg, padding: '14px 18px', fontFamily: T.font, borderLeft: `3px solid ${tc.border}`, border: `1px solid ${T.border}`, borderLeftWidth: 3, borderLeftColor: tc.border }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: `${tc.border}15`, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                    <Target size={14} color={tc.border} />
+                  </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{a.title}</span>
+                      <span style={{ fontSize: 13, fontWeight: 500, color: T.text }}>{a.title}</span>
                       <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', color: T.textSecondary }}>{tc.label}</span>
+                      <span style={{ fontSize: 10, color: T.textTertiary, marginLeft: 'auto' }}>{ageStr}</span>
                     </div>
-                    <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5 }}>{a.detail}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
-                      <span style={{ fontSize: 10, color: T.textTertiary }}>{ageStr}</span>
-                      {a.entity_name && <span style={{ fontSize: 10, color: T.textSecondary, fontWeight: 500 }}>{a.entity_name}</span>}
+                    <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5, marginBottom: 8 }}>{a.detail}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {a.entity_name && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: T.accentSoft, color: T.textSecondary, fontWeight: 500 }}>{a.entity_name}</span>}
+                      <button onClick={() => window.location.href = '/campaigns'} style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: 'none', background: T.accent, color: '#fff', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Launch campaign</button>
+                      <button onClick={() => window.location.href = '/records'} style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>View contacts</button>
                       <button onClick={async () => {
                         const { createClient } = await import('@supabase/supabase-js')
                         const sb = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
                         await sb.from('kiko_alerts').update({ dismissed: true }).eq('id', a.id)
                         setAlerts(prev => prev.filter(x => x.id !== a.id))
-                      }} style={{ fontSize: 10, color: T.textTertiary, background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto', fontFamily: T.font }}>Dismiss</button>
+                      }} style={{ fontSize: 11, color: T.textTertiary, background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font }}>Dismiss</button>
                     </div>
                   </div>
                 </div>
