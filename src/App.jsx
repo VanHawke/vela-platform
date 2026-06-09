@@ -10,27 +10,17 @@ import Settings from '@/components/settings/Settings'
 import PermissionGate from '@/components/PermissionGate'
 // Lazy-loaded pages (code-split for bundle size reduction)
 const Pipeline = lazy(() => import('@/pages/Pipeline'))
-const Contacts = lazy(() => import('@/pages/Contacts'))
 const ContactDetail = lazy(() => import('@/pages/ContactDetail'))
 const CompanyDetail = lazy(() => import('@/pages/CompanyDetail'))
-const Organisations = lazy(() => import('@/pages/Organisations'))
-const OutreachIntelligence = lazy(() => import('@/pages/OutreachIntelligence'))
 const PartnershipMatrix = lazy(() => import('@/pages/PartnershipMatrix'))
-const CommercialCalendar = lazy(() => import('@/pages/CommercialCalendar'))
-const GoogleCalendar = lazy(() => import('@/pages/GoogleCalendar'))
-const KikoCode = lazy(() => import('@/pages/KikoCode'))
 const Admin = lazy(() => import('@/pages/Admin'))
 const AdminSystem = lazy(() => import('@/pages/AdminSystem'))
-const MemoryConsole = lazy(() => import('@/pages/MemoryConsole'))
 
 const Campaigns = lazy(() => import('@/pages/Campaigns'))
-// LinkedInQueue removed — functionality handled by Hetzner worker + campaign prospect detail panel
-const KnowledgeBrowser = lazy(() => import('@/pages/KnowledgeBrowser'))
 
 const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
 const Messages = lazy(() => import('@/pages/Messages'))
 const MobileVoicePage = lazy(() => import('@/pages/MobileVoicePage'))
-const DocumentLibrary = lazy(() => import('@/pages/DocumentLibrary'))
 const Records = lazy(() => import('@/pages/Records'))
 
 const INACTIVITY_MS   = 20 * 60 * 1000
@@ -135,9 +125,7 @@ export default function App() {
           <Route path="home" element={<KikoChat user={user} />} />
           <Route path="dashboard" element={<KikoChat user={user} />} />
           <Route path="pipeline" element={<PermissionGate pageKey="pipeline" user={user}><Pipeline user={user} /></PermissionGate>} />
-          <Route path="contacts" element={<PermissionGate pageKey="contacts" user={user}><Contacts user={user} /></PermissionGate>} />
           <Route path="contacts/:id" element={<PermissionGate pageKey="contacts" user={user}><ContactDetail user={user} /></PermissionGate>} />
-          <Route path="organisations" element={<PermissionGate pageKey="organisations" user={user}><Organisations user={user} /></PermissionGate>} />
           <Route path="records" element={<Records user={user} />} />
           <Route path="records/contact/:id" element={<PermissionGate pageKey="contacts" user={user}><ContactDetail user={user} /></PermissionGate>} />
           <Route path="records/company/:id" element={<CompanyDetail />} />
@@ -145,11 +133,8 @@ export default function App() {
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
           <Route path="tasks" element={<Navigate to="/command-centre" replace />} />
           <Route path="email" element={<Navigate to="/command-centre" replace />} />
-          <Route path="command-centre" element={<PermissionGate pageKey="command_centre" user={user}><OutreachIntelligence user={user} /></PermissionGate>} />
           {/* News Signals removed — replaced by Partnership Detection alerts */}
           <Route path="partnership-matrix" element={<PermissionGate pageKey="partnership_matrix" user={user}><PartnershipMatrix user={user} /></PermissionGate>} />
-          <Route path="calendar" element={<PermissionGate pageKey="race_calendar" user={user}><GoogleCalendar user={user} /></PermissionGate>} />
-          <Route path="sporting-events" element={<PermissionGate pageKey="race_calendar" user={user}><CommercialCalendar user={user} /></PermissionGate>} />
           <Route path="races" element={<Navigate to="/sporting-events" replace />} />
           {/* Knowledge Library removed — documents accessible via Kiko chat upload */}
 
@@ -159,15 +144,11 @@ export default function App() {
           <Route path="messages" element={<Messages user={user} />} />
           <Route path="sequences/:id" element={<SequenceDetail user={user} />} />
           {/* LinkedIn page removed — handled by campaign prospect detail panel */}
-          <Route path="knowledge" element={<KnowledgeBrowser />} />
-          <Route path="documents" element={<DocumentLibrary />} />
           <Route path="inbox" element={<Navigate to="/command-centre" replace />} />
           <Route path="segments" element={<Navigate to="/campaigns" replace />} />
           <Route path="packs" element={<Navigate to="/settings" replace />} />
           <Route path="targets" element={<Navigate to="/command-centre" replace />} />
-          <Route path="kikocode" element={<KikoCode user={user} />} />
           <Route path="settings" element={<Settings user={user} />} />
-          <Route path="memory" element={<AdminRoute><MemoryConsole user={user} /></AdminRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
