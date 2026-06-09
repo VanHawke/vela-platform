@@ -314,7 +314,7 @@ export default function PartnershipMatrix({ user }) {
                     {gaps.map(c => (
                       <div key={`gap-${c.id}`} style={{ padding: '10px 12px', borderRadius: 14, background: 'rgba(184,100,62,0.02)', border: `1px dashed ${T.gapBorder}`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <p style={{ fontSize: 10, fontWeight: 500, color: T.red, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{c.name} — Open gap</p>
-                        <p style={{ fontSize: 11, color: T.textTertiary, margin: 0 }}>No partner. <span onClick={() => window.location.href = '/campaigns'} style={{ color: T.red, cursor: 'pointer', fontWeight: 500 }}>Launch campaign →</span></p>
+                        <p style={{ fontSize: 11, color: T.textTertiary, margin: 0 }}>No partner. <span onClick={() => window.location.href = `/campaigns?team=${encodeURIComponent(team.name)}&category=${encodeURIComponent(c.name)}`} style={{ color: T.red, cursor: 'pointer', fontWeight: 500 }}>Launch campaign →</span></p>
                       </div>
                     ))}
                   </div>
@@ -390,47 +390,82 @@ export default function PartnershipMatrix({ user }) {
       {/* ── ALERTS TAB ── */}
       {tab === 'alerts' && (
         <div style={{ flex: 1, overflow: 'auto', padding: '12px 44px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {alerts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontSize: 13, fontFamily: T.font }}>No active partnership alerts. Kiko scans for opportunities daily at 8am and 2pm.</div>
-          ) : alerts.map(a => {
-            const typeColors = {
-              category_recommendation: { bg: 'rgba(184,100,62,0.04)', border: T.red, label: 'Category Gap' },
-              convergence: { bg: 'rgba(90,100,112,0.04)', border: T.blue, label: 'Convergence' },
-              partnership_gap: { bg: 'rgba(184,100,62,0.04)', border: T.red, label: 'Gap Detected' },
-              proactive_intel: { bg: 'rgba(125,138,100,0.04)', border: T.green, label: 'Intelligence' },
+          {/* Dynamic gap alerts — generated from live matrix data for ALL teams */}
+          {(() => {
+            const gapAlerts = []
+            for (const team of filteredTeams) {
+              const gaps = getTeamGaps(team.id)
+              for (const gap of gaps) {
+                gapAlerts.push({ id: `gap-${team.id}-${gap.id}`, team, category: gap, type: 'dynamic_gap' })
+              }
             }
-            const tc = typeColors[a.type] || typeColors.proactive_intel
-            const age = Math.floor((Date.now() - new Date(a.created_at).getTime()) / 3600000)
-            const ageStr = age < 1 ? 'Just now' : age < 24 ? `${age}h ago` : `${Math.floor(age / 24)}d ago`
-            return (
-              <div key={a.id} style={{ borderRadius: '0 14px 14px 0', background: tc.bg, padding: '14px 18px', fontFamily: T.font, borderLeft: `3px solid ${tc.border}`, border: `1px solid ${T.border}`, borderLeftWidth: 3, borderLeftColor: tc.border }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: `${tc.border}15`, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                    <Target size={14} color={tc.border} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontSize: 13, fontWeight: 500, color: T.text }}>{a.title}</span>
-                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', color: T.textSecondary }}>{tc.label}</span>
-                      <span style={{ fontSize: 10, color: T.textTertiary, marginLeft: 'auto' }}>{ageStr}</span>
-                    </div>
-                    <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5, marginBottom: 8 }}>{a.detail}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {a.entity_name && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: T.accentSoft, color: T.textSecondary, fontWeight: 500 }}>{a.entity_name}</span>}
-                      <button onClick={() => window.location.href = '/campaigns'} style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: 'none', background: T.accent, color: '#fff', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Launch campaign</button>
-                      <button onClick={() => window.location.href = '/records'} style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>View contacts</button>
-                      <button onClick={async () => {
-                        const { createClient } = await import('@supabase/supabase-js')
-                        const sb = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
-                        await sb.from('kiko_alerts').update({ dismissed: true }).eq('id', a.id)
-                        setAlerts(prev => prev.filter(x => x.id !== a.id))
-                      }} style={{ fontSize: 11, color: T.textTertiary, background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font }}>Dismiss</button>
+            gapAlerts.sort((a, b) => a.category.name.localeCompare(b.category.name))
+            const allItems = [
+              ...alerts.filter(a => a.type !== 'category_recommendation').map(a => ({ ...a, isDynamic: false })),
+              ...gapAlerts.map(g => ({ ...g, isDynamic: true })),
+            ]
+            if (allItems.length === 0) return <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontSize: 13 }}>No alerts or gaps detected.</div>
+            return (<>
+              {/* Intelligence alerts from kiko_alerts (partner changes, proactive intel) */}
+              {alerts.filter(a => a.type !== 'category_recommendation').map(a => {
+                const tc = { convergence: { border: T.blue, label: 'Partner Change' }, proactive_intel: { border: T.green, label: 'Intelligence' }, partnership_gap: { border: T.red, label: 'Gap Detected' } }[a.type] || { border: T.yellow, label: 'Alert' }
+                const age = Math.floor((Date.now() - new Date(a.created_at).getTime()) / 3600000)
+                const ageStr = age < 24 ? `${age}h ago` : `${Math.floor(age / 24)}d ago`
+                return (
+                  <div key={a.id} style={{ borderRadius: '0 14px 14px 0', background: `${tc.border}08`, padding: '14px 18px', borderLeft: `3px solid ${tc.border}`, border: `1px solid ${T.border}`, borderLeftWidth: 3, borderLeftColor: tc.border }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 8, background: `${tc.border}15`, display: 'grid', placeItems: 'center', flexShrink: 0 }}><AlertTriangle size={14} color={tc.border} /></div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontSize: 13, fontWeight: 500 }}>{a.title}</span>
+                          <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', color: T.textSecondary }}>{tc.label}</span>
+                          <span style={{ fontSize: 10, color: T.textTertiary, marginLeft: 'auto' }}>{ageStr}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5 }}>{a.detail}</div>
+                      </div>
                     </div>
                   </div>
+                )
+              })}
+
+              {/* Section header for gap opportunities */}
+              {gapAlerts.length > 0 && (
+                <div style={{ padding: '8px 0 4px', marginTop: 4 }}>
+                  <h3 style={{ fontFamily: T.fontDisplay, fontWeight: 300, fontSize: 16, margin: 0, color: T.text }}>Category gaps across all teams <span style={{ fontFamily: T.font, fontSize: 12, color: T.red, fontWeight: 500 }}>{gapAlerts.length} opportunities</span></h3>
                 </div>
-              </div>
-            )
-          })}
+              )}
+
+              {/* Dynamic gap alerts grouped by category */}
+              {(() => {
+                const byCat = {}
+                for (const g of gapAlerts) {
+                  if (!byCat[g.category.id]) byCat[g.category.id] = { category: g.category, teams: [] }
+                  byCat[g.category.id].teams.push(g.team)
+                }
+                return Object.values(byCat).sort((a, b) => b.teams.length - a.teams.length).map(({ category, teams: gapTeams }) => (
+                  <div key={category.id} style={{ borderRadius: '0 14px 14px 0', background: 'rgba(184,100,62,0.03)', padding: '12px 18px', borderLeft: `3px solid ${T.red}`, border: `1px solid ${T.border}`, borderLeftWidth: 3, borderLeftColor: T.red }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 8, background: `${T.red}15`, display: 'grid', placeItems: 'center', flexShrink: 0 }}><Target size={14} color={T.red} /></div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontSize: 13, fontWeight: 500 }}>{category.name}</span>
+                          <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: `${T.red}10`, color: T.red, fontWeight: 500 }}>{gapTeams.length} team{gapTeams.length !== 1 ? 's' : ''} open</span>
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+                          {gapTeams.map(t => (
+                            <span key={t.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 6, background: T.surface, border: `1px solid ${T.border}`, fontSize: 11, fontWeight: 500 }}>
+                              <TeamLogo team={t} size={14} /> {t.name}
+                              <span onClick={() => window.location.href = `/campaigns?team=${encodeURIComponent(t.name)}&category=${encodeURIComponent(category.name)}`} style={{ color: T.red, cursor: 'pointer', marginLeft: 4, fontWeight: 500, fontSize: 10 }}>Launch →</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              })()}
+            </>)
+          })()}
         </div>
       )}
     </div>
