@@ -322,3 +322,24 @@ GlobalFoundries, ASML, Skyworks, Silicon Labs, DB Schenker (acquired), Wincanton
 - 89% have email
 
 **Remaining for next session: 33 companies to verify**
+
+### Session 3 — Additional Companies Verified:
+18. Forescout ✅ — Barry Mainz CEO (since Jan 2023). CRM has 3 marketing contacts.
+19. Huntress ✅ — Kyle Hanslovan CEO & Co-Founder ($1.5B valuation, EY Entrepreneur 2024). Added.
+20. Jacob & Co ✅ — Benjamin Arabov CEO (since 2021), Jacob Arabo Founder/Chairman. Both added.
+21. Flexport ✅ — Ryan Petersen CEO & Founder ($8B valuation, $2.5B raised). Added.
+
+### CUMULATIVE TOTALS:
+- Companies verified: 21
+- New C-suite contacts added: 28
+- CRM total: 4,218
+- Tier 1: 831
+- Tagged with gaps: 1,254
+
+### Remaining Companies to Verify (29):
+**Cybersecurity:** BlueVoyant, Netskope, Semperis, Snyk, Orca Security, Rubrik, Mimecast, Vectra AI, Todyl
+**Banking/FinTech:** KKR, BlackRock, Nuveen, Brookfield, State Street, Coinbase, Robinhood (done)
+**Logistics:** Locus Robotics, ShipBob, Odyssey, Exotec, Vecna Robotics
+**Watches:** Tissot, Movado, Venezianico, Armin Strom, MB&F
+**Whiskey:** Bardstown Bourbon, Douglas Laing
+**Gaming:** Epic Games, KRAFTON, Dream Games
