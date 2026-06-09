@@ -506,3 +506,14 @@ HONEST ASSESSMENT:
 - kiko-self-knowledge.js updated with current CRM stats
 - Leadership changes (Axonius, Snyk, DB Schenker, Wincanton) now in Kiko's knowledge
 - PM2 restarted — changes live
+
+35. BlueVoyant ✅ — LEADERSHIP CHANGE: John Hernandez new CEO (May 5, 2026), Jim Rosenthal moved to Chairman. Both added.
+
+### LEADERSHIP CHANGES DETECTED: 5 total
+1. Axonius: Dean Sysman → Exec Chairman, Joe Diamond CEO
+2. Snyk: Peter McKay → Advisor, Kenneth MacAskill Interim CEO
+3. BlueVoyant: Jim Rosenthal → Chairman, John Hernandez CEO (May 5, 2026)
+4. DB Schenker: Acquired by DSV
+5. Wincanton: Acquired by GXO
+
+### CRM FINAL: 4,225 contacts | 838 Tier 1 | 35 verified C-suite | 0 Tier 1 without email
