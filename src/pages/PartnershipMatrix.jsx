@@ -310,7 +310,7 @@ export default function PartnershipMatrix({ user }) {
                   {/* Filled categories */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, marginBottom: 16 }}>
                     {filled.map(({ cat, partners }) => (
-                      <div key={cat.id} style={{ padding: '10px 12px', borderRadius: 14, background: T.surface, border: `1px solid ${T.border}`, borderLeft: `3px solid ${cat.color || T.blue}` }}>
+                      <div key={cat.id} style={{ padding: '10px 12px', borderRadius: '0 10px 10px 0', background: T.surface, border: `1px solid ${T.border}`, borderLeft: `3px solid ${cat.color || T.blue}` }}>
                         <p style={{ fontSize: 10, fontWeight: 400, color: cat.color || T.textTertiary, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{cat.name}</p>
                         {partners.map(p => { const badge = TIER_BADGE[p.tier] || TIER_BADGE.partner; return (
                           <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
@@ -323,7 +323,7 @@ export default function PartnershipMatrix({ user }) {
                     ))}
                     {/* Gap cards inline — dashed border */}
                     {gaps.map(c => (
-                      <div key={`gap-${c.id}`} style={{ padding: '10px 12px', borderRadius: 14, background: 'rgba(184,100,62,0.02)', border: `1px dashed ${T.gapBorder}`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <div key={`gap-${c.id}`} style={{ padding: '10px 12px', borderRadius: '0 10px 10px 0', background: 'rgba(184,100,62,0.02)', border: `1px dashed ${T.gapBorder}`, borderLeft: `3px dashed ${T.red}`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <p style={{ fontSize: 10, fontWeight: 500, color: T.red, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{c.name} — Open gap</p>
                         <p style={{ fontSize: 11, color: T.textTertiary, margin: 0 }}>No partner. <span onClick={() => window.location.href = `/campaigns?team=${encodeURIComponent(team.name)}&category=${encodeURIComponent(c.name)}`} style={{ color: T.red, cursor: 'pointer', fontWeight: 500 }}>Launch campaign →</span></p>
                       </div>
@@ -339,61 +339,48 @@ export default function PartnershipMatrix({ user }) {
       {/* ═══ TAB: GAP TARGETING ═══ */}
       {tab === 'gaps' && (
         <div style={{ flex: 1, overflow: 'auto', padding: '12px 44px 16px' }}>
-          <div style={{ maxWidth: 900 }}>
-            {/* Team legend with logos */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', marginBottom: 8, background: T.surface, borderRadius: 14, border: `1px solid ${T.border}`, flexWrap: 'wrap' }}>
+          <div style={{ maxWidth: 960 }}>
+            {/* Team legend */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', marginBottom: 10, background: T.surface, borderRadius: 10, border: `1px solid ${T.border}`, flexWrap: 'wrap' }}>
               {filteredTeams.map(t => (
                 <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: T.textSecondary }}>
-                  <TeamLogo team={t} size={16} />
+                  <TeamLogo team={t} size={14} />
                   <span>{t.name.replace('Racing Bulls','RB').replace('Aston Martin','AMR').replace('Red Bull Racing','RBR')}</span>
                 </div>
               ))}
             </div>
+            {/* Rows in card container */}
+            <div style={{ background: T.surface, borderRadius: 14, border: `1px solid ${T.border}`, overflow: 'hidden' }}>
             {(() => {
               const catGaps = filteredCats.map(c => {
                 const teamsWithout = filteredTeams.filter(t => {
                   const filled = new Set(getTeamPartners(t.id).map(p => p.category_id))
                   return !filled.has(c.id)
                 })
-                const teamsWith = filteredTeams.filter(t => {
-                  const filled = new Set(getTeamPartners(t.id).map(p => p.category_id))
-                  return filled.has(c.id)
-                })
-                return { cat: c, teamsWithout, teamsWith, gapCount: teamsWithout.length }
+                return { cat: c, teamsWithout, gapCount: teamsWithout.length }
               }).sort((a, b) => b.gapCount - a.gapCount)
 
-              return catGaps.map(({ cat, teamsWithout, teamsWith, gapCount }) => (
-                <div key={cat.id} style={{ display: 'flex', alignItems: 'stretch', borderBottom: `1px solid ${T.border}`, minHeight: 48 }}>
-                  {/* Category label */}
-                  <div style={{ width: 180, flexShrink: 0, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, borderRight: `1px solid ${T.border}` }}>
-                    <div style={{ width: 3, height: 24, borderRadius: 2, background: cat.color || T.textTertiary, flexShrink: 0 }} />
-                    <span style={{ fontSize: 13, fontWeight: 500, flex: 1 }}>{cat.name}</span>
-                    <span style={{ fontSize: 11, fontWeight: 400, padding: '1px 6px', borderRadius: 50,
-                      background: gapCount >= 6 ? `${T.red}15` : gapCount >= 3 ? `${T.yellow}15` : `${T.green}15`,
-                      color: gapCount >= 6 ? T.red : gapCount >= 3 ? T.yellow : T.green,
-                    }}>{gapCount}</span>
-                  </div>
-
-                  {/* Team cells */}
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', flexWrap: 'wrap' }}>
+              return catGaps.map(({ cat, teamsWithout, gapCount }, idx) => (
+                <div key={cat.id} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: idx < catGaps.length - 1 ? `1px solid ${T.border}` : 'none', background: gapCount >= 8 ? 'rgba(184,100,62,0.03)' : 'transparent' }}>
+                  <div style={{ width: 150, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500 }}>{cat.name}</div>
+                  <div style={{ fontFamily: T.fontDisplay, fontWeight: 300, fontSize: 16, minWidth: 28, textAlign: 'center', color: gapCount >= 6 ? T.red : gapCount >= 3 ? T.yellow : T.green }}>{gapCount}</div>
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 3, paddingLeft: 10, flexWrap: 'wrap' }}>
                     {filteredTeams.map(t => {
                       const isGap = teamsWithout.some(tw => tw.id === t.id)
                       return (
-                        <span key={t.id} title={`${t.name}: ${isGap ? 'GAP — open opportunity' : 'Partner in place'}`}
-                          style={{ fontSize: 10, fontWeight: 500, padding: '3px 8px', borderRadius: 4, cursor: 'default', transition: 'transform 0.1s',
-                            background: isGap ? `${T.red}10` : T.accentSoft,
-                            color: isGap ? T.red : T.textSecondary,
-                            border: `1px solid ${isGap ? T.red + '25' : T.border}`,
-                          }}
-                          onMouseOver={e => e.target.style.transform = 'scale(1.06)'}
-                          onMouseOut={e => e.target.style.transform = 'scale(1)'}
-                        >{t.name.replace('Racing Bulls','RB').replace('Aston Martin','AMR').replace('Red Bull Racing','RBR')}</span>
+                        <span key={t.id} style={{
+                          fontSize: 10, fontWeight: 500, padding: '3px 7px', borderRadius: 4, cursor: 'default',
+                          background: isGap ? 'transparent' : T.accent,
+                          color: isGap ? T.red : '#FFFFFF',
+                          border: isGap ? `1px dashed rgba(184,100,62,0.3)` : `1px solid ${T.accent}`,
+                        }}>{t.name.replace('Racing Bulls','RB').replace('Aston Martin','AMR').replace('Red Bull Racing','RBR')}</span>
                       )
                     })}
                   </div>
                 </div>
               ))
             })()}
+            </div>
           </div>
         </div>
       )}
