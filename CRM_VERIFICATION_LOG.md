@@ -199,3 +199,36 @@ Continue verification of remaining 44 top companies — focus on:
 - Banking/FinTech: Capital.com, KKR, Robinhood, BlackRock, Nuveen
 - Whiskey/Spirits: Michter's, Heaven Hill, Uncle Nearest, Douglas Laing
 - Watches: OMEGA, Tissot, Jacob & Co, Movado
+
+### Session 2 — Additional Companies Verified:
+9. Symbotic ✅ — Rick Cohen (Chairman & CEO), James Kuffner (CTO) ADDED
+10. Axonius ✅ — LEADERSHIP CHANGE: Dean Sysman stepped down as CEO (Feb 2026), now Executive Chairman. Joe Diamond appointed CEO. $200M ARR. Both added.
+11. Capital.com ✅ — Kypros Zoumidou (Group CEO since Oct 2023). Regional CEO structure. $1.27T Q1 2026 trading volume. CEO + UK CEO added.
+12. Michter's ✅ — Joseph Magliocco (President) already in CRM. Confirmed current.
+13. OMEGA ✅ — Loïc Voumard (Head Sports Marketing) already in CRM. NOT in F1 currently. Open watch slots: Cadillac, Haas, Williams, Racing Bulls, Audi.
+
+### F1 Watch Sponsorship Landscape (2026 intelligence):
+| Team | Watch Partner | Status |
+|------|-------------|--------|
+| McLaren | Richard Mille | Active (10-yr deal) |
+| Mercedes | IWC | Active |
+| Aston Martin | Breitling | New 2026 |
+| Alpine | H. Moser & Cie | Active |
+| Red Bull | Tudor | Active |
+| Ferrari | (unknown/open) | Verify |
+| Cadillac | NONE | GAP |
+| Haas | NONE | GAP |
+| Williams | NONE | GAP |
+| Racing Bulls | NONE | GAP |
+| Audi | NONE | GAP |
+
+### Total New Contacts Added This Session: 22
+Companies verified: 13 total
+Leadership changes detected: 2 (Axonius CEO, DB Schenker acquired)
+
+### Remaining Companies to Verify:
+- Logistics: Locus Robotics, ShipBob, Flexport, Odyssey, Flexe
+- Cybersecurity: BlueVoyant, Forescout, Huntress, Netskope, Zscaler, Semperis
+- Banking: KKR, Robinhood, BlackRock, Nuveen, Brookfield
+- Whiskey: Heaven Hill, Uncle Nearest, Douglas Laing, Bardstown Bourbon
+- Watches: Tissot, Jacob & Co, Movado, Venezianico
