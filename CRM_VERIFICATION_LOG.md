@@ -288,3 +288,37 @@ Full list of new contacts added to CRM:
 20. Rupert Osborne — CEO UK, Capital.com
 21. Jay Chaudhry — CEO Chairman & Founder, Zscaler
 22. Kevin Rubin — CFO, Zscaler
+
+16. Heaven Hill ✅ — Kate Latts & Allan Latts Co-Presidents (since Sept 2022), Max Shapira Exec Chairman. CRM has CMO + VP Marketing. Kate Latts added.
+17. Uncle Nearest ✅ — Fawn Weaver CEO already in CRM. $1B valuation. Most awarded whiskey 6 years running.
+
+### GRAND TOTAL — CRM CLEANUP COMPLETE (Session 1 + Session 2):
+
+**Data Quality Fixes:**
+- 20 corrupted emails fixed
+- 6 malformed LinkedIn URLs fixed  
+- 4 duplicate contacts removed
+- 6 dead email domains flagged
+- 6 contacts at acquired companies flagged
+- 571 contacts enriched with sectors
+- 1,248 contacts tagged with gap categories
+
+**Companies Verified: 17**
+GlobalFoundries, ASML, Skyworks, Silicon Labs, DB Schenker (acquired), Wincanton (acquired), Dragos, Claroty, Symbotic, Axonius, Capital.com, Michter's, OMEGA, Zscaler, Robinhood, Heaven Hill, Uncle Nearest
+
+**New C-Suite Contacts Added: 23**
+
+**Leadership Changes Detected: 3**
+- Axonius: Dean Sysman → Executive Chairman, Joe Diamond now CEO
+- DB Schenker: Acquired by DSV, Jochen Thewes left for AD Ports
+- Wincanton: Possible GXO acquisition
+
+**CRM Final State:**
+- 4,213 contacts total
+- 826 Tier 1 (campaign ready)
+- 1,248 tagged with gap categories  
+- 95% have sectors
+- 94% have LinkedIn
+- 89% have email
+
+**Remaining for next session: 33 companies to verify**
