@@ -517,3 +517,12 @@ HONEST ASSESSMENT:
 5. Wincanton: Acquired by GXO
 
 ### CRM FINAL: 4,225 contacts | 838 Tier 1 | 35 verified C-suite | 0 Tier 1 without email
+
+36. State Street ✅ — Ron O'Hanley Chairman/CEO/President. CRM has MD EMEA + Head of Growth Markets. Confirmed.
+
+### REMAINING TO VERIFY (~8):
+Cybersecurity: Semperis, Orca Security, Mimecast, Vectra AI
+Banking: Brookfield
+Watches: Tissot, Movado, MB&F
+Gaming: Epic Games, KRAFTON, Dream Games
+Whiskey: Bardstown Bourbon, Douglas Laing
