@@ -356,3 +356,24 @@ GlobalFoundries, ASML, Skyworks, Silicon Labs, DB Schenker (acquired), Wincanton
 - Companies verified: 27 of 33+ remaining
 - C-suite contacts added: 32
 - CRM: 4,220 total | 833 Tier 1 | 1,254 gap-tagged
+
+### Session 5 — Additional Companies Verified:
+28. BlackRock ✅ — Larry Fink Chairman & CEO ($14T+ AUM). CRM has Americas CMO. Confirmed.
+29. Snyk ✅ — LEADERSHIP CHANGE: Peter McKay stepped down Feb 2026, now Advisor. Kenneth MacAskill Interim CEO (since April 2026). Searching for permanent AI-focused CEO. $325M ARR.
+30. Locus Robotics ✅ — Rick Faulk CEO ($438M raised). Added. New hires April 2026: Alan McDonald (VP Industry Solutions), Ashley Wallace Jones (VP Communications).
+31. Heaven Hill ✅ — Kate Latts & Allan Latts Co-Presidents. Confirmed.
+32. Uncle Nearest ✅ — Fawn Weaver CEO. Already in CRM. Confirmed.
+
+### GRAND TOTALS ACROSS ALL SESSIONS:
+- Companies verified: 32
+- New C-suite contacts added: 34
+- Leadership changes detected: 4 (Axonius CEO, Snyk CEO, DB Schenker acquired, Wincanton acquired)
+- Data fixes: 20 emails, 6 LinkedIn URLs, 4 dupes, 6 dead domains, 6 acquisitions
+- CRM: 4,222 total | 835 Tier 1 | 1,258 gap-tagged | 32 verified C-suite
+
+### Remaining to Verify (approx 15):
+Cybersecurity: BlueVoyant, Semperis, Orca Security, Mimecast, Vectra AI, Todyl
+Banking: Nuveen, Brookfield, State Street, Coinbase
+Watches: Tissot, Movado, Venezianico, Armin Strom, MB&F
+Gaming: Epic Games, KRAFTON, Dream Games
+Whiskey: Bardstown Bourbon, Douglas Laing
