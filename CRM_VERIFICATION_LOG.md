@@ -881,3 +881,7 @@ Remediation: industry→sector key migration with provenance (2,249→1 missing,
 ### COMPANY MARKET-DATA REFRESH — June 10 2026 (launched, zero-credit path)
 
 Sunny ruled out connector credits — company enrichment follows the contact playbook: SQL + Playwright + direct research. Completed free: key_personnel mirrored from verified contacts into 1,604 companies; all 2,169 flagged needs_market_refresh (import vintage Oct 2025, never enriched — now explicit, not silent). IN PROGRESS: LinkedIn company-page runner refreshing 645 T1-linked companies overnight (live employee size, industry, HQ, founded, website, followers — log /tmp/co_t1.log, harvest next session). OPEN: funding refresh + sponsorship intelligence (past/present/future) via direct web research — schema ready in company_intelligence; start with active pipeline + Qatar-window targets.
+
+### COMPANY REFRESH PIPELINE — SELF-DRAINING (June 10, late night)
+
+Per Sunny: write now, not next session. Deterministic writer (zero AI) deployed; watcher runs it every 5 min against the growing collector log — live employee size, industry, HQ, founded, website, followers land in the CRM continuously tonight, refresh flags cleared per company. Discrepancies (empty pages, domain changes, non-overlapping headcount ranges) accumulate for Fable review. Already actioned: Abnormal Security→Abnormal AI rebrand duplicate merged; Airbyte headcount contraction caught; Algorand domain rebrand caught. Architecture: browser collector + field mapper + Fable judgment. No AI calls, no credits, no Kiko-brain involvement.
