@@ -869,3 +869,11 @@ Two LinkedIn people-search Playwright runs (195 targets, zero AI calls; run 1 hi
 **DATABASE FINAL: 4,233 contacts — T1 843 / T2 1,810 / T3 1,115 / T4 465. Sector 100%. T1 email+LinkedIn 99.6%. T2 LinkedIn 99.0%. ~230 title corrections vs live headlines. Follow-up queue: 23 mover-suspects + 37 title-verifies, all with captured URLs for the profile-visit pass.**
 
 Kiko memory updated (Session 70 Parts 3-4) and live recall verified. Raw logs archived server-side. Data integrity campaign COMPLETE — next: Campaigns engine on clean data.
+
+### ORGANIZATIONS TABLE REMEDIATION — June 10 2026 (night)
+
+Sunny's challenge caught a real gap: contacts were clean; the companies table had never had a dedicated audit. Findings: 2,265 records, 2,249 missing sector (legacy industry key, never migrated), 93 duplicate-name groups, 421 empty websites, 2 test records, 1 Pipedrive undefined-name artifact, scraped-handle names.
+
+Remediation: industry→sector key migration with provenance (2,249→1 missing, the archived artifact). All 93 duplicate groups merged to zero — keeper by contact-reference count, loser data merged, ID references repointed across contacts jsonb + company_intelligence + documents + kiko_company_scores/sources/score_history, losers deleted. Test records deleted (zero refs verified). Undefined artifact archived with its 6 lost deals preserved. bithumb official→Bithumb. Legitimate lowercase brands whitelisted (name_check). Websites 421→341 via contact companyDomain inheritance; remaining 341 have no internal source — documented gap for web enrichment.
+
+**ORGANIZATIONS FINAL: 2,169 companies | sector 100% (excl. 1 archived) | 0 duplicates | FK integrity verified across all referencing tables. CRM now clean across BOTH entity types: 4,233 contacts + 2,169 companies. Kiko memory Part 5 written; live recall verified for organizations work specifically.**
