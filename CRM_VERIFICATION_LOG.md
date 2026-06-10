@@ -552,3 +552,18 @@ Whiskey: Bardstown Bourbon, Douglas Laing
 | Tier 1 without email | 0 |
 | Leadership changes caught | 6 |
 | Kiko updated | ✅ |
+
+### API COST OPTIMIZATION — June 10 2026
+
+**Problem:** 3 crons burning excessive API credits
+- cron-crm-enrich: 955 Anthropic API calls in one run (Apollo exhausted → Haiku+web search fallback)
+- cron-morning-synthesis: 5-7 Opus calls per morning (planner + generator + evaluator + retry + auto-actions)
+- cron-daily-intelligence: 1 Opus call per morning (doing the same thing)
+
+**Fix applied:**
+1. cron-crm-enrich → DISABLED (backed up to _archive/)
+2. cron-morning-synthesis → DISABLED (backed up to _archive/)
+3. cron-daily-intelligence → KEPT (single Opus call, produces equivalent briefing)
+
+**Estimated savings:** $150-240/month in API costs
+**Kiko self-knowledge updated** with disabled cron information
