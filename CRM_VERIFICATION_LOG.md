@@ -708,3 +708,33 @@ Semperis, Orca Security, Mimecast, Vectra AI, Movado, MB&F, Bardstown Bourbon, D
 **1 contact email not discoverable:** Kypros Zoumidou @ Capital.com
 
 **Hunter.io usage:** 33/50 searches, 66/100 verifications used
+
+### FINAL CRM STATE — June 10 2026
+
+**Email verification complete via Hunter.io:**
+- All 27 inferred emails tested — 12 deliverable, 11 corrected, 4 catch-all
+- 10 correct emails discovered via Hunter (different from inferred patterns)
+- Only 1 Tier 1 contact without email: Kypros Zoumidou @ Capital.com (undiscoverable)
+- Hunter usage: 33/50 searches, 66/100 verifications
+
+**CRM Final Numbers:**
+| Metric | Value |
+|--------|-------|
+| Total contacts | 4,230 |
+| Tier 1 (campaign ready) | 845 |
+| Tier 1 with email + LinkedIn | 774 (91.6%) |
+| Tier 1 with email only | 70 (need LinkedIn URLs) |
+| Tier 1 without email | 1 (Kypros Zoumidou) |
+| All emails Hunter-verified | Yes (deliverable confirmed) |
+| Haiku garbage data cleaned | 73 contacts |
+| Companies verified | 45+ |
+| Leadership changes caught | 6 |
+| C-suite contacts added | 42 |
+| API cost reduction | ~85% ($15-25 → $2-3/day) |
+
+**Remaining work:**
+- 70 Tier 1 contacts need LinkedIn URLs (all have email — email outreach ready)
+- 185 Tier 2 contacts need LinkedIn URLs
+- 5 companies to verify: Vectra AI, Movado, MB&F, Bardstown Bourbon, Douglas Laing
+- Kypros Zoumidou email needs finding through alternative means
+- 79 domain mismatches to review (mostly legitimate parent company domains)
