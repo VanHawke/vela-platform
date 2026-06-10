@@ -652,3 +652,19 @@ Issues found and fixed:
 - 0 [object Object] corruptions (all fixed earlier)
 - "Junk" names like Nancy, Fernanda, Anand were false positives from regex
 - "Junk" companies like Arrow Financial, Luminance were legitimate
+
+### DEEP CRM AUDIT — June 10 2026
+
+**Findings:**
+- 449 contacts without email — ALL already Tier 4 (archived). No action needed.
+- 254 Tier 1+2 without LinkedIn (69 T1 + 185 T2) — need URLs for outreach
+- 14 contacts with garbage Haiku data — titles with @, bios as titles, long company names
+- 73 total contacts cleaned: MBA/PhD/CFA/CPA suffixes in names, bio text in titles, descriptions in company names
+- 79 Tier 1 email domain mismatches — mostly legitimate (parent companies, abbreviations)
+- 0 suspicious email formats remaining
+- 0 completely unreachable contacts
+
+**Data cleaned:**
+- 30+ last names had MBA/PhD/CFA/CPA suffixes stripped
+- 40+ titles had Haiku-scraped LinkedIn bios trimmed to actual job title
+- Company descriptions trimmed to company name only
