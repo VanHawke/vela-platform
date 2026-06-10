@@ -769,3 +769,31 @@ Semperis, Orca Security, Mimecast, Vectra AI, Movado, MB&F, Bardstown Bourbon, D
 - Kiko updated with all changes
 
 **Hunter.io usage:** 34/50 searches, 69/100 verifications (resets monthly)
+
+### JOB-MOVER RESOLUTION & DEEP FIELD AUDIT — June 10 2026 (Session 70, direct verification, no Kiko/AI-API)
+
+**All 16 flagged email/company mismatches resolved individually via web verification:**
+
+TRUE MOVERS (re-homed, history preserved in employment_history, company records ensured):
+| Contact | Was | Now | Email |
+|---------|-----|-----|-------|
+| Upesh Patel | Sweet Security | Intezer — VP Corp Dev & Strategy | upesh.patel@intezer.com (current) |
+| Cody Staley | Huntress | SpecterX — VP Marketing (co. record created) | not discoverable yet |
+| Michael Hung | PhoenEX | BYDFi — Co-Founder & CMO | michael@bydfi.com (current) |
+
+STALE EMAIL (company was right): Maddy Contois — eHealth email removed, maddy.contois@everquote.com found+deliverable.
+
+SCRAPER-JUNK EMAILS (11): bit.ly/linktr.ee link-shortener domains harvested as emails. Companies verified CORRECT (spot-checked Gough→ClickUp, Howland→Iridium VP Mktg). Junk quarantined to email_removed; restored Tier 3→2. Fresh emails found+verified: Gough (steven@clickup.com), Susvilla (ksusvilla@clickup.com), Gudoski (lgudoski@reworldwaste.com), Collins (scollins@cmrp.com); risky/catch-all: Hutton (novo.co), Howland (iridium.com). Not discoverable: Martino, Bussod, Johnson, Curran, + Staley (5 — retry when Hunter resets Jul 1).
+
+UNRESOLVABLE: kashif syed — coinex.fr not CoinEx official domain; quarantined with note.
+
+**Field audit fixes:**
+- Sector normalised: industry→sector backfill. 3,618 blanks → 145 (T1: 0 blanks, 100% covered)
+- Sunny's own record completed (Sidhu, Founder & CEO) and marked internal, T4
+- Kim Howland title refreshed (Global VP Marketing, Iridium, since 2025)
+- firstName coverage: 100% across all 4,233 contacts
+
+**State after:** 4,233 total | T1 840 (1 no-email: Zoumidou) | T2 1,883 (6 no-email, all quarantine cases) | mismatch flags: 1 (Syed, deliberate)
+**Hunter June usage: 45/50 searches, 90/100 verifications — resets Jul 1**
+
+**Honest remainder:** 70 T1 + 185 T2 missing LinkedIn URLs; 145 T2 sector blanks; Eric Chang (LegalZoom) title; Romit Goswami (InstaCrypto) domain unknown; 5 emails pending Hunter reset.
