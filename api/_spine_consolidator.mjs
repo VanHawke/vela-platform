@@ -86,3 +86,38 @@ async function synthesize() {
 
 if (MODE === "synthesize") await synthesize(); else await ingest();
 console.log("CONSOLIDATOR COMPLETE mode=" + MODE);
+
+// ── CLAUDE EXPORT INGESTION ──────────────────────────────────────────────
+// Usage: node api/_spine_consolidator.mjs claude_export /path/to/conversations.json
+// Parses Anthropic data export, chunks every conversation, redacts secrets, ingests to spine.
+async function claudeExport(path) {
+  const raw = JSON.parse(readFileSync(path, "utf8"));
+  const convos = Array.isArray(raw) ? raw : (raw.conversations || []);
+  const REDACT = [/sk-ant-[A-Za-z0-9-_]{20,}/g, /eyJ[A-Za-z0-9-_]{30,}\.[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]+/g, /(password|secret|api[_-]?key)\s*[:=]\s*\S+/gi];
+  let convosDone = 0, chunks = 0;
+  for (const c of convos) {
+    const name = (c.name || "untitled").toLowerCase().slice(0, 100);
+    const msgs = (c.chat_messages || []).map(m => `[${m.sender === "human" ? "SUNNY" : "FABLE"}] ${(m.text || "").trim()}`).filter(t => t.length > 12);
+    if (!msgs.length) continue;
+    let buf = "";
+    const flush = async (n) => {
+      if (buf.length < 60) return;
+      let content = buf; for (const r of REDACT) content = content.replace(r, "[REDACTED]");
+      const ok = await insertRow({ org_id: ORG, entity_type: "session", entity_key: name, fact_type: "transcript",
+        content, source: `claude_export:${(c.uuid || name).slice(0, 36)}#${n}`, confidence: "recorded",
+        created_at: c.created_at || undefined });
+      if (ok) chunks++;
+      buf = "";
+    };
+    let n = 0;
+    for (const m of msgs) {
+      if (buf.length + m.length > 3800) { await flush(n++); }
+      buf += m.slice(0, 3800) + "\n";
+    }
+    await flush(n);
+    convosDone++;
+    if (convosDone % 25 === 0) console.log("PROGRESS", convosDone, "conversations,", chunks, "chunks");
+  }
+  console.log("CLAUDE_EXPORT_DONE conversations:", convosDone, "chunks:", chunks);
+}
+if (MODE === "claude_export") await claudeExport(process.argv[3]);
