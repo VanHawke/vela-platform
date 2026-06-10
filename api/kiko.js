@@ -327,7 +327,7 @@ export default async function handler(req, res) {
     const recentMessages = conversationHistory.slice(-6);
 
     // ═══ CONTEXT LOADING — ALWAYS FULL, NO GATES ═══
-    const [entityContext, selfKnowledge, learnedRulesResult, preferencesResult, goalsResult, intentsResult, draftActionsResult] = await Promise.all([
+    const [entityContext, selfKnowledge, learnedRulesResult, preferencesResult, goalsResult, intentsResult, draftActionsResult, spineRecall] = await Promise.all([
       fetchEntityContext(pageEntity),
       loadLeanKnowledge(userId).catch(() => ''),
       cachedFetch('rules', 300000, () => sbFetch(`kiko_learned_rules?active=eq.true&select=rule_text,category,weight&order=weight.desc&limit=15`)).catch(() => []),
@@ -335,6 +335,26 @@ export default async function handler(req, res) {
       sbFetch(`kiko_goals?user_id=eq.${userId}&status=eq.active&select=title,priority,description,next_action,due_date&order=priority.desc&limit=10`).catch(() => []),
       sbFetch(`kiko_intents?user_id=eq.${userId}&status=in.(active,overdue)&select=title,description,priority,status,due_date,next_action&order=priority.desc&limit=10`).catch(() => []),
       sbFetch(`kiko_draft_actions?status=eq.pending&select=action_type,entity_name,summary,created_at&order=created_at.desc&limit=5`).catch(() => []),
+      // Knowledge Spine recall — Learning Loop Phase 1 (Session 70). Deterministic FTS, fail-open.
+      (async () => {
+        try {
+          const q = encodeURIComponent((message || '').slice(0, 300));
+          if (!q) return '';
+          const [core, hits] = await Promise.all([
+            sbFetch(`kiko_knowledge_spine?fts=wfts.${q}&status=eq.active&fact_type=in.(dossier,lesson,proposition,consolidated)&select=entity_key,fact_type,content&order=created_at.desc&limit=4`).catch(() => []),
+            sbFetch(`kiko_knowledge_spine?fts=wfts.${q}&status=eq.active&select=entity_key,fact_type,content&order=created_at.desc&limit=8`).catch(() => []),
+          ]);
+          const seen = new Set(); let out = '';
+          for (const r of [...(core || []), ...(hits || [])]) {
+            const k = r.fact_type + '|' + (r.content || '').slice(0, 80);
+            if (seen.has(k)) continue; seen.add(k);
+            const line = `- [${r.fact_type}/${r.entity_key}] ${r.content}\n`;
+            if (out.length + line.length > 4500) break;
+            out += line;
+          }
+          return out;
+        } catch { return ''; }
+      })(),
     ]);
 
 
@@ -353,6 +373,7 @@ export default async function handler(req, res) {
 
     systemPrompt += `\nDate: ${dateStr}, ${timeStr} UK${pageRole}`;
     if (entityContext) systemPrompt += `\n\n[ENTITY CONTEXT]\n${entityContext}`;
+    if (spineRecall) systemPrompt += `\n\n[KNOWLEDGE RECALL — your own verified learnings, dossiers, lessons and propositions relevant to this message. Treat as memory, cite naturally.]\n${spineRecall}`;
     if (conversationSummary) systemPrompt += conversationSummary;
     if (learnedRulesResult?.length) systemPrompt += `\n\n[LEARNED RULES]\n${learnedRulesResult.map(r => `- ${r.rule_text} (${r.category}, weight:${r.weight})`).join('\n')}`;
     if (preferencesResult?.length) systemPrompt += `\n\n[USER PREFERENCES]\n${preferencesResult.map(p => `- ${p.category}: ${p.preference}`).join('\n')}`;
