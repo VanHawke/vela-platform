@@ -668,3 +668,18 @@ Issues found and fixed:
 - 30+ last names had MBA/PhD/CFA/CPA suffixes stripped
 - 40+ titles had Haiku-scraped LinkedIn bios trimmed to actual job title
 - Company descriptions trimmed to company name only
+
+### Companies 41-42:
+41. KRAFTON ✅ — Kim Chang-han CEO. Major ChatGPT/lawsuit controversy March 2026. AI-first pivot, hiring freeze.
+42. (Tissot and Epic Games verified earlier)
+
+### REMAINING (~7):
+Semperis, Orca Security, Mimecast, Vectra AI, Movado, MB&F, Bardstown Bourbon, Douglas Laing
+
+### DEEP AUDIT COMPLETE:
+- 73 contacts cleaned (Haiku garbage data: bio text in titles, MBA suffixes in names)
+- 449 no-email contacts confirmed ALL Tier 4 (correctly archived)
+- 254 T1+T2 without LinkedIn identified (next workstream)
+- 0 suspicious email formats
+- 0 unreachable contacts
+- 79 domain mismatches reviewed (mostly legitimate parent company domains)
