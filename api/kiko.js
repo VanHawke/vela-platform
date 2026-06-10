@@ -335,17 +335,17 @@ export default async function handler(req, res) {
       sbFetch(`kiko_goals?user_id=eq.${userId}&status=eq.active&select=title,priority,description,next_action,due_date&order=priority.desc&limit=10`).catch(() => []),
       sbFetch(`kiko_intents?user_id=eq.${userId}&status=in.(active,overdue)&select=title,description,priority,status,due_date,next_action&order=priority.desc&limit=10`).catch(() => []),
       sbFetch(`kiko_draft_actions?status=eq.pending&select=action_type,entity_name,summary,created_at&order=created_at.desc&limit=5`).catch(() => []),
-      // Knowledge Spine recall — Learning Loop Phase 1 (Session 70). Deterministic FTS, fail-open.
+      // Knowledge Spine recall — Learning Loop Phase 1 (Session 70). Ranked OR-retrieval via RPC, user-ringfenced, fail-open.
       (async () => {
         try {
-          const q = encodeURIComponent((message || '').slice(0, 300));
-          if (!q) return '';
-          const [core, hits] = await Promise.all([
-            sbFetch(`kiko_knowledge_spine?fts=wfts.${q}&status=eq.active&fact_type=in.(dossier,lesson,proposition,consolidated)&or=(user_id.is.null,user_id.eq.${userId})&select=entity_key,fact_type,content&order=created_at.desc&limit=4`).catch(() => []),
-            sbFetch(`kiko_knowledge_spine?fts=wfts.${q}&status=eq.active&or=(user_id.is.null,user_id.eq.${userId})&select=entity_key,fact_type,content&order=created_at.desc&limit=8`).catch(() => []),
-          ]);
+          const msg = (message || '').slice(0, 500);
+          if (!msg.trim()) return '';
+          const rows = await sbFetch('rpc/spine_recall', {
+            method: 'POST',
+            body: JSON.stringify({ p_query: msg, p_user: userId, p_limit: 12 })
+          }).catch(() => []);
           const seen = new Set(); let out = '';
-          for (const r of [...(core || []), ...(hits || [])]) {
+          for (const r of (rows || [])) {
             const k = r.fact_type + '|' + (r.content || '').slice(0, 80);
             if (seen.has(k)) continue; seen.add(k);
             const line = `- [${r.fact_type}/${r.entity_key}] ${r.content}\n`;
