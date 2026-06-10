@@ -102,7 +102,19 @@ async function claudeExport(path, userId) {
     return "";
   };
   const who = (m) => (m.sender === "human" || m.role === "user") ? "SUNNY" : "ASSISTANT";
-  let convosDone = 0, chunks = 0, skipped = 0;
+  // Batched upsert (ignore duplicates via unique index) — fast for large histories.
+  let batch = [];
+  let chunks = 0;
+  const flushBatch = async (force) => {
+    if (batch.length >= 400 || (force && batch.length)) {
+      const rows = batch; batch = [];
+      const { error } = await sb.from("kiko_knowledge_spine")
+        .upsert(rows, { onConflict: "org_id,entity_key,fact_type,content_hash", ignoreDuplicates: true });
+      if (error) console.log("BATCH_ERR", error.message.slice(0, 120));
+      else chunks += rows.length;
+    }
+  };
+  let convosDone = 0, skipped = 0;
   for (const c of convos) {
     const name = (c.name || "untitled").toLowerCase().slice(0, 100);
     const msgs = (c.chat_messages || c.messages || []).map(m => { const t = msgText(m); return t ? `[${who(m)}] ${t}` : ""; }).filter(Boolean);
@@ -111,10 +123,10 @@ async function claudeExport(path, userId) {
     const flush = async (n) => {
       if (buf.length < 60) return;
       let content = buf; for (const r of REDACT) content = content.replace(r, "[REDACTED]");
-      const ok = await insertRow({ org_id: ORG, user_id: userId, entity_type: "session", entity_key: name, fact_type: "transcript",
+      batch.push({ org_id: ORG, user_id: userId, entity_type: "session", entity_key: name, fact_type: "transcript",
         content, source: `claude_export:${(c.uuid || name).slice(0, 36)}#${n}`, confidence: "recorded",
         created_at: c.created_at || undefined });
-      if (ok) chunks++;
+      await flushBatch(false);
       buf = "";
     };
     let n = 0;
@@ -124,8 +136,9 @@ async function claudeExport(path, userId) {
     }
     await flush(n);
     convosDone++;
-    if (convosDone % 25 === 0) console.log("PROGRESS", convosDone, "conversations,", chunks, "chunks");
+    if (convosDone % 10 === 0) console.log("PROGRESS", convosDone, "/", convos.length, "convos,", chunks, "chunks written");
   }
+  await flushBatch(true);
   console.log(`CLAUDE_EXPORT_DONE user=${userId} conversations:${convosDone} chunks:${chunks} skipped:${skipped}`);
 }
 if (MODE === "claude_export") await claudeExport(process.argv[3], process.argv[4]);
