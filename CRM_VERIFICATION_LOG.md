@@ -683,3 +683,28 @@ Semperis, Orca Security, Mimecast, Vectra AI, Movado, MB&F, Bardstown Bourbon, D
 - 0 suspicious email formats
 - 0 unreachable contacts
 - 79 domain mismatches reviewed (mostly legitimate parent company domains)
+
+### EMAIL VERIFICATION VIA HUNTER.IO — June 10 2026
+
+**27 inferred emails verified:**
+- 12 confirmed deliverable (kept)
+- 11 confirmed UNDELIVERABLE (removed, correct emails found for 8 via Hunter)
+- 4 risky/accept_all (kept, catch-all domains)
+
+**Correct emails found by Hunter (different from inferred patterns):**
+| Contact | Wrong (inferred) | Correct (Hunter verified) |
+|---------|-----------------|--------------------------|
+| Mickey Bresman | mickey.bresman@semperis.com | michael@semperis.com |
+| Gil Geron | - | gil@orca.security |
+| Dean Sysman | dean.sysman@axonius.com | dean@axonius.com |
+| Kate Latts | kate.latts@heavenhill.com | klatts@heavenhill.com |
+| Benjamin Arabov | benjamin.arabov@jacobandco.com | benjamin@jacobandco.com |
+| Jacob Arabo | jacob.arabo@jacobandco.com | jacob@jacobandco.com |
+| Kenneth MacAskill | kenneth.macaskill@snyk.io | ken@snyk.io |
+| Bill Huffman | bill.huffman@nuveen.com | william.huffman@nuveen.com |
+| Marc van Zadelhoff | - | mvanzadelhoff@mimecast.com |
+| Kim Chang-han | - | changhan@krafton.com |
+
+**1 contact email not discoverable:** Kypros Zoumidou @ Capital.com
+
+**Hunter.io usage:** 33/50 searches, 66/100 verifications used
