@@ -175,7 +175,7 @@ export default async function handler(req, res) {
   // ─── Recent partnership/intelligence scrape — daily-intelligence includes partnership scan (was cron-partner-reconcile, consolidated Jun 2026) ───
   await check('daily_intelligence_ran_recently', async () => {
     const since = new Date(Date.now() - 48 * 3600000).toISOString();
-    const rows = await sbFetch(`kiko_cron_heartbeats?or=(cron_name.eq.daily-intelligence,cron_name.eq.cron-partner-reconcile)&started_at=gt.${since}&select=status,started_at,cron_name&order=started_at.desc&limit=1`);
+    const rows = await sbFetch(`kiko_cron_heartbeats?or=(cron_name.eq.cron-daily-intelligence,cron_name.eq.cron-partner-reconcile)&started_at=gt.${since}&select=status,started_at,cron_name&order=started_at.desc&limit=1`);
     const latest = (rows || [])[0];
     return {
       pass: !!latest,
