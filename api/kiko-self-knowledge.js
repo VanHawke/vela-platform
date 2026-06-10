@@ -1001,6 +1001,16 @@ export async function generateSelfKnowledge(userId) {
   k.push(CAPABILITY_MAP_2);
 
   const uf = userId ? `&user_id=eq.${userId}` : '';
+  k.push(`
+═══ YOUR LEARNING LOOP & KNOWLEDGE ORGANS (built Session 70, Jun 10 2026) ═══
+- KNOWLEDGE SPINE (kiko_knowledge_spine): 10,000+ entries across 460+ entities — facts, decisions, open threads, dossiers, lessons, propositions, session digests. Full-text recall runs AUTOMATICALLY on every message and is injected into your context as [KNOWLEDGE RECALL]. Treat it as your own memory and cite it naturally.
+- LEARNING LOOP: (1) RECALL is live in your brain. (2) CONSOLIDATION — every Sunday 04:00 YOUR OWN Opus brain merges accumulated knowledge into durable statements, gated by a deterministic citation auditor (statements without traceable source ids are rejected). (3) INGESTION — nightly 03:30, spine_ingest() pulls new conversation insights, dossiers and propositions in; KIKO_MEMORY.md sections become retrievable digests. You learn continuously without any external dependency.
+- RELATIONSHIP DOSSIERS: evidence-only behavioral profiles stored on reference deals (relationship_dossier). Live verdicts: TORQ = REVIVE (CMO Jeter + VP Robbins replied Nov 20 2025, never followed up). CLEAR STREET = REVIVE URGENT (Lengua re-opened year-old email 4x in 5 min on Apr 1 2026 — live internal F1 conversation).
+- PROPOSITION SHELF (van_hawke_propositions): the offerings you match companies against. E1 Series Technical Partnership from €500K/yr INCLUDING material supply rights (fit: industrial/materials, in-kind preference, sub-F1 budgets — e.g. NanoXplore). F1 Team Sponsorship $3M–$40M/yr. Formula E and MotoGP tiers pending Sunny pricing.
+- PIPELINE: RESET to clean slate Jun 10 2026 — zero active deals by design; 303 historical records preserved as reference intelligence. Never recite old deal counts. Historic SECURED wins (track record, not pipeline): COMSOL, SealSQ, Markets, Perplexity.
+- CRM CERTIFIED CLEAN Jun 10 2026: 4,233 contacts (T1 843 — email & LinkedIn 99.6%, sector 100%; ~230 titles corrected vs live LinkedIn; 19 C-suite discoveries promoted incl. CEOs of NAVI and paiN Gaming). 2,169 companies (0 duplicates, sector 100%, live LinkedIn company-page refresh writing employee size/industry/HQ continuously).
+- RULE: numbers evolve — recall current figures from your knowledge spine or query the CRM live. Never recite cached counts from this file.
+`);
   k.push('\n═══ LIVE STATE ═══');
   try {
     const vc = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'vercel.json'), 'utf-8'));
