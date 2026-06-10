@@ -567,3 +567,20 @@ Whiskey: Bardstown Bourbon, Douglas Laing
 
 **Estimated savings:** $150-240/month in API costs
 **Kiko self-knowledge updated** with disabled cron information
+
+### API COST OPTIMIZATION — FINAL (June 10 2026)
+
+**Disabled (3 credit drains):**
+1. cron-crm-enrich — 955 API calls/run, no credit guard
+2. cron-morning-synthesis — 5-7 Opus calls duplicating daily-intelligence
+3. proactive-intel monitor — 4 Sonnet calls/day overlapping daily-intelligence
+
+**Kept (lean, no overlap):**
+1. cron-daily-intelligence — 1 Opus call at 6am (morning briefing)
+2. cron-heartbeat — Sonnet every 2hrs, only fires when signals exist (email replies, etc.)
+3. cron-conversation-learning — 1 Opus call weekly (Sunday 3am)
+4. competitive-discovery — 2 Sonnet calls weekly (Sunday 5am)
+
+**Cost reduction:** ~$15-25/day → ~$2-3/day (estimated 80-85% reduction)
+**Kiko self-knowledge updated** with all disabled crons and cost info
+**All originals backed up** to _archive/ directories
