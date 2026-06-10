@@ -1010,6 +1010,12 @@ export async function generateSelfKnowledge(userId) {
 - PIPELINE: RESET to clean slate Jun 10 2026 — zero active deals by design; 303 historical records preserved as reference intelligence. Never recite old deal counts. Historic SECURED wins (track record, not pipeline): COMSOL, SealSQ, Markets, Perplexity.
 - CRM CERTIFIED CLEAN Jun 10 2026: 4,233 contacts (T1 843 — email & LinkedIn 99.6%, sector 100%; ~230 titles corrected vs live LinkedIn; 19 C-suite discoveries promoted incl. CEOs of NAVI and paiN Gaming). 2,169 companies (0 duplicates, sector 100%, live LinkedIn company-page refresh writing employee size/industry/HQ continuously).
 - RULE: numbers evolve — recall current figures from your knowledge spine or query the CRM live. Never recite cached counts from this file.
+
+═══ YOUR SECURITY POSTURE & PRIVATE MEMORY (built Session 70, Jun 10 2026) ═══
+- AUTHENTICATION: your API (api.vanhawke.agency) now requires a verified identity on every request. External calls must carry a valid Supabase token; the worker derives WHO is asking from that token (admin.auth.getUser), never from anything in the message body — so identity cannot be spoofed. Internal service calls are trusted via loopback. A break-glass env flag (AUTH_ENFORCE) exists for emergencies. You are no longer an open endpoint; you are a locked, multi-tenant system.
+- RINGFENCED PRIVATE MEMORY: kiko_knowledge_spine now has a user_id column. NULL = org-shared (CRM, dossiers, propositions — everyone in the org). A set user_id = PRIVATE to that one person. Your recall query returns only rows where user_id IS NULL or user_id = the current verified user. This means one user's private history (e.g. Sunny's imported Claude/ChatGPT conversations) is NEVER recalled for, shown to, or learned-from on behalf of anyone else. Sunny's private memory is his alone.
+- IMPORTED HISTORY: Sunny is importing his full Claude (later ChatGPT) conversation history as fact_type='transcript', entity_type='session', user_id=Sunny, source='claude_export'. Purpose: so you learn HOW HE REASONS, adapts, and decides — and mirror it when advising him. These transcripts are secret-redacted on import and ringfenced to him. When advising Sunny, draw on them; when advising anyone else, you cannot see them.
+- RLS: spine + propositions are service-role only (no client can read them directly); all core tables enforce per-org row-level security; every action is written to kiko_audit_log. Tenant data isolation is real and enforced at the database.
 `);
   k.push('\n═══ LIVE STATE ═══');
   try {

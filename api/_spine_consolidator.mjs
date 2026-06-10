@@ -84,26 +84,34 @@ async function synthesize() {
   }
 }
 
-if (MODE === "synthesize") await synthesize(); else await ingest();
-console.log("CONSOLIDATOR COMPLETE mode=" + MODE);
+if (MODE === "synthesize") await synthesize(); else if (MODE === "ingest") await ingest();
+if (MODE === "ingest" || MODE === "synthesize") console.log("CONSOLIDATOR COMPLETE mode=" + MODE);
 
 // ── CLAUDE EXPORT INGESTION ──────────────────────────────────────────────
-// Usage: node api/_spine_consolidator.mjs claude_export /path/to/conversations.json
-// Parses Anthropic data export, chunks every conversation, redacts secrets, ingests to spine.
-async function claudeExport(path) {
+// Usage: node api/_spine_consolidator.mjs claude_export /path/to/conversations.json <USER_ID>
+// Parses Anthropic data export, chunks every conversation, redacts secrets, RINGFENCES to one user_id.
+async function claudeExport(path, userId) {
+  if (!userId || userId.length < 30) { console.log("REFUSING: a user_id is required to ringfence this import to one person."); process.exit(1); }
   const raw = JSON.parse(readFileSync(path, "utf8"));
   const convos = Array.isArray(raw) ? raw : (raw.conversations || []);
   const REDACT = [/sk-ant-[A-Za-z0-9-_]{20,}/g, /eyJ[A-Za-z0-9-_]{30,}\.[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]+/g, /(password|secret|api[_-]?key)\s*[:=]\s*\S+/gi];
-  let convosDone = 0, chunks = 0;
+  // Robust text extraction across Claude export schema variants (top-level text OR content[] blocks):
+  const msgText = (m) => {
+    if (typeof m.text === "string" && m.text.trim()) return m.text.trim();
+    if (Array.isArray(m.content)) return m.content.map(b => (b && b.text) || "").filter(Boolean).join("\n").trim();
+    return "";
+  };
+  const who = (m) => (m.sender === "human" || m.role === "user") ? "SUNNY" : "ASSISTANT";
+  let convosDone = 0, chunks = 0, skipped = 0;
   for (const c of convos) {
     const name = (c.name || "untitled").toLowerCase().slice(0, 100);
-    const msgs = (c.chat_messages || []).map(m => `[${m.sender === "human" ? "SUNNY" : "FABLE"}] ${(m.text || "").trim()}`).filter(t => t.length > 12);
-    if (!msgs.length) continue;
+    const msgs = (c.chat_messages || c.messages || []).map(m => { const t = msgText(m); return t ? `[${who(m)}] ${t}` : ""; }).filter(Boolean);
+    if (!msgs.length) { skipped++; continue; }
     let buf = "";
     const flush = async (n) => {
       if (buf.length < 60) return;
       let content = buf; for (const r of REDACT) content = content.replace(r, "[REDACTED]");
-      const ok = await insertRow({ org_id: ORG, entity_type: "session", entity_key: name, fact_type: "transcript",
+      const ok = await insertRow({ org_id: ORG, user_id: userId, entity_type: "session", entity_key: name, fact_type: "transcript",
         content, source: `claude_export:${(c.uuid || name).slice(0, 36)}#${n}`, confidence: "recorded",
         created_at: c.created_at || undefined });
       if (ok) chunks++;
@@ -118,6 +126,6 @@ async function claudeExport(path) {
     convosDone++;
     if (convosDone % 25 === 0) console.log("PROGRESS", convosDone, "conversations,", chunks, "chunks");
   }
-  console.log("CLAUDE_EXPORT_DONE conversations:", convosDone, "chunks:", chunks);
+  console.log(`CLAUDE_EXPORT_DONE user=${userId} conversations:${convosDone} chunks:${chunks} skipped:${skipped}`);
 }
-if (MODE === "claude_export") await claudeExport(process.argv[3]);
+if (MODE === "claude_export") await claudeExport(process.argv[3], process.argv[4]);

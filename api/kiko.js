@@ -341,8 +341,8 @@ export default async function handler(req, res) {
           const q = encodeURIComponent((message || '').slice(0, 300));
           if (!q) return '';
           const [core, hits] = await Promise.all([
-            sbFetch(`kiko_knowledge_spine?fts=wfts.${q}&status=eq.active&fact_type=in.(dossier,lesson,proposition,consolidated)&select=entity_key,fact_type,content&order=created_at.desc&limit=4`).catch(() => []),
-            sbFetch(`kiko_knowledge_spine?fts=wfts.${q}&status=eq.active&select=entity_key,fact_type,content&order=created_at.desc&limit=8`).catch(() => []),
+            sbFetch(`kiko_knowledge_spine?fts=wfts.${q}&status=eq.active&fact_type=in.(dossier,lesson,proposition,consolidated)&or=(user_id.is.null,user_id.eq.${userId})&select=entity_key,fact_type,content&order=created_at.desc&limit=4`).catch(() => []),
+            sbFetch(`kiko_knowledge_spine?fts=wfts.${q}&status=eq.active&or=(user_id.is.null,user_id.eq.${userId})&select=entity_key,fact_type,content&order=created_at.desc&limit=8`).catch(() => []),
           ]);
           const seen = new Set(); let out = '';
           for (const r of [...(core || []), ...(hits || [])]) {
