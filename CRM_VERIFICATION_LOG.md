@@ -855,3 +855,17 @@ After all public search engines blocked automation (DDG 418-wall, Bing degraded 
 **Movers re-homed with history:** Nadiak→Oracle (from Hackett), Droussiotou→Rostro (Scope restructure), Kennedy→Gideon (earlier today). Leavers flagged + emails quarantined: Bryson (ex-Wolfspeed→ISA/road safety), Hwang (ex-Skyworks), Valderrama (ex-NCSOFT), H.Chang (ex-PagerDuty), B.Chen (ex-Cyberhaven, now founder). Retired+archived: Fournier (Obsidian), Hughes (SonicWall). Company fix: Easy Rider→Hood River Distillers (brand→parent).
 
 **TIER 1 FINAL STATE: 820 contacts | email 817 (99.6%) | LinkedIn 817 (99.6%) | sector 820 (100%).** Every gap individually documented. Raw run log archived server-side.
+
+### T2 LINKEDIN COMPLETION + CAMPAIGN CLOSE — June 10 2026 (evening)
+
+Two LinkedIn people-search Playwright runs (195 targets, zero AI calls; run 1 hit the Supabase 1,000-row select cap on a 1,897-row tier — runner patched with range pagination for run 2). Every match verified against live headline text before write.
+
+**TIER 2 FINAL: 1,792/1,810 LinkedIn (99.0%).** 17 documented not-found with reasons (privacy-truncated surnames, brand-not-company records like Cheetos/Jolly Rancher/Slim Jim, wrong-person-only results); 1 partial slug pending (Kennedy).
+
+**C-suite discoveries promoted to T1 (19):** Zolotarov (CEO NAVI), Hamence (CEO paiN), Iaquinto (CMO Coupa), Gil Miner (CMO Pindrop), Choi (CMO Cerebras), Royston (CMO Wrike), Fiedler (CMO Halcyon), Lobato (CMO Lumu), Pinakatt (CGO Tilray), Crespy (Group COO Ferroglobe), Edelmann (CMDO 111SKIN), Mhetre (EVP Kore.ai), R. Smith (SVP/CMO Ciena), Stancil (SVP Offerpad), Shea (SVP BlueVoyant), Fitzgibbons (Global Head Mktg HireRight), Pauley (Global Head Ext Comms Rio Tinto), Pearson-Casey (VP Olympic Steel), Caukin (Group VP RingCentral).
+
+**Movers re-homed (19) with employment history + 16 new company records;** stale emails quarantined for all departures. Privacy-truncated identities recovered from slugs: Caukin, Chang, Wright. Acquisition intel logged: Wiz→Google, Moveworks→ServiceNow, Paradox→Workday (suspected), TimkenSteel→Metallus, Scope→Rostro. Wolfspeed attrition pattern flagged (3 contacts, post-Ch.11).
+
+**DATABASE FINAL: 4,233 contacts — T1 843 / T2 1,810 / T3 1,115 / T4 465. Sector 100%. T1 email+LinkedIn 99.6%. T2 LinkedIn 99.0%. ~230 title corrections vs live headlines. Follow-up queue: 23 mover-suspects + 37 title-verifies, all with captured URLs for the profile-visit pass.**
+
+Kiko memory updated (Session 70 Parts 3-4) and live recall verified. Raw logs archived server-side. Data integrity campaign COMPLETE — next: Campaigns engine on clean data.
