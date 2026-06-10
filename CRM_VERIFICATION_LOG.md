@@ -609,3 +609,21 @@ New endpoint: POST /api/enrich-on-demand
 - Works through Playwright (Matt's cookies refreshed today via keepalive)
 - Does NOT work through raw fetch (server IP blocked by LinkedIn)
 - Keepalive false alerts fixed — network errors no longer generate session_expired alerts
+
+### Session Final — Companies 39-40:
+39. Epic Games ✅ — Tim Sweeney CEO & Founder. Major layoffs March 2026 (1,000+). CRM has Sr Director + Director of Partnerships. Tim Sweeney added.
+40. Tissot ✅ — Sylvain Dolla CEO (since 2020). Also on Swatch Group Exec Board. Previously in F1 (Lotus, Renault, Sauber). Added.
+
+### REMAINING (~9 companies):
+Semperis, Orca Security, Mimecast, Vectra AI, Movado, MB&F, KRAFTON, Bardstown Bourbon, Douglas Laing
+
+### FULL SESSION SUMMARY:
+- 40 companies verified
+- 38 C-suite contacts added
+- 6 leadership changes detected
+- API costs reduced ~85% ($15-25/day → $2-3/day)
+- 3 credit drains disabled (crm-enrich, morning-synthesis, proactive-intel)
+- On-demand enrichment rebuilt (DNS → Hunter → Apollo → Sonnet cascade)
+- Hunter.io key activated (50 searches + 100 verifications FREE)
+- LinkedIn false alerts fixed (36 dismissed)
+- CRM: 4,228 contacts | 841 Tier 1 | 0 without email
