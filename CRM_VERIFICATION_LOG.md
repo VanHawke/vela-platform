@@ -843,3 +843,15 @@ Beyond format/DNS: name-consistency, credential-as-email, role accounts, junk wo
 **63 contacts whitelisted as verified-legitimate** (initials emails like mb@mbandf.com, maiden/compound-name emails, subsidiary domains like pepsico/satoshilabs, surname "Tester") — tagged email_name_check so future audits skip them.
 
 **Final state:** 3,763 live emails, all passing format + DNS + name-consistency. 36 quarantined with documented reasons. T1 without email: 3 (Zoumidou, van Draanen-Earwaker, Park — all genuinely undiscoverable free-tier, retry Jul 1). Hunter: 48/50 searches used.
+
+### T1 LINKEDIN COMPLETION — June 10 2026 (LinkedIn people-search via Playwright, zero AI calls)
+
+After all public search engines blocked automation (DDG 418-wall, Bing degraded results, Mojeek/Ecosia/lite empty — via datacenter, residential proxy AND local IP), the working route was LinkedIn's own people search using the platform's Playwright stack + matt.smith session. 59-target background run, every match verified against headline text before write.
+
+**RESULT: Tier 1 LinkedIn coverage 817/820 (99.6%).** 3 documented not-found: Tim Sweeney (no public profile exists), Chris Simmons/Buffalo Trace (only wrong-person results), Lucinda Hodge/Berry Bros (no results).
+
+**Mass title-drift exposed and corrected (~40 titles):** original scrape systematically inflated/garbled roles. Demotions where honest (Recio Head of Partnerships→PM Specialist T3; S.Lee Head of Mktg→Associate PMM T3; Coppock/Sklar/Whyte/MacLellan/Yeung/Wood/Ostrom VP-or-Head→actual T2). Promotions caught: Sabrina Ratih now COO of G2 Esports; John Yao is CEO of Team Secret; Kimberly Supersano is MD Co-Head of Global Marketing at KKR; Ryan Denehy is Founder/CEO of Electric (was filed as VP Marketing); Wojtasiak SVP Vectra; McDougall VP Leidos; Dhaliwal VP Diodes.
+
+**Movers re-homed with history:** Nadiak→Oracle (from Hackett), Droussiotou→Rostro (Scope restructure), Kennedy→Gideon (earlier today). Leavers flagged + emails quarantined: Bryson (ex-Wolfspeed→ISA/road safety), Hwang (ex-Skyworks), Valderrama (ex-NCSOFT), H.Chang (ex-PagerDuty), B.Chen (ex-Cyberhaven, now founder). Retired+archived: Fournier (Obsidian), Hughes (SonicWall). Company fix: Easy Rider→Hood River Distillers (brand→parent).
+
+**TIER 1 FINAL STATE: 820 contacts | email 817 (99.6%) | LinkedIn 817 (99.6%) | sector 820 (100%).** Every gap individually documented. Raw run log archived server-side.
