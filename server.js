@@ -46,6 +46,7 @@ import googleAuth from "./api/google-auth.js";
 import calendarWebhook from "./api/calendar-webhook.js";
 import { startMonitors } from "./monitors/scheduler.js";
 import { startScheduler } from "./src/cron-scheduler.js";
+import { requireAuth } from "./api/_auth.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, "package.json"), "utf8"));
@@ -68,17 +69,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Auth middleware — /api/* routes are PUBLIC (browser calls them directly)
-// /linkedin/* routes require shared secret
-app.use((req, res, next) => {
-  if (req.path === "/health" || req.path === "/" || req.path.startsWith("/api/") || req.path.startsWith("/docs/") || req.path.startsWith("/linkedin-queue/") || req.path.startsWith("/email-intel/")) return next();
-  const auth = req.headers["authorization"] || "";
-  const token = auth.replace(/^Bearer\s+/i, "");
-  if (token !== SHARED_SECRET) {
-    return res.status(401).json({ error: "unauthorized" });
-  }
-  next();
-});
+// ═══ IRON-CLAD AUTH (Session 70) ═══
+// Every route except a tiny external-callback allowlist requires EITHER a valid
+// Supabase user token (identity derived from it) OR the shared worker secret
+// (internal/cron). Monitor vs enforce controlled by AUTH_ENFORCE env (break-glass).
+app.use(requireAuth());
 
 // Root
 app.get("/", (req, res) => {

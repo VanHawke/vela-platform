@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-06-08T06:13:48.576Z",
+  "generated_at": "2026-06-10T18:42:11.062Z",
   "commits": [
     {
-      "hash": "6af128a",
-      "subject": "fix(kiko-brain): 1) EA brief + read_email + web_search + signal + knowledge tools added to LONG_TOOLS (30s timeout vs 15s), 2) paragraph break written between tool rounds to fix text formatting (resea",
-      "when": "28 minutes ago"
+      "hash": "d5fda8f",
+      "subject": "Consolidator: claude_export mode — full Claude conversation history ingestion (chunked, secret-redacted, idempotent) pending Sunny data export",
+      "when": "24 minutes ago"
     },
     {
-      "hash": "6dd0ecc",
-      "subject": "fix(redesign): Remove legacy TV/background-task button (was importing @vercel/functions — dead code), conversation prompt bar now matches homepage (pill shape, BLACK/ORANGE send button, same placehold",
-      "when": "40 minutes ago"
+      "hash": "25f2015",
+      "subject": "Self-knowledge: Learning Loop organs, spine, dossiers, proposition shelf, pipeline reset, certified-clean CRM. Stale deal counts purged. Rule added: recall live numbers, never cached",
+      "when": "35 minutes ago"
     },
     {
-      "hash": "663e59b",
-      "subject": "docs: Update KIKO_MEMORY.md with full session changes — redesign, intelligence doctrine, all fixes",
+      "hash": "3ec937a",
+      "subject": "LEARNING LOOP LIVE: all 3 phases shipped+verified. Kiko-native, zero Fable dependency, citation-audited synthesis. Live test passed: autonomous Torq recall+advice",
+      "when": "42 minutes ago"
+    },
+    {
+      "hash": "1dd7412",
+      "subject": "Learning Loop: spine recall wired into brain (deterministic FTS, fail-open) + Kiko-native consolidator (own Opus brain, deterministic citation auditor, hard caps) + memory-file ingestion",
+      "when": "44 minutes ago"
+    },
+    {
+      "hash": "71a6474",
+      "subject": "Build order locked: Learning Loop first (recall/consolidation/ingestion), Campaigns second with Kiko as domain advisor in design. Torq+ClearStreet manual re-entry this week",
+      "when": "56 minutes ago"
+    },
+    {
+      "hash": "50b8fef",
+      "subject": "Pipeline reset to clean slate (303 refs preserved, intel captured: Rio Tinto/Alfonso, NanoXplore budget-flinch). Dossier pilot live: Torq REVIVE (dropped CMO+VP replies Nov25), Clear Street REVIVE URG",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "62554fa",
+      "subject": "Company refresh pipeline self-draining: deterministic writer + 5-min watcher, live data lands continuously tonight. Abnormal rebrand dup merged. Zero AI/credits",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "ae3a729",
+      "subject": "Company market-data refresh launched (zero-credit): key_personnel mirrored to 1604 cos from verified contacts, all 2169 flagged needs_market_refresh, LinkedIn company-page runner live on 645 T1 cos ov",
+      "when": "2 hours ago"
+    },
+    {
+      "hash": "a96bebb",
+      "subject": "Organizations table cleaned: 2265→2169, industry→sector migration (2249→1 missing), 93 dup groups merged w/ full FK repointing, test records purged, websites 421→341. CRM clean across both entity type",
+      "when": "3 hours ago"
+    },
+    {
+      "hash": "4885a4f",
+      "subject": "T2 LinkedIn complete: 1792/1810 (99.0%). Campaign CLOSED: 19 C-suite discoveries promoted T1 (NAVI/paiN CEOs, Coupa/Pindrop/Cerebras/Wrike CMOs, Tilray CGO), 19 movers re-homed, 16 company records, ~2",
+      "when": "3 hours ago"
+    },
+    {
+      "hash": "9585793",
+      "subject": "T1 LinkedIn complete: 817/820 (99.6%) via LinkedIn people-search Playwright run. ~40 title corrections, 3 movers re-homed, 5 leavers flagged, 2 retirees archived. T1 final: email 99.6%, LinkedIn 99.6%",
+      "when": "5 hours ago"
+    },
+    {
+      "hash": "cb56cc8",
+      "subject": "Email integrity deep scan: credential-as-email garbage purged (cfmp@/ms@), test record removed from T2, companyDomain shortener junk fixed, 63 legit patterns whitelisted, 2 T1 emails recovered via Hun",
+      "when": "6 hours ago"
+    },
+    {
+      "hash": "68d5c67",
+      "subject": "Full-DB sweep complete (all 4,233): name/email/title hygiene to zero defects, MX validation of all 1,911 domains; T1 LinkedIn pass 1 (7 URLs, 1 mover, 2 title fixes)",
       "when": "9 hours ago"
     },
     {
-      "hash": "2f1607f",
-      "subject": "fix(redesign): Conversation prompt bar — pill shape (borderRadius 9999), padding matched to homepage, width aligned with message content",
+      "hash": "682ab9d",
+      "subject": "CRM mover resolution: all 16 mismatches individually web-verified and fixed",
       "when": "9 hours ago"
     },
     {
-      "hash": "8614d09",
-      "subject": "feat(kiko-brain): Intelligence Doctrine — codified core operating principle for data access by role (super_admin sees ALL channels for ALL users, regular users see own data + CRM), mandatory 7-step pr",
+      "hash": "88ddb91",
+      "subject": "S70 part 2: credit-drain root cause found and killed for real + tool-loop fixes",
       "when": "10 hours ago"
     },
     {
-      "hash": "591b5ea",
-      "subject": "fix(redesign): prompt bar borderRadius 9999 (full pill capsule shape matching sandbox), greeting/date spacing tightened",
+      "hash": "b6ce03c",
+      "subject": "Fix selfcheck false alarm: daily-intelligence heartbeat name mismatch",
       "when": "10 hours ago"
     },
     {
-      "hash": "e1d9863",
-      "subject": "fix: remove handleSubmit from kiko_prefill useEffect dependency array — was causing 'Cannot access rt before initialization' crash",
+      "hash": "267a5bc",
+      "subject": "Session 70: Brain context overhaul — Bible JIT complete, split-brain fixed, caching added",
       "when": "10 hours ago"
     },
     {
-      "hash": "e1a8bb1",
-      "subject": "feat(redesign): Homepage — prompt bar borderRadius 28 (more pill), greeting/date spacing fixed (margin 0 0 6px / 0 0 28px), priority actions wired to Kiko via kiko_prefill events (stale/reply/draft/ta",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "4fa618d",
-      "subject": "fix(redesign): Homepage — submit button BLACK default/ORANGE on input, greeting ABOVE date (matching sandbox), correct 2026 F1 calendar from official sources (Canadian GP was May 22-24, Monaco today J",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "8f8accb",
-      "subject": "feat(redesign): Homepage — remove bento stats, dynamic F1 race calendar (shows next race), hide Kiko float on homepage, remove voice avatar/dots, restore attach/mic/voice icons in prompt bar, send but",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "5561662",
-      "subject": "fix(redesign): KikoFloat panel — width 380 (was 340), borderRadius 14 (was 24), right 20 (was 24), header 'Kiko' in Source Serif 4 16px weight 400 — matching sandbox render",
+      "hash": "23b1745",
+      "subject": "FINAL: CRM deep audit complete. 769/840 Tier 1 fully campaign-ready (91.5%)",
       "when": "11 hours ago"
     },
     {
-      "hash": "9201863",
-      "subject": "fix(redesign): Home prompt bar — hide +/mic/voice buttons, show always-visible black circle send button (36px, #0A0A0A) matching sandbox render exactly. Position absolute right:6 with padding to accom",
-      "when": "11 hours ago"
-    },
-    {
-      "hash": "f0de0b6",
-      "subject": "fix(redesign): KikoFloat now shown on home page — Layout.jsx condition changed from !isHome to always show. Float is 48x48 black circle with chat SVG icon",
-      "when": "11 hours ago"
-    },
-    {
-      "hash": "6abe004",
-      "subject": "fix(redesign): KikoFloat — now visible on home page (was hidden), 48x48 black circle with chat SVG icon matching sandbox, removed pulse rings. PromptBar — borderRadius 24 (pill) in welcome mode",
+      "hash": "6a512a3",
+      "subject": "Email verification COMPLETE: all Tier 1 emails Hunter-verified",
       "when": "12 hours ago"
     },
     {
-      "hash": "df07514",
-      "subject": "fix(redesign): Messenger header — replaced colored Audio/Video/Meet buttons with sandbox-style icon buttons (Call/Search/Files). 32px transparent squares matching sandbox render exactly",
+      "hash": "fce10a4",
+      "subject": "Email verification complete: 27 verified via Hunter, 11 corrected, 1 undiscoverable",
       "when": "12 hours ago"
-    },
-    {
-      "hash": "3acddf9",
-      "subject": "fix(redesign): Home — chips overflow fixed (visible not hidden), flexWrap, paddingTop 4, chip text matches sandbox exactly (5 chips incl 'Helsing status' and 'Draft follow-up for Ball Corp'), added Ca",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "5080389",
-      "subject": "fix(redesign): Home greeting 36px (was 48px), removed 'What would you like to work on' subtitle — matching sandbox render exactly. Saved REDESIGN_COMPARISON.md for systematic cross-referencing",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "f93d893",
-      "subject": "feat(redesign): Messenger — flat Slack-style message rows replacing iMessage bubbles, matching sandbox render. All messages left-aligned with avatar+name+time, no bubble backgrounds",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "2606bcc",
-      "subject": "fix(redesign): Campaigns overview — use c.counts enrollment data instead of c.prospects (which doesn't exist in overview mode)",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "50c4d2d",
-      "subject": "feat(redesign): Campaigns card-list overview matching sandbox render — PageHead with OUTREACH eyebrow, full-width campaign cards with Source Serif 4 metrics, click to drill into detail",
-      "when": "13 hours ago"
     }
   ]
 }

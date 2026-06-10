@@ -892,3 +892,11 @@ Board cleared per Sunny (303 records → reference corpus, contradictions resolv
 ### BUILD ORDER — June 10 2026 (final): LEARNING LOOP FIRST per Sunny, then Campaigns engine with Kiko in design review. Phases: Recall (structured retrieval, zero cost) → Consolidation (manual first, capped Haiku cron later) → Ingestion (transcripts). Torq + Clear Street re-entries proceed manually this week, independent of builds.
 
 ### LEARNING LOOP SHIPPED — June 10/11 2026: Spine (10,253 entries/464 entities) + brain recall (deterministic FTS, fail-open) + Kiko-native consolidation (own Opus brain, deterministic citation auditor, hard caps, no Haiku, no Fable dependency) + ingestion (nightly cron + memory parser). Live verification: Kiko autonomously recalled the Torq dossier, cross-checked CRM, advised re-approach. The advisor is live.
+
+### AUTH HARDENING June 10/11 2026 (monitor mode live, enforce pending browser verify)
+- NEW api/_auth.js: requireAuth middleware. Three trust classes: (1) PUBLIC allowlist (health, oauth callbacks, webhooks, public-branding/pre-login); (2) INTERNAL loopback mesh (worker binds 127.0.0.1 only; external always carries nginx X-Forwarded-For/X-Real-IP; absence = trusted internal — secures scheduler + all service-to-service calls without per-callsite edits); (3) EXTERNAL must present valid Supabase JWT (verified via admin.auth.getUser, 60s cache) OR shared worker secret; identity derived from token, body userEmail override killed (anti-spoof).
+- AUTH_ENFORCE env break-glass: unset=MONITOR (verify+log, allow), true=ENFORCE (401). Currently MONITOR.
+- server.js: replaced permissive /api/* passthrough with app.use(requireAuth()).
+- Frontend src/lib/apiAuth.js: global fetch interceptor attaches live Supabase access_token to all api.vanhawke.agency calls (covers ~20 callsites + future). Installed in main.jsx. Built + rsynced to /var/www/kiko.
+- VERIFIED: real minted token → getUser resolves sunny@vanhawke.com; body claiming matt overridden to token identity; invalid token rejected; loopback internal calls trusted (200, unflagged); external tokenless flagged would-401; public-branding allowlisted.
+- PENDING before enforce flip: confirm real browser attaches token (one authenticated call from Sunny's session in logs), then set AUTH_ENFORCE=true, re-sweep, verify chat in-browser + tokenless 401.

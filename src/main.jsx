@@ -4,6 +4,10 @@ import './styles/kiko-polish.css'
 import './styles/mobile.css'
 import { OrgProvider } from './contexts/OrgContext'
 import App from './App.jsx'
+import { installApiAuth } from './lib/apiAuth'
+
+// Attach Supabase token to every Kiko API call (auth hardening, Session 70)
+installApiAuth()
 
 // Favicon bootstrap now handled by the Safari-safe inline IIFE in index.html
 // which runs synchronously during HTML parse (before any <link rel="icon">
