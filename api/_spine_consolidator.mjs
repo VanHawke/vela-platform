@@ -94,7 +94,7 @@ async function claudeExport(path, userId) {
   if (!userId || userId.length < 30) { console.log("REFUSING: a user_id is required to ringfence this import to one person."); process.exit(1); }
   const raw = JSON.parse(readFileSync(path, "utf8"));
   const convos = Array.isArray(raw) ? raw : (raw.conversations || []);
-  const REDACT = [/sk-ant-[A-Za-z0-9-_]{20,}/g, /eyJ[A-Za-z0-9-_]{30,}\.[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]+/g, /(password|secret|api[_-]?key)\s*[:=]\s*\S+/gi];
+  const REDACT = [/sk-ant-[A-Za-z0-9_-]{4,}/g, /eyJ[A-Za-z0-9_-]{20,}/g, /(password|secret|api[_-]?key|token)\s*[:=]\s*\S+/gi];
   // Robust text extraction across Claude export schema variants (top-level text OR content[] blocks):
   const msgText = (m) => {
     if (typeof m.text === "string" && m.text.trim()) return m.text.trim();
