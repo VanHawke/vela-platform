@@ -148,6 +148,13 @@ export const TOOL_DEFINITIONS = [
     }, required: ['operation'] },
   },
   {
+    name: 'deep_research',
+    description: 'Deep multi-source research (ONE call per conversation — do not call twice). on a company, person, market, or topic. Use when user asks to research, investigate, due diligence, prospect intel, competitive analysis. Produces structured intelligence brief saved to knowledge base.',
+    input_schema: { type: 'object', properties: {
+      brief: { type: 'string', description: 'Research brief. Be specific: company name, person, topic, questions.' },
+    }, required: ['brief'] },
+  },
+  {
     name: 'ask_category_agent',
     description: 'Sponsorship category availability and conflicts. Use when user asks: is X category open, what gaps does Y team have, can we sell Z category, check for conflicts.',
     input_schema: { type: 'object', properties: {
@@ -540,19 +547,20 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
       }
 
       if (section === 'knowledge' || section === 'all') {
-        const knowledge = await sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=100');
+        const knowledge = await sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=30');
         if (knowledge?.length) {
           // Deduplicate by domain (latest per domain)
           const byDomain = new Map();
           for (const k of knowledge) { if (k.content && !byDomain.has(k.domain)) byDomain.set(k.domain, k); }
           parts.push(`═══ RESEARCH KNOWLEDGE BASE (${byDomain.size} domains) ═══\n` +
             [...byDomain.values()].map(k =>
-              `[${k.domain} — ${new Date(k.researched_at).toLocaleDateString('en-GB')}]\n${k.content.slice(0, 3000)}`
+              `[${k.domain} — ${new Date(k.researched_at).toLocaleDateString('en-GB')}]\n${k.content.slice(0, 1500)}`
             ).join('\n\n'));
         }
       }
 
-      return parts.join('\n\n') || 'No bible content found.';
+      const out = parts.join('\n\n') || 'No bible content found.';
+      return out.length > 20000 ? out.slice(0, 20000) + '\n\n[TRUNCATED — request a specific section for more]' : out;
     } catch (e) { return agentError('read_bible', e); }
   }
 
@@ -1938,6 +1946,13 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
         return out;
       }).join('\n\n');
     } catch (e) { return `Error: ${e.message}`; }
+  }
+
+
+  if (name === 'deep_research') {
+    const { deepResearch } = await import('./agents/research.js');
+    const result = await deepResearch(input.brief, userId);
+    return JSON.stringify(result);
   }
 
   return { error: `Unknown tool: ${name}` };

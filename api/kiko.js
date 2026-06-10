@@ -3,7 +3,18 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { TOOL_DEFINITIONS, DIGEST_BRIEF_TOOL, executeTool, fetchEntityContext, sbFetch, logError } from './kiko-tools.js';
 import loadLeanKnowledge from './kiko-self-knowledge-lean.js';
+
+// In-process TTL cache for stable per-message context (Fix 3, Session 70)
+const _ctxCache = new Map();
+async function cachedFetch(key, ttlMs, fn) {
+  const hit = _ctxCache.get(key);
+  if (hit && Date.now() - hit.t < ttlMs) return hit.v;
+  const v = await fn();
+  _ctxCache.set(key, { t: Date.now(), v });
+  return v;
+}
 import { describeScreen } from './agents/screen-reader.js';
+import { loadVoiceProfile, voiceProfileToPrompt } from "./lib/email-format.js";
 import { preProcess } from './reasoning-engine.js';
 import { lookupCompany } from './company-lookup.js';
 import { callEAAgent } from './agents/ea.js';
@@ -316,47 +327,21 @@ export default async function handler(req, res) {
     const recentMessages = conversationHistory.slice(-6);
 
     // ═══ CONTEXT LOADING — ALWAYS FULL, NO GATES ═══
-    const orgIdResult = isRegistered ? await sbFetch(`organization_members?user_id=eq.${userId}&select=organization_id&limit=1`).catch(() => []) : [];
-    const orgId = orgIdResult?.[0]?.organization_id || null;
-
-    const [entityContext, selfKnowledge, coreBibleResult, orgBibleResult, userBibleResult, knowledgeBaseResult, learnedRulesResult, preferencesResult, goalsResult, intentsResult, draftActionsResult] = await Promise.all([
+    const [entityContext, selfKnowledge, learnedRulesResult, preferencesResult, goalsResult, intentsResult, draftActionsResult] = await Promise.all([
       fetchEntityContext(pageEntity),
       loadLeanKnowledge(userId).catch(() => ''),
-      sbFetch('kiko_core_bible?select=content&order=version.desc&limit=1').catch(() => []),
-      orgId ? sbFetch(`org_bibles?organization_id=eq.${orgId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
-      isRegistered ? sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
-      sbFetch('kiko_knowledge?select=domain,content,researched_at,source&order=researched_at.desc&limit=100').catch(() => []),
-      sbFetch(`kiko_learned_rules?active=eq.true&select=rule_text,category,weight&order=weight.desc&limit=15`).catch(() => []),
-      sbFetch(`kiko_preferences?select=category,preference,confidence&order=confidence.desc&limit=15`).catch(() => []),
+      cachedFetch('rules', 300000, () => sbFetch(`kiko_learned_rules?active=eq.true&select=rule_text,category,weight&order=weight.desc&limit=15`)).catch(() => []),
+      cachedFetch('prefs', 300000, () => sbFetch(`kiko_preferences?select=category,preference,confidence&order=confidence.desc&limit=15`)).catch(() => []),
       sbFetch(`kiko_goals?user_id=eq.${userId}&status=eq.active&select=title,priority,description,next_action,due_date&order=priority.desc&limit=10`).catch(() => []),
       sbFetch(`kiko_intents?user_id=eq.${userId}&status=in.(active,overdue)&select=title,description,priority,status,due_date,next_action&order=priority.desc&limit=10`).catch(() => []),
       sbFetch(`kiko_draft_actions?status=eq.pending&select=action_type,entity_name,summary,created_at&order=created_at.desc&limit=5`).catch(() => []),
     ]);
 
-    const knowledgeBase = (() => {
-      const byDomain = new Map();
-      for (const k of (knowledgeBaseResult || []).filter(k => k.content)) { if (!byDomain.has(k.domain)) byDomain.set(k.domain, k); }
-      const msgLower = (message || '').toLowerCase();
-      const scored = [...byDomain.values()].map(k => {
-        let score = 0;
-        for (const w of k.domain.replace(/-/g, ' ').split(' ')) { if (w.length > 2 && msgLower.includes(w)) score += 3; }
-        return { ...k, score };
-      });
-      scored.sort((a, b) => b.score - a.score);
-      const top = scored.slice(0, 5);
-      return top.map(k => {
-        const content = k.score > 0 ? k.content : k.content.slice(0, 500);
-        return `[${k.domain}] ${content}`;
-      }).join('\n\n');
-    })();
 
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
     const timeStr = now.toLocaleTimeString('en-GB', { timeZone: timezone || 'Europe/London', hour:'2-digit', minute:'2-digit' });
     const pageRole = PAGE_ROLES[currentPage] || '';
-    const coreBible = coreBibleResult?.[0]?.content || '';
-    const orgBible = orgBibleResult?.[0]?.content || '';
-    const userBible = userBibleResult?.[0]?.content || '';
 
     let systemPrompt = SYSTEM_PROMPT
       .replace('{COMPANY_NAME}', userConfig.company_name || 'Van Hawke Group')
@@ -369,16 +354,23 @@ export default async function handler(req, res) {
     systemPrompt += `\nDate: ${dateStr}, ${timeStr} UK${pageRole}`;
     if (entityContext) systemPrompt += `\n\n[ENTITY CONTEXT]\n${entityContext}`;
     if (conversationSummary) systemPrompt += conversationSummary;
-    if (coreBible) systemPrompt += `\n\n[OPERATIONAL DOCTRINE]\n${coreBible.slice(0, 3000)}`;
-    if (orgBible) systemPrompt += `\n\n[ORG KNOWLEDGE]\n${orgBible.slice(0, 2000)}`;
-    if (userBible) systemPrompt += `\n\n[PERSONAL KNOWLEDGE]\n${userBible.slice(0, 2000)}`;
-    if (knowledgeBase) systemPrompt += `\n\n[RESEARCH INTELLIGENCE]\n${knowledgeBase.slice(0, 4000)}`;
     if (learnedRulesResult?.length) systemPrompt += `\n\n[LEARNED RULES]\n${learnedRulesResult.map(r => `- ${r.rule_text} (${r.category}, weight:${r.weight})`).join('\n')}`;
     if (preferencesResult?.length) systemPrompt += `\n\n[USER PREFERENCES]\n${preferencesResult.map(p => `- ${p.category}: ${p.preference}`).join('\n')}`;
+
+    // Voice profile — Kiko drafts in user actual voice across ALL contexts
+    try {
+      const voiceProfile = await cachedFetch('voice:' + userId, 600000, () => loadVoiceProfile(sbFetch, userId));
+      if (voiceProfile) {
+        const vpPrompt = voiceProfileToPrompt(voiceProfile);
+        if (vpPrompt) systemPrompt += "\n\n" + vpPrompt;
+      }
+    } catch (vpErr) { console.warn("[kiko] Voice profile load failed:", vpErr.message); }
+
     if (goalsResult?.length) systemPrompt += `\n\n[ACTIVE GOALS]\n${goalsResult.map(g => `- ${g.title} [${g.priority}] ${g.next_action || ''}`).join('\n')}`;
     if (intentsResult?.length) systemPrompt += `\n\n[ACTIVE INTENTS]\n${intentsResult.map(i => `- ${i.title} [${i.status}/${i.priority}] due:${i.due_date || 'none'} next:${i.next_action || ''}`).join('\n')}`;
     if (draftActionsResult?.length) systemPrompt += `\n\n[PENDING DRAFT ACTIONS]\n${draftActionsResult.map(d => `- ${d.action_type}: ${d.entity_name} — ${d.summary}`).join('\n')}`;
 
+    console.log(`[Kiko] systemPrompt ${systemPrompt.length} chars`);
     const systemCached = [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }];
 
     // ═══ BUILD TOOLS — ALWAYS FULL, NEVER FILTERED ═══
@@ -393,12 +385,17 @@ export default async function handler(req, res) {
       for (const att of attachments) {
         if (att.type === 'image' && att.data) contentParts.push({ type: 'image', source: { type: 'base64', media_type: att.mediaType || 'image/png', data: att.data } });
         if (att.type === 'document' && att.data) contentParts.push({ type: 'document', source: { type: 'base64', media_type: att.mediaType || 'application/pdf', data: att.data } });
+        if (att.type === 'file' && att.data) contentParts.push({ type: 'text', text: `
+
+[UPLOADED FILE: ${att.name || 'document'}]
+${att.data.slice(0, 80000)}
+[END FILE]` });
       }
       messages[messages.length - 1] = { role: 'user', content: contentParts };
     }
 
-    if (pageContext?.elements?.length && currentPage !== 'home') {
-      const screenDesc = describeScreen(pageContext);
+    if (currentPage && currentPage !== 'home') {
+      const screenDesc = await describeScreen(currentPage);
       if (screenDesc) messages[messages.length - 1] = { role: 'user', content: `[SCREEN CONTEXT: ${screenDesc}]\n\n${message}` };
     }
 
