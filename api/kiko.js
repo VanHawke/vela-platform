@@ -342,15 +342,20 @@ export default async function handler(req, res) {
           if (!msg.trim()) return '';
           const rows = await sbFetch('rpc/spine_recall', {
             method: 'POST',
-            body: JSON.stringify({ p_query: msg, p_user: userId, p_limit: 12 })
+            body: JSON.stringify({ p_query: msg, p_user: userId, p_limit: 10 })
           }).catch(() => []);
           const seen = new Set(); let out = '';
+          const BUDGET = 9000;        // room for several full transcript chunks
           for (const r of (rows || [])) {
             const k = r.fact_type + '|' + (r.content || '').slice(0, 80);
             if (seen.has(k)) continue; seen.add(k);
-            const line = `- [${r.fact_type}/${r.entity_key}] ${r.content}\n`;
-            if (out.length + line.length > 4500) break;
-            out += line;
+            const remaining = BUDGET - out.length;
+            if (remaining < 200) break;
+            // Keep chunks whole when they fit; for an over-long top chunk, include a generous head
+            // so embedded quotes/specifics survive rather than being cut before they appear.
+            let body = r.content || '';
+            if (body.length > remaining) body = body.slice(0, remaining - 20) + '…';
+            out += `- [${r.fact_type}/${r.entity_key}] ${body}\n`;
           }
           return out;
         } catch { return ''; }
