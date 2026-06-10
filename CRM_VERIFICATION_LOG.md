@@ -593,3 +593,19 @@ Whiskey: Bardstown Bourbon, Douglas Laing
 - Only alerts when cookies are actually expired (redirected to /login), not on network errors
 - 36 false linkedin_session_expired alerts dismissed
 - 7 false selfcheck_fail alerts dismissed
+
+### ON-DEMAND ENRICHMENT REBUILT — June 10 2026
+New endpoint: POST /api/enrich-on-demand
+- Takes { contact_ids: [...], max_ai_calls: 20 }
+- Tier 1: DNS email verification (free, always)
+- Tier 2: Hunter.io email finder (50 free searches/month + 100 verifications) — KEY ADDED TO .ENV
+- Tier 3: Apollo people match (free tier, when credits available)
+- Tier 4: Sonnet web search (hard capped at 20 per batch, last resort)
+- Only runs on-demand when new contacts are sourced
+- Replaces the old nightly 4,200-contact sweep
+
+### LINKEDIN PROXY STATUS
+- Decodo ISP proxy configured (isp.decodo.com:10001)
+- Works through Playwright (Matt's cookies refreshed today via keepalive)
+- Does NOT work through raw fetch (server IP blocked by LinkedIn)
+- Keepalive false alerts fixed — network errors no longer generate session_expired alerts
