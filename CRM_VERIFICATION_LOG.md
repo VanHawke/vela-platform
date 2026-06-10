@@ -825,3 +825,21 @@ UNRESOLVABLE: kashif syed — coinex.fr not CoinEx official domain; quarantined 
 ○ John Hernandez (BlueVoyant CEO) — profile slug not surfaced; flagged, no guessing
 
 **Remaining:** 61 T1 LinkedIn URLs, then 185 T2. CyberCube intel: new CEO Chris Methven (no stale record held).
+
+### EMAIL-INTEGRITY DEEP SCAN — June 10 2026 (the "garbage email" pass, all 3,771 emails)
+
+Beyond format/DNS: name-consistency, credential-as-email, role accounts, junk words, domain-company coherence.
+
+**Garbage found and quarantined (the exact "match.kiko-turnball" class):**
+- cfmp@hanmi.com — Jenny Park's credential CFMP became her email
+- ms@pagerduty.com — Felipa Villegas's credential MS became her email
+- a.p@wolfspeed.com (Bryson, initials match nothing), press@skyryse.com (role account as person), chris@cloverclub.app under Jasper, hospice-org email under TaskUs, singh.s@hotmail TEST RECORD sitting in Tier 2
+- linda.kerr@actzero.com — ActZero acquired by WatchGuard; replaced with linda.kerr@watchguard.com (Hunter 81, accept_all) + employment_history entry
+- alexis.bryson@wolfspeed.com recovered (Hunter 84, accept_all)
+- 8 more broken credential name-splits fixed (M.S./M.B.A./Cfmp/Msdm/MS/MPS variants pass 1 missed); "Mash H." and "JD Davis" judged real names, whitelisted
+
+**companyDomain field had scraper link-shortener junk too:** 5tran.co→fivetran.com, tbrd.co→tinybird.co, bit.ly→symbotic.com, spr.ly→princesscruises.com, gt-us.co→gt.com, sweet.security→intezer.com. Fixed.
+
+**63 contacts whitelisted as verified-legitimate** (initials emails like mb@mbandf.com, maiden/compound-name emails, subsidiary domains like pepsico/satoshilabs, surname "Tester") — tagged email_name_check so future audits skip them.
+
+**Final state:** 3,763 live emails, all passing format + DNS + name-consistency. 36 quarantined with documented reasons. T1 without email: 3 (Zoumidou, van Draanen-Earwaker, Park — all genuinely undiscoverable free-tier, retry Jul 1). Hunter: 48/50 searches used.
