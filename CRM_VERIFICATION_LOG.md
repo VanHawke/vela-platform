@@ -584,3 +584,12 @@ Whiskey: Bardstown Bourbon, Douglas Laing
 **Cost reduction:** ~$15-25/day → ~$2-3/day (estimated 80-85% reduction)
 **Kiko self-knowledge updated** with all disabled crons and cost info
 **All originals backed up** to _archive/ directories
+
+### LINKEDIN COOKIE FIX — June 10 2026
+- Keepalive cron was generating false "session expired" alerts (36 total)
+- Root cause: server can't reach LinkedIn from Hetzner IP (network/proxy issue)
+- Cookies themselves are valid — Matt's refreshed today, Sunny's stored from Jun 5
+- Fix: keepalive now distinguishes network failures from genuine cookie expiry
+- Only alerts when cookies are actually expired (redirected to /login), not on network errors
+- 36 false linkedin_session_expired alerts dismissed
+- 7 false selfcheck_fail alerts dismissed
