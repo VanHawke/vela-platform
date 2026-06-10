@@ -797,3 +797,31 @@ UNRESOLVABLE: kashif syed — coinex.fr not CoinEx official domain; quarantined 
 **Hunter June usage: 45/50 searches, 90/100 verifications — resets Jul 1**
 
 **Honest remainder:** 70 T1 + 185 T2 missing LinkedIn URLs; 145 T2 sector blanks; Eric Chang (LegalZoom) title; Romit Goswami (InstaCrypto) domain unknown; 5 emails pending Hunter reset.
+
+### FULL-DATABASE SWEEP + T1 LINKEDIN PASS 1 — June 10 2026 (continued, all 4,233 rows)
+
+**Machine-verifiable sweep across every contact (defects found → fixed → 0 remaining):**
+- 442 empty-string emails (T4) → normalised to absent
+- 43 credential-prefix firstNames (MBA/PhD/CFA from bad name splits, incl. T1s: Tisdale, Parsons, Drake, Kennedy, Rudnick, Gaba, Borhani, Bryson, Redinbo, Mossman, Tomlak, Schenkel) → programmatically re-split, credential preserved in name_credential
+- 4+ trailing-credential lastNames (", CMP" ", M.A" ", P.Eng") → stripped
+- 8 whitespace defects → trimmed | 65 + 27 ALL-CAPS names → proper case
+- 1 uppercase email lowercased (shure.com); 1 masked scrape "a***@q2.com" removed (Andrew Lee, Q2)
+- 1 reversed name: "Ostrom Dina" → Dina Ostrom (Peabody Energy)
+- Duplicates: 0 (the 1 flagged pair was the empty-string artifact)
+- 12 pipe-titles inspected: legitimate dual roles, kept; spacing normalised
+- Eric Herzog company tagline → "Infinidat"
+
+**DNS/MX validation — every email domain in the database:** 1,911 unique domains across 3,771 emails. 1,901 MX-valid, 3 A-only, 7 dead. 6 dead are archived T4; 1 was T1: Katrina van Draanen-Earwaker (veza.net dead; veza.com patterns undeliverable + not in Hunter) → quarantined, LinkedIn captured, retry Jul 1. Still at Veza (confirmed).
+
+**T1 LinkedIn pass 1 (9 of 70 worked, 7 URLs captured):**
+✓ Christina Parsons (Amkor) /in/christinasparsons + TITLE FIX: Director Marketing Comms (was VP Corp Dev)
+✓ Oleg Mogilevsky — MOVER: Astrix → AuthMind, Dir Product Marketing; AuthMind co. record created; old email dead, quarantined; /in/olegmogilevsky
+✓ Raj Bakker (CyberCube) /in/rajbakker
+✓ Jim Rosenthal (BlueVoyant Chairman) /in/james-rosenthal-302076235 — CEO handover to Hernandez May 5 2026 confirms our records
+✓ Sylvain Dolla (Tissot CEO) /in/sylvain-dolla-2932281
+✓ Changhan Kim (KRAFTON CEO) /in/changhan-kim-58964310a + outreach-sensitive note (Mar 2026 Delaware ruling, Unknown Worlds earnout)
+✓ Katrina van Draanen-Earwaker (Veza) /in/katrina-van-draanen-earwaker-00489370
+○ Candace Hopkins — TITLE FIX: Marketing Ops Manager (was "Head of Marketing"), demoted T1→T2; Anvilogic mktg lead appears to be Chas Larios (T1 candidate)
+○ John Hernandez (BlueVoyant CEO) — profile slug not surfaced; flagged, no guessing
+
+**Remaining:** 61 T1 LinkedIn URLs, then 185 T2. CyberCube intel: new CEO Chris Methven (no stale record held).
