@@ -16,6 +16,7 @@ async function cachedFetch(key, ttlMs, fn) {
 import { describeScreen } from './agents/screen-reader.js';
 import { loadVoiceProfile, voiceProfileToPrompt } from "./lib/email-format.js";
 import { preProcess } from './reasoning-engine.js';
+import { generateEmbedding } from './embed-utils.js';
 import { lookupCompany } from './company-lookup.js';
 import { callEAAgent } from './agents/ea.js';
 
@@ -335,24 +336,25 @@ export default async function handler(req, res) {
       sbFetch(`kiko_goals?user_id=eq.${userId}&status=eq.active&select=title,priority,description,next_action,due_date&order=priority.desc&limit=10`).catch(() => []),
       sbFetch(`kiko_intents?user_id=eq.${userId}&status=in.(active,overdue)&select=title,description,priority,status,due_date,next_action&order=priority.desc&limit=10`).catch(() => []),
       sbFetch(`kiko_draft_actions?status=eq.pending&select=action_type,entity_name,summary,created_at&order=created_at.desc&limit=5`).catch(() => []),
-      // Knowledge Spine recall — Learning Loop Phase 1 (Session 70). Ranked OR-retrieval via RPC, user-ringfenced, fail-open.
+      // Knowledge Spine recall — HYBRID (keyword + semantic). Ranked, user-ringfenced, fail-open.
       (async () => {
         try {
           const msg = (message || '').slice(0, 500);
           if (!msg.trim()) return '';
+          // Generate query embedding for semantic match (fail-open: keyword still works if this errors).
+          let emb = null;
+          try { emb = await generateEmbedding(msg); } catch { emb = null; }
           const rows = await sbFetch('rpc/spine_recall', {
             method: 'POST',
-            body: JSON.stringify({ p_query: msg, p_user: userId, p_limit: 10 })
+            body: JSON.stringify({ p_query: msg, p_user: userId, p_limit: 10, p_embedding: emb ? JSON.stringify(emb) : null })
           }).catch(() => []);
           const seen = new Set(); let out = '';
-          const BUDGET = 9000;        // room for several full transcript chunks
+          const BUDGET = 9000;
           for (const r of (rows || [])) {
             const k = r.fact_type + '|' + (r.content || '').slice(0, 80);
             if (seen.has(k)) continue; seen.add(k);
             const remaining = BUDGET - out.length;
             if (remaining < 200) break;
-            // Keep chunks whole when they fit; for an over-long top chunk, include a generous head
-            // so embedded quotes/specifics survive rather than being cut before they appear.
             let body = r.content || '';
             if (body.length > remaining) body = body.slice(0, remaining - 20) + '…';
             out += `- [${r.fact_type}/${r.entity_key}] ${body}\n`;
