@@ -100,7 +100,7 @@ INSTRUCTIONS:
     await supabase.from('kiko_alerts').insert({
       type: 'morning_briefing',
       severity: 'medium',
-      title: `Morning Briefing — ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}`,
+      title: `Daily Intelligence Briefing — ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}`,
       detail: briefText,
       entity_type: 'briefing',
       entity_name: new Date().toISOString(),

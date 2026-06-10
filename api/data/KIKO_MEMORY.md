@@ -53,6 +53,7 @@ Ambient monitoring: detects messages + connection accepts, auto-drafts responses
 - LinkedIn lives in TWO fields: linkedinUrl AND linkedin — always check both.
 
 - 2026-06-10: Multiple facts here. The most significant strategic/decision fact:; ; Brain model decision: Staying on Opus 4.8 ($5/$25); Fable 5 ($10/$50) was evaluated and rejected.
+- 2026-06-10: cron-crm-enrich was not disabled on June 9; it kept running June 8-10 (3:00-3:49am), causing the June 10 credit outage and failed 6am briefing, and was only truly killed June 10.
 ## OPERATIONAL HEALTH
 - All systems online
 
@@ -120,3 +121,12 @@ All components verified working:
 - SECURITY: kiko_deploy_temp RLS enabled June 10. All 131 public tables now have RLS.
 - MODEL DECISION: brain stays Opus 4.8 ($5/$25). Fable 5 ($10/$50) evaluated and rejected — 2x cost, unnecessary for advisory workload. Hierarchy unchanged: Opus brain / Sonnet cognitive / Haiku utility.
 - KNOWN ISSUE FOUND: kiko-self-knowledge.js (87KB) is NOT read by the brain — only team-messages.js + health.js. Brain reads kiko-self-knowledge-lean.js + this memory file. Session state belongs HERE.
+
+## SESSION 70 PART 2 (June 10 2026) — Corrections + Brain Fixes
+- CORRECTION: cron-crm-enrich was NOT disabled on June 9 as previously recorded. The file was archived but the SCHEDULER ENTRY SURVIVED — it ran 3:00-3:49am on June 8, 9 AND 10, draining API credits (caused the June 10 credit outage + failed 6am briefing). Killed for real June 10: scheduler entry, server routes, and live files all removed. Verify claims like this with the scheduler job list, never the archive folder.
+- linkedin-enrich nightly sweep (4:45am, 5 Sonnet+websearch calls) UNSCHEDULED — violates on-demand doctrine. Route kept for manual use.
+- BRAIN CONTEXT OVERHAUL: eager bible/org/user/knowledge injection REMOVED from kiko.js (read_bible JIT is the only doctrine path). System prompt ~44K -> ~19.4K chars. TTL caches added (rules/prefs/patterns 5min, personal/voice 10min). read_bible output capped 20K.
+- TOOL LOOP BUGS FIXED: (a) message history now accumulates across rounds — previously every round DISCARDED prior rounds' tool results, forcing re-queries and wasting tokens; (b) graceful exit at the 5-round cap — one final tool_choice:none pass summarises findings instead of dying silently.
+- selfcheck daily_intelligence check fixed (cron name mismatch). Selfcheck 22/25; the 2 fails (no sends, 0 enrollments) are TRUE state pending Campaigns rebuild.
+- kiko_core_bible v3 written (correct Opus 4.8 hierarchy + JIT architecture). Briefing alert renamed Morning -> Daily Intelligence Briefing. THERE IS ONE BRIEFING PER DAY (6am, 1 Opus call) — morning-synthesis and its duplicates are dead.
+- API credits topped up June 10 ~10:00. June 10 briefing re-run manually at 08:45, delivered.

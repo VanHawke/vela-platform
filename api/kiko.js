@@ -470,11 +470,22 @@ ${att.data.slice(0, 80000)}
         }
       }
 
-      const nextMessages = [...messages, { role: 'assistant', content: response.content }, { role: 'user', content: toolResults }];
-      const nextParams = { model: MODEL, max_tokens: 16384, system: systemCached, messages: nextMessages, tools: toolsWithCache };
+      // S70 FIX: accumulate history — previously each round rebuilt from the ORIGINAL
+      // messages array, silently discarding all earlier rounds' tool evidence.
+      messages.push({ role: 'assistant', content: response.content }, { role: 'user', content: toolResults });
+      const nextParams = { model: MODEL, max_tokens: 16384, system: systemCached, messages, tools: toolsWithCache };
       // Ensure paragraph break between tool round output and next response
       write({ delta: '\n\n' });
       response = await streamAndCapture(nextParams);
+    }
+
+    // S70 FIX 5: graceful exit — if the round cap hit while the model still wanted
+    // tools, run ONE final tool-free pass so spent tokens become output, not silence.
+    if (response.stop_reason === 'tool_use') {
+      const capResults = response.content.filter(b => b.type === 'tool_use').map(b => ({ type: 'tool_result', tool_use_id: b.id, content: 'TOOL ROUND LIMIT REACHED. Do not request more tools. Summarise everything found so far, give your best answer now, and state explicitly what remains unverified.' }));
+      messages.push({ role: 'assistant', content: response.content }, { role: 'user', content: capResults });
+      write({ delta: '\n\n' });
+      response = await streamAndCapture({ model: MODEL, max_tokens: 16384, system: systemCached, messages, tools: toolsWithCache, tool_choice: { type: 'none' } });
     }
 
     const fullResponse = sseBuffer.filter(d => d.delta).map(d => d.delta).join('');
