@@ -24,7 +24,7 @@ router.post('/process', async (req, res) => {
     const allIdentities = cookieStore.list().filter(i => !i.stale).map(i => i.identity);
     if (!allIdentities.length) return res.json({ ok: true, sent: 0, message: 'No LinkedIn identities with cookies' });
 
-    const pending = await sbFetch("kiko_linkedin_queue?status=eq.pending&order=priority.desc,created_at.asc&limit=5&select=id,enrollment_id,contact_name,company,linkedin_url,message_type,message,context");
+    const pending = await sbFetch("kiko_linkedin_queue?status=eq.pending&order=priority.desc,created_at.asc&limit=8&select=id,enrollment_id,contact_name,company,linkedin_url,message_type,message,context");
     if (!pending?.length) return res.json({ ok: true, sent: 0, message: 'No pending LinkedIn actions' });
 
     let sent = 0, failed = 0;
@@ -82,3 +82,75 @@ router.post('/process', async (req, res) => {
 
 
 export default router;
+
+
+// Check for connection acceptances — runs 3x daily via cron
+router.post('/check-replies', async (req, res) => {
+  const startTime = Date.now();
+  try {
+    // Get all sent invites that haven't been checked recently
+    const sent = await sbFetch('kiko_linkedin_queue?status=eq.sent&message_type=in.(invite,connection)&order=actioned_at.asc&limit=20');
+    if (!sent?.length) return res.json({ ok: true, checked: 0, message: 'No pending invites to check' });
+
+    let accepted = 0, checked = 0;
+    
+    for (const row of sent) {
+      if (!row.linkedin_url) continue;
+      try {
+        const profile = await engine.getProfile('matt.smith', row.linkedin_url);
+        checked++;
+        
+        if (profile?.ok && profile?.connectionDegree === '1st') {
+          // They accepted! Update queue status
+          await sbFetch(`kiko_linkedin_queue?id=eq.${row.id}`, { 
+            method: 'PATCH', 
+            body: JSON.stringify({ status: 'accepted', result: 'accepted', actioned_at: new Date().toISOString() }) 
+          });
+          accepted++;
+          console.log(`[linkedin-replies] ✓ ${row.contact_name} ACCEPTED connection`);
+          
+          // Create alert
+          await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+            type: 'linkedin_acceptance', severity: 'high',
+            entity_name: row.company || row.contact_name,
+            title: `${row.contact_name} accepted LinkedIn connection`,
+            detail: `${row.contact_name} at ${row.company || 'N/A'} accepted Matt's connection request. Follow-up messages will now be queued.`,
+            dismissed: false,
+            expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+          }) }).catch(() => {});
+        }
+        
+        // Rate limit: 3-5 second delay between profile checks
+        if (checked < sent.length) await new Promise(r => setTimeout(r, 3000 + Math.random() * 2000));
+      } catch (err) {
+        console.error(`[linkedin-replies] Error checking ${row.contact_name}:`, err.message);
+      }
+    }
+
+    res.json({ ok: true, checked, accepted, duration_ms: Date.now() - startTime });
+  } catch (err) {
+    console.error('[linkedin-replies] Fatal:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Sync/rotate cookies after browser sessions
+router.post('/sync-cookies', async (req, res) => {
+  try {
+    // The keepalive cron already handles cookie refresh
+    // This route just confirms cookies are still valid
+    const identities = ['sunny', 'matt.smith'];
+    const results = [];
+    for (const id of identities) {
+      try {
+        const stored = (await import('../lib/cookieStore.js')).load(id);
+        results.push({ identity: id, cookies: stored?.cookies?.length || 0, stale: stored?.stale || false });
+      } catch (e) {
+        results.push({ identity: id, error: e.message });
+      }
+    }
+    res.json({ ok: true, results });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
