@@ -38,7 +38,17 @@ async function attemptAutoLogin(identity) {
     if (!creds?.email || !creds?.password) return { ok: false, error: 'no stored credentials and Supabase backup expired' };
 
     const { chromium } = await import('playwright');
-    const browser = await chromium.launch({ headless: true });
+    // Session 71 fix: credential login MUST go through the residential proxy like every other
+    // LinkedIn touch — a bare datacenter-IP login attempt gets challenged instantly.
+    const launchOptions = { headless: true };
+    if (process.env.PROXY_HOST && process.env.PROXY_PORT) {
+      launchOptions.proxy = {
+        server: `http://${process.env.PROXY_HOST}:${process.env.PROXY_PORT}`,
+        username: process.env.PROXY_USER || undefined,
+        password: process.env.PROXY_PASS || undefined,
+      };
+    }
+    const browser = await chromium.launch(launchOptions);
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page = await context.newPage();
 
@@ -56,8 +66,10 @@ async function attemptAutoLogin(identity) {
     }
     if (url.includes('/feed') || url.includes('/mynetwork')) {
       // Success — capture fresh cookies
+      // Session 71 fix: save() requires (identity, cookiesArray, meta) — passing an object threw,
+      // which made even SUCCESSFUL credential logins report as failures.
       const cookies = await context.cookies();
-      cookieStore.save(identity, { cookies, stale: false, refreshedAt: new Date().toISOString() });
+      cookieStore.save(identity, cookies, { source: 'credential_login', refreshedAt: new Date().toISOString() });
       await browser.close();
       return { ok: true, cookieCount: cookies.length };
     }
@@ -94,7 +106,8 @@ export default async function handler(req, res) {
       if (result.ok && result.authenticated) {
         if (wasStale) {
           // Recovered from stale! Unmark stale.
-          cookieStore.save(identity, { ...stored, stale: false, refreshedAt: new Date().toISOString() });
+          // Session 71 fix: save() requires (identity, cookiesArray, meta) — passing an object threw.
+          cookieStore.save(identity, stored.cookies, { ...(stored.meta || {}), source: 'stale_recovery', refreshedAt: new Date().toISOString() });
           console.log(`[keepalive] ✓ ${identity} RECOVERED from stale — session is alive again`);
         } else {
           console.log(`[keepalive] ✓ ${identity} session is alive`);
@@ -114,15 +127,22 @@ export default async function handler(req, res) {
           cookieStore.markStale(identity);
           results.push({ identity, status: 'expired', error: loginResult.error });
 
-          // Alert the user
+          // Alert the user — Session 71: dedupe. Only ONE pending alert per identity at a time.
+          // If a pending alert exists, do nothing. If all were dismissed but the failure persists,
+          // re-raise so a dismissal without a fix cannot silence a critical outage (June 5-11 lesson).
           try {
-            await supabase.from('kiko_alerts').insert({
-              type: 'linkedin_session_expired',
-              severity: 'critical',
-              title: `LinkedIn session expired: ${identity}`,
-              detail: `${identity}'s LinkedIn cookies have expired and auto-login failed: ${loginResult.error}. Manual re-login required on the Hetzner server.`,
-              entity_type: 'system', entity_name: identity, dismissed: false,
-            });
+            const { data: pending } = await supabase.from('kiko_alerts').select('id')
+              .eq('type', 'linkedin_session_expired').eq('entity_name', identity)
+              .eq('dismissed', false).limit(1);
+            if (!pending?.length) {
+              await supabase.from('kiko_alerts').insert({
+                type: 'linkedin_session_expired',
+                severity: 'critical',
+                title: `LinkedIn session expired: ${identity}`,
+                detail: `${identity}'s LinkedIn cookies have expired and auto-login failed: ${loginResult.error}. Re-import cookies via the Kiko extension, or store credentials in kiko_linkedin_credentials for hands-free recovery.`,
+                entity_type: 'system', entity_name: identity, dismissed: false,
+              });
+            }
           } catch (alertErr) { console.error('[keepalive] Alert insert error:', alertErr.message); }
         }
       }

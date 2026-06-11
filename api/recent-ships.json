@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-06-10T18:42:11.062Z",
+  "generated_at": "2026-06-11T07:41:45.839Z",
   "commits": [
+    {
+      "hash": "f29394a",
+      "subject": "AUDIT fix: realtime channel flapping (CHANNEL_ERROR<->SUBSCRIBED loop). Manual setInterval re-subscribe was colliding with supabase-js built-in auto-reconnect. Now observe-only, intervenes only after ",
+      "when": "4 hours ago"
+    },
+    {
+      "hash": "7b4b9de",
+      "subject": "AUDIT fix: repair 3 model-call sites corrupted by a model-migration find-replace that swallowed max_tokens into the model-line comment (ingest-knowledge x2, outreach x2 broke syntax; memory-engine rev",
+      "when": "4 hours ago"
+    },
+    {
+      "hash": "7fccaed",
+      "subject": "Hybrid semantic recall: embed spine (1536-dim text-embedding-3-small), HNSW index, spine_recall blends keyword+semantic+term-boost; kiko.js generates query embedding (fail-open). Backfill script resum",
+      "when": "11 hours ago"
+    },
+    {
+      "hash": "0e76f1a",
+      "subject": "Recall assembly: raise budget to 9000, stop mid-chunk truncation that cut embedded quotes before they appeared (DECO line fix)",
+      "when": "11 hours ago"
+    },
+    {
+      "hash": "625da78",
+      "subject": "Deploy rewired spine recall: ranked OR-retrieval via rpc/spine_recall (relevance-first, user-ringfenced, fail-open) — replaces strict AND-query that missed long natural questions",
+      "when": "12 hours ago"
+    },
+    {
+      "hash": "8629e37",
+      "subject": "Harden import redaction: catch partial JWTs and sk-ant placeholders (audit fix). Scrubbed 9 residual leaks in already-imported transcripts via SQL",
+      "when": "12 hours ago"
+    },
+    {
+      "hash": "58b6d30",
+      "subject": "claude_export: batched upserts for large-history import",
+      "when": "12 hours ago"
+    },
+    {
+      "hash": "e06058d",
+      "subject": "Ringfenced private memory: spine user_id column + user-scoped recall; claude_export import requires user_id (anti-leak); self-knowledge security+private-memory section; auth verified live",
+      "when": "12 hours ago"
+    },
+    {
+      "hash": "ad6c7a1",
+      "subject": "Auth hardening (monitor mode): requireAuth middleware (public/internal-loopback/JWT trust classes, anti-spoof identity-from-token, break-glass enforce flag) + frontend token interceptor. Verified serv",
+      "when": "13 hours ago"
+    },
     {
       "hash": "d5fda8f",
       "subject": "Consolidator: claude_export mode — full Claude conversation history ingestion (chunked, secret-redacted, idempotent) pending Sunny data export",
-      "when": "24 minutes ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "25f2015",
       "subject": "Self-knowledge: Learning Loop organs, spine, dossiers, proposition shelf, pipeline reset, certified-clean CRM. Stale deal counts purged. Rule added: recall live numbers, never cached",
-      "when": "35 minutes ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "3ec937a",
       "subject": "LEARNING LOOP LIVE: all 3 phases shipped+verified. Kiko-native, zero Fable dependency, citation-audited synthesis. Live test passed: autonomous Torq recall+advice",
-      "when": "42 minutes ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "1dd7412",
       "subject": "Learning Loop: spine recall wired into brain (deterministic FTS, fail-open) + Kiko-native consolidator (own Opus brain, deterministic citation auditor, hard caps) + memory-file ingestion",
-      "when": "44 minutes ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "71a6474",
       "subject": "Build order locked: Learning Loop first (recall/consolidation/ingestion), Campaigns second with Kiko as domain advisor in design. Torq+ClearStreet manual re-entry this week",
-      "when": "56 minutes ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "50b8fef",
       "subject": "Pipeline reset to clean slate (303 refs preserved, intel captured: Rio Tinto/Alfonso, NanoXplore budget-flinch). Dossier pilot live: Torq REVIVE (dropped CMO+VP replies Nov25), Clear Street REVIVE URG",
-      "when": "2 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "62554fa",
       "subject": "Company refresh pipeline self-draining: deterministic writer + 5-min watcher, live data lands continuously tonight. Abnormal rebrand dup merged. Zero AI/credits",
-      "when": "2 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "ae3a729",
       "subject": "Company market-data refresh launched (zero-credit): key_personnel mirrored to 1604 cos from verified contacts, all 2169 flagged needs_market_refresh, LinkedIn company-page runner live on 645 T1 cos ov",
-      "when": "2 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "a96bebb",
       "subject": "Organizations table cleaned: 2265→2169, industry→sector migration (2249→1 missing), 93 dup groups merged w/ full FK repointing, test records purged, websites 421→341. CRM clean across both entity type",
-      "when": "3 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "4885a4f",
       "subject": "T2 LinkedIn complete: 1792/1810 (99.0%). Campaign CLOSED: 19 C-suite discoveries promoted T1 (NAVI/paiN CEOs, Coupa/Pindrop/Cerebras/Wrike CMOs, Tilray CGO), 19 movers re-homed, 16 company records, ~2",
-      "when": "3 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "9585793",
       "subject": "T1 LinkedIn complete: 817/820 (99.6%) via LinkedIn people-search Playwright run. ~40 title corrections, 3 movers re-homed, 5 leavers flagged, 2 retirees archived. T1 final: email 99.6%, LinkedIn 99.6%",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "cb56cc8",
-      "subject": "Email integrity deep scan: credential-as-email garbage purged (cfmp@/ms@), test record removed from T2, companyDomain shortener junk fixed, 63 legit patterns whitelisted, 2 T1 emails recovered via Hun",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "68d5c67",
-      "subject": "Full-DB sweep complete (all 4,233): name/email/title hygiene to zero defects, MX validation of all 1,911 domains; T1 LinkedIn pass 1 (7 URLs, 1 mover, 2 title fixes)",
-      "when": "9 hours ago"
-    },
-    {
-      "hash": "682ab9d",
-      "subject": "CRM mover resolution: all 16 mismatches individually web-verified and fixed",
-      "when": "9 hours ago"
-    },
-    {
-      "hash": "88ddb91",
-      "subject": "S70 part 2: credit-drain root cause found and killed for real + tool-loop fixes",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "b6ce03c",
-      "subject": "Fix selfcheck false alarm: daily-intelligence heartbeat name mismatch",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "267a5bc",
-      "subject": "Session 70: Brain context overhaul — Bible JIT complete, split-brain fixed, caching added",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "23b1745",
-      "subject": "FINAL: CRM deep audit complete. 769/840 Tier 1 fully campaign-ready (91.5%)",
-      "when": "11 hours ago"
-    },
-    {
-      "hash": "6a512a3",
-      "subject": "Email verification COMPLETE: all Tier 1 emails Hunter-verified",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "fce10a4",
-      "subject": "Email verification complete: 27 verified via Hunter, 11 corrected, 1 undiscoverable",
-      "when": "12 hours ago"
+      "when": "18 hours ago"
     }
   ]
 }
