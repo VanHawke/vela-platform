@@ -130,11 +130,22 @@ export async function startRealtimeListener() {
       console.log(`[realtime] Consolidated channel: ${status}`);
     });
 
-  // Reconnection monitoring — check every 60s
+  // Reconnection monitoring — observe only. supabase-js (2.104) has built-in
+  // auto-reconnect with backoff; calling channel.subscribe() manually here collides
+  // with the built-in retry and causes CHANNEL_ERROR<->SUBSCRIBED flapping. We let the
+  // client handle reconnects and only force a fresh channel if it stays down a long time.
+  let downSince = null;
   setInterval(() => {
-    if (channel.state !== 'joined') {
-      console.warn(`[realtime] Channel state: ${channel.state} — attempting reconnect`);
-      if (channel.state === 'errored' || channel.state === 'closed') channel.subscribe();
+    if (channel.state === 'joined') { downSince = null; return; }
+    if (!downSince) downSince = Date.now();
+    const downMs = Date.now() - downSince;
+    // Only intervene if the built-in reconnect has failed to recover for >5 minutes.
+    if (downMs > 5 * 60000) {
+      console.warn(`[realtime] Channel down ${Math.round(downMs/1000)}s (state=${channel.state}) — forcing fresh channel`);
+      try { supabase.removeChannel(channel); } catch {}
+      downSince = null;
+      // Re-establish by restarting the listener subscription on a new channel.
+      channel.subscribe();
     }
   }, 60000);
 
