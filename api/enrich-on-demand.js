@@ -56,7 +56,7 @@ async function tier2_hunter_domain(domain) {
     const data = await res.json();
     return {
       pattern: data.data?.pattern,
-      emails: (data.data?.emails || []).map(e => ({ email: e.value, name: , title: e.position, confidence: e.confidence })),
+      emails: (data.data?.emails || []).map(e => ({ email: e.value, name: [e.first_name, e.last_name].filter(Boolean).join(' ') || null, title: e.position, confidence: e.confidence })),
     };
   } catch { return null; }
 }
@@ -118,12 +118,12 @@ export default async function handler(req, res) {
   const results = [];
 
   for (const id of contact_ids) {
-    const contacts = await sbFetch(\`contacts?id=eq.\${id}&select=id,data&limit=1\`);
+    const contacts = await sbFetch(`contacts?id=eq.${id}&select=id,data&limit=1`);
     const contact = contacts?.[0];
     if (!contact) { results.push({ id, status: 'not_found' }); continue; }
 
     const d = contact.data || {};
-    const name = \`\${d.firstName || ""} \${d.lastName || ""}\`.trim();
+    const name = `${d.firstName || ""} ${d.lastName || ""}`.trim();
     const email = d.email;
     const domain = email ? email.split('@')[1] : (d.company || '').toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
     const enriched = { ...d };
@@ -184,7 +184,7 @@ export default async function handler(req, res) {
     // Save enriched data
     enriched.enriched_at = new Date().toISOString();
     enriched.enrich_source = enrichSource;
-    await sbFetch(\`contacts?id=eq.\${id}\`, {
+    await sbFetch(`contacts?id=eq.${id}`, {
       method: 'PATCH',
       body: JSON.stringify({ data: enriched, updated_at: new Date().toISOString() }),
     });
