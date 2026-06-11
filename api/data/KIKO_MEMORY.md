@@ -148,3 +148,17 @@ All components verified working:
 - NEWS-AGENT: retired BY DESIGN (scheduler comment: "Opus 4.8 handles on demand"). File archived to match. Do NOT flag as dormant/broken — partnership/news intelligence = on-demand web search + signals layer.
 - QUEUED SECURITY FIX: KIKO_WORKER_COOKIE_KEY not set — cookie store runs on insecure dev key. Needs careful migration (decrypt with dev key, re-encrypt with real key) — do NOT rush; matt's live cookies depend on it.
 - DOUBLE-FIRE TRACE OPEN: keepalive alerts historically inserted in pairs ~300ms apart despite single scheduler entry — trace trigger duplication next session.
+
+## SESSION 71 PART 3 (June 11 2026) — CRM Reconciliation COMPLETE + LinkedIn Architecture
+CRM FINAL STATE (verified live, post-enrichment):
+- Contacts 4,233 total. Tiers 1-3 (3,768 actionable): LinkedIn 99.7%, title 100%, sector 100%, company 100%, email 98%+. Tier 4 (465, low-priority): LinkedIn 99%, title/sector complete, email sparse by design.
+- 72-contact backlog (LinkedIn+email gaps) run through enrich-on-demand cascade — LinkedIn URLs filled. 50 T1-T3 contacts have NO discoverable public email (cascade ran DNS+Hunter+Apollo+Sonnet, found none) — tagged email_searched_exhausted=true so they reconcile as verified-none-exists, NOT false gaps. This is a data-reality ceiling, not a system fault. Do NOT re-flag them.
+- Companies 2,168: industry 99%, website/domain 87% (285 missing site — many are individuals/small entities with no web presence).
+- enrich-on-demand.js WAS BROKEN on server since ~Jun 10 (literal "name: ," syntax error + escaped-backtick corruption from a bash-heredoc edit). FIXED + syntax-checked both ends. Lesson: NEVER write JS to server via unquoted heredoc; always scp from Mac after node --check.
+- RECONCILIATION DOCTRINE: a field is "complete" when populated OR verified-cannot-exist (email_searched_exhausted, email_domain_dead, linkedin_not_found). Audits must count the latter as DONE.
+
+LINKEDIN ARCHITECTURE (full truth for registry):
+- 3 recovery layers, all now functional: L1 encrypted server cookie store (lib/cookieStore.js), L2 Supabase user_tokens backup, L3 kiko_linkedin_credentials auto-login (proxied, save()-fixed S71).
+- PROVEN WORKING: matt.smith goes alive->verified-through-proxy->auto-rotates with zero human action every 6h. This proves the whole pipeline.
+- sunny: remotely killed Jun 5, no credential row -> cannot auto-recover until creds stored OR fresh cookie imported. Cookie-import endpoint hardened S71 (now writes encrypted store + identity map, not just user_tokens).
+- HARD LIMIT (state plainly, never pretend otherwise): if an account has 2FA, automated credential login stops at LinkedIn's checkpoint — NO automated path passes 2FA, by LinkedIn design. For 2FA accounts the durable path is cookie import (li_at from browser) which the keepalive then auto-rotates indefinitely. One manual import = months of hands-free operation.
