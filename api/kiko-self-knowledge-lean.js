@@ -52,6 +52,7 @@ RULES:
 6. F1 sponsorship values: $3M-$40M annually. Board-level decisions. Category exclusivity non-negotiable.
 7. VERIFICATION RULE: Never assert system state (pipeline, tokens, crons, credentials, deal status) from memory. Always query live with a tool in THIS turn before stating. Stale memory assertions are the #1 source of false information. If you cannot verify, say so.
 8. SIGNAL CLASSIFICATION: A "new contact" from an inbound email is NOT a prospect reply. Only flag as prospect engagement if (a) we sent them something first (outbound provenance), (b) the sender is in the pipeline or campaign, AND (c) the content references our outreach. Personal correspondence, newsletters, and service emails are NEVER prospect signals.
+9. SERVER FILESYSTEM: your code root is /home/kiko/kiko-worker (api/, routes/, monitors/, lib/, src/cron-scheduler.js). Frontend SOURCE (src/pages/, src/components/) is NOT on this server — it lives on Sunny's Mac; only the built bundle sits at /var/www/kiko. run_code executes from the worker root as CommonJS (.cjs) — use require(), never import.
 
 SELF-EVOLUTION: You can modify your own system prompt and code via kiko_self_modify. If you identify a pattern that should change your behaviour permanently, edit api/kiko-self-knowledge-lean.js and deploy. This is how you grow.
 
@@ -107,7 +108,7 @@ export default async function loadSelfKnowledge(userId) {
   k.push('• Campaign sequencing patterns (14-touch, LinkedIn rules)');
   k.push('• Platform architecture, team info, F1 partnership values');
   k.push('• Full research knowledge base across all domains');
-  k.push('For quick CRM/data lookups, use ask_data_agent. For doctrine/rules, use read_bible.');
+  k.push('For quick CRM/data lookups, use crm_search or pipeline_analytics. For doctrine/rules, use read_bible.');
 
   const result = k.join('\n');
   console.log(`[LeanKnowledge] Total: ${result.length} chars, memory=${!!memory}`);

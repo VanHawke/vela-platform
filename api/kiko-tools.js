@@ -474,7 +474,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'run_code',
-    description: 'Execute Python or JavaScript code and return the output. Use for calculations, data processing, analysis, generating HTML charts/dashboards, or any computational task. When creating visuals, generate data then output HTML in a html code block so it renders as an interactive artifact.',
+    description: 'Execute Python or JavaScript code and return the output. Use for calculations, data processing, analysis, generating HTML charts/dashboards, or any computational task. EXECUTION ENVIRONMENT: code runs from /home/kiko/kiko-worker with the full node_modules available. JavaScript executes as CommonJS (.cjs) — use require(), NOT import. Relative paths resolve from the worker root. When creating visuals, generate data then output HTML in a html code block so it renders as an interactive artifact.',
     input_schema: { type: 'object', properties: {
       language: { type: 'string', enum: ['python', 'javascript'], description: 'Language to execute' },
       code: { type: 'string', description: 'Code to execute. Full script. stdout is returned.' },
@@ -482,10 +482,10 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'kiko_self_modify',
-    description: 'Read, edit, and deploy your own source code. Use when you detect a problem via selfcheck or conversation and can fix it. Operations: read_file (view source), edit_file (surgical find/replace), list_files (browse codebase), run_command (build, test, git), deploy (API: pm2 restart), full_deploy (frontend: npm run build + copy to /var/www/kiko/ + pm2 restart). ALWAYS: 1) read the file first, 2) make surgical edits, 3) build to verify, 4) deploy, 5) run selfcheck after. NEVER edit blindly.',
+    description: 'Read, edit, and deploy your own source code. Use when you detect a problem via selfcheck or conversation and can fix it. Operations: read_file (view source), edit_file (surgical find/replace), list_files (browse codebase), run_command (build, test, git), deploy (API: pm2 restart), full_deploy (frontend: npm run build + copy to /var/www/kiko/ + pm2 restart). SERVER FILESYSTEM TRUTH: your code root is /home/kiko/kiko-worker containing api/, routes/, monitors/, lib/, src/cron-scheduler.js. The frontend SOURCE (src/pages/, src/components/) is NOT on this server — it lives only on Sunny\'s Mac; the built bundle sits at /var/www/kiko. Never ls, read, or edit frontend source paths here — they do not exist. ALWAYS: 1) read the file first, 2) make surgical edits, 3) build to verify, 4) deploy, 5) run selfcheck after. NEVER edit blindly.',
     input_schema: { type: 'object', properties: {
       operation: { type: 'string', enum: ['read_file', 'edit_file', 'list_files', 'run_command', 'deploy', 'full_deploy'], description: 'read_file: view source. edit_file: find/replace. list_files: browse. run_command: shell command. deploy: full build+deploy+restart cycle.' },
-      file_path: { type: 'string', description: 'Relative path from project root, e.g. "api/kiko.js" or "src/pages/Pipeline.jsx"' },
+      file_path: { type: 'string', description: 'Relative path from /home/kiko/kiko-worker, e.g. "api/kiko.js" or "routes/kiko-chat.js". Frontend source paths (src/pages/, src/components/) do NOT exist on this server.' },
       old_text: { type: 'string', description: 'For edit_file: exact text to find (must be unique in file)' },
       new_text: { type: 'string', description: 'For edit_file: replacement text' },
       command: { type: 'string', description: 'For run_command: shell command to execute. Allowed: git status, git diff, git log, npm run build, pm2 logs, cat, grep, ls, wc, head, tail' },
@@ -569,12 +569,20 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
     const { language, code } = input;
     const { execSync } = await import('child_process');
     const fs = await import('fs');
-    const ext = language === 'python' ? 'py' : 'js';
-    const tmpFile = '/tmp/kiko_code_' + Date.now() + '.' + ext;
+    const path = await import('path');
+    // Session 71 fix: scripts MUST live inside the worker root with cwd anchored there.
+    // /tmp scripts cannot resolve node_modules (Node resolves from the script's location,
+    // not cwd) — this caused every run_code module-not-found failure in kiko_error_log.
+    const WORKER_ROOT = '/home/kiko/kiko-worker';
+    const tmpDir = path.join(WORKER_ROOT, '.tmp');
+    try { fs.mkdirSync(tmpDir, { recursive: true }); } catch {}
+    // .cjs so generated JS can use require() despite the package being ESM
+    const ext = language === 'python' ? 'py' : 'cjs';
+    const tmpFile = path.join(tmpDir, 'kiko_code_' + Date.now() + '.' + ext);
     try {
       fs.writeFileSync(tmpFile, code);
       const cmd = language === 'python' ? 'python3 ' + tmpFile : 'node ' + tmpFile;
-      const output = execSync(cmd, { timeout: 30000, encoding: 'utf8', maxBuffer: 512 * 1024 });
+      const output = execSync(cmd, { cwd: WORKER_ROOT, timeout: 30000, encoding: 'utf8', maxBuffer: 512 * 1024 });
       try { fs.unlinkSync(tmpFile); } catch {}
       return output.slice(0, 5000) || '(no output)';
     } catch (e) {
