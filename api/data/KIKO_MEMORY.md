@@ -130,3 +130,13 @@ All components verified working:
 - selfcheck daily_intelligence check fixed (cron name mismatch). Selfcheck 22/25; the 2 fails (no sends, 0 enrollments) are TRUE state pending Campaigns rebuild.
 - kiko_core_bible v3 written (correct Opus 4.8 hierarchy + JIT architecture). Briefing alert renamed Morning -> Daily Intelligence Briefing. THERE IS ONE BRIEFING PER DAY (6am, 1 Opus call) — morning-synthesis and its duplicates are dead.
 - API credits topped up June 10 ~10:00. June 10 briefing re-run manually at 08:45, delivered.
+
+
+## SESSION 71 (June 11 2026) — Full Audit + Self-Repair Restored (Claude + Kiko collaborative)
+- RUN_CODE FIXED: scripts now write to /home/kiko/kiko-worker/.tmp as .cjs with cwd anchored to worker root. Root cause of ALL run_code module-not-found errors: /tmp scripts cannot resolve node_modules (Node resolves from script location, not cwd). Generated JS must use require(), never import. VERIFIED live by Kiko: 3/3 PASS.
+- SERVER FILESYSTEM TRUTH (Rule 9 in lean prompt + tool schemas): code root is /home/kiko/kiko-worker (api/, routes/, monitors/, lib/, src/cron-scheduler.js). Frontend SOURCE does NOT exist on the server — only on Sunny's Mac; built bundle at /var/www/kiko. The 22 kiko_self_modify errors were Kiko ls-ing src/pages/ which was never there.
+- ask_data_agent DEPRECATED everywhere: lean prompt + detail file now route to crm_search / campaign_engine / pipeline_analytics / knowledge_ops / goals_intents. Compat shim retained in kiko-tools.js so stray calls still resolve.
+- GIT RECOVERY: routes/ (5 files), lib/ (4 files), api/agents/research.js, api/enrich-on-demand.js, live linkedin-queue.js were server-only — never committed. All pulled into git (commit bd092da). Single point of failure eliminated.
+- SERVER DEDUP: stale Jun 6 flat copies (api/data.js, models.js, intent-classifier.js, memory-engine.js, email-format.js) moved to .archive-flat-jun11/ — zero importers, canonical versions live in api/agents/ + api/lib/. Worker healthy after restart.
+- CLOSED FROM PRIOR AUDITS: selfcheck route registered (no more 404), bible §1 model claim fixed Jun 10, thinking.type=enabled error dead since Jun 6 rebuild, 557 pm2 restarts = cumulative deploy counter (0 unstable, not a crash loop).
+- STILL OPEN (Sunny decisions/actions): (1) LinkedIn keepalive DOWN for sunny identity — no stored credentials, Supabase cookie backup expired; needs fresh cookie import via extension. (2) news-agent.js dormant since Apr 16 — wire to schedule or archive. (3) COMMAND_CENTRE_BUILD_BRIEF.md is missing from disk — field mappings must be re-documented before that rebuild. (4) Campaigns rebuild per CAMPAIGNS_BUILD_BRIEF.md. (5) Voice untested. (6) Alias-aware frontend dead-code scan pending.
