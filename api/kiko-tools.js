@@ -560,7 +560,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
       }
 
       const out = parts.join('\n\n') || 'No bible content found.';
-      return out.length > 20000 ? out.slice(0, 20000) + '\n\n[TRUNCATED — request a specific section for more]' : out;
+      return out.length > 60000 ? out.slice(0, 60000) + '\n\n[TRUNCATED — request a specific section for more]' : out;
     } catch (e) { return agentError('read_bible', e); }
   }
 
