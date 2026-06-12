@@ -25,11 +25,11 @@ async function getWatermark() {
 async function pullAll() {
   const wm = await getWatermark();
   const rows = [];
-  const grab = async (tbl, sel, tag) => {
+  const grab = async (tbl, sel, tag, timeCol = 'created_at') => {
     let from = 0;
     while (true) {
-      let q = sb.from(tbl).select(sel).order('created_at', { ascending: true }).range(from, from + 499);
-      if (wm) q = q.gt('created_at', wm);
+      let q = sb.from(tbl).select(sel).order(timeCol, { ascending: true }).range(from, from + 499);
+      if (wm) q = q.gt(timeCol, wm);
       const { data, error } = await q;
       if (error) { log(tbl + ' ERR ' + error.message); return; }
       if (!data || !data.length) return;
@@ -42,6 +42,7 @@ async function pullAll() {
   await grab('kiko_learning_log', 'category,entity_name,content,created_at', 'LEARNED');
   await grab('kiko_thought_journal', '*', 'THOUGHT');
   await grab('kiko_knowledge', 'domain,content', 'KNOWLEDGE');
+  await grab('kiko_imported_conversations', 'source,title,messages,original_date', 'IMPORTED_CONV', 'imported_at');
   return rows;
 }
 
