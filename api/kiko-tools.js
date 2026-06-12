@@ -1311,20 +1311,30 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
 
       if (operation === 'search_knowledge') {
         const query = (params.query || '').toLowerCase();
+        // Session 71 fix: term-based AND matching. The old contiguous-substring match
+        // silently failed on any multi-word query ("qatar registration" never matches
+        // "QATAR ENTRY ... REGISTRATION ROUTE"). Split into terms; ALL must appear.
+        const terms = query.split(/\s+/).filter(Boolean).slice(0, 5);
         const sources = await sbFetch('kiko_knowledge_sources?active=eq.true&select=name,category,summary,key_facts&order=relevance_score.desc&limit=30');
         const learning = await sbFetch(`kiko_learning_log?category=in.(curriculum,knowledge_source,imported_knowledge)&order=created_at.desc&limit=50&select=content,entity_name,category`);
-        // Also search kiko_knowledge (competitive intel, proactive intel, discovery findings)
-        const research = await sbFetch(`kiko_knowledge?content=ilike.*${encodeURIComponent(query)}*&select=domain,content,researched_at&order=researched_at.desc&limit=10`).catch(() => []);
+        // Also search kiko_knowledge (competitive intel, imported sessions, discovery findings)
+        // — match each term against content OR domain (imported docs carry key terms in domain)
+        const andGroup = terms.map(t => `or(content.ilike.*${encodeURIComponent(t)}*,domain.ilike.*${encodeURIComponent(t)}*)`).join(',');
+        const research = terms.length
+          ? await sbFetch(`kiko_knowledge?and=(${andGroup})&select=domain,content,researched_at&order=researched_at.desc&limit=10`)
+              .catch(e => { console.error('[search_knowledge] kiko_knowledge query failed:', e.message); return []; })
+          : [];
         let matches = [];
         for (const s of (sources || [])) {
           const text = `${s.name} ${s.summary || ''} ${JSON.stringify(s.key_facts || [])}`.toLowerCase();
-          if (text.includes(query)) matches.push({ type: 'source', name: s.name, category: s.category, summary: (s.summary || '').slice(0, 150) });
+          if (terms.length && terms.every(t => text.includes(t))) matches.push({ type: 'source', name: s.name, category: s.category, summary: (s.summary || '').slice(0, 150) });
         }
         for (const r of (research || [])) {
-          matches.push({ type: 'research', domain: r.domain, content: (r.content || '').slice(0, 300), date: r.researched_at });
+          matches.push({ type: 'research', domain: r.domain, content: (r.content || '').slice(0, 1500), date: r.researched_at });
         }
         for (const l of (learning || [])) {
-          if ((l.content || '').toLowerCase().includes(query) || (l.entity_name || '').toLowerCase().includes(query)) {
+          const ltext = `${l.content || ''} ${l.entity_name || ''}`.toLowerCase();
+          if (terms.length && terms.every(t => ltext.includes(t))) {
             matches.push({ type: 'learned', category: l.category, content: l.content.slice(0, 200), entity: l.entity_name });
           }
         }

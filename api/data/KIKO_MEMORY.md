@@ -165,3 +165,7 @@ LINKEDIN ARCHITECTURE (full truth for registry):
 
 ## SESSION 71 CLOSE (June 12 2026) — LinkedIn FULLY RESTORED
 - sunny cookie import completed by Sunny, verified live through proxy (9.4s check, authenticated=true). Keepalive confirms BOTH identities alive: sunny + matt.smith. Auto-rotation owns both sessions. 5 pending critical alerts dismissed (failure resolved — re-raise logic guards against silent recurrence). LinkedIn outbound fully operational for both users.
+
+## SESSION 71 KNOWLEDGE IMPORTS (June 12 2026)
+- Three documents imported into kiko_knowledge and retrieval-verified: imported-claude-session71-platform-audit-complete, imported-claude-qatar-registration-strategy, imported-claude-jessamy-road-tenancy. Retrieve via manage_knowledge -> search_knowledge.
+- search_knowledge FIXED: was contiguous-substring matching (any multi-word query silently failed). Now term-based AND matching across content+domain, 1500-char previews, errors logged not swallowed. Command Centre build brief also survives in kiko_knowledge (domain: command-centre-build-brief).
