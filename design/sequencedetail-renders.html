@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SequenceDetail — Rebuild Renders · Session 72</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@300;400;500&family=Inter:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #F4F3EF; font-family: 'Inter', sans-serif; color: #0A0A0A; padding: 40px 24px 80px; }
+  .doc { max-width: 1180px; margin: 0 auto; }
+  .doc-head { margin-bottom: 36px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; font-weight: 500; color: #A0A0A0; margin-bottom: 4px; }
+  .doc-title { font-family: 'Source Serif 4', serif; font-weight: 300; font-size: 30px; letter-spacing: -0.015em; }
+  .doc-sub { font-size: 13px; color: #6B6B6B; margin-top: 6px; font-weight: 450; max-width: 720px; line-height: 1.6; }
+  .render { margin-bottom: 56px; }
+  .render-label { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  .render-num { font-family: 'Source Serif 4', serif; font-size: 22px; font-weight: 300; color: #A0A0A0; }
+  .render-name { font-size: 14px; font-weight: 600; }
+  .render-note { font-size: 12px; color: #6B6B6B; font-weight: 450; }
+  .frame { background: #FEFEFC; border: 1px solid rgba(0,0,0,0.10); border-radius: 16px; overflow: hidden; }
+  .topbar { padding: 16px 32px; border-bottom: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; gap: 14px; background: #fff; }
+  .back { color: #6B6B6B; font-size: 17px; }
+  h1.camp { font-family: 'Source Serif 4', serif; font-weight: 300; font-size: 22px; letter-spacing: -0.015em; flex: 1; }
+  .pill { padding: 4px 12px; border-radius: 24px; font-size: 11px; font-weight: 500; }
+  .pill-active { background: #EFF3E6; color: #5a6a42; }
+  .pill-paused { background: #F7EFDC; color: #8a713a; }
+  .btn { padding: 7px 14px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.08); background: #fff; font-size: 12px; font-weight: 500; color: #0A0A0A; font-family: 'Inter', sans-serif; }
+  .btn-black { background: #0A0A0A; color: #FEFEFC; border: none; padding: 8px 18px; border-radius: 24px; font-size: 13px; }
+  .body-pad { padding: 24px 32px 32px; }
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+  .tile { background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 14px 16px; }
+  .tile .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #A0A0A0; font-weight: 500; margin-bottom: 4px; }
+  .tile .v { font-family: 'Source Serif 4', serif; font-size: 26px; font-weight: 400; }
+  .tile .d { font-size: 11px; color: #A0A0A0; margin-top: 2px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 18px; }
+  .tab { padding: 6px 14px; border-radius: 24px; font-size: 12px; color: #6B6B6B; font-weight: 400; }
+  .tab.on { background: rgba(0,0,0,0.06); color: #0A0A0A; font-weight: 500; }
+  .tab .ct { font-size: 10px; padding: 1px 6px; border-radius: 10px; background: rgba(0,0,0,0.05); margin-left: 5px; color: #6B6B6B; }
+  .triage { background: #F7EFDC; border-radius: 10px; padding: 11px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .triage .t { font-size: 12px; color: #6d5a2e; font-weight: 500; flex: 1; }
+  .triage .b { font-size: 11px; font-weight: 600; color: #8a713a; }
+  .twopane { display: grid; grid-template-columns: 1fr 1.15fr; gap: 20px; align-items: start; }
+  .flow-card { background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 14px; padding: 13px 16px; display: flex; gap: 12px; align-items: flex-start; }
+  .flow-card.sel { border: 1.5px solid #0A0A0A; }
+  .day { background: rgba(0,0,0,0.05); border-radius: 24px; font-size: 11px; padding: 3px 9px; color: #6B6B6B; white-space: nowrap; font-weight: 500; }
+  .ch { font-size: 11px; font-weight: 600; }
+  .ch.em { color: #5A6470; } .ch.li { color: #0077B5; }
+  .fc-t { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .fc-s { font-size: 12px; color: #6B6B6B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wait { display: flex; align-items: center; gap: 8px; padding: 5px 0 5px 20px; }
+  .wait .ln { width: 1px; height: 14px; background: rgba(0,0,0,0.15); }
+  .wait .tx { font-size: 11px; color: #A0A0A0; }
+  .branch { border: 1px dashed rgba(0,0,0,0.18); border-radius: 12px; padding: 10px 14px; margin: 4px 0 4px 20px; }
+  .branch .q { font-size: 12px; font-weight: 500; margin-bottom: 6px; }
+  .branch .rt { display: flex; gap: 16px; font-size: 11px; }
+  .branch .yes { color: #5a6a42; font-weight: 500; } .branch .no { color: #8a713a; font-weight: 500; }
+  .addrow { border: 1px dashed rgba(0,0,0,0.12); border-radius: 14px; padding: 10px; display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 8px; }
+  .addrow span { font-size: 12px; color: #6B6B6B; }
+  .panel { background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 14px; padding: 20px 22px; }
+  .panel .ph { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .panel .ph .t { font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 400; flex: 1; }
+  label.l { font-size: 11px; font-weight: 500; color: #6B6B6B; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 6px; }
+  .inp { width: 100%; padding: 10px 13px; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; font-weight: 450; background: #fff; margin-bottom: 14px; }
+  .inp.ta { min-height: 92px; line-height: 1.6; font-size: 12px; color: #3a3a3a; }
+  .row2 { display: flex; gap: 10px; }
+  .panel-actions { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+  table.tb { width: 100%; border-collapse: collapse; background: #fff; }
+  .tbwrap { border: 1px solid rgba(0,0,0,0.08); border-radius: 14px; overflow: hidden; }
+  .tb th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; color: #A0A0A0; padding: 11px 14px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .tb td { padding: 12px 14px; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; vertical-align: middle; }
+  .tb tr:last-child td { border-bottom: none; }
+  .nm { font-weight: 500; } .ti { font-size: 11px; color: #A0A0A0; }
+  .st { padding: 2px 9px; border-radius: 24px; font-size: 11px; font-weight: 500; }
+  .st-seq { background: rgba(0,0,0,0.05); color: #6B6B6B; }
+  .st-rep { background: #EFF3E6; color: #5a6a42; }
+  .st-opn { background: #E9F0F7; color: #3d5a78; }
+  .st-bnc { background: #F8E9E9; color: #9a4040; }
+  .st-pau { background: #F7EFDC; color: #8a713a; }
+  .muted { color: #6B6B6B; } .faint { color: #A0A0A0; font-size: 12px; }
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .search { flex: 1; max-width: 320px; padding: 9px 13px; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; font-size: 13px; color: #A0A0A0; background: #fff; }
+  .bulk { background: #0A0A0A; color: #FEFEFC; border-radius: 10px; padding: 9px 16px; display: flex; gap: 16px; align-items: center; font-size: 12px; margin-bottom: 12px; }
+  .bulk b { font-weight: 600; } .bulk span { opacity: 0.85; }
+  .feed { background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 14px; overflow: hidden; }
+  .ev { display: flex; gap: 12px; padding: 13px 18px; border-bottom: 1px solid rgba(0,0,0,0.05); align-items: flex-start; }
+  .ev:last-child { border-bottom: none; }
+  .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; flex-shrink: 0; }
+  .ic-em { background: rgba(0,0,0,0.05); color: #6B6B6B; }
+  .ic-op { background: #E9F0F7; color: #3d5a78; }
+  .ic-rp { background: #EFF3E6; color: #5a6a42; }
+  .ic-bn { background: #F8E9E9; color: #9a4040; }
+  .ev .et { font-size: 13px; font-weight: 500; margin-bottom: 1px; }
+  .ev .es { font-size: 12px; color: #6B6B6B; line-height: 1.55; }
+  .ev .tm { margin-left: auto; font-size: 11px; color: #A0A0A0; white-space: nowrap; }
+  .reply-card { background: #FBF9F2; border-left: 3px solid #B89C5C; border-radius: 0 10px 10px 0; padding: 10px 14px; margin-top: 8px; }
+  .reply-card .sn { font-size: 12px; color: #3a3a3a; font-style: italic; line-height: 1.55; margin-bottom: 8px; }
+  .perf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .pat { background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 14px 16px; }
+  .pat .pv { font-family: 'Source Serif 4', serif; font-size: 22px; }
+  .pat .pk { font-size: 12px; color: #6B6B6B; margin-top: 3px; line-height: 1.5; }
+  .funrow { display: grid; grid-template-columns: 110px 1fr 52px; gap: 12px; align-items: center; padding: 9px 0; }
+  .funlab { font-size: 12px; font-weight: 500; }
+  .funsub { font-size: 11px; color: #A0A0A0; }
+  .bar { height: 8px; border-radius: 4px; background: rgba(0,0,0,0.05); position: relative; }
+  .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: #0A0A0A; }
+  .bar i.lt { background: #9aa68a; }
+  .funv { font-size: 12px; font-weight: 500; text-align: right; }
+  .slide { display: grid; grid-template-columns: 1fr 480px; }
+  .dim { background: rgba(10,10,10,0.04); padding: 24px; font-size: 12px; color: #A0A0A0; }
+  .slidepanel { background: #fff; border-left: 1px solid rgba(0,0,0,0.10); padding: 22px 24px; }
+  .chips { display: flex; gap: 8px; margin: 12px 0; }
+  .chip { padding: 5px 12px; border-radius: 24px; font-size: 12px; }
+  .chip-on { background: rgba(0,0,0,0.06); color: #0A0A0A; font-weight: 500; }
+  .chip-amb { background: #F7EFDC; color: #8a713a; font-weight: 500; }
+  .mini-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid rgba(0,0,0,0.07); border-radius: 10px; margin-bottom: 8px; }
+  .mini-row.amb { background: #FBF6EA; border-color: rgba(184,156,92,0.35); }
+  .mini-row .mn { font-size: 13px; font-weight: 500; flex: 1; }
+  .mini-row .ms { font-size: 11px; color: #A0A0A0; }
+  .mini-row .conf { font-size: 11px; color: #8a713a; font-weight: 500; }
+  .sumbar { background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 10px 14px; font-size: 13px; font-weight: 450; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="doc-head">
+    <div class="eyebrow">Outreach · Rebuild spec · Session 72</div>
+    <div class="doc-title">Campaign drill-in — updated renders</div>
+    <div class="doc-sub">Five surfaces replacing the historic SequenceDetail layout. Every existing function survives — flow editing, conditional branching, test sends, Kiko refine, add-prospects machinery, bulk actions, reply triage, performance patterns — re-skinned to the platform design system. Compare against screenshots 7–9.</div>
+  </div>
+
+  <div class="render">
+    <div class="render-label"><span class="render-num">1</span><span class="render-name">Sequence tab — flow editor + step panel</span><span class="render-note">Two panes: the flow on the left, the selected step's editor on the right. Branching shown inline, not buried in a modal.</span></div>
+    <div class="frame">
+      <div class="topbar"><span class="back">←</span><h1 class="camp">Cybersecurity CISOs — F1 category</h1><span class="pill pill-active">Active</span><button class="btn">⏸ Pause</button><button class="btn">＋ Add prospects</button></div>
+      <div class="body-pad">
+        <div class="tiles">
+          <div class="tile"><div class="k">Enrolled</div><div class="v">142</div></div>
+          <div class="tile"><div class="k">Sent</div><div class="v">301</div></div>
+          <div class="tile"><div class="k">Opened</div><div class="v">38%</div><div class="d">114 unique</div></div>
+          <div class="tile"><div class="k">Replied</div><div class="v">11</div><div class="d">3.7%</div></div>
+          <div class="tile"><div class="k">Bounced</div><div class="v">3</div></div>
+        </div>
+        <div class="tabs"><span class="tab on">Sequence</span><span class="tab">Prospects<span class="ct">142</span></span><span class="tab">Activity</span><span class="tab">Performance</span></div>
+        <div class="triage"><span>⚠</span><span class="t">2 replies need your response</span><span class="b">Triage in Activity →</span></div>
+        <div class="twopane">
+          <div>
+            <div class="flow-card"><span class="day">Day 0</span><div style="min-width:0;flex:1"><div class="fc-t"><span class="ch em">EMAIL</span> · Category control at {company}</div><div class="fc-s">The cybersecurity category in Formula 1 is unclaimed…</div></div></div>
+            <div class="wait"><span class="ln"></span><span class="tx">wait 2 days</span></div>
+            <div class="flow-card sel"><span class="day">Day 2</span><div style="min-width:0;flex:1"><div class="fc-t"><span class="ch li">LINKEDIN</span> · Connection request</div><div class="fc-s">Clean invite from Matt's account — no note.</div></div></div>
+            <div class="wait"><span class="ln"></span><span class="tx">wait 3 days</span></div>
+            <div class="branch"><div class="q">⑂ If opened step 1 within 5 days</div><div class="rt"><span class="yes">Yes → Step 3 · proof point</span><span class="no">No → Step 4 · re-angle</span></div></div>
+            <div class="flow-card"><span class="day">Day 5</span><div style="min-width:0;flex:1"><div class="fc-t"><span class="ch em">EMAIL</span> · Follow-up — proof point</div><div class="fc-s">Reference live Alpine and Haas conversations…</div></div></div>
+            <div class="addrow"><span>Add:</span><button class="btn">✉ Email</button><button class="btn">in Invite</button><button class="btn">in Message</button><button class="btn">⑂ Condition</button></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><span class="day">Step 2</span><span class="t">LinkedIn — connection request</span><span class="pill pill-active">Editing</span></div>
+            <div class="row2" style="margin-bottom:14px"><div style="flex:1"><label class="l">Channel</label><div class="inp" style="margin:0">LinkedIn invite ▾</div></div><div style="width:120px"><label class="l">Delay</label><div class="inp" style="margin:0">+2 days</div></div></div>
+            <label class="l">Message · under 120 words</label>
+            <div class="inp ta">No note — a clean invite converts higher at C-suite. Connection context arrives in step 3 once accepted.</div>
+            <div class="panel-actions"><button class="btn">✦ Refine with Kiko</button><button class="btn">⟳ Regenerate</button><button class="btn">→ Test to my LinkedIn</button><button class="btn" style="margin-left:auto;color:#9a4040;border-color:rgba(154,64,64,0.25)">Delete step</button></div>
+            <div class="faint" style="margin-top:14px">Changes save on blur · sequence versioned automatically</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="render">
+    <div class="render-label"><span class="render-num">2</span><span class="render-name">Prospects tab</span><span class="render-note">Same conflict-aware table language as the wizard's step 4 — the two worlds now match. Bulk bar appears on selection.</span></div>
+    <div class="frame"><div class="body-pad" style="padding-top:22px">
+      <div class="tabs"><span class="tab">Sequence</span><span class="tab on">Prospects<span class="ct">142</span></span><span class="tab">Activity</span><span class="tab">Performance</span></div>
+      <div class="toolbar"><div class="search">Search prospects…</div><span class="faint">Filter: All · In sequence · Replied · Bounced · Paused</span><button class="btn-black" style="margin-left:auto">＋ Add prospects</button></div>
+      <div class="bulk"><b>3 selected</b><span>⏸ Pause</span><span>▶ Resume</span><span>→ Move to step</span><span>✕ Remove</span></div>
+      <div class="tbwrap"><table class="tb">
+        <tr><th style="width:30px"></th><th>Name</th><th>Company</th><th>Status</th><th>Step</th><th>Opened</th><th>Last activity</th><th style="width:40px"></th></tr>
+        <tr><td>☑</td><td><div class="nm">Sarah Chen</div><div class="ti">CISO</div></td><td class="muted">SentinelOne</td><td><span class="st st-rep">Replied</span></td><td class="muted">3 of 5</td><td class="muted">4×</td><td class="faint">2h ago</td><td class="faint">⏸</td></tr>
+        <tr><td>☑</td><td><div class="nm">David Okafor</div><div class="ti">CISO</div></td><td class="muted">Cloudflare</td><td><span class="st st-opn">Opened</span></td><td class="muted">2 of 5</td><td class="muted">2×</td><td class="faint">Yesterday</td><td class="faint">⏸</td></tr>
+        <tr><td>☑</td><td><div class="nm">Priya Sharma</div><div class="ti">VP Security</div></td><td class="muted">Okta</td><td><span class="st st-seq">In sequence</span></td><td class="muted">1 of 5</td><td class="muted">—</td><td class="faint">3d ago</td><td class="faint">⏸</td></tr>
+        <tr><td>☐</td><td><div class="nm">Elena Voss</div><div class="ti">CSO</div></td><td class="muted">CrowdStrike</td><td><span class="st st-pau">Paused</span></td><td class="muted">2 of 5</td><td class="muted">1×</td><td class="faint">5d ago</td><td class="faint">▶</td></tr>
+        <tr><td>☐</td><td><div class="nm">James Whitfield</div><div class="ti">CISO</div></td><td class="muted">Darktrace</td><td><span class="st st-bnc">Bounced</span></td><td class="muted">1 of 5</td><td class="muted">—</td><td class="faint">6d ago</td><td class="faint">✕</td></tr>
+      </table></div>
+      <div class="faint" style="margin-top:10px">Click a row → prospect detail slide-over: timeline, emails sent, opens, reply thread, pause/move controls.</div>
+    </div></div>
+  </div>
+
+  <div class="render">
+    <div class="render-label"><span class="render-num">3</span><span class="render-name">Add prospects — slide-over</span><span class="render-note">The historic modal machinery (search · Kiko suggestions · manual) becomes a right slide-over reusing the wizard's conflict pattern.</span></div>
+    <div class="frame"><div class="slide">
+      <div class="dim">Prospects tab stays visible beneath…</div>
+      <div class="slidepanel">
+        <div style="display:flex;align-items:center;margin-bottom:4px"><span style="font-family:'Source Serif 4',serif;font-size:18px;flex:1">Add prospects</span><span class="faint">✕</span></div>
+        <div class="chips"><span class="chip chip-on">Search CRM</span><span class="chip" style="border:1px solid rgba(0,0,0,0.08)">✦ Kiko suggests</span><span class="chip" style="border:1px solid rgba(0,0,0,0.08)">Manual</span></div>
+        <div class="search" style="max-width:100%;margin-bottom:12px">cyber CISO united states…</div>
+        <div class="mini-row"><span style="font-size:11px">☑</span><span class="mn">Maya Lindqvist <span class="ms">· CISO · Snyk</span></span><span class="ms">✓ email</span></div>
+        <div class="mini-row amb"><span style="font-size:11px">☐</span><span class="mn">Maria Lobato <span class="ms">· Lumu Technologies</span></span><span class="conf">⚠ In "Fintech CMOs"</span></div>
+        <div class="mini-row"><span style="font-size:11px">☑</span><span class="mn">Tom Eriksen <span class="ms">· VP Sec · Vercel</span></span><span class="ms">finding email…</span></div>
+        <div class="sumbar">3 found · 1 conflict excluded · 1 email pending → <b>1 enrolls now, 1 on verify</b></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn-black">Add to campaign</button></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="render">
+    <div class="render-label"><span class="render-num">4</span><span class="render-name">Activity tab — feed + reply triage</span><span class="render-note">Replies surface as first-class amber cards with a one-click Kiko draft. Everything else stays a quiet chronological feed.</span></div>
+    <div class="frame"><div class="body-pad" style="padding-top:22px">
+      <div class="tabs"><span class="tab">Sequence</span><span class="tab">Prospects<span class="ct">142</span></span><span class="tab on">Activity</span><span class="tab">Performance</span></div>
+      <div class="feed">
+        <div class="ev"><div class="ic ic-rp">↩</div><div style="flex:1"><div class="et">Sarah Chen replied — step 3</div><div class="es">SentinelOne · CISO</div>
+          <div class="reply-card"><div class="sn">"Interesting timing — we're reviewing brand spend for next year. Who else is in the category conversation?"</div><button class="btn">✦ Draft reply with Kiko</button> <button class="btn">Open thread</button></div>
+        </div><span class="tm">2h ago</span></div>
+        <div class="ev"><div class="ic ic-op">👁</div><div style="flex:1"><div class="et">David Okafor opened — step 2</div><div class="es">Cloudflare · third open, 2 clicks on deck link</div></div><span class="tm">5h ago</span></div>
+        <div class="ev"><div class="ic ic-em">✉</div><div style="flex:1"><div class="et">Step 1 sent to 28 prospects</div><div class="es">Daily window 09:00–17:30 · 2 deferred to tomorrow (cap)</div></div><span class="tm">Yesterday</span></div>
+        <div class="ev"><div class="ic ic-bn">!</div><div style="flex:1"><div class="et">James Whitfield bounced — step 1</div><div class="es">Darktrace · hard bounce · sequence stopped, flagged for re-verification</div></div><span class="tm">6d ago</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="render">
+    <div class="render-label"><span class="render-num">5</span><span class="render-name">Performance tab</span><span class="render-note">Top patterns Kiko has learned from this campaign, plus the per-step funnel — where prospects fall away.</span></div>
+    <div class="frame"><div class="body-pad" style="padding-top:22px">
+      <div class="tabs"><span class="tab">Sequence</span><span class="tab">Prospects<span class="ct">142</span></span><span class="tab">Activity</span><span class="tab on">Performance</span></div>
+      <div class="perf">
+        <div class="pat"><div class="pv">52%</div><div class="pk">open rate when the subject names the company</div></div>
+        <div class="pat"><div class="pv">2.4×</div><div class="pk">replies when step 3 cites a live team conversation</div></div>
+        <div class="pat"><div class="pv">Tue 10:00</div><div class="pk">strongest send window for this audience</div></div>
+      </div>
+      <div class="panel" style="padding:18px 22px">
+        <div class="funrow"><div><div class="funlab">Step 1 · Email</div><div class="funsub">Day 0</div></div><div class="bar"><i style="width:100%"></i></div><div class="funv">142</div></div>
+        <div class="funrow"><div><div class="funlab">Opened</div><div class="funsub"></div></div><div class="bar"><i class="lt" style="width:54%"></i></div><div class="funv">77</div></div>
+        <div class="funrow"><div><div class="funlab">Step 2 · LinkedIn</div><div class="funsub">Day 2</div></div><div class="bar"><i style="width:64%"></i></div><div class="funv">91</div></div>
+        <div class="funrow"><div><div class="funlab">Step 3 · Email</div><div class="funsub">Day 5</div></div><div class="bar"><i style="width:42%"></i></div><div class="funv">60</div></div>
+        <div class="funrow"><div><div class="funlab">Replied</div><div class="funsub"></div></div><div class="bar"><i class="lt" style="width:8%"></i></div><div class="funv">11</div></div>
+      </div>
+    </div></div>
+  </div>
+
+</div>
+</body>
+</html>
