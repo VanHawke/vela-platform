@@ -277,14 +277,6 @@ export const TOOL_DEFINITIONS = [
     }, required: ['query'] },
   },
   {
-    name: 'read_calendar',
-    description: 'Read Sunny\'s Google Calendar. Use for: "what\'s on my calendar/diary/schedule", availability checks, "am I free on X", upcoming meetings, planning around commitments.',
-    input_schema: { type: 'object', properties: {
-      days_ahead: { type: 'number', description: 'Days forward to fetch (default 14).' },
-      days_back: { type: 'number', description: 'Days back to include (default 0).' },
-    } },
-  },
-  {
     name: 'trigger_triage',
     description: 'Trigger an on-demand inbox triage. Use when: the brief shows stale triage data, user asks "check my emails" and triage is outdated, or Kiko detects the last triage is >24h old. Returns fresh email classification.',
     input_schema: { type: 'object', properties: {} },
@@ -1480,26 +1472,6 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
   }
 
   // ── Conversation Search ──
-  if (name === 'read_calendar') {
-    // Session 71: real implementation — was advertised in the lean prompt but never built.
-    // Reuses the existing /api/calendar-events endpoint (Google token + refresh handled there).
-    try {
-      const email = 'sunny@vanhawke.com';
-      const from = new Date(Date.now() - (input.days_back || 0) * 86400000).toISOString();
-      const to = new Date(Date.now() + (input.days_ahead || 14) * 86400000).toISOString();
-      const r = await fetch(`http://127.0.0.1:${process.env.PORT || 3000}/api/calendar-events?email=${encodeURIComponent(email)}&from=${from}&to=${to}`);
-      const data = await r.json();
-      const events = data.events || data.items || (Array.isArray(data) ? data : []);
-      if (!events.length) return `CALENDAR: no events between ${from.slice(0, 10)} and ${to.slice(0, 10)}.`;
-      const lines = events.slice(0, 20).map(e => {
-        const start = e.start?.dateTime || e.start?.date || e.start || '?';
-        const end = e.end?.dateTime || e.end?.date || e.end || '';
-        return `- ${(e.summary || e.title || 'Untitled')} | ${start}${end ? ' -> ' + end : ''}${e.location ? ' | ' + e.location : ''}`;
-      });
-      return `CALENDAR (${events.length} events, ${from.slice(0, 10)} to ${to.slice(0, 10)}):\n${lines.join('\n')}`;
-    } catch (e) { return `CALENDAR ERROR: ${e.message}`; }
-  }
-
   if (name === 'search_conversations') {
     try {
       const query = (input.query || '');
