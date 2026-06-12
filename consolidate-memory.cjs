@@ -53,6 +53,7 @@ C. RECURRING CORRECTIONS — things he repeatedly pushes back on or demands
 D. COMMUNICATION STYLE — tone, phrasing, structure he uses and expects
 E. STRATEGIC PREFERENCES — positioning, negotiation, relationship handling
 F. DOMAIN FACTS worth permanent retention (deals, structures, relationships) — only if foundational.
+G. EVOLUTION MARKERS — dated shifts in the business: pivots, new entities/ventures, strategy changes, priority changes, relationship milestones. ALWAYS include the date or period (records carry original_date / created_at).
 Rules: each item ONE line, prefix with category letter, cite brief evidence in parens. Skip noise, pleasantries, one-off operational detail. Max 25 items. Records:\n\n`;
 
 async function mapPhase(rows) {
@@ -87,14 +88,31 @@ async function mapPhase(rows) {
 async function reducePhase(candidates) {
   const { data: bible } = await sb.from('kiko_core_bible').select('content').order('updated_at', { ascending: false }).limit(1);
   const existing = bible?.[0]?.content || '';
-  const REDUCE = `You are consolidating Kiko's full memory sweep into operating doctrine about Sunny Sidhu. Below: (1) the EXISTING doctrine already live in Kiko's bible, (2) candidate learnings distilled from her entire memory (insights, learnings, thoughts, knowledge).
-Produce a markdown document titled "CONSOLIDATED LEARNINGS v1" with sections:
+  // ── Hierarchical reduce: a corpus this size produces more candidates than one
+  // context window holds. Pre-merge in groups, then final Opus fusion. ──
+  if (candidates.length > 350000) {
+    log('hierarchical reduce: pre-merging ' + Math.ceil(candidates.length / 300000) + ' groups (Sonnet)');
+    const groups = [];
+    for (let i = 0; i < candidates.length; i += 300000) groups.push(candidates.slice(i, i + 300000));
+    const merged = [];
+    for (let g = 0; g < groups.length; g++) {
+      const msg = await ai.messages.create({ model: 'claude-sonnet-4-6', max_tokens: 4000,
+        messages: [{ role: 'user', content: 'Merge and dedupe these doctrine candidates about Sunny Sidhu into a single concise candidate list, same A-G category format, preserving dates on evolution markers and the strongest evidence. Max 60 items.\n\n' + groups[g] }] });
+      merged.push(msg.content.filter(b => b.type === 'text').map(b => b.text).join('\n'));
+      log('pre-merge group ' + (g + 1) + '/' + groups.length + ' done');
+    }
+    candidates = merged.join('\n\n');
+  }
+  const REDUCE = `You are consolidating Kiko's full memory sweep — including 3+ years of Sunny's ChatGPT history (2023-2026), Claude session imports, and Kiko's own accumulated insights — into operating doctrine about Sunny Sidhu. Below: (1) the EXISTING doctrine already live in Kiko's bible, (2) candidate learnings distilled from the corpus.
+Produce a markdown document titled "CONSOLIDATED LEARNINGS" with sections:
 1. REFINEMENTS — where the sweep deepens/sharpens existing doctrine (do NOT repeat what exists unchanged)
 2. NEW PRINCIPLES — durable patterns not yet in doctrine, each with evidence
 3. TACTICAL PLAYBOOK — concrete repeatable moves observed (negotiation, outreach, vendor handling)
-4. CONTRADICTIONS/CAUTIONS — anywhere candidates conflict with existing doctrine or each other
-Be ruthless: only durable, evidenced items. Max 1200 words. EXISTING DOCTRINE:\n${existing}\n\nCANDIDATES:\n`;
-  const msg = await ai.messages.create({ model: 'claude-opus-4-8', max_tokens: 3000,
+4. BUSINESS EVOLUTION TIMELINE — dated narrative (2023 -> present): how the business model, entities, ventures, strategy and priorities evolved; the through-line of where it is heading
+5. PSYCHOLOGY & STYLE — evidence-backed read of how Sunny thinks, communicates, decides under pressure, and what he needs from an advisor
+6. CONTRADICTIONS/CAUTIONS — anywhere candidates conflict with existing doctrine or each other
+Be ruthless: only durable, evidenced items. Max 2000 words. EXISTING DOCTRINE:\n${existing}\n\nCANDIDATES:\n`;
+  const msg = await ai.messages.create({ model: 'claude-opus-4-8', max_tokens: 4000,
     messages: [{ role: 'user', content: REDUCE + candidates }] });
   return msg.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
 }
