@@ -303,6 +303,8 @@ LEARNING:
 `;
 
 const CAPABILITY_MAP_2 = `
+CAMPAIGNS ENGINE (S72): 5-step wizard (Setup/Sequence/Timing/Prospects/Review); step 4 = CRM match + POST /api/campaign-conflicts (person/company conflicts any age, recent_contacts 90d), conflicts excluded by default; save = draft sequence (real columns + metadata jsonb) + enrollments (active, dormant until is_active — enqueue gate :183). Drill-in rebuild spec: design/sequencedetail-renders.html. All composers build on components/kiko/EmailDraft.jsx — no bespoke composers. Full doctrine: read_bible § CAMPAIGNS ENGINE.
+
 ═══ SPECIALIST AGENTS ═══
 
 ask_deal_agent → CRM writes: move deal, create task, set reminder
