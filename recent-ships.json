@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-06-11T07:41:45.839Z",
+  "generated_at": "2026-06-12T18:34:49.575Z",
   "commits": [
+    {
+      "hash": "34b13f2",
+      "subject": "Session 72: campaign conflict engine — person/company conflicts (active in live sequences, any age), recent_contacts 90-day soft warnings; live-tested 8/8 assertions, Kiko-reviewed",
+      "when": "16 minutes ago"
+    },
+    {
+      "hash": "0e2efb2",
+      "subject": "Session 71: remove duplicate read_calendar — original tool existed (schema 309, handler 1700); calendar was already fully wired",
+      "when": "46 minutes ago"
+    },
+    {
+      "hash": "5ab30a3",
+      "subject": "Session 71: read_calendar tool implemented (phantom made real, reuses calendar-events endpoint), doctrine Rule 11 (investigation persistence + relationship lifecycle), dead email-intelligence.js archi",
+      "when": "49 minutes ago"
+    },
+    {
+      "hash": "665df0e",
+      "subject": "Session 71 close: memory updated — assimilation complete, archive embedded, knowledge docs added",
+      "when": "66 minutes ago"
+    },
+    {
+      "hash": "728611d",
+      "subject": "Session 71: archive search fixed — RPC full-depth search of imported convs (3 fatal bugs: processed filter, m.content vs m.text, 30-row scan), embedding backfill for semantic coverage",
+      "when": "4 hours ago"
+    },
+    {
+      "hash": "99596c8",
+      "subject": "Session 71: consolidation engine v2 — evolution markers, business timeline + psychology sections, hierarchical reduce",
+      "when": "9 hours ago"
+    },
+    {
+      "hash": "a84c75d",
+      "subject": "Session 71: consolidation engine reads kiko_imported_conversations (324 ChatGPT convs imported, 2023-2026)",
+      "when": "10 hours ago"
+    },
+    {
+      "hash": "08b1a01",
+      "subject": "Session 71: cost failsafe architecture — cron circuit breaker, consolidation engine hardening (watermark/cap/lockfile), prompt-only trigger",
+      "when": "10 hours ago"
+    },
+    {
+      "hash": "ba100f8",
+      "subject": "Session 71: Sunny operating profile distilled into always-on identity (Rule 10) + full doctrine in Bible — reasoning/style assimilation, not just searchable storage",
+      "when": "12 hours ago"
+    },
+    {
+      "hash": "01db7d0",
+      "subject": "Session 71: fix search_knowledge (term-AND matching content+domain, 1500-char previews), import 3 knowledge docs, memory updated",
+      "when": "12 hours ago"
+    },
+    {
+      "hash": "39c5fef",
+      "subject": "Session 71 close: sunny LinkedIn restored + verified, alerts cleared, memory corrected",
+      "when": "13 hours ago"
+    },
+    {
+      "hash": "331e8e6",
+      "subject": "Session 71: cookie-import verifies via proxied engine, never raw fetch (registry hard fact)",
+      "when": "13 hours ago"
+    },
+    {
+      "hash": "f6c9ce8",
+      "subject": "Session 71 pt3: CRM reconciliation complete (T1-3 ~99%, 50 no-email contacts tagged email_searched_exhausted), LinkedIn architecture documented in memory",
+      "when": "31 hours ago"
+    },
+    {
+      "hash": "8de6ff0",
+      "subject": "Session 71 pt3: harden LinkedIn cookie import (writes encrypted server store + identity mapping, not just user_tokens), fix enrich-on-demand server corruption (name:, escaped backticks), systems-regis",
+      "when": "31 hours ago"
+    },
+    {
+      "hash": "a23dfce",
+      "subject": "Session 71 pt2: keepalive hardening (save() bugs, proxy on cred login, alert dedupe+re-raise), news-agent archived per design decision, LinkedIn root cause documented",
+      "when": "33 hours ago"
+    },
+    {
+      "hash": "4e6b9fd",
+      "subject": "Session 71: deprecate ask_data_agent in self-knowledge, fix stale model/path claims, memory update",
+      "when": "34 hours ago"
+    },
+    {
+      "hash": "bd092da",
+      "subject": "Session 71: recover live system into git + archive dead crons",
+      "when": "34 hours ago"
+    },
+    {
+      "hash": "4c3fcd8",
+      "subject": "Session 71: fix run_code module resolution + Kiko server-filesystem self-knowledge",
+      "when": "34 hours ago"
+    },
     {
       "hash": "f29394a",
       "subject": "AUDIT fix: realtime channel flapping (CHANNEL_ERROR<->SUBSCRIBED loop). Manual setInterval re-subscribe was colliding with supabase-js built-in auto-reconnect. Now observe-only, intervenes only after ",
-      "when": "4 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "7b4b9de",
       "subject": "AUDIT fix: repair 3 model-call sites corrupted by a model-migration find-replace that swallowed max_tokens into the model-line comment (ingest-knowledge x2, outreach x2 broke syntax; memory-engine rev",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "7fccaed",
-      "subject": "Hybrid semantic recall: embed spine (1536-dim text-embedding-3-small), HNSW index, spine_recall blends keyword+semantic+term-boost; kiko.js generates query embedding (fail-open). Backfill script resum",
-      "when": "11 hours ago"
-    },
-    {
-      "hash": "0e76f1a",
-      "subject": "Recall assembly: raise budget to 9000, stop mid-chunk truncation that cut embedded quotes before they appeared (DECO line fix)",
-      "when": "11 hours ago"
-    },
-    {
-      "hash": "625da78",
-      "subject": "Deploy rewired spine recall: ranked OR-retrieval via rpc/spine_recall (relevance-first, user-ringfenced, fail-open) — replaces strict AND-query that missed long natural questions",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "8629e37",
-      "subject": "Harden import redaction: catch partial JWTs and sk-ant placeholders (audit fix). Scrubbed 9 residual leaks in already-imported transcripts via SQL",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "58b6d30",
-      "subject": "claude_export: batched upserts for large-history import",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "e06058d",
-      "subject": "Ringfenced private memory: spine user_id column + user-scoped recall; claude_export import requires user_id (anti-leak); self-knowledge security+private-memory section; auth verified live",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "ad6c7a1",
-      "subject": "Auth hardening (monitor mode): requireAuth middleware (public/internal-loopback/JWT trust classes, anti-spoof identity-from-token, break-glass enforce flag) + frontend token interceptor. Verified serv",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "d5fda8f",
-      "subject": "Consolidator: claude_export mode — full Claude conversation history ingestion (chunked, secret-redacted, idempotent) pending Sunny data export",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "25f2015",
-      "subject": "Self-knowledge: Learning Loop organs, spine, dossiers, proposition shelf, pipeline reset, certified-clean CRM. Stale deal counts purged. Rule added: recall live numbers, never cached",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "3ec937a",
-      "subject": "LEARNING LOOP LIVE: all 3 phases shipped+verified. Kiko-native, zero Fable dependency, citation-audited synthesis. Live test passed: autonomous Torq recall+advice",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "1dd7412",
-      "subject": "Learning Loop: spine recall wired into brain (deterministic FTS, fail-open) + Kiko-native consolidator (own Opus brain, deterministic citation auditor, hard caps) + memory-file ingestion",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "71a6474",
-      "subject": "Build order locked: Learning Loop first (recall/consolidation/ingestion), Campaigns second with Kiko as domain advisor in design. Torq+ClearStreet manual re-entry this week",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "50b8fef",
-      "subject": "Pipeline reset to clean slate (303 refs preserved, intel captured: Rio Tinto/Alfonso, NanoXplore budget-flinch). Dossier pilot live: Torq REVIVE (dropped CMO+VP replies Nov25), Clear Street REVIVE URG",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "62554fa",
-      "subject": "Company refresh pipeline self-draining: deterministic writer + 5-min watcher, live data lands continuously tonight. Abnormal rebrand dup merged. Zero AI/credits",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "ae3a729",
-      "subject": "Company market-data refresh launched (zero-credit): key_personnel mirrored to 1604 cos from verified contacts, all 2169 flagged needs_market_refresh, LinkedIn company-page runner live on 645 T1 cos ov",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "a96bebb",
-      "subject": "Organizations table cleaned: 2265→2169, industry→sector migration (2249→1 missing), 93 dup groups merged w/ full FK repointing, test records purged, websites 421→341. CRM clean across both entity type",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "4885a4f",
-      "subject": "T2 LinkedIn complete: 1792/1810 (99.0%). Campaign CLOSED: 19 C-suite discoveries promoted T1 (NAVI/paiN CEOs, Coupa/Pindrop/Cerebras/Wrike CMOs, Tilray CGO), 19 movers re-homed, 16 company records, ~2",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "9585793",
-      "subject": "T1 LinkedIn complete: 817/820 (99.6%) via LinkedIn people-search Playwright run. ~40 title corrections, 3 movers re-homed, 5 leavers flagged, 2 retirees archived. T1 final: email 99.6%, LinkedIn 99.6%",
-      "when": "18 hours ago"
+      "when": "2 days ago"
     }
   ]
 }

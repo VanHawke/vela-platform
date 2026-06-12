@@ -181,3 +181,10 @@ LINKEDIN ARCHITECTURE (full truth for registry):
 - Search overhauled: search_imported_convs RPC (full-depth), search_knowledge term-AND, embeddings backfilled. Cold-test protocol adopted: every session tests Kiko with cold questions against history.
 - Failsafes live: cron circuit breaker (kiko_cron_runs caps), consolidation watermark/lockfile/chunk-cap, prompt-only trigger via consolidation_due alert.
 - OPEN: CRM relationship-lifecycle updates (Temi staleness class), investigation-persistence doctrine line (escalate before asking user), verify next consolidation folds Claude corpus.
+
+## SESSION 72 (June 12 2026) — CAMPAIGNS BUILD PHASE 1 SHIPPED
+- /api/campaign-conflicts live: person conflicts (active enrollment in live sequence, any age), company overlaps, recent_contacts (terminal status within 90d). 8/8 assertions, Kiko-reviewed (her fix: no date filter on active conflicts).
+- Wizard now 5 steps: new Step 4 Prospects (CRM sector/tier matching, conflict check, amber rows excluded by default, per-row override, summary bar). Review step 5 shows enroll count + conflicts excluded.
+- handleSave FIXED (old one wrote non-existent category column — every wizard save silently failed) + now enrolls included prospects (status active, next_send_at now; enqueue gate api/cron-sequence-enqueue.js:183 keeps drafts dormant). metadata jsonb column added to kiko_sequences.
+- E2E sim on server: 8/8 PASS (loader -> conflicts -> save -> enrollments -> readback -> cleanup).
+- PENDING: visual pass in browser (Chrome extension was disconnected); [TEST] Conflict Engine Fixture + Maria Lobato enrollment KEPT ALIVE for the visual walk — purge after. Refinement queued: stagger next_send_at on enroll. NEXT: re-render + rebuild historic SequenceDetail drill-in (/campaigns/:id) and its edit-sequence layout.

@@ -1491,7 +1491,60 @@ function CampaignWizard({ C, onBack, onCreated }) {
   const [dailyLimit, setDailyLimit] = useState(30)
   const [launching, setLaunching] = useState(false)
   const [drafting, setDrafting] = useState(false)
-  const totalSteps = 4
+  const totalSteps = 5
+
+  // ── Step 4: Prospects + conflict engine (Session 72) ──
+  const [prospects, setProspects] = useState([])
+  const [prospectsLoaded, setProspectsLoaded] = useState(false)
+  const [loadingProspects, setLoadingProspects] = useState(false)
+  const [conflictMeta, setConflictMeta] = useState(null)
+
+  const loadProspects = useCallback(async () => {
+    setLoadingProspects(true)
+    try {
+      let q = supabase.from('contacts').select('id, data').not('data->>email', 'is', null).limit(200)
+      if (sector) q = q.ilike('data->>sector', `%${sector}%`)
+      else q = q.in('data->>crm_tier', ['1', '2'])
+      const { data: rows, error } = await q
+      if (error) throw error
+      const mapped = (rows || []).map(r => {
+        const d = r.data || {}
+        return {
+          id: r.id,
+          name: [d.firstName, d.lastName].filter(Boolean).join(' ') || d.name || d.email,
+          title: d.title || d.jobTitle || '',
+          company: d.company || d.companyName || '',
+          email: String(d.email || '').toLowerCase(),
+          tier: d.crm_tier || '',
+          verified: d.email_verified !== false,
+          conflict: null, recent: null, included: true,
+        }
+      }).filter(p => p.email && !p.email.includes('pending'))
+      const resp = await fetch('https://api.vanhawke.agency/api/campaign-conflicts', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emails: mapped.map(p => p.email), companies: [...new Set(mapped.map(p => p.company).filter(Boolean))] }),
+      })
+      const cj = await resp.json()
+      const personByEmail = Object.fromEntries((cj.person_conflicts || []).map(c => [c.email, c]))
+      const companyByName = Object.fromEntries((cj.company_conflicts || []).map(c => [String(c.company).toLowerCase().trim(), c]))
+      const recentByEmail = Object.fromEntries((cj.recent_contacts || []).map(c => [c.email, c]))
+      for (const p of mapped) {
+        p.conflict = personByEmail[p.email] || companyByName[String(p.company).toLowerCase().trim()] || null
+        p.recent = recentByEmail[p.email] || null
+        if (p.conflict) p.included = false
+      }
+      setProspects(mapped)
+      setConflictMeta(cj)
+    } catch (err) { console.error('Prospect load failed:', err); setProspects([]); setConflictMeta(null) }
+    setLoadingProspects(false)
+    setProspectsLoaded(true)
+  }, [sector])
+
+  useEffect(() => { if (step === 4 && !prospectsLoaded && !loadingProspects) loadProspects() }, [step, prospectsLoaded, loadingProspects, loadProspects])
+
+  const toggleProspect = (id) => setProspects(ps => ps.map(p => p.id === id ? { ...p, included: !p.included } : p))
+  const includedProspects = prospects.filter(p => p.included)
+  const conflictCount = prospects.filter(p => p.conflict).length
 
   const addStep = () => setSteps(prev => [...prev, { type: 'Email', subject: '', delay: `+${prev.length * 3} days`, body: '' }])
   const removeStep = (idx) => setSteps(prev => prev.filter((_, i) => i !== idx))
@@ -1544,14 +1597,39 @@ function CampaignWizard({ C, onBack, onCreated }) {
     if (!name.trim()) return
     setLaunching(true)
     try {
+      // Session 72: write only real schema columns (old version used non-existent
+      // category column — insert silently failed). Wizard context lives in metadata.
       const { data, error } = await supabase.from('kiko_sequences').insert({
         name: name.trim(),
+        description: audience || null,
+        target_persona: sector || null,
         steps: steps.map((s, i) => ({ step: i + 1, channel: s.type.toLowerCase(), subject: s.type === 'LinkedIn' ? null : s.subject, body: s.body, delay: s.delay })),
         is_active: false,
-        category: sector || null,
-        metadata: { audience, pipeline, sector, send_window: { start: sendStart, end: sendEnd }, timezone, daily_limit: dailyLimit, created_via: 'wizard' },
+        send_window_start: sendStart,
+        send_window_end: sendEnd,
+        auto_timezone: true,
+        metadata: { audience, pipeline, sector, timezone, daily_limit: dailyLimit, created_via: 'wizard', prospects_sourced: prospects.length, conflicts_excluded: conflictCount, enrolled: includedProspects.length },
       }).select('id').single()
       if (error) throw error
+      if (data?.id && includedProspects.length > 0) {
+        const rows = includedProspects.map(p => ({
+          sequence_id: data.id,
+          contact_id: p.id,
+          contact_name: p.name,
+          contact_email: p.email,
+          title: p.title || null,
+          company: p.company || null,
+          status: 'active',
+          current_step: 1,
+          next_send_at: new Date().toISOString(),
+          enrolled_via: 'wizard',
+          email_verified: p.verified === true,
+        }))
+        for (let i = 0; i < rows.length; i += 100) {
+          const { error: enrollErr } = await supabase.from('kiko_sequence_enrollments').insert(rows.slice(i, i + 100))
+          if (enrollErr) throw enrollErr
+        }
+      }
       onCreated(data?.id)
     } catch (err) {
       console.error('Failed to create campaign:', err)
@@ -1576,7 +1654,7 @@ function CampaignWizard({ C, onBack, onCreated }) {
       <div style={{ padding: '24px 44px 24px' }}>
         {/* Progress bar */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 28, maxWidth: 620 }}>
-          {['Campaign Setup', 'Build Sequence', 'Timing', 'Review'].map((s, i) => (
+          {['Campaign Setup', 'Build Sequence', 'Timing', 'Prospects', 'Review'].map((s, i) => (
             <div key={i} style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ height: 3, borderRadius: 2, background: i + 1 <= step ? '#0A0A0A' : 'rgba(0,0,0,0.06)', marginBottom: 6, transition: 'background 0.2s' }} />
               <span style={{ fontSize: 11, color: i + 1 <= step ? '#0A0A0A' : '#A0A0A0', fontWeight: i + 1 === step ? 600 : 400 }}>{s}</span>
@@ -1664,14 +1742,86 @@ function CampaignWizard({ C, onBack, onCreated }) {
           </div>
         )}
 
-        {/* Step 4: Review */}
+        {/* Step 4: Prospects + conflicts (Session 72) */}
         {step === 4 && (
+          <div style={{ maxWidth: 760 }}>
+            {loadingProspects ? (
+              <div style={{ padding: '40px 0', textAlign: 'center', color: '#A0A0A0', fontSize: 13 }}>
+                <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite', marginBottom: 8 }} />
+                <div>Matching prospects from the CRM and checking other campaigns…</div>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 14, alignItems: 'center' }}>
+                  <span style={{ background: 'rgba(0,0,0,0.06)', padding: '5px 12px', borderRadius: 24, fontSize: 12, color: '#0A0A0A', fontWeight: 500 }}>From CRM · {prospects.length}</span>
+                  {conflictCount > 0 && <span style={{ background: '#FAEEDA', color: '#854F0B', padding: '5px 12px', borderRadius: 24, fontSize: 12, fontWeight: 500 }}>Conflicts · {conflictCount}</span>}
+                  <button onClick={() => { setProspectsLoaded(false) }} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 13px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', background: '#fff', fontSize: 12, color: '#6B6B6B', cursor: 'pointer', fontFamily: C.font, fontWeight: 450 }}>
+                    <RefreshCw size={12} /> Re-check
+                  </button>
+                </div>
+                {conflictCount > 0 && (
+                  <div style={{ background: '#FAEEDA', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                    <span style={{ color: '#854F0B', fontSize: 15, lineHeight: 1 }}>⚠</span>
+                    <span style={{ fontSize: 12, color: '#633806', flex: 1, fontWeight: 450 }}>
+                      {conflictCount} prospect{conflictCount === 1 ? ' is' : 's are'} already in active campaigns — excluded by default to keep messaging clean. Tick a row to override.
+                    </span>
+                  </div>
+                )}
+                {prospects.length === 0 ? (
+                  <div style={{ padding: '30px 0', color: '#A0A0A0', fontSize: 13 }}>No CRM contacts matched{sector ? ` "${sector}"` : ''} with a usable email. Adjust the sector in step 1, or add prospects after launch from the campaign view.</div>
+                ) : (
+                  <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, overflow: 'hidden', marginBottom: 14 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '34px 1.5fr 1.1fr 0.7fr 0.6fr 1.2fr', gap: 0, padding: '10px 14px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                      <span></span>
+                      {['Name', 'Company', 'Source', 'Email', 'Status'].map(h => (
+                        <span key={h} style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, color: '#A0A0A0' }}>{h}</span>
+                      ))}
+                    </div>
+                    <div style={{ maxHeight: 380, overflowY: 'auto' }}>
+                      {prospects.slice(0, 100).map(p => (
+                        <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '34px 1.5fr 1.1fr 0.7fr 0.6fr 1.2fr', alignItems: 'center', padding: '10px 14px', borderBottom: '1px solid rgba(0,0,0,0.05)', background: p.conflict ? '#FDF6E9' : '#fff' }}>
+                          <input type="checkbox" checked={p.included} onChange={() => toggleProspect(p.id)} style={{ width: 14, height: 14, cursor: 'pointer' }} />
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 500, color: p.conflict ? '#412402' : '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                            {p.title && <div style={{ fontSize: 11, color: p.conflict ? '#854F0B' : '#A0A0A0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>}
+                          </div>
+                          <span style={{ fontSize: 12, color: p.conflict ? '#633806' : '#6B6B6B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 8 }}>{p.company || '—'}</span>
+                          <span style={{ fontSize: 11, color: '#6B6B6B' }}>CRM{p.tier ? ` · T${p.tier}` : ''}</span>
+                          <span style={{ fontSize: 11, color: p.verified ? '#3B6D11' : '#854F0B' }}>{p.verified ? '✓ verified' : 'unverified'}</span>
+                          {p.conflict ? (
+                            <span style={{ fontSize: 11, color: '#854F0B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>⚠ In "{p.conflict.campaign}"{p.conflict.step ? ` · step ${p.conflict.step}` : ''}</span>
+                          ) : p.recent ? (
+                            <span style={{ fontSize: 11, color: '#854F0B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Contacted {p.recent.ended} · {p.recent.status}</span>
+                          ) : (
+                            <span style={{ fontSize: 12, color: '#A0A0A0' }}>Clean</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10 }}>
+                  <span style={{ fontSize: 13, color: '#0A0A0A', fontWeight: 450 }}>
+                    {prospects.length} sourced · {prospects.length - includedProspects.length} excluded → <span style={{ fontWeight: 600 }}>{includedProspects.length} will enroll</span>
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Step 5: Review */}
+        {step === 5 && (
           <div style={{ maxWidth: 560 }}>
             <div style={{ padding: '18px 20px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
               <div style={{ fontFamily: font, fontSize: 20, fontWeight: 300, marginBottom: 2 }}>{name || 'Untitled Campaign'}</div>
               <div style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 4 }}>{pipeline}{sector ? ` · ${sector}` : ''}</div>
-              <div style={{ fontSize: 13, color: '#A0A0A0', marginBottom: 16 }}>
+              <div style={{ fontSize: 13, color: '#A0A0A0', marginBottom: 4 }}>
                 {steps.length} steps · {steps.filter(s => s.type === 'Email').length} emails · {steps.filter(s => s.type === 'LinkedIn').length} LinkedIn · {sendStart}–{sendEnd} {timezone}
+              </div>
+              <div style={{ fontSize: 13, marginBottom: 16 }}>
+                <span style={{ color: '#3B6D11', fontWeight: 500 }}>{includedProspects.length} prospects will enroll</span>
+                {conflictCount > 0 && <span style={{ color: '#854F0B' }}> · {conflictCount} conflicts excluded</span>}
               </div>
               {steps.map((s, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: i < steps.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
@@ -1696,7 +1846,7 @@ function CampaignWizard({ C, onBack, onCreated }) {
           <button onClick={() => step > 1 ? setStep(step - 1) : onBack()} style={{ padding: '8px 18px', borderRadius: 24, border: '1px solid rgba(0,0,0,0.08)', background: 'transparent', fontSize: 13, color: '#6B6B6B', cursor: 'pointer', fontFamily: C.font, fontWeight: 450 }}>
             {step > 1 ? 'Back' : 'Cancel'}
           </button>
-          <button onClick={() => step < totalSteps ? setStep(step + 1) : handleSave()} disabled={launching || (step === 4 && !name.trim())} style={{ padding: '8px 20px', borderRadius: 24, border: 'none', background: launching ? '#6B6B6B' : '#0A0A0A', color: '#fff', fontSize: 13, fontWeight: 500, cursor: launching ? 'default' : 'pointer', fontFamily: C.font, opacity: (step === 4 && !name.trim()) ? 0.4 : 1 }}>
+          <button onClick={() => step < totalSteps ? setStep(step + 1) : handleSave()} disabled={launching || (step === totalSteps && !name.trim())} style={{ padding: '8px 20px', borderRadius: 24, border: 'none', background: launching ? '#6B6B6B' : '#0A0A0A', color: '#fff', fontSize: 13, fontWeight: 500, cursor: launching ? 'default' : 'pointer', fontFamily: C.font, opacity: (step === totalSteps && !name.trim()) ? 0.4 : 1 }}>
             {launching ? 'Saving…' : step < totalSteps ? 'Continue' : 'Save as Draft'}
           </button>
         </div>
