@@ -829,6 +829,26 @@ RULES:
         </div>
       </div>
       <div style={{ padding: '8px 44px 60px', fontFamily: C.font, color: C.text, maxWidth: 1300, margin: '0 auto', overflowY: 'auto', flex: 1, width: '100%', boxSizing: 'border-box' }}>
+      {/* Metric tiles — Session 72 rebuild, render 1 */}
+      {!isNew && (() => {
+        const sentQ = queue.filter(q => q.status === 'sent')
+        const openedU = new Set(queue.filter(q => q.opened_at).map(q => q.enrollment_id)).size
+        const repliedN = enrollments.filter(e => e.reply_detected_at || e.status === 'replied').length
+        const bouncedN = enrollments.filter(e => e.bounce_detected_at || e.status === 'bounced').length
+        const pct = enrollments.length ? Math.round((openedU / enrollments.length) * 100) : 0
+        const tiles = [['Enrolled', enrollments.length, ''], ['Sent', sentQ.length, ''], ['Opened', pct + '%', openedU ? openedU + ' unique' : ''], ['Replied', repliedN, enrollments.length && repliedN ? Math.round(repliedN / enrollments.length * 1000) / 10 + '%' : ''], ['Bounced', bouncedN, '']]
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 16 }}>
+            {tiles.map(([k, v, d]) => (
+              <div key={k} style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, padding: '14px 16px' }}>
+                <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#A0A0A0', fontWeight: 500, marginBottom: 4 }}>{k}</div>
+                <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: 26, fontWeight: 400, color: '#0A0A0A' }}>{v}</div>
+                {d ? <div style={{ fontSize: 11, color: '#A0A0A0', marginTop: 2 }}>{d}</div> : null}
+              </div>
+            ))}
+          </div>
+        )
+      })()}
       <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
         <input value={seq?.target_persona || ''} onChange={e => { setSeq({ ...seq, target_persona: e.target.value }); setDirty(true) }} placeholder="Target persona" style={{ ...inputStyle, flex: 1 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

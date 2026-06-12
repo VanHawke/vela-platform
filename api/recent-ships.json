@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-06-12T18:34:49.575Z",
+  "generated_at": "2026-06-12T19:47:55.724Z",
   "commits": [
+    {
+      "hash": "380b12b",
+      "subject": "Session 72: read_bible truncation 20K->60K — tail doctrine was unreachable, caught via Kiko honesty disclosure",
+      "when": "9 minutes ago"
+    },
+    {
+      "hash": "c1067b8",
+      "subject": "Session 72: composer doctrine into memory file",
+      "when": "13 minutes ago"
+    },
+    {
+      "hash": "6264d1d",
+      "subject": "Session 72: standard-drafter binding addendum (EmailDraft.jsx everywhere), bible v3 + self-knowledge updated with Campaigns Engine doctrine",
+      "when": "14 minutes ago"
+    },
+    {
+      "hash": "8feb12e",
+      "subject": "Session 72: SequenceDetail rebuild spec — 5 renders (flow editor + step panel, prospects tab, add-prospects slide-over, activity + reply triage, performance) in current design system",
+      "when": "21 minutes ago"
+    },
+    {
+      "hash": "ea668f6",
+      "subject": "Session 72: visual pass complete — 8/8 production assertions via headless Playwright, fixture purged, memory updated",
+      "when": "44 minutes ago"
+    },
+    {
+      "hash": "aa7a9e4",
+      "subject": "Session 72: 5-step campaign wizard — Prospects step with live conflict engine, fixed broken handleSave (real schema + metadata), prospect enrollment on save; E2E sim 8/8",
+      "when": "53 minutes ago"
+    },
     {
       "hash": "34b13f2",
       "subject": "Session 72: campaign conflict engine — person/company conflicts (active in live sequences, any age), recent_contacts 90-day soft warnings; live-tested 8/8 assertions, Kiko-reviewed",
-      "when": "16 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "0e2efb2",
       "subject": "Session 71: remove duplicate read_calendar — original tool existed (schema 309, handler 1700); calendar was already fully wired",
-      "when": "46 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "5ab30a3",
       "subject": "Session 71: read_calendar tool implemented (phantom made real, reuses calendar-events endpoint), doctrine Rule 11 (investigation persistence + relationship lifecycle), dead email-intelligence.js archi",
-      "when": "49 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "665df0e",
       "subject": "Session 71 close: memory updated — assimilation complete, archive embedded, knowledge docs added",
-      "when": "66 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "728611d",
       "subject": "Session 71: archive search fixed — RPC full-depth search of imported convs (3 fatal bugs: processed filter, m.content vs m.text, 30-row scan), embedding backfill for semantic coverage",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "99596c8",
       "subject": "Session 71: consolidation engine v2 — evolution markers, business timeline + psychology sections, hierarchical reduce",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "a84c75d",
       "subject": "Session 71: consolidation engine reads kiko_imported_conversations (324 ChatGPT convs imported, 2023-2026)",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "08b1a01",
       "subject": "Session 71: cost failsafe architecture — cron circuit breaker, consolidation engine hardening (watermark/cap/lockfile), prompt-only trigger",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "ba100f8",
       "subject": "Session 71: Sunny operating profile distilled into always-on identity (Rule 10) + full doctrine in Bible — reasoning/style assimilation, not just searchable storage",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "01db7d0",
       "subject": "Session 71: fix search_knowledge (term-AND matching content+domain, 1500-char previews), import 3 knowledge docs, memory updated",
-      "when": "12 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "39c5fef",
       "subject": "Session 71 close: sunny LinkedIn restored + verified, alerts cleared, memory corrected",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "331e8e6",
       "subject": "Session 71: cookie-import verifies via proxied engine, never raw fetch (registry hard fact)",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "f6c9ce8",
       "subject": "Session 71 pt3: CRM reconciliation complete (T1-3 ~99%, 50 no-email contacts tagged email_searched_exhausted), LinkedIn architecture documented in memory",
-      "when": "31 hours ago"
+      "when": "32 hours ago"
     },
     {
       "hash": "8de6ff0",
       "subject": "Session 71 pt3: harden LinkedIn cookie import (writes encrypted server store + identity mapping, not just user_tokens), fix enrich-on-demand server corruption (name:, escaped backticks), systems-regis",
-      "when": "31 hours ago"
-    },
-    {
-      "hash": "a23dfce",
-      "subject": "Session 71 pt2: keepalive hardening (save() bugs, proxy on cred login, alert dedupe+re-raise), news-agent archived per design decision, LinkedIn root cause documented",
-      "when": "33 hours ago"
-    },
-    {
-      "hash": "4e6b9fd",
-      "subject": "Session 71: deprecate ask_data_agent in self-knowledge, fix stale model/path claims, memory update",
-      "when": "34 hours ago"
-    },
-    {
-      "hash": "bd092da",
-      "subject": "Session 71: recover live system into git + archive dead crons",
-      "when": "34 hours ago"
-    },
-    {
-      "hash": "4c3fcd8",
-      "subject": "Session 71: fix run_code module resolution + Kiko server-filesystem self-knowledge",
-      "when": "34 hours ago"
-    },
-    {
-      "hash": "f29394a",
-      "subject": "AUDIT fix: realtime channel flapping (CHANNEL_ERROR<->SUBSCRIBED loop). Manual setInterval re-subscribe was colliding with supabase-js built-in auto-reconnect. Now observe-only, intervenes only after ",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "7b4b9de",
-      "subject": "AUDIT fix: repair 3 model-call sites corrupted by a model-migration find-replace that swallowed max_tokens into the model-line comment (ingest-knowledge x2, outreach x2 broke syntax; memory-engine rev",
-      "when": "2 days ago"
+      "when": "32 hours ago"
     }
   ]
 }
