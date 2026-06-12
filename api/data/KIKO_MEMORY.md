@@ -175,3 +175,9 @@ LINKEDIN ARCHITECTURE (full truth for registry):
 - CONSOLIDATION ENGINE (consolidate-memory.cjs, in git): NEVER scheduled, NEVER self-runs. Failsafes: watermark in kiko_system_state (only post-watermark records processed; seeded 2026-06-12T06:48:23Z = the completed full sweep, history is NEVER reprocessed), MAX_CHUNKS=12 hard abort BEFORE any API call, lockfile against concurrent runs, cost estimate printed pre-run, watermark advances only on full success. Full re-sweep requires explicit CONSOLIDATION_FULL=1.
 - CONSOLIDATION TRIGGER = SUNNY'S WORD ONLY: daily-intelligence runs a plain-SQL count (zero AI cost); at 150+ unconsolidated insights Kiko raises ONE info alert prompting Sunny with the cost (~$0.50-1.50). He says "consolidate", someone runs `node consolidate-memory.cjs` from the worker root. NO other trigger exists.
 - RECOMMENDED TO SUNNY: set a hard monthly spend limit on the ANTHROPIC_KEY workspace in the Anthropic console — the provider-level ceiling no code bug can bypass.
+
+## SESSION 71 PART 2 (June 12 2026) — FULL ASSIMILATION COMPLETE
+- Archive: 443 imported conversations (390 ChatGPT Mar23-Jun26 + 53 Claude), ALL embedded (semantic search live over full history). Consolidated doctrine 2026-06-12 in Bible (timeline + psychology). Knowledge docs added: session71-part2, temi-departure (alias: semi/Muhammet), qfc-director-research + structure-decision, jessamy inventory analysis.
+- Search overhauled: search_imported_convs RPC (full-depth), search_knowledge term-AND, embeddings backfilled. Cold-test protocol adopted: every session tests Kiko with cold questions against history.
+- Failsafes live: cron circuit breaker (kiko_cron_runs caps), consolidation watermark/lockfile/chunk-cap, prompt-only trigger via consolidation_due alert.
+- OPEN: CRM relationship-lifecycle updates (Temi staleness class), investigation-persistence doctrine line (escalate before asking user), verify next consolidation folds Claude corpus.

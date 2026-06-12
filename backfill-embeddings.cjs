@@ -1,5 +1,6 @@
 // backfill-embeddings.cjs — Session 71: embed all imported conversations (one-off)
 // Gives Phase-1 semantic search full coverage of the ChatGPT+Claude archive.
+require('dotenv').config({ path: __dirname + '/.env' });
 (async () => {
   const { sbFetch } = await import('./api/kiko-tools.js');
   const { embedConversation } = await import('./api/embed-utils.js');
