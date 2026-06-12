@@ -1509,28 +1509,24 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
           });
         }
       }
-      // Also keyword-search imported conversations
+      // Also keyword-search imported conversations — Session 71 fix:
+      // server-side RPC searches ALL imported convs at full depth (old code
+      // filtered processed=true [always false], read m.content [imports use
+      // m.text], and scanned only the 30 newest — archive was invisible).
       try {
-        const imported = await sbFetch(`kiko_imported_conversations?processed=eq.true${userId ? '&user_id=eq.' + userId : ''}&select=id,title,source,messages,original_date,extracted_insights&order=original_date.desc&limit=30`);
-        for (const c of (imported || [])) {
-          const msgs = c.messages || [];
-          const text = msgs.map(m => (m.content || '')).join(' ').toLowerCase();
-          const insightText = JSON.stringify(c.extracted_insights || {}).toLowerCase();
-          if (text.includes(queryLower) || insightText.includes(queryLower)) {
-            const matchMsgs = msgs.filter(m => (m.content || '').toLowerCase().includes(queryLower));
-            scored.push({
-              title: `[${c.source}] ${c.title || 'Untitled'}`, id: c.id,
-              date: c.original_date ? new Date(c.original_date).toLocaleDateString('en-GB') : '?',
-              matches: matchMsgs.length || 1, source: 'keyword',
-              excerpts: matchMsgs.length ? matchMsgs.slice(0, 2).map(m => {
-                const content = m.content || '';
-                const idx = content.toLowerCase().indexOf(queryLower);
-                return `[${m.role}]: ...${content.slice(Math.max(0, idx - 60), idx + queryLower.length + 60)}...`;
-              }) : (c.extracted_insights?.key_facts || []).slice(0, 2).map(f => `[insight]: ${f}`),
-            });
-          }
+        const hits = await sbFetch('rpc/search_imported_convs', {
+          method: 'POST',
+          body: JSON.stringify({ q: query, uid: userId || null, lim: 8 }),
+        });
+        for (const c of (hits || [])) {
+          scored.push({
+            title: `[${c.source}] ${c.title || 'Untitled'}`, id: c.id,
+            date: c.original_date ? new Date(c.original_date).toLocaleDateString('en-GB') : '?',
+            matches: 1, source: 'keyword',
+            excerpts: [`...${(c.snippet || '').replace(/\\+n/g, ' ').slice(0, 320)}...`],
+          });
         }
-      } catch {}
+      } catch (impErr) { console.error('[search_conversations] imported-archive RPC failed:', impErr.message); }
 
       // Merge: semantic results first, then keyword results (deduplicated)
       const seenIds = new Set();
