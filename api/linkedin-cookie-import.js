@@ -19,31 +19,19 @@ export default async function handler(req, res) {
   if (!li_at || li_at.length < 50) return res.status(400).json({ ok: false, message: 'Invalid li_at cookie value' });
 
   try {
-    // Verify the cookie works by making a simple LinkedIn API call
-    const testRes = await fetch('https://www.linkedin.com/voyager/api/identity/profiles/me', {
-      headers: {
-        'cookie': `li_at=${li_at}`,
-        'csrf-token': 'ajax:0',
-        'x-restli-protocol-version': '2.0.0',
-        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-      }
-    });
-
-    if (!testRes.ok) {
-      return res.json({ ok: false, message: `Cookie verification failed (${testRes.status}). Make sure you copied the full li_at value.` });
-    }
-
     const cookieArray = [
       { name: 'li_at', value: li_at, domain: '.linkedin.com', path: '/' },
       { name: 'JSESSIONID', value: `"ajax:${Date.now()}"`, domain: '.linkedin.com', path: '/' }
     ];
 
-    // 1) Encrypted server cookie store — the live source the keepalive/engine read
+    // Store FIRST, verify after — and verify through the proxied Playwright engine.
+    // NEVER raw-fetch LinkedIn from this server: datacenter IP is blocked and a raw
+    // check falsely rejects valid cookies (Systems Registry hard fact).
     const identity = identityFor(email);
     try { cookieStore.save(identity, cookieArray, { source: 'manual_import', importedAt: new Date().toISOString() }); }
     catch (csErr) { console.error('[linkedin-cookie-import] cookieStore.save failed:', csErr.message); }
 
-    // 2) Supabase user_tokens backup (compatible with linkedin-client.js)
+    // Supabase user_tokens backup (compatible with linkedin-client.js)
     const cookieJson = JSON.stringify(cookieArray);
     const SB = process.env.VITE_SUPABASE_URL;
     const SK = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -55,8 +43,17 @@ export default async function handler(req, res) {
       body: JSON.stringify({ user_email: tokenEmail, provider: 'linkedin', access_token: cookieJson, refresh_token: li_at, updated_at: new Date().toISOString() })
     });
 
-    console.log(`[linkedin-cookie-import] ✅ Cookie imported for ${tokenEmail} (identity=${identity}, store+backup)`);
-    return res.json({ ok: true, message: `LinkedIn connected for ${identity} — cookie stored in encrypted server store + Supabase backup`, identity });
+    // Authoritative verification: Playwright through the residential proxy
+    let verified = false, verifyNote = '';
+    try {
+      const { verifyIdentity } = await import('../lib/linkedinEngine.js');
+      const v = await verifyIdentity(identity);
+      verified = !!(v && (v.authenticated || v.ok));
+      verifyNote = verified ? 'verified live through proxy' : `stored but not yet verified (${v?.error || v?.reason || 'engine check failed'})`;
+    } catch (vErr) { verifyNote = `stored; verification engine error: ${vErr.message}`; }
+
+    console.log(`[linkedin-cookie-import] ✅ Cookie imported for ${tokenEmail} (identity=${identity}) — ${verifyNote}`);
+    return res.json({ ok: true, verified, identity, message: `LinkedIn cookie stored for ${identity} (encrypted store + backup) — ${verifyNote}` });
   } catch (e) {
     console.error('[linkedin-cookie-import] Error:', e);
     return res.status(500).json({ ok: false, message: e.message });
