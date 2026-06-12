@@ -32,6 +32,21 @@ export default async function handler(req, res) {
       (() => { try { return JSON.parse(readFileSync(join(__dirname, 'data', 'race-calendars.json'), 'utf8')); } catch { return {}; } })(),
     ]);
 
+    // ── Session 71: consolidation threshold prompt (plain SQL — zero AI cost) ──
+    // When enough new memory accumulates, Kiko PROMPTS Sunny via alert+briefing.
+    // Consolidation NEVER runs on its own — only on his explicit word.
+    try {
+      const { data: wmRow } = await supabase.from('kiko_system_state').select('value').eq('key', 'consolidation_watermark').limit(1);
+      const wm = wmRow?.[0]?.value;
+      if (wm) {
+        const { count } = await supabase.from('kiko_conversation_insights').select('*', { count: 'exact', head: true }).gt('created_at', wm);
+        if ((count || 0) >= 150) {
+          const { data: pend } = await supabase.from('kiko_alerts').select('id').eq('type', 'consolidation_due').eq('dismissed', false).limit(1);
+          if (!pend?.length) await supabase.from('kiko_alerts').insert({ type: 'consolidation_due', severity: 'info', title: `Memory consolidation suggested: ${count} unconsolidated insights`, detail: `I am holding ${count} insights gathered since the last consolidation. An incremental pass costs roughly $0.50-1.50 and folds them into my doctrine. Say "consolidate" and I will run it — it never runs without your word.`, entity_type: 'system', entity_name: 'memory-consolidation', dismissed: false });
+        }
+      }
+    } catch (e) { console.error('[daily-intel] consolidation check failed:', e.message); }
+
     // Deal state with idle counters
     const now = Date.now();
     const dealState = (deals.data || []).map(d => {
