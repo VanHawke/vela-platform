@@ -608,3 +608,56 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
     </div>
   )
 }
+
+// ── StepComposer (Session 72) — the standard composer in campaign-step form ──
+// Binding addendum: all composers live in this file. Controlled variant of the
+// draft frame for sequence step editing: same chrome, tone CTAs route to
+// onRefine, send is replaced by test-send. Channel-aware (LinkedIn = no subject).
+export function StepComposer({ channel = 'email', subject = '', body = '', onSubject, onBody, onTest, onRefine, onDelete, sender = 'matt.smith@vanhawke.agency', refining = false, testSent = false }) {
+  const isEmail = channel === 'email'
+  const words = (body || '').trim() ? (body || '').trim().split(/\s+/).length : 0
+  const cap = isEmail ? 150 : 120
+  const tones = [
+    { label: 'Sharper', prompt: 'Rewrite this with sharper, more commanding authority. Keep it under the word cap.' },
+    { label: 'Warmer', prompt: 'Rewrite this with a warmer, more personable tone. Keep it under the word cap.' },
+    { label: 'Shorter', prompt: 'Make this much shorter while keeping the key message.' },
+  ]
+  const inp = { width: '100%', padding: '10px 13px', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', fontWeight: 450, outline: 'none', boxSizing: 'border-box', background: '#fff' }
+  return (
+    <div style={{ borderRadius: 14, border: '0.5px solid rgba(0,0,0,0.08)', background: '#fff' }}>
+      <div style={{ padding: '12px 18px', borderBottom: '0.5px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 600, color: '#0A0A0A' }}>{displayName(sender).split(' ').map(w => w[0]).join('').slice(0, 2)}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A' }}>{displayName(sender)}</div>
+          <div style={{ fontSize: 11, color: '#A0A0A0' }}>{isEmail ? 'Email' : 'LinkedIn'} · {agencyEmail(sender)}</div>
+        </div>
+        {onDelete && <button onClick={onDelete} title="Delete step" style={{ width: 32, height: 32, borderRadius: 8, border: '0.5px solid rgba(184,100,62,0.25)', background: 'transparent', cursor: 'pointer', color: '#9a4040', fontSize: 13 }}>✕</button>}
+      </div>
+      <div style={{ padding: '14px 18px' }}>
+        {isEmail && (
+          <input value={subject} onChange={e => onSubject && onSubject(e.target.value)} placeholder="Subject line…" style={{ ...inp, marginBottom: 8, fontWeight: 500 }} />
+        )}
+        <textarea value={body} onChange={e => onBody && onBody(e.target.value)} rows={7}
+          placeholder={isEmail ? 'Email body — under 150 words, authority-led…' : 'LinkedIn message — under 120 words…'}
+          style={{ ...inp, resize: 'vertical', lineHeight: 1.65, fontSize: 12.5, minHeight: 130 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+          {tones.map(t => (
+            <button key={t.label} disabled={refining} onClick={() => onRefine && onRefine(t.prompt)}
+              style={{ padding: '5px 12px', borderRadius: 24, border: '0.5px solid rgba(0,0,0,0.08)', background: refining ? 'rgba(0,0,0,0.03)' : 'transparent', fontSize: 11.5, color: refining ? '#A0A0A0' : '#6B6B6B', cursor: refining ? 'default' : 'pointer', fontFamily: 'inherit', fontWeight: 500 }}>
+              {refining ? '…' : '✦ ' + t.label}
+            </button>
+          ))}
+          <span style={{ marginLeft: 'auto', fontSize: 11, color: words > cap ? '#9a4040' : '#A0A0A0', fontWeight: words > cap ? 600 : 400 }}>{words}/{cap} words</span>
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'center' }}>
+          {onTest && (
+            <button onClick={onTest} style={{ padding: '8px 16px', borderRadius: 8, border: '0.5px solid rgba(0,0,0,0.08)', background: testSent ? 'rgba(125,138,100,0.10)' : 'transparent', fontSize: 12, fontWeight: 500, color: testSent ? '#5a6a42' : '#0A0A0A', cursor: 'pointer', fontFamily: 'inherit' }}>
+              {testSent ? '✓ Test sent' : (isEmail ? '→ Test email to me' : '→ Test to my LinkedIn')}
+            </button>
+          )}
+          <span style={{ fontSize: 11, color: '#A0A0A0', marginLeft: 'auto' }}>Saves on change · versioned</span>
+        </div>
+      </div>
+    </div>
+  )
+}

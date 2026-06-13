@@ -1,5 +1,6 @@
 // src/pages/SequenceDetail.jsx — Sequence builder + leads + performance
 import { useState, useEffect } from 'react'
+import { StepComposer } from '@/components/kiko/EmailDraft'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
@@ -1028,24 +1029,21 @@ RULES:
                   </>
                 ) : (
                   <>
-                {/* ═══ STEP EDITOR — clean, modern ═══ */}
-                {cur.channel === 'email' && <div style={{ marginBottom: 14 }}><label style={{ fontSize: 11, color: C.textSec, marginBottom: 4, display: 'block', fontWeight: 500, fontFamily: C.font }}>Subject line</label>
-                  <input value={cur.subject || ''} onChange={e => upd(selStep, 'subject', e.target.value)} placeholder="Haas F1 Team x {category}" style={{ ...inputStyle, fontSize: 13, padding: '10px 12px' }} /></div>}
-
+                {/* ═══ STEP EDITOR — StepComposer, the standard drafter (Session 72) ═══ */}
                 <div style={{ marginBottom: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                    <label style={{ fontSize: 11, color: C.textSec, fontWeight: 500, fontFamily: C.font }}>{cur.channel === 'email' ? 'Email body' : cur.action === 'invite' ? 'Connection note (max 300 chars)' : 'Message'}</label>
-                    <span style={{ fontSize: 10, color: (() => {
-                      if (cur.channel === 'linkedin') return (cur.template || '').length > 280 ? '#f87171' : C.textTer
-                      const words = (cur.template || '').trim().split(/\s+/).filter(Boolean).length
-                      return words < 50 ? C.amber : words > 125 ? '#f87171' : C.teal
-                    })(), fontFamily: C.font }}>
-                      {cur.channel === 'linkedin'
-                        ? `${(cur.template || '').length} / 300`
-                        : `${(cur.template || '').trim().split(/\s+/).filter(Boolean).length} words`}
-                    </span>
-                  </div>
-                  <textarea value={cur.template || ''} onChange={e => upd(selStep, 'template', e.target.value)} rows={cur.channel === 'email' ? 12 : 4} maxLength={cur.channel === 'linkedin' ? 300 : undefined} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.7, padding: '12px 14px', fontSize: 13 }} />
+                  <StepComposer
+                    channel={cur.channel === 'linkedin' ? 'linkedin' : 'email'}
+                    subject={cur.subject || ''}
+                    body={cur.template || ''}
+                    onSubject={v => upd(selStep, 'subject', v)}
+                    onBody={v => upd(selStep, 'template', v)}
+                    onTest={() => { if (cur.channel === 'linkedin') { setLiTestOpen(true); setLiTestUrl(''); setLiTestSent(false) } else { setTestModalStep(selStep); setTestModalOpen(true) } }}
+                    onRefine={prompt => refineStep(selStep, prompt)}
+                    onDelete={() => del(selStep)}
+                    refining={refining}
+                    testSent={cur.channel === 'linkedin' ? liTestSent : testSent}
+                    sender={(orgMembers.find(m => m.user_id === seq?.send_from_user_id)?.email) || 'matt.smith@vanhawke.agency'}
+                  />
                 </div>
 
                 {/* Variables */}
@@ -1053,12 +1051,9 @@ RULES:
                   {VARS.map(v => <button key={v} onClick={() => upd(selStep, 'template', (cur.template || '') + v)} style={{ padding: '3px 8px', borderRadius: 4, border: `1px solid ${C.border}`, background: '#FAFAF8', color: C.purple, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>{v}</button>)}
                 </div>
 
-                {/* Action buttons */}
+                {/* Write with Kiko — full generation */}
                 <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
                   <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={13} /> Write with Kiko</button>
-                  {cur.channel === 'email' && <button onClick={() => { setTestModalStep(selStep); setTestModalOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 12, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSent ? '✓ Sent' : 'Test email'}</button>}
-                  {cur.channel === 'linkedin' && <button onClick={() => { setLiTestOpen(true); setLiTestUrl(''); setLiTestSent(false) }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 12, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{liTestSent ? '✓ Sent' : 'Test LinkedIn'}</button>}
                 </div>
 
                 {/* Approach & Psychology — collapsed advanced section */}
