@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import T from '@/lib/theme'
 import BulkEditStepsModal from '@/components/campaigns/BulkEditStepsModal'
+import { StepComposer } from '@/components/kiko/EmailDraft'
 import {
   Mail, Linkedin, Eye, MousePointer, Reply, AlertTriangle, Clock,
   Pause, Play, Plus, Search, RefreshCw, X, ChevronRight, Trash2,
@@ -1491,6 +1492,7 @@ function CampaignWizard({ C, onBack, onCreated }) {
   const [dailyLimit, setDailyLimit] = useState(30)
   const [launching, setLaunching] = useState(false)
   const [drafting, setDrafting] = useState(false)
+  const [refiningStep, setRefiningStep] = useState(null)
   const totalSteps = 5
 
   // ── Step 4: Prospects + conflict engine (Session 72) ──
@@ -1583,6 +1585,33 @@ function CampaignWizard({ C, onBack, onCreated }) {
       }
     } catch (err) { console.error('Kiko draft failed:', err) }
     setDrafting(false)
+  }
+
+  const refineStep = async (idx, tonePrompt) => {
+    const s = steps[idx]
+    if (!s || !(s.body || '').trim()) return
+    setRefiningStep(idx)
+    try {
+      const kind = s.type === 'LinkedIn' ? 'LinkedIn message' : 'email body'
+      const prompt = `Revise this ${kind} for an outreach campaign. Instruction: ${tonePrompt}\n\nCurrent ${kind}:\n${s.body}\n\nReturn ONLY the revised ${kind} text — no subject line, no markdown, no surrounding quotes, no explanation.`
+      const res = await fetch('https://api.vanhawke.agency/api/kiko', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: prompt, userId: 'sunny', mode: 'chat' })
+      })
+      const reader = res.body.getReader()
+      let fullText = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = new TextDecoder().decode(value)
+        for (const line of chunk.split('\n').filter(l => l.startsWith('data: '))) {
+          try { const d = JSON.parse(line.slice(6)); if (d.delta) fullText += d.delta } catch {}
+        }
+      }
+      const revised = fullText.trim().replace(/^["']+|["']+$/g, '').trim()
+      if (revised) updateStep(idx, 'body', revised)
+    } catch (err) { console.error('Refine step failed:', err) } finally { setRefiningStep(null) }
   }
 
   // Apply 7-step template when sector is selected
@@ -1701,18 +1730,24 @@ function CampaignWizard({ C, onBack, onCreated }) {
             {steps.map((s, i) => (
               <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'flex-start' }}>
                 <div style={{ width: 28, height: 28, borderRadius: '50%', background: s.type === 'LinkedIn' ? 'rgba(0,119,181,0.08)' : 'rgba(0,0,0,0.04)', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 600, color: s.type === 'LinkedIn' ? '#0077B5' : '#6B6B6B', flexShrink: 0, marginTop: 8 }}>{i + 1}</div>
-                <div style={{ flex: 1, padding: 14, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
                     <select value={s.type} onChange={e => updateStep(i, 'type', e.target.value)} style={{ padding: '6px 10px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 12, fontFamily: C.font, background: '#FEFEFC', outline: 'none' }}>
                       <option>Email</option><option>LinkedIn</option>
                     </select>
-                    <input value={s.delay} onChange={e => updateStep(i, 'delay', e.target.value)} style={{ width: 90, padding: '6px 10px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 12, fontFamily: C.font, fontWeight: 450, outline: 'none' }} />
-                    {steps.length > 1 && <button onClick={() => removeStep(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto', color: '#A0A0A0' }}><X size={14} /></button>}
+                    <input value={s.delay} onChange={e => updateStep(i, 'delay', e.target.value)} style={{ width: 110, padding: '6px 10px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 12, fontFamily: C.font, fontWeight: 450, outline: 'none' }} />
+                    <span style={{ fontSize: 11, color: '#A0A0A0' }}>{s.type === 'LinkedIn' ? 'LinkedIn touch' : 'Email touch'}</span>
                   </div>
-                  {s.type === 'Email' && (
-                    <input value={s.subject} onChange={e => updateStep(i, 'subject', e.target.value)} placeholder="Subject line…" style={{ ...inputStyle, marginBottom: 6 }} />
-                  )}
-                  <textarea value={s.body} onChange={e => updateStep(i, 'body', e.target.value)} placeholder={s.type === 'LinkedIn' ? 'LinkedIn message — under 120 words…' : 'Email body — under 150 words…'} rows={3} style={{ ...inputStyle, fontSize: 12, fontWeight: 400, resize: 'none', lineHeight: 1.6 }} />
+                  <StepComposer
+                    channel={s.type === 'LinkedIn' ? 'linkedin' : 'email'}
+                    subject={s.subject}
+                    body={s.body}
+                    onSubject={v => updateStep(i, 'subject', v)}
+                    onBody={v => updateStep(i, 'body', v)}
+                    onRefine={prompt => refineStep(i, prompt)}
+                    onDelete={steps.length > 1 ? () => removeStep(i) : undefined}
+                    refining={refiningStep === i}
+                  />
                 </div>
               </div>
             ))}
