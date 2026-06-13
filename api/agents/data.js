@@ -491,9 +491,12 @@ async function getWinLossInsights({ company }) {
 }
 
 // ── Thread History — cross-session entity tracking ──
-async function getThreadHistory({ entity, company }) {
-  const target = entity || company;
-  if (!target) return 'Error: provide entity or company name';
+async function getThreadHistory({ entity, company, query, name }) {
+  // Param contract fix (S72): crm_search schema documents the term as `query`, but this
+  // historically only read entity/company — so a correct params.query call silently read
+  // nothing and fell to the no-target path. Accept all aliases; error explicitly on a true miss.
+  const target = entity || company || query || name;
+  if (!target) return 'Error: thread_history needs a search term — pass params.query (or entity/company/name). Received none.';
   try {
     const threads = await sbFetch(`kiko_thread_tracker?entity_name=ilike.*${encodeURIComponent(target)}*&order=last_discussed_at.desc&limit=5&select=*`);
     if (!threads?.length) return `No conversation threads found for "${target}".`;

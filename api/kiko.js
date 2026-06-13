@@ -304,19 +304,31 @@ export default async function handler(req, res) {
 
   res.setHeader('Content-Type', 'text/event-stream'); res.setHeader('Cache-Control', 'no-cache'); res.setHeader('Connection', 'keep-alive');
   const sseBuffer = [];
-  const write = (data) => { sseBuffer.push(data); try { res.write(`data: ${JSON.stringify(data)}\n\n`); } catch {} };
-  const finishResponse = () => { try { res.write('data: [DONE]\n\n'); } catch {} try { res.end(); } catch {} };
-
   let finished = false;
-  const watchdog = setTimeout(async () => {
-    if (!finished) {
-      const partialResponse = sseBuffer.map(d => d.delta || '').join('');
-      if (partialResponse.length > 50) { extractConversationInsights(message, partialResponse, userId).catch(() => {}); }
+  let watchdog = null;
+  const watchdogStart = Date.now();
+  const WATCHDOG_IDLE_MS = 45000;      // abort after 45s of NO streamed progress — fail-fast on a hung/silent turn (deliberate, S69)
+  const WATCHDOG_CEILING_MS = 105000;  // absolute backstop, just under the 110s frontend hard-abort
+  // Progress-aware watchdog (S72): re-armed on every streamed write (delta/toolStatus/8s heartbeat).
+  // A turn making steady progress — multi-tool deep research — runs to completion; a genuinely
+  // silent turn still dies after 45s idle. Per-tool 30s/15s race still kills individual hung tools.
+  function armWatchdog() {
+    if (finished) return;
+    if (watchdog) clearTimeout(watchdog);
+    const remainingToCeiling = WATCHDOG_CEILING_MS - (Date.now() - watchdogStart);
+    const delay = Math.max(0, Math.min(WATCHDOG_IDLE_MS, remainingToCeiling));
+    watchdog = setTimeout(() => {
+      if (finished) return;
       finished = true;
+      // Gotcha (Kiko review): do NOT extract insights from the partial sseBuffer here —
+      // a truncated/aborted buffer persists garbage learnings. Clean-completion path owns extraction.
       write({ delta: '\n\n⏱ Response taking too long — recovering.' });
       finishResponse();
-    }
-  }, 45000);
+    }, delay);
+  }
+  const write = (data) => { sseBuffer.push(data); armWatchdog(); try { res.write(`data: ${JSON.stringify(data)}\n\n`); } catch {} };
+  const finishResponse = () => { try { res.write('data: [DONE]\n\n'); } catch {} try { res.end(); } catch {} };
+  armWatchdog(); // initial arm
 
   try {
     write({ toolStatus: 'Connecting...' });
