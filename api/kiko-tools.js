@@ -492,6 +492,14 @@ export const TOOL_DEFINITIONS = [
       reason: { type: 'string', description: 'Why you are making this change — logged for audit trail' },
     }, required: ['operation'] },
   },
+  {
+    name: 'reengagement_brief',
+    description: 'Generate or fetch a re-engagement brief for a dormant or archived deal: a holistic read of the counterpart, the company now, and a recommendation weighted to the actual re-engagement message. Use when the user asks whether to reopen or re-engage an archived deal, "should we go back to X", or wants a re-engagement angle. Takes the company name of an archived deal.',
+    input_schema: { type: 'object', properties: {
+      company: { type: 'string', description: 'Company name of the archived deal, e.g. "Thomson Reuters".' },
+      refresh: { type: 'boolean', description: 'Force regeneration (Opus + web search, ~45s) instead of the cached brief. Default false.' },
+    }, required: ['company'] },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -523,6 +531,27 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
       })});
     } catch {} // Never fail on logging
   };
+
+  // ── Re-engagement brief (Archive v2 — same engine as the dossier UI, same ring-fence) ──
+  if (name === 'reengagement_brief') {
+    const company = (input.company || '').trim();
+    if (!company) return 'Tell me which company — I need the name of an archived deal.';
+    const deals = await sbFetch('deals?select=id,data');
+    const archived = (deals || []).filter(d => (d.data?.status || '') === 'archived');
+    const lc = company.toLowerCase();
+    const match = archived.find(d => (d.data?.company || '').toLowerCase() === lc)
+              || archived.find(d => (d.data?.company || '').toLowerCase().includes(lc));
+    if (!match) return `No archived deal found for "${company}". This brief is for dormant/archived relationships — check the name, or the deal may still be active.`;
+    const { buildBrief, readBrief } = await import('./lib/archive-brief.js');
+    let result = input.refresh
+      ? await buildBrief({ dealId: match.id, viewerEmail: userEmail })
+      : await readBrief({ dealId: match.id, viewerEmail: userEmail });
+    if (!input.refresh && result && result.brief === null) {
+      result = await buildBrief({ dealId: match.id, viewerEmail: userEmail });
+    }
+    if (result?.error) return `Could not build the brief (${result.error}).`;
+    return result;
+  }
 
   // ── Read Bible — JIT doctrine loading (Phase 5.1) ──
   if (name === 'read_bible') {
