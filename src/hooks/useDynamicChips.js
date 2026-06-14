@@ -52,7 +52,7 @@ async function buildHomeChips(live) {
     // Still need deals and predictions from Supabase (not in context)
     const [dealRes, predRes] = await Promise.all([
       supabase.from('deals').select('data,updated_at')
-        .not('data->>status', 'in', '("won","lost")')
+        .not('data->>status', 'in', '("won","lost","archived")')
         .order('updated_at', { ascending: false }).limit(50),
       supabase.from('kiko_alerts')
         .select('title,entity_name')
@@ -85,7 +85,7 @@ async function buildHomeChips(live) {
     }
 
     // 3. Top stale deal
-    const deals = (dealRes.data || []).map(d => d.data).filter(Boolean)
+    const deals = (dealRes.data || []).map(d => d.data).filter(d => d && (d.status || '') !== 'archived')
     const stale = deals.filter(d => d.lastActivity && (now - new Date(d.lastActivity)) > 30 * 86400000 && (now - new Date(d.lastActivity)) < 365 * 86400000)
       .sort((a, b) => (parseFloat(b.value) || 0) - (parseFloat(a.value) || 0))
     if (stale.length > 0 && chips.length < 3) {

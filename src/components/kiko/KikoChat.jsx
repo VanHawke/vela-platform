@@ -1836,7 +1836,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 </button>}
                 {/* Dynamic chips removed — only alert pill shown */}
                 {USE_REDESIGN_DASHBOARD && dynamicChips.map(chip => (
-                  <button key={chip.label || chip} onClick={() => { const prompt = chip.prompt || chip.label || chip; setInput(prompt); handleSubmit(prompt); if (chip.navigate) navigate(chip.navigate) }} style={{
+                  <button key={chip.label || chip} onClick={() => { const prompt = chip.prompt || chip.label || chip; setInput(prompt); handleSubmit(prompt) }} style={{
                     padding: '5px 14px', borderRadius: 50,
                     border: '1px solid rgba(0,0,0,0.08)', background: '#fff',
                     fontSize: 12, color: '#6B6B6B', cursor: 'pointer',
