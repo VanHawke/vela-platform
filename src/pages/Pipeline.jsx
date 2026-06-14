@@ -538,7 +538,7 @@ export default function Pipeline({ user }) {
     return (
       <div className="pl">
         {viewToggle}
-        <div style={{ padding: '8px 44px 0' }}><ArchivePanel user={user} /></div>
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '8px 44px 24px' }}><ArchivePanel user={user} /></div>
       </div>
     )
   }

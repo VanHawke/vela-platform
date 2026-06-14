@@ -1,12 +1,12 @@
 // src/components/archive/ArchivePanel.jsx
-// Archive view (a tab inside Pipeline): lists archived deals; opening one shows a
-// ring-fenced re-engagement dossier (full correspondence history) from the
-// /api/archive/dossier endpoint. v2 adds Kiko's holistic brief into the slot below.
+// Archive view (tab inside Pipeline): lists archived deals; opening one shows a
+// ring-fenced re-engagement dossier (correspondence timeline) plus Kiko's brief.
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Mail, Linkedin, FileText, ChevronRight, Lock } from 'lucide-react'
+import { ArrowLeft, Mail, Linkedin, FileText, ChevronRight, Lock, Sparkles, RefreshCw } from 'lucide-react'
 import './archive.css'
 
+const API = 'https://api.vanhawke.agency'
 const fmtValue = (v) => {
   const n = Number(v) || 0
   if (n >= 1e6) return (n / 1e6).toFixed(n % 1e6 ? 1 : 0) + 'M'
@@ -30,6 +30,81 @@ const channelLabel = (item) => {
   return item.channel || 'Activity'
 }
 
+const VERDICT_LABEL = { warm_reopen: 'Warm reopen', cool_hold: 'Cool — hold', do_not_reopen: "Don't reopen" }
+const VERDICT_CLASS = { warm_reopen: 'arch-v-warm', cool_hold: 'arch-v-hold', do_not_reopen: 'arch-v-no' }
+
+function BriefSection({ dealId }) {
+  const [brief, setBrief] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
+  const [stale, setStale] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      setLoading(true)
+      try {
+        const res = await fetch(`${API}/api/archive/brief`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dealId }),
+        })
+        const j = await res.json()
+        if (alive) { setBrief(j.brief || null); setStale(!!j.stale) }
+      } catch { /* ignore */ }
+      if (alive) setLoading(false)
+    })()
+    return () => { alive = false }
+  }, [dealId])
+
+  async function generate() {
+    setGenerating(true)
+    try {
+      const res = await fetch(`${API}/api/archive/brief`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dealId, generate: true }),
+      })
+      const j = await res.json()
+      setBrief(j.brief || null); setStale(false)
+    } catch { /* ignore */ }
+    setGenerating(false)
+  }
+
+  return (
+    <div className="arch-brief-slot">
+      <div className="arch-brief-head">
+        <span className="arch-brief-label"><Sparkles size={13} /> Kiko's re-engagement brief</span>
+        {brief && !generating && (
+          <button className={`arch-brief-refresh ${stale ? 'is-stale' : ''}`} onClick={generate}>
+            <RefreshCw size={11} /> {stale ? 'Inputs changed — refresh' : 'Refresh'}
+          </button>
+        )}
+      </div>
+
+      {generating ? (
+        <div className="arch-brief-loading">Kiko is reading the relationship, the company and the market — about 45 seconds…</div>
+      ) : loading ? (
+        <div className="arch-brief-loading">Checking for a brief…</div>
+      ) : !brief ? (
+        <button className="arch-brief-generate" onClick={generate}><Sparkles size={14} /> Generate Kiko's brief</button>
+      ) : (
+        <div className="arch-brief-body">
+          <div className="arch-brief-top">
+            {brief.verdict && <span className={`arch-verdict ${VERDICT_CLASS[brief.verdict] || ''}`}>{VERDICT_LABEL[brief.verdict] || brief.verdict}</span>}
+            {brief.headline && <span className="arch-brief-headline">{brief.headline}</span>}
+          </div>
+          <div className="arch-brief-fields">
+            {brief.counterpart_read && <div className="arch-brief-field"><span className="arch-brief-k">The counterpart</span><p>{brief.counterpart_read}</p></div>}
+            {brief.company_context && <div className="arch-brief-field"><span className="arch-brief-k">The company now</span><p>{brief.company_context}</p></div>}
+            {brief.recommendation && <div className="arch-brief-field"><span className="arch-brief-k">Recommendation</span><p>{brief.recommendation}</p></div>}
+            {brief.suggested_angle && <div className="arch-brief-field arch-brief-angle"><span className="arch-brief-k">Suggested angle</span><p>{brief.suggested_angle}</p></div>}
+            {brief.timing && <div className="arch-brief-field"><span className="arch-brief-k">Timing</span><p>{brief.timing}</p></div>}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function Dossier({ deal, dossier, loading, onBack }) {
   const d = deal.data || {}
   const tl = dossier?.timeline || []
@@ -46,12 +121,7 @@ function Dossier({ deal, dossier, loading, onBack }) {
         </div>
       </div>
 
-      <div className="arch-brief-slot">
-        <div className="arch-brief-head">
-          <span className="arch-brief-label">Kiko's re-engagement brief</span>
-          <span className="arch-brief-soon">Next — a holistic read of the counterpart and the company, weighted to messaging</span>
-        </div>
-      </div>
+      <BriefSection dealId={deal.id} />
 
       <div className="arch-timeline-head">
         <span className="arch-timeline-title">Correspondence</span>
@@ -105,10 +175,8 @@ export default function ArchivePanel({ user }) {
     ;(async () => {
       setLoading(true)
       const { data } = await supabase
-        .from('deals')
-        .select('id, data, updated_at')
-        .eq('data->>status', 'archived')
-        .order('updated_at', { ascending: false })
+        .from('deals').select('id, data, updated_at')
+        .eq('data->>status', 'archived').order('updated_at', { ascending: false })
       if (alive) { setDeals(data || []); setLoading(false) }
     })()
     return () => { alive = false }
@@ -117,9 +185,8 @@ export default function ArchivePanel({ user }) {
   async function openDossier(deal) {
     setSelected(deal); setDossier(null); setDossierLoading(true)
     try {
-      const res = await fetch('https://api.vanhawke.agency/api/archive/dossier', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API}/api/archive/dossier`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dealId: deal.id }),
       })
       const json = await res.json()

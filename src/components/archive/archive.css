@@ -58,3 +58,25 @@
 .arch-item-date { font-size: 11.5px; color: #A0A0A0; margin-left: auto; }
 .arch-item-subject { font-size: 13.5px; font-weight: 500; color: #1a1a1a; margin-bottom: 2px; }
 .arch-item-snippet { font-size: 12.5px; color: #6B6B6B; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* brief — interactive (v2) */
+.arch-brief-label { display: inline-flex; align-items: center; gap: 6px; }
+.arch-brief-refresh { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; color: #9a9a8e; font-size: 11.5px; font-weight: 500; cursor: pointer; padding: 2px 4px; transition: color .15s; }
+.arch-brief-refresh:hover { color: #5f6b4c; }
+.arch-brief-refresh.is-stale { color: #b4742a; }
+.arch-brief-loading { font-size: 12.5px; color: #9a9a8e; padding: 6px 0 2px; }
+.arch-brief-generate { display: inline-flex; align-items: center; gap: 7px; margin-top: 4px; background: #5f6b4c; color: #fff; border: none; border-radius: 9px; padding: 8px 15px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .15s; }
+.arch-brief-generate:hover { background: #4f5a3f; }
+.arch-brief-body { margin-top: 12px; }
+.arch-brief-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.arch-verdict { font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; border-radius: 6px; padding: 3px 9px; color: #fff; }
+.arch-v-warm { background: #5f6b4c; }
+.arch-v-hold { background: #b4742a; }
+.arch-v-no { background: #9a9a9a; }
+.arch-brief-headline { font-family: 'Source Serif 4', Georgia, serif; font-size: 16.5px; font-weight: 600; color: #1a1a1a; line-height: 1.3; letter-spacing: -0.005em; }
+.arch-brief-fields { display: flex; flex-direction: column; gap: 11px; }
+.arch-brief-field { display: flex; flex-direction: column; gap: 2px; }
+.arch-brief-field p { margin: 0; font-size: 13px; color: #3a3a3a; line-height: 1.55; }
+.arch-brief-k { font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #9a9a8e; }
+.arch-brief-angle { background: #fff; border: 1px solid rgba(125,138,100,0.3); border-radius: 10px; padding: 11px 13px; }
+.arch-brief-angle p { color: #1a1a1a; font-weight: 500; }
