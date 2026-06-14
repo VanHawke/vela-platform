@@ -105,12 +105,28 @@ function BriefSection({ dealId }) {
   )
 }
 
-function Dossier({ deal, dossier, loading, onBack }) {
+function Dossier({ deal, dossier, loading, onBack, onReactivate }) {
   const d = deal.data || {}
+  const [reactivating, setReactivating] = useState(false)
+  const [confirming, setConfirming] = useState(false)
+  async function handleReactivate() {
+    setReactivating(true)
+    try { await onReactivate(deal) } catch { setReactivating(false); setConfirming(false) }
+  }
   const tl = dossier?.timeline || []
   return (
     <div className="arch-dossier">
-      <button className="arch-back" onClick={onBack}><ArrowLeft size={15} /> Archive</button>
+      <div className="arch-dossier-topbar">
+        <button className="arch-back" onClick={onBack}><ArrowLeft size={15} /> Archive</button>
+        {confirming ? (
+          <span className="arch-reactivate-wrap">
+            {!reactivating && <button className="arch-reactivate-cancel" onClick={() => setConfirming(false)}>Cancel</button>}
+            <button className="arch-reactivate armed" onClick={handleReactivate} disabled={reactivating}>{reactivating ? 'Re-activating…' : 'Confirm — return to pipeline'}</button>
+          </span>
+        ) : (
+          <button className="arch-reactivate" onClick={() => setConfirming(true)}>Re-activate deal</button>
+        )}
+      </div>
 
       <div className="arch-dossier-head">
         <h2 className="arch-dossier-company">{d.company || d.title}</h2>
@@ -197,9 +213,18 @@ export default function ArchivePanel({ user }) {
     setDossierLoading(false)
   }
 
+  async function reactivateDeal(deal) {
+    const newData = { ...(deal.data || {}), status: 'active' }
+    delete newData.archived_at; delete newData.archive_reason
+    await supabase.from('deals').update({ data: newData }).eq('id', deal.id)
+    setSelected(null); setDossier(null)
+    const { data } = await supabase.from('deals').select('id, data, updated_at').eq('data->>status', 'archived').order('updated_at', { ascending: false })
+    setDeals(data || [])
+  }
+
   if (selected) {
     return <Dossier deal={selected} dossier={dossier} loading={dossierLoading}
-      onBack={() => { setSelected(null); setDossier(null) }} />
+      onBack={() => { setSelected(null); setDossier(null) }} onReactivate={reactivateDeal} />
   }
 
   return (
