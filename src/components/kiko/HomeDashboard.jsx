@@ -37,7 +37,7 @@ export default function HomeDashboard({ user, onPromptClick }) {
           supabase.from('deals').select('id, data, updated_at').not('data->>status', 'in', '("won","lost")').order('updated_at', { ascending: false }),
           supabase.from('tasks').select('id, data, updated_at').order('updated_at', { ascending: false }).limit(50),
           supabase.from('kiko_alerts').select('id, title, entity_name, created_at').eq('type', 'reply_from_prospect').gte('created_at', yesterdayISO).limit(5),
-          supabase.from('race_calendar').select('name, date, series').eq('series', 'F1').gt('date', new Date().toISOString().split('T')[0]).order('date').limit(1).maybeSingle(),
+          supabase.from('race_calendar').select('name, date, series').eq('series', 'F1').gte('date', new Date().toISOString().split('T')[0]).order('date').limit(1).maybeSingle(),
         ])
         if (cancelled) return
         setDeals(dealsRes.data || [])

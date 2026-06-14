@@ -64,7 +64,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
             .order('created_at', { ascending: false }).limit(10),
           supabase.from('race_calendar').select('name, date, series, circuit, location')
             .eq('series', 'F1')
-            .gt('date', new Date().toISOString().split('T')[0])
+            .gte('date', new Date().toISOString().split('T')[0])
             .order('date').limit(1).maybeSingle(),
           supabase.from('kiko_draft_actions').select('id, action_type, payload, created_at')
             .eq('status', 'pending')
