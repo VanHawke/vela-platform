@@ -34,7 +34,7 @@ export default function HomeDashboard({ user, onPromptClick }) {
       const yesterdayISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       try {
         const [dealsRes, tasksRes, repliesRes, raceRes] = await Promise.all([
-          supabase.from('deals').select('id, data, updated_at').not('data->>status', 'in', '("won","lost")').order('updated_at', { ascending: false }),
+          supabase.from('deals').select('id, data, updated_at').not('data->>status', 'in', '("won","lost","archived")').order('updated_at', { ascending: false }),
           supabase.from('tasks').select('id, data, updated_at').order('updated_at', { ascending: false }).limit(50),
           supabase.from('kiko_alerts').select('id, title, entity_name, created_at').eq('type', 'reply_from_prospect').gte('created_at', yesterdayISO).limit(5),
           supabase.from('race_calendar').select('name, date, series').eq('series', 'F1').gte('date', new Date().toISOString().split('T')[0]).order('date').limit(1).maybeSingle(),
