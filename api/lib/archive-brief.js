@@ -133,11 +133,22 @@ export async function buildBrief({ dealId, viewerEmail }) {
   if (dossier.error) return { error: dossier.error };
   const intel = await gatherIntel(dossier.prospect?.company);
 
-  const res = await anthropic.messages.create({
-    model: BRAIN, max_tokens: 2500,
-    tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-    messages: [{ role: 'user', content: briefPrompt(dossier.deal, dossier.prospect, dossier, intel) }],
-  });
+  let res;
+  try {
+    res = await anthropic.messages.create({
+      model: BRAIN, max_tokens: 2500,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages: [{ role: 'user', content: briefPrompt(dossier.deal, dossier.prospect, dossier, intel) }],
+    });
+  } catch (e) {
+    // Generation failed (Anthropic/web_search error). Fall back to an existing
+    // cached brief for THIS viewer rather than 500-ing and losing it.
+    const { data: cached } = await supabase
+      .from('kiko_archive_briefs').select('brief, generated_at, model')
+      .eq('deal_id', dealId).eq('user_id', viewer.userId).maybeSingle();
+    if (cached) return { brief: cached.brief, generated_at: cached.generated_at, model: cached.model, stale: true, generation_failed: true };
+    return { error: 'generation_failed', detail: String(e?.message || e) };
+  }
   const brief = parseBrief(res);
   const inputs = inputsSummary(dossier, intel);
 
