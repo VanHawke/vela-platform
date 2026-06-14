@@ -250,7 +250,7 @@ export default function Pipeline({ user }) {
       if (cancelled) return
 
       // Normalize deals: spread data JSONB, generate _id
-      const normalized = (dealsRes.data || []).map(d => ({
+      const normalized = (dealsRes.data || []).filter(d => (d.data?.status || "") !== "archived").map(d => ({
         _id: d.id,
         ...d.data,
         updated_at: d.updated_at,
