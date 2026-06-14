@@ -38,6 +38,8 @@ export async function runPipelineMonitor() {
       const value = d.value || 0;
       const lastActivity = d.last_activity_at || deal.updated_at;
       const daysSinceActivity = lastActivity ? Math.floor((now - new Date(lastActivity).getTime()) / 86400000) : 999;
+      const status = (d.status || "").toLowerCase();
+      if (status === "archived" || status === "won" || status === "lost") continue;
       if (/closed|won|lost|dead/i.test(stage)) continue;
       if (daysSinceActivity > 14 && daysSinceActivity < 365) {
         const created = await createAlert({

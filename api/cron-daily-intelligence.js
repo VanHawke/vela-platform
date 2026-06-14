@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     // ═══ PHASE 1: INGEST (no LLM, parallel data collection) ═══
     const [goals, deals, alerts, enrollments, tasks, calendar] = await Promise.all([
       supabase.from('kiko_goals').select('*').eq('status', 'active').order('priority'),
-      supabase.from('deals').select('id, data, updated_at').not('data->>status', 'in', '("won","lost")'),
+      supabase.from('deals').select('id, data, updated_at').not('data->>status', 'in', '("won","lost","archived")'),
       supabase.from('kiko_alerts').select('type, title, severity, entity_name, created_at')
         .eq('dismissed', false).gte('created_at', new Date(Date.now() - 24*60*60*1000).toISOString())
         .not('type', 'in', '(proactive_heartbeat,morning_briefing)').limit(20),

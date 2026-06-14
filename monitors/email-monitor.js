@@ -105,6 +105,19 @@ export async function runEmailMonitor() {
         // Check if sender is a known CRM contact
         else if (knownEmails.has(senderEmail)) {
           const contact = contactMap[senderEmail];
+          
+          // PROVENANCE CHECK (Rule 8): Did we ever email them first?
+          // If no outbound record, this is NOT a prospect reply — skip the alert
+          const outboundCheck = await sbFetch(`kiko_email_tracking?recipient_email=eq.${encodeURIComponent(senderEmail)}&limit=1`);
+          const enrollmentCheck = await sbFetch(`kiko_sequence_enrollments?contact_email=eq.${encodeURIComponent(senderEmail)}&limit=1`);
+          const hasOutbound = (outboundCheck?.length > 0) || (enrollmentCheck?.length > 0);
+          
+          if (!hasOutbound) {
+            // We never emailed them — this is inbound correspondence, not a prospect reply
+            console.log(`[email-monitor] Skipping ${senderEmail} — in CRM but no outbound history (not a prospect reply)`);
+            continue; // Skip, do not create alert
+          }
+          
           await createAlert({
             type: 'email_reply', severity: 'medium',
             title: `Reply from ${contact.name || senderName}${contact.company ? ` (${contact.company})` : ''}`,
@@ -115,6 +128,82 @@ export async function runEmailMonitor() {
             expires_at: new Date(Date.now() + 3 * 86400000).toISOString(),
           });
           alertCount++;
+        }
+        // Unknown sender from a business domain — auto-create contact + alert
+        // BUT: filter out newsletters, marketing, transactional, personal services
+        else {
+          const domain = senderEmail.split('@')[1];
+          const localPart = senderEmail.split('@')[0].toLowerCase();
+          
+          // Skip consumer email providers
+          const skipDomains = ['gmail.com','outlook.com','yahoo.com','hotmail.com','icloud.com','me.com','aol.com','protonmail.com','vanhawke.agency','vanhawke.com','googlemail.com','live.com','msn.com'];
+          
+          // Skip known newsletter/marketing/transactional/personal service domains
+          const skipServiceDomains = [
+            // Newsletters & content
+            'substack.com','medium.com','mailchimp.com','sendinblue.com','convertkit.com','beehiiv.com','ghost.io','buttondown.email','revue.email',
+            // Financial/banking
+            'revolut.com','wise.com','monzo.com','paypal.com','stripe.com','chase.com','hsbc.com','barclays.com','natwest.com','lloydsbank.com','santander.com','amex.com',
+            // Travel/hospitality
+            'booking.com','hotels.com','marriott.com','hilton.com','ihg.com','airbnb.com','expedia.com','fontainebleau.com','hyatt.com','accor.com',
+            // SaaS/tech notifications
+            'github.com','gitlab.com','vercel.com','netlify.com','heroku.com','aws.amazon.com','google.com','apple.com','microsoft.com','slack.com','notion.so','figma.com','linear.app','atlassian.com','jira.com','trello.com','asana.com','monday.com','zoom.us','calendly.com','loom.com',
+            // Social
+            'linkedin.com','twitter.com','facebook.com','instagram.com','tiktok.com','youtube.com','x.com',
+            // Shopping/retail
+            'amazon.com','ebay.com','shopify.com','etsy.com',
+            // Misc services
+            'uber.com','deliveroo.com','doordash.com','grubhub.com','postmates.com',
+            'supabase.io','supabase.com','anthropic.com','openai.com',
+            'customer.io','intercom.io','zendesk.com','freshdesk.com','hubspot.com','salesforce.com',
+            'apollo.io','lusha.com','zoominfo.com',
+          ];
+          
+          // Skip automated/marketing sender patterns
+          const skipLocalParts = /^(noreply|no-reply|no\.reply|donotreply|notifications?|newsletter|marketing|news|info|hello|support|help|billing|accounts?|updates?|team|admin|mailer|bounce|postmaster|system|automated|robot|alert|digest|weekly|daily|promo|offers?|deals|sales@)/i;
+          
+          // Skip subjects that indicate marketing/transactional
+          const skipSubjectPatterns = /unsubscribe|newsletter|weekly digest|daily digest|your order|your receipt|your invoice|payment received|subscription|renewal|terms|privacy|t&cs|account update|security alert|verify your|confirm your|welcome to|getting started|save .{0,5}\d+%|limited time|special offer|flash sale|don.t miss/i;
+          
+          const shouldSkip = !domain || 
+            skipDomains.includes(domain) || 
+            skipServiceDomains.includes(domain) ||
+            skipLocalParts.test(localPart) ||
+            skipSubjectPatterns.test(subject) ||
+            !senderName || senderName.length <= 1;
+          
+          // Always allow known prospect/partner domains through
+          const alwaysAllowDomains = ['helsing.ai','ball.com','fiaformulae.com','haasf1team.com','alpine.com'];
+          const forceAllow = alwaysAllowDomains.some(d => domain.endsWith(d));
+            
+          if (forceAllow || !shouldSkip) {
+            // Auto-create contact in CRM
+            const nameParts = senderName.split(' ');
+            const firstName = nameParts[0] || senderName;
+            const lastName = nameParts.slice(1).join(' ') || '';
+            const company = domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1);
+            try {
+              await sbFetch('contacts', {
+                method: 'POST',
+                body: JSON.stringify({
+                  id: crypto.randomUUID(),
+                  data: { firstName, lastName, email: senderEmail, company, source: 'inbound_email', notes: `Auto-created from inbound email: "${subject}" on ${new Date().toLocaleDateString('en-GB')}` },
+                  created_at: new Date().toISOString(),
+                }),
+              });
+              await createAlert({
+                type: 'new_contact', severity: 'low',
+                title: `New contact: ${senderName} (${company})`,
+                detail: `Auto-created from inbound email. Subject: "${subject}". Domain: ${domain}. Created in CRM automatically.`,
+                entity_type: 'contact', entity_id: senderEmail, entity_name: senderName,
+                metadata: { from: senderEmail, subject, inbox: label, message_id: msg.id, domain, auto_created: true },
+                user_id: userId,
+                expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
+              });
+              alertCount++;
+              console.log(`[email-monitor] Auto-created contact: ${senderName} (${company}) from ${senderEmail}`);
+            } catch (e) { /* Contact might already exist — ignore duplicate errors */ }
+          }
         }
       }
     }

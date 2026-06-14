@@ -204,7 +204,7 @@ Return 4-8 events. Only HIGH-IMPACT intelligence Van Hawke can act on. No filler
         });
 
         const predResp = await anthropic.messages.create({
-          model: 'claude-haiku-4-5-20251001', max_tokens: 1200,
+          model: 'claude-sonnet-4-6-20250514', max_tokens: 1200, // Sonnet — proactive intelligence
           system: `You are Kiko's predictive intelligence module. Based on pipeline data, market events, race calendar, and competitive intel, generate FORWARD-LOOKING PREDICTIONS about the next 7-30 days.
 
 Types:

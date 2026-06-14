@@ -30,13 +30,20 @@ export function startMonitors() {
   console.log('[monitors] Email: every 2min (Mon-Fri, 7am-9pm)');
   console.log('[monitors] Follow-ups: every 2hrs (Mon-Fri, 8am-8pm)');
   console.log('[monitors] Scheduled sender: every 5min (Mon-Fri, 7am-9pm)');
-  console.log('[monitors] Proactive intel: 8am + 2pm (Mon-Fri)');
+  // Re-enabled: proactive-intel creates partnership_gap and category_recommendation alerts
+  // that the Partnership Matrix reads. Heartbeat/morning-synthesis do NOT create these.
+  // DISABLED: proactive-intel overlaps with daily-intelligence. Saves 4 Sonnet calls/day.
+  // const proactiveJob = cron.schedule('0 8,14 * * 1-5', async () => {
+  // try { await runProactiveIntel(); } catch (e) { console.error('[monitors] proactive-intel failed:', e.message); }
+  // }, { timezone: 'UTC' });
+  console.log('[monitors] Proactive intel: DISABLED (replaced by daily-intelligence)');
   console.log('[monitors] Competitive discovery: Sunday 5am');
 
-  // Proactive intelligence — 2x daily, weekdays 8am and 2pm
-  cron.schedule('0 8,14 * * 1-5', async () => {
-    try { await runProactiveIntel(); } catch (e) { console.error('[cron] proactive-intel:', e.message); }
-  }, { timezone: 'Europe/London' });
+  // Proactive intelligence — DISABLED: overlaps with heartbeat cron (every 2h) + morning-synthesis (7am daily)
+  // Both are better designed (multi-pass, evaluator-optimizer) and cheaper (Haiku vs Sonnet)
+  // cron.schedule('0 8,14 * * 1-5', async () => {
+  //   try { await runProactiveIntel(); } catch (e) { console.error('[cron] proactive-intel:', e.message); }
+  // }, { timezone: 'Europe/London' });
 
   // Competitive self-discovery — weekly, Sunday 5am
   cron.schedule('0 5 * * 0', async () => {
