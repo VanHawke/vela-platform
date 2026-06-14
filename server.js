@@ -47,6 +47,7 @@ import calendarWebhook from "./api/calendar-webhook.js";
 import { startMonitors } from "./monitors/scheduler.js";
 import { startScheduler } from "./src/cron-scheduler.js";
 import { requireAuth } from "./api/_auth.js";
+import archiveDossier from "./api/archive-dossier.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, "package.json"), "utf8"));
@@ -86,6 +87,7 @@ app.use("/api/webhooks", webhookRoutes);
 app.all("/api/user-bible", userBible);
 app.all("/api/org-bible", orgBible);
 app.post("/api/create-gmail-draft", gmailDraft);
+app.post("/api/archive/dossier", archiveDossier);  // Archive re-engagement dossier (ring-fenced)
 app.post("/api/gmail-send", gmailSend);
 app.post("/api/capture-correction", captureCorrection);
 // app.post("/api/cron-proactive-recommendations", proactiveRecs); // FILE MISSING — disabled

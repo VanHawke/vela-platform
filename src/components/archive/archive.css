@@ -1,0 +1,60 @@
+/* src/components/archive/archive.css — Archive dossier view */
+.arch-wrap { max-width: 1080px; margin: 0 auto; padding: 8px 4px 64px; }
+.arch-head { margin: 4px 0 22px; }
+.arch-title { font-family: 'Source Serif 4', Georgia, serif; font-size: 26px; font-weight: 600; color: #0A0A0A; margin: 0 0 4px; letter-spacing: -0.01em; }
+.arch-sub { font-size: 13.5px; color: #6B6B6B; margin: 0; }
+
+/* card grid */
+.arch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(312px, 1fr)); gap: 14px; }
+.arch-card { text-align: left; background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 14px; padding: 16px 17px; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; display: flex; flex-direction: column; gap: 7px; font: inherit; }
+.arch-card:hover { border-color: rgba(0,0,0,0.16); box-shadow: 0 6px 20px -12px rgba(0,0,0,0.18); transform: translateY(-1px); }
+.arch-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.arch-card-company { font-size: 15.5px; font-weight: 600; color: #0A0A0A; line-height: 1.25; }
+.arch-card-value { font-size: 13px; font-weight: 600; color: #7d8a64; white-space: nowrap; }
+.arch-card-contact { font-size: 13px; color: #4a4a4a; }
+.arch-card-reason { font-size: 12px; color: #8a8a8a; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.arch-card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.06); }
+.arch-card-date { font-size: 11.5px; color: #A0A0A0; }
+.arch-card-open { font-size: 12px; font-weight: 500; color: #6B6B6B; display: inline-flex; align-items: center; gap: 2px; }
+.arch-card:hover .arch-card-open { color: #0A0A0A; }
+
+.arch-empty { padding: 48px 8px; text-align: center; color: #A0A0A0; font-size: 13.5px; }
+
+/* dossier */
+.arch-dossier { max-width: 880px; margin: 0 auto; padding: 8px 4px 80px; }
+.arch-back { display: inline-flex; align-items: center; gap: 5px; background: none; border: none; color: #6B6B6B; font-size: 13px; font-weight: 500; cursor: pointer; padding: 4px 0; margin-bottom: 14px; transition: color .15s; }
+.arch-back:hover { color: #0A0A0A; }
+.arch-dossier-head { border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 16px; margin-bottom: 18px; }
+.arch-dossier-company { font-family: 'Source Serif 4', Georgia, serif; font-size: 27px; font-weight: 600; color: #0A0A0A; margin: 0 0 9px; letter-spacing: -0.01em; }
+.arch-dossier-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
+.arch-meta-name { font-size: 13.5px; font-weight: 600; color: #0A0A0A; }
+.arch-meta-value { font-size: 13px; font-weight: 600; color: #7d8a64; }
+.arch-reason-pill { font-size: 11.5px; color: #6B6B6B; background: #f4f4f2; border: 1px solid rgba(0,0,0,0.06); border-radius: 999px; padding: 3px 10px; }
+
+/* brief slot (v2) */
+.arch-brief-slot { background: linear-gradient(180deg, #fafaf8 0%, #f6f6f3 100%); border: 1px dashed rgba(125,138,100,0.4); border-radius: 14px; padding: 16px 18px; margin-bottom: 26px; }
+.arch-brief-head { display: flex; flex-direction: column; gap: 3px; }
+.arch-brief-label { font-size: 13px; font-weight: 600; color: #5f6b4c; }
+.arch-brief-soon { font-size: 12px; color: #9a9a8e; }
+
+/* timeline */
+.arch-timeline-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.arch-timeline-title { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8a8a8a; }
+.arch-timeline-flags { display: flex; gap: 8px; }
+.arch-flag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #6B6B6B; background: #f4f4f2; border-radius: 999px; padding: 3px 9px; }
+
+.arch-timeline { display: flex; flex-direction: column; }
+.arch-item { display: grid; grid-template-columns: 28px 1fr; gap: 12px; }
+.arch-item-rail { display: flex; flex-direction: column; align-items: center; }
+.arch-dot { width: 26px; height: 26px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid rgba(0,0,0,0.1); color: #6B6B6B; flex: none; }
+.arch-item-rail::after { content: ''; flex: 1; width: 1px; background: rgba(0,0,0,0.08); margin: 4px 0; }
+.arch-item:last-child .arch-item-rail::after { display: none; }
+.arch-in .arch-dot { background: #f1f4ec; border-color: rgba(125,138,100,0.45); color: #5f6b4c; }
+.arch-item-body { padding-bottom: 20px; min-width: 0; }
+.arch-item-top { display: flex; align-items: center; gap: 9px; margin-bottom: 3px; }
+.arch-item-channel { font-size: 12.5px; font-weight: 600; color: #0A0A0A; }
+.arch-item-dir { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; background: #c2c2bb; border-radius: 4px; padding: 1px 5px; }
+.arch-in .arch-item-dir { background: #7d8a64; }
+.arch-item-date { font-size: 11.5px; color: #A0A0A0; margin-left: auto; }
+.arch-item-subject { font-size: 13.5px; font-weight: 500; color: #1a1a1a; margin-bottom: 2px; }
+.arch-item-snippet { font-size: 12.5px; color: #6B6B6B; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }

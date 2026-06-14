@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { supabase } from '@/lib/supabase'
+import ArchivePanel from '@/components/archive/ArchivePanel'
 import { showToast } from '@/components/ui/Toast'
 import { ChevronDown, X, Check, Plus, GripVertical, Eye, EyeOff, Building2, Users, Mail, Calendar, Clock, ExternalLink, Activity, TrendingUp } from 'lucide-react'
 import { ConflictBadge } from '@/hooks/usePartnershipConflict'
@@ -180,6 +181,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
 
 export default function Pipeline({ user }) {
   const nav = useNavigate()
+  const [view, setView] = useState('pipeline')
   const [deals, setDeals] = useState([])
   const [pipelines, setPipelines] = useState([])
   const [pipelineFilter, setPipelineFilter] = useState('All')
@@ -524,8 +526,26 @@ export default function Pipeline({ user }) {
   }
 
 
+  const viewToggle = (
+    <div style={{ padding: '20px 44px 0', display: 'flex', gap: 6, alignItems: 'center' }}>
+      {['pipeline', 'archive'].map(v => (
+        <button key={v} onClick={() => setView(v)} style={{ padding: '5px 14px', borderRadius: 8, border: '1px solid ' + (view === v ? '#0A0A0A' : 'rgba(0,0,0,0.1)'), background: view === v ? '#0A0A0A' : 'transparent', color: view === v ? '#fff' : '#6B6B6B', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'capitalize' }}>{v}</button>
+      ))}
+    </div>
+  )
+
+  if (view === 'archive') {
+    return (
+      <div className="pl">
+        {viewToggle}
+        <div style={{ padding: '8px 44px 0' }}><ArchivePanel user={user} /></div>
+      </div>
+    )
+  }
+
   return (
     <div className="pl">
+      {viewToggle}
       {/* Header — redesign v2 pattern */}
       <div style={{ padding: '24px 44px 18px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
