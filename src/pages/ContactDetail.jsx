@@ -189,55 +189,29 @@ export default function ContactDetail() {
     setDraftLoading(true)
     setRightPanel('email')
     try {
-      const context = `Draft a cold outreach email for ${displayName(contact)}, ${contact.title || ''} at ${contact.company || ''}.
-
-PROSPECT CONTEXT:
-- Sector: ${contact.sector || contact.industry || 'Unknown'}
-${companyData?.totalFunding ? `- Company funding: ${companyData.totalFunding}` : ''}
-${companyData?.revenueEst ? `- Revenue: ${companyData.revenueEst}` : ''}
-${companyData?.employees ? `- Headcount: ${companyData.employees}` : ''}
-${companyData?.industry ? `- Industry: ${companyData.industry}` : ''}
-- Last contact: ${daysSinceActivity ? `${daysAgo(contact.lastActivity)} ago` : 'No prior contact'}
-- Preferred channel: ${preferredChannel || 'Email'}
-- Engagement score: ${engagementScore}/100 (${warmthLabel})
-
-VOICE RULES (MANDATORY — use my actual writing style from your voice profile):
-- Write in Sunny Sidhu's voice: formal, commanding, direct. Never hedge.
-- Open with strategic context or a company-specific insight that shows research.
-- Position F1 as a platform, not a sponsorship. Frame as board-level strategic decision.
-- Close with a specific, clear next step — never "let me know if interested."
-- Use phrases like "At this level," "In practice," "Where organisations engage."
-- NEVER use: "I think," "maybe," "hopefully," "if possible," "just checking in," "touching base."
-- Under 150 words. USD only. No attachments reference.
-
-PSYCHOLOGICAL APPROACH:
-- Reference specific company intelligence (funding round, growth trajectory, competitive positioning).
-- Frame the opportunity as scarce (category exclusivity, limited allocation windows).
-- Match the prospect's seniority — CEO/board language, not marketing pitch.
-
-Format as:
-Subject: [compelling subject line]
+      const res = await fetch('https://api.vanhawke.agency/api/contact/draft', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: contact.email || '',
+          name: displayName(contact),
+          title: contact.title || '',
+          company: contact.company || '',
+          sector: contact.sector || contact.industry || '',
+        })
+      })
+      const d = await res.json()
+      if (d && !d.error) {
+        setKikoDraft(`Subject: ${d.subject || ''}
 To: ${contact.email || ''}
 
-[body with Sunny Sidhu signature from Van Hawke Group]`
-      const res = await fetch('https://api.vanhawke.agency/api/kiko', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: context, userId: 'sunny', mode: 'chat' })
-      })
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let fullText = ''
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        const chunk = decoder.decode(value)
-        const lines = chunk.split('\n').filter(l => l.startsWith('data: '))
-        for (const line of lines) {
-          try { const parsed = JSON.parse(line.slice(6)); if (parsed.delta) fullText += parsed.delta } catch {}
-        }
+${d.body || ''}`)
+      } else {
+        setKikoDraft(`Subject: 
+To: ${contact.email || ''}
+
+[Kiko could not draft this: ${d?.error || 'unknown error'}]`)
       }
-      setKikoDraft(fullText)
-    } catch (e) { console.error('Draft failed:', e) }
+    } catch (e) { console.error('Draft failed:', e); setKikoDraft(`[Draft failed: ${e.message}]`) }
     setDraftLoading(false)
   }
 
