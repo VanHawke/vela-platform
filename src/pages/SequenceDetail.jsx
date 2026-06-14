@@ -1,5 +1,6 @@
 // src/pages/SequenceDetail.jsx — Sequence builder + leads + performance
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { StepComposer } from '@/components/kiko/EmailDraft'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
@@ -1277,7 +1278,7 @@ RULES:
       )}
 
       {/* === PROSPECT DETAIL SLIDE-OVER (Session 72 render 2) === */}
-      {selectedLead && (
+      {selectedLead && createPortal((
         <div style={{ position: 'fixed', inset: 0, zIndex: 120, display: 'flex', justifyContent: 'flex-end' }} onClick={() => setSelectedLead(null)}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.18)' }} />
           <div onClick={e => e.stopPropagation()} style={{ position: 'relative', width: 440, maxWidth: '90vw', height: '100%', background: '#fff', borderLeft: '1px solid rgba(0,0,0,0.10)', boxShadow: '-8px 0 40px rgba(0,0,0,0.10)', overflowY: 'auto', fontFamily: C.font }}>
@@ -1320,7 +1321,7 @@ RULES:
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* ═══ ACTIVITY TAB ═══ */}
       {tab === 'activity' && (
