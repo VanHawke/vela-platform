@@ -1,6 +1,6 @@
 # KIKO BIBLE — Operational Knowledge Base
 
-## Last updated: 2026-04-25 (Session 60 — FINAL)
+## Last updated: 2026-06-14 (Session 74 — Archive feature + archived-is-first-class)
 
 ### IDENTITY
 
@@ -486,3 +486,11 @@ This is mandatory from Supabase's Data API change (enforced Oct 30, 2026). All 1
 - Output: creates kiko_alerts with type linkedin_message or linkedin_connection_accepted
 - Schedule: every 30 minutes, weekdays 8-20 UTC via cron-scheduler.js
 - Engine methods added: linkedinGetInvitations(), linkedinGetSentInvitations()
+
+### SESSION 74 — ARCHIVE FEATURE + ARCHIVED IS FIRST-CLASS (June 14, 2026)
+**ARCHIVE** = a tab inside Pipeline (Pipeline | Archive toggle). Lists deals with data.status='archived'; opening one shows a re-engagement dossier.
+- **Ring-fence (critical):** deals are visible to all, but CORRESPONDENCE is scoped to the verified viewer. super_admin (Sunny) sees ALL correspondence with a prospect; a 'user' (Matt) sees only what HE sent + replies to it. Enforced server-side off the verified identity, never the client body. Engine api/lib/dossier.js; Gmail scoped by THREAD OWNERSHIP not mailbox.
+- **v1 dossier:** POST /api/archive/dossier {dealId} → ring-fenced correspondence timeline (emails + kiko_outreach_queue + kiko_linkedin_queue).
+- **v2 brief:** POST /api/archive/brief {dealId, generate?}. generate=true → Opus 4.8 + web_search (~45s) fuses ring-fenced dossier + company_intelligence + live web → {verdict warm_reopen|cool_hold|do_not_reopen, headline, counterpart_read, company_context, recommendation, suggested_angle, timing}. falsy → cache read. Cached in kiko_archive_briefs keyed (deal_id,user_id) — per-viewer so the ring-fence holds. Engine api/lib/archive-brief.js (buildBrief+readBrief); falls back to cached on failure.
+- **ARCHIVED propagates at 3 layers (was the "still showing archived deals as Today pills" disconnect):** (1) GENERATION — monitors/pipeline-monitor.js + api/cron-daily-intelligence.js skip status archived/won/lost (pipeline-monitor previously checked only STAGE → the bug). (2) SURFACING — Pipeline excludes status=archived from active board+stats; Today already does (28c19ab). (3) TRANSITION — Postgres trigger trg_cascade_deal_archive: when a deal flips to status=archived it auto-dismisses its kiko_alerts + completes its tasks, however the archive happens.
+- **monitors/ note:** System B (6 monitors, run in-process by server.js via monitors/scheduler.js) had drifted from production — was edited on the server without committing. Re-synced + committed. Commit monitor changes going forward.
