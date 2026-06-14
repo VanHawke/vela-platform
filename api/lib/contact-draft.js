@@ -36,10 +36,39 @@ async function gatherCorrespondence(email) {
 
 async function gatherIntel(company) {
   if (!company) return null;
-  const { data } = await supabase.from('company_intelligence')
-    .select('funding_total, last_funding_round, last_funding_amount, revenue_estimate, employee_count, employee_growth, industry, sub_sector, business_model, key_products, competitors, existing_sponsorships, marketing_budget_signal, ceo, cmo')
-    .ilike('company_name', company).limit(1);
-  return data?.[0] || null;
+  // Pull BOTH the deep-enrichment table (company_intelligence, sparse ~30 cos) AND the
+  // firmographic shell (companies.data jsonb, ~2,168 cos). Merge: deep wins, shell fills gaps.
+  const [ciRes, coRes] = await Promise.all([
+    supabase.from('company_intelligence')
+      .select('funding_total, last_funding_round, last_funding_amount, revenue_estimate, employee_count, employee_growth, industry, sub_sector, business_model, key_products, competitors, existing_sponsorships, marketing_budget_signal, ceo, cmo')
+      .ilike('company_name', company).limit(1),
+    supabase.from('companies').select('data').ilike('data->>name', company).limit(1),
+  ]).catch(() => [{ data: [] }, { data: [] }]);
+  const deep = ciRes?.data?.[0] || null;
+  const shell = coRes?.data?.[0]?.data || null;
+  if (!deep && !shell) return null;
+  const comp = deep?.competitors || (Array.isArray(shell?.competitors)
+    ? shell.competitors.map(c => (c && c.name) ? (c.threat ? `${c.name} (${c.threat})` : c.name) : null).filter(Boolean).join(', ')
+    : (shell?.competitors || null));
+  return {
+    funding_total: deep?.funding_total || shell?.totalFunding,
+    last_funding_round: deep?.last_funding_round || shell?.lastRound,
+    last_funding_amount: deep?.last_funding_amount,
+    revenue_estimate: deep?.revenue_estimate || shell?.revenueEst,
+    employee_count: deep?.employee_count || shell?.employees,
+    employee_growth: deep?.employee_growth,
+    industry: deep?.industry || shell?.industry || shell?.sector,
+    sub_sector: deep?.sub_sector,
+    business_model: deep?.business_model,
+    valuation: shell?.valuation,
+    founded: shell?.founded,
+    key_products: deep?.key_products,
+    competitors: comp,
+    existing_sponsorships: deep?.existing_sponsorships,
+    marketing_budget_signal: deep?.marketing_budget_signal,
+    ceo: deep?.ceo,
+    cmo: deep?.cmo,
+  };
 }
 
 async function gatherStyleExamples() {
@@ -56,7 +85,8 @@ function draftPrompt({ email, name, title, company, sector, corr, intel, example
 
   const intelLines = intel ? (Object.entries({
     'Funding total': intel.funding_total, 'Last round': intel.last_funding_round, 'Last round amount': intel.last_funding_amount,
-    'Revenue estimate': intel.revenue_estimate, 'Headcount': intel.employee_count, 'Headcount growth': intel.employee_growth,
+    'Valuation': intel.valuation, 'Revenue estimate': intel.revenue_estimate, 'Headcount': intel.employee_count,
+    'Founded': intel.founded, 'Headcount growth': intel.employee_growth,
     'Industry': intel.industry, 'Sub-sector': intel.sub_sector, 'Business model': intel.business_model,
     'Key products': intel.key_products, 'Competitors': intel.competitors, 'Existing sponsorships': intel.existing_sponsorships,
     'Marketing budget signal': intel.marketing_budget_signal, 'CEO': intel.ceo, 'CMO': intel.cmo,
