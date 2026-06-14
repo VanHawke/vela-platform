@@ -24,6 +24,47 @@ const PAGE_CHIPS = {
   news: ['Deal signals this week', 'F1 partnership news', 'Funding announcements', 'Industry trends'],
 }
 
+// Content-aware float chips: read the live page context (the actual entity being
+// viewed) and build chips specific to it. Falls back to static PAGE_CHIPS for list pages.
+function contextualChips(ctx) {
+  if (!ctx) return null
+  const p = ctx.page
+
+  if (p === 'contact_detail' && ctx.contact) {
+    const name = (ctx.contact.name || '').trim()
+    const first = name.split(' ')[0] || 'them'
+    const co = ctx.contact.company
+    return [
+      { label: `Draft a note to ${first}`, prompt: `Draft an outreach email to ${name}${co ? ` at ${co}` : ''} in our real Van Hawke voice, using any history we have with them. Be honest about the relationship stage.` },
+      { label: `Why is ${first} cold?`, prompt: `Summarise our history with ${name}${co ? ` at ${co}` : ''} — what we sent, whether they engaged, and why they may have gone quiet.` },
+      co ? { label: `Brief me on ${co}`, prompt: `Give me a tight commercial brief on ${co}: what they do, recent signals, and the F1 category-exclusive angle.` } : null,
+      { label: 'Best next step', prompt: `What is the single best next step with ${name}${co ? ` at ${co}` : ''}, and why?` },
+    ].filter(Boolean)
+  }
+
+  if (p === 'company_detail' && ctx.company) {
+    const co = ctx.company.name || 'this company'
+    return [
+      { label: `Brief me on ${co}`, prompt: `Commercial brief on ${co}: business, funding, recent signals, partnership fit.` },
+      { label: `Who do we know at ${co}?`, prompt: `Who are our contacts at ${co}, and what is the state of each relationship?` },
+      { label: `Draft outreach to ${co}`, prompt: `Draft a category-exclusive F1 partnership outreach for ${co} in our real voice.` },
+      { label: 'Partnership fit', prompt: `Assess ${co}'s fit for an F1 category-exclusive partnership and which category they would hold.` },
+    ]
+  }
+
+  if (p === 'sequence_detail') {
+    const nm = (ctx.summary || '').replace('Sequence: ', '').trim() || 'this sequence'
+    return [
+      { label: 'Sequence performance', prompt: `Give me the performance of "${nm}": sends, opens, replies, bounces, and what to fix.` },
+      { label: 'Add prospects', prompt: `Suggest prospects to add to "${nm}" and how to source them.` },
+      { label: 'Draft the next step', prompt: `Draft the next step email for "${nm}" in our voice.` },
+      { label: "Who's replied?", prompt: `Who has replied in "${nm}" and what should I do about each?` },
+    ]
+  }
+
+  return null
+}
+
 export function useDynamicChips(page = 'home', isFloat = false) {
   const [chips, setChips] = useState(isFloat ? PAGE_CHIPS[page]?.map(l => ({ label: l, prompt: l })) || FALLBACK_HOME : FALLBACK_HOME)
   const live = useKikoLive()
@@ -32,8 +73,17 @@ export function useDynamicChips(page = 'home', isFloat = false) {
     if (page === 'home' && !isFloat) {
       buildHomeChips(live).then(setChips)
     } else if (isFloat) {
-      const statics = (PAGE_CHIPS[page] || PAGE_CHIPS.pipeline).map(l => ({ label: l, prompt: l }))
-      setChips(statics.slice(0, 4))
+      const apply = () => {
+        const ctx = (typeof window !== 'undefined') ? window.kikoPageContext : null
+        const ctxChips = contextualChips(ctx)
+        if (ctxChips && ctxChips.length) { setChips(ctxChips.slice(0, 4)); return }
+        const statics = (PAGE_CHIPS[page] || PAGE_CHIPS.pipeline).map(l => ({ label: l, prompt: l }))
+        setChips(statics.slice(0, 4))
+      }
+      apply()
+      const handler = () => apply()
+      if (typeof window !== 'undefined') window.addEventListener('kiko_page_context', handler)
+      return () => { if (typeof window !== 'undefined') window.removeEventListener('kiko_page_context', handler) }
     }
   }, [page, isFloat, live.followUps, live.tasks, live.alerts])
 
