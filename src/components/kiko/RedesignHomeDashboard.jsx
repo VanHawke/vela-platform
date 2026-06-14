@@ -237,14 +237,14 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
           { date: '2026-05-03', name: 'Miami Grand Prix', circuit: 'Miami International Autodrome' },
           { date: '2026-05-24', name: 'Canadian Grand Prix', circuit: 'Circuit Gilles Villeneuve, Montreal' },
           { date: '2026-06-07', name: 'Monaco Grand Prix', circuit: 'Circuit de Monaco, Monte Carlo' },
-          { date: '2026-06-14', name: 'Spanish Grand Prix', circuit: 'Circuit de Barcelona-Catalunya' },
+          { date: '2026-06-14', name: 'Barcelona-Catalunya Grand Prix', circuit: 'Circuit de Barcelona-Catalunya' },
           { date: '2026-06-28', name: 'Austrian Grand Prix', circuit: 'Red Bull Ring, Spielberg' },
           { date: '2026-07-05', name: 'British Grand Prix', circuit: 'Silverstone Circuit' },
           { date: '2026-07-19', name: 'Belgian Grand Prix', circuit: 'Circuit de Spa-Francorchamps' },
           { date: '2026-07-26', name: 'Hungarian Grand Prix', circuit: 'Hungaroring, Budapest' },
           { date: '2026-08-23', name: 'Dutch Grand Prix', circuit: 'Circuit Zandvoort' },
           { date: '2026-09-06', name: 'Italian Grand Prix', circuit: 'Autodromo di Monza' },
-          { date: '2026-09-13', name: 'Madrid Grand Prix', circuit: 'IFEMA Circuit, Madrid' },
+          { date: '2026-09-13', name: 'Spanish Grand Prix', circuit: 'IFEMA Circuit, Madrid' },
           { date: '2026-09-27', name: 'Azerbaijan Grand Prix', circuit: 'Baku City Circuit' },
           { date: '2026-10-11', name: 'Singapore Grand Prix', circuit: 'Marina Bay Street Circuit' },
           { date: '2026-10-25', name: 'United States Grand Prix', circuit: 'Circuit of the Americas, Austin' },
@@ -255,7 +255,8 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
           { date: '2026-12-06', name: 'Abu Dhabi Grand Prix', circuit: 'Yas Marina Circuit' },
         ]
         const now = new Date()
-        const next = F1_2026.find(r => new Date(r.date) > now) || F1_2026[0]
+        const todayStr = new Date().toISOString().split('T')[0]
+        const next = F1_2026.find(r => r.date >= todayStr) || F1_2026[F1_2026.length - 1]
         const days = Math.max(0, Math.ceil((new Date(next.date) - now) / 86400000))
         const dateLabel = new Date(next.date).toLocaleDateString('en-GB', { month: 'long', day: 'numeric' })
         return (
@@ -269,7 +270,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
                 <div style={{ fontSize: 12, color: '#6B6B6B' }}>{dateLabel} · {next.circuit}</div>
               </div>
             </div>
-            <span style={{ fontSize: 12, color: '#A0A0A0', fontWeight: 500 }}>{days} days</span>
+            <span style={{ fontSize: 12, color: '#A0A0A0', fontWeight: 500 }}>{days === 0 ? 'Today' : `${days} days`}</span>
           </div>
         )
       })()}
