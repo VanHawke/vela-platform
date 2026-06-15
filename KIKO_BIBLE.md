@@ -524,3 +524,8 @@ Continued deep-research enrichment of the highest-readiness unenriched Tier-1 co
 **_enrich.mjs** (repo root, gitignored): research (Opus+web_search) + dual-write both stores + diff in one pass; handles public companies (market cap/revenue); run in BACKGROUND (foreground >4min wedges the MCP).
 **Quirk:** valuation lives only in companies.data (company_intelligence has no valuation column) — shows "blank" in company_intel reads but IS stored.
 15 companies deep-researched this session total (4 in-sequence + 11 expansion).
+
+### SESSION 77b — TIER-1 ENRICHMENT: HIGH-VALUE REMAINDER COMPLETE (June 15, 2026)
+Enriched the final high-value tranche = ALL Tier-1 companies with 3+ campaign-ready contacts (19 companies, deep research, dual-written): Todyl, Wordsmith AI, Cirrus Logic, Cribl, Episode Six, Flex, Forescout, Heaven Hill Brands, Huntress, Jacob & Co, Locus Robotics, Nuveen, Orca Security, Pontera, Rubrik, Snyk, SpyCloud, Torq, Upwind Security. (Figures live in DB, data_refreshed_by='claude_deep_research'.)
+**SESSION TALLY: 34 Tier-1 companies deep-researched** (4 in-sequence + 11 top-readiness + 19 multi-contact). Remaining 606 (99 two-contact + 507 single-contact) = on-demand enrichment by design (cost discipline).
+**CYBER CATEGORY SCARCITY (Kiko, verified live):** only 4 teams have open cybersecurity slots — CADILLAC, HAAS, MERCEDES, RACING BULLS. All enriched cyber names compete for these 4 seats under category exclusivity -> pitch cyber only into those 4, conflict-check first, scarcity = real leverage.
