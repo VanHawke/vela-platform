@@ -2,6 +2,8 @@
 // Fetches user's Gmail signature and appends it to the draft body
 
 
+import { getGoogleToken } from './google-token.js';
+
 const SB_URL = () => process.env.VITE_SUPABASE_URL;
 const SB_KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -74,8 +76,13 @@ export default async function handler(req, res) {
   if (!to || !subject) { console.error('[gmail-draft] 400: missing to or subject', { to, subject: subject?.slice(0,30) }); return res.status(400).json({ error: 'to and subject required' }); }
 
   try {
-    const token = await forceRefreshToken(targetEmail);
-    if (!token) { console.error('[gmail-draft] 400: token refresh failed for', targetEmail); return res.status(400).json({ error: `Token refresh failed for ${targetEmail}` }); }
+    let token;
+    try {
+      token = await getGoogleToken(targetEmail);
+    } catch (e) {
+      console.error('[gmail-draft] token error for', targetEmail, e.message);
+      return res.status(400).json({ error: `Token refresh failed for ${targetEmail}` });
+    }
 
     // Get signature for the SENDER — needs sender's token if sender != recipient
     let signature = '', sendAs = SEND_AS_ALIAS[senderEmail] || senderEmail;
@@ -83,7 +90,8 @@ export default async function handler(req, res) {
       const sigResult = await getGmailSignature(token, senderEmail);
       signature = sigResult.signature; sendAs = sigResult.sendAs;
     } else {
-      const senderToken = await forceRefreshToken(senderEmail);
+      let senderToken = null;
+      try { senderToken = await getGoogleToken(senderEmail); } catch (e) { console.error('[gmail-draft] sender token error for', senderEmail, e.message); }
       if (senderToken) {
         const sigResult = await getGmailSignature(senderToken, senderEmail);
         signature = sigResult.signature; sendAs = sigResult.sendAs;
@@ -117,12 +125,26 @@ export default async function handler(req, res) {
       'Content-Transfer-Encoding: base64',
     ].join('\r\n') + '\r\n\r\n' + Buffer.from(emailContent, 'utf-8').toString('base64');
 
-    const gRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/drafts', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: { raw: Buffer.from(raw).toString('base64url') } }),
-    });
-    const gData = await gRes.json();
+    const draftBody = JSON.stringify({ message: { raw: Buffer.from(raw).toString('base64url') } });
+    const postDraft = async (tok) => {
+      const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/drafts', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${tok}`, 'Content-Type': 'application/json' },
+        body: draftBody,
+      });
+      return { r, j: await r.json() };
+    };
+    let { r: gRes, j: gData } = await postDraft(token);
+    if (gRes.status === 401) {
+      console.warn('[gmail-draft] 401 on draft create \u2014 forcing token refresh + retry for', targetEmail);
+      try {
+        token = await getGoogleToken(targetEmail, true);
+        ({ r: gRes, j: gData } = await postDraft(token));
+      } catch (e) {
+        console.error('[gmail-draft] forced refresh failed for', targetEmail, e.message);
+        return res.status(400).json({ error: `Token refresh failed for ${targetEmail}` });
+      }
+    }
     if (gData.error) { console.error('[gmail-draft] Gmail API error:', gData.error.message); return res.status(400).json({ error: gData.error.message }); }
 
     // Auto-track for follow-up monitoring (fire-and-forget)

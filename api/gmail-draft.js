@@ -107,15 +107,26 @@ export default async function handler(req, res) {
       : 'https://gmail.googleapis.com/gmail/v1/users/me/drafts'
     const payload = send ? { raw } : { message: { raw } }
 
-    const gmailRes = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    })
-    const result = await gmailRes.json()
+    const callGmail = async (tok) => {
+      const r = await fetch(endpoint, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      return { r, j: await r.json() }
+    }
+    let { r: gmailRes, j: result } = await callGmail(accessToken)
+    if (gmailRes.status === 401) {
+      // Cached Google token was invalidated by Google despite not being expired -> force refresh + retry once
+      console.warn('[gmail-draft] 401 from Gmail API - forcing token refresh + retry for', tokenLookupEmail)
+      try {
+        const freshToken = await getGoogleToken(tokenLookupEmail, true)
+        ;({ r: gmailRes, j: result } = await callGmail(freshToken))
+      } catch (refreshErr) {
+        console.error('[gmail-draft] forced refresh failed for', tokenLookupEmail, refreshErr.message)
+        return res.status(401).json({ error: `Token refresh failed for ${resolvedSender}` })
+      }
+    }
     if (!gmailRes.ok) {
       console.error('[gmail-draft] API error:', result)
       return res.status(gmailRes.status).json({ error: result.error?.message || 'Gmail API error' })

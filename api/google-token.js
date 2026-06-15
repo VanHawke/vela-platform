@@ -16,7 +16,7 @@ const supabase = createClient(
  * @returns {Promise<string>} valid access_token
  * @throws {Error} if no token found or refresh fails
  */
-export async function getGoogleToken(userEmail) {
+export async function getGoogleToken(userEmail, forceRefresh = false) {
   if (!userEmail) throw new Error('userEmail required');
 
   // Resolve alias: @vanhawke.agency → @vanhawke.com for OAuth token lookup
@@ -43,7 +43,7 @@ export async function getGoogleToken(userEmail) {
   const buffer = 5 * 60 * 1000; // 5 minutes
   const now = Date.now();
 
-  if (data.access_token && expiresAt > now + buffer) {
+  if (!forceRefresh && data.access_token && expiresAt > now + buffer) {
     return data.access_token;
   }
 
