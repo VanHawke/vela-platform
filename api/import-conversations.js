@@ -3,6 +3,7 @@
 // Then runs insight extraction to populate intelligence tables
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, logError } from './kiko-tools.js';
+import { embedConversation } from './embed-utils.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
@@ -62,16 +63,20 @@ function parseClaude(data) {
 }
 
 async function extractInsights(convo) {
+  let raw = '';
   try {
     const msgText = convo.messages.slice(0, 20).map(m => `[${m.role}]: ${m.content.slice(0, 300)}`).join('\n');
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 400, // Sonnet — conversation understanding
-      system: `Extract business intelligence from this conversation. This is from the CEO of Van Hawke Group (F1 sponsorship advisory + luxury eyewear). Return ONLY valid JSON: { "key_facts": ["max 5 facts"], "decisions": ["decisions made"], "entities": ["company/person names"], "topics": ["main topics"], "strategic_value": 1-10 }. If the conversation is casual/irrelevant, return strategic_value: 0.`,
+      model: 'claude-sonnet-4-6', max_tokens: 1024, // Sonnet — conversation understanding
+      system: `Extract business intelligence from this conversation. This is from the CEO of Van Hawke Group (F1 sponsorship advisory + luxury eyewear). Return ONLY a valid JSON object with no markdown, code fences, or commentary: { "key_facts": ["max 5 facts"], "decisions": ["decisions made"], "entities": ["company/person names"], "topics": ["main topics"], "strategic_value": 1-10 }. If the conversation is casual/irrelevant, return strategic_value: 0.`,
       messages: [{ role: 'user', content: `Title: ${convo.title}\n\n${msgText}` }],
     });
-    const raw = (res.content[0]?.text || '{}').replace(/```json|```/g, '').trim();
+    raw = (res.content[0]?.text || '').replace(/```json|```/g, '').trim();
     return JSON.parse(raw);
-  } catch { return { key_facts: [], decisions: [], entities: [], topics: [], strategic_value: 0 }; }
+  } catch (e) {
+    console.error('[import-conversations] extractInsights FAILED for', JSON.stringify(convo.title || '(untitled)'), '-', e.message, '| raw:', raw.slice(0, 300));
+    return { key_facts: [], decisions: [], entities: [], topics: [], strategic_value: 0, _error: e.message };
+  }
 }
 
 export default async function handler(req, res) {
@@ -92,13 +97,17 @@ export default async function handler(req, res) {
 
     for (const convo of convos) {
       // Store raw conversation
-      await sbFetch('kiko_imported_conversations', {
-        method: 'POST', body: JSON.stringify({
+      const storedRows = await sbFetch('kiko_imported_conversations', {
+        method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify({
           source: convo.source, title: convo.title,
           messages: convo.messages, original_date: convo.original_date,
         })
       });
+      const importedId = storedRows?.[0]?.id || null;
       imported++;
+
+      // Embed for semantic search so imported chats are findable (embedConversation never throws)
+      if (importedId) await embedConversation(importedId, convo.source, convo.title, convo.messages, USER_ID);
 
       // Extract insights (batch — process max 50 to stay in time limit)
       if (imported <= 50) {
@@ -128,7 +137,7 @@ export default async function handler(req, res) {
           insightsExtracted++;
         }
         // Mark as processed
-        await sbFetch(`kiko_imported_conversations?title=eq.${encodeURIComponent(convo.title)}&source=eq.${convo.source}`, {
+        await sbFetch(importedId ? `kiko_imported_conversations?id=eq.${importedId}` : `kiko_imported_conversations?title=eq.${encodeURIComponent(convo.title)}&source=eq.${convo.source}`, {
           method: 'PATCH', body: JSON.stringify({
             processed: true, extracted_insights: insights,
             entities_mentioned: insights.entities || [], decisions_made: insights.decisions || [],
