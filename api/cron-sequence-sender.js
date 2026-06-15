@@ -294,14 +294,26 @@ export default async function handler(req, res) {
           inlineImages,
         });
 
-        // Send via Gmail API
+        // Send via Gmail API (one forced-refresh retry if the cached token was invalidated by Google)
         const sendBody = threadId ? { raw, threadId } : { raw };
-        const gmailRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(sendBody)
-        });
-        const result = await gmailRes.json();
+        const sendGmail = async (tok) => {
+          const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(sendBody)
+          });
+          return { r, j: await r.json() };
+        };
+        let { r: gmailRes, j: result } = await sendGmail(token);
+        if (gmailRes.status === 401) {
+          console.warn(`[seq-sender] 401 sending to ${email.to_email} - forcing token refresh + retry`);
+          const freshTok = await getGoogleToken(fromEmail, true);
+          if (freshTok) {
+            token = freshTok;
+            tokenCache.set(fromEmail, freshTok);
+            ({ r: gmailRes, j: result } = await sendGmail(freshTok));
+          }
+        }
 
         if (!gmailRes.ok) {
           await sbFetch(`kiko_outreach_queue?id=eq.${email.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error: result.error?.message || 'Gmail API error' }) });
