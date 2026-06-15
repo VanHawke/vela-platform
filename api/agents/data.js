@@ -858,6 +858,20 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
       case 'enrich_company': {
         const name = params?.company || params?.name;
         if (!name) return 'Please specify a company name to enrich.';
+        // Curated-first: the companies table is the authoritative record (same source that
+        // search_companies and entity_detail read). Return it instead of re-deriving — this
+        // saves cost and keeps every company tool consistent. Only fall through to a live
+        // web-search enrichment if there is no companies record for this name at all.
+        try {
+          const _coRows = await sbFetch(`companies?select=data&data->>name=ilike.*${encodeURIComponent(name)}*&limit=1`);
+          const _co = Array.isArray(_coRows) && _coRows.length ? _coRows[0].data : null;
+          if (_co && (_co.totalFunding || _co.revenueEst || _co.industry)) {
+            const _sig = Array.isArray(_co.recent_signals) && _co.recent_signals.length ? `\nRecent: ${_co.recent_signals.slice(0,3).map(x => `${x.date} ${x.headline}`).join('; ')}` : '';
+            const _src = _co.data_refreshed_by === 'claude_deep_research' ? `deep research ${_co.data_refreshed_at || ''}` : (_co.market_data_status || 'company record');
+            const _warn = _co.needs_market_refresh ? ' [flagged for refresh]' : '';
+            return `${_co.name} (source: ${_src}${_warn}; not re-enriched)\nFunding: ${_co.totalFunding || '?'} (${_co.lastRound || '?'}) | Valuation: ${_co.valuation || '?'}\nRevenue: ${_co.revenueEst || '?'} | Employees: ${_co.employees || '?'}\nCEO: ${_co.ceo || '?'} | CMO: ${_co.cmo || '?'} | Industry: ${_co.industry || '?'}\nSponsorships: ${_co.existingSponsorships || '?'}${_sig}`;
+          }
+        } catch (_e) { /* fall through to live enrichment below */ }
         try {
           const Anthropic = (await import('@anthropic-ai/sdk')).default;
           const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
