@@ -503,3 +503,13 @@ This is mandatory from Supabase's Data API change (enforced Oct 30, 2026). All 1
 **PORTAL FIX** — the SequenceDetail prospect slide-over is portalled to document.body (was position:fixed but clipped by an ancestor containing block, name cut off).
 **DATA REALITY (audit):** 4,233 contacts, 3,718 email+LinkedIn (Tier-1 837). company_intelligence enriched only 30/2,168 (1.4%); Tier-1 companies enriched 7/660; contact-to-company mapping 58%. Outreach layer ready; deep-intel layer sparse — the companies-table merge keeps drafts company-aware meanwhile.
 **Commits:** 3dd16de / 4999ac6 / 644dbfe / 43c76cd / cb3492e. Migrations: cascade_deal_archive_followups, cascade_archive_close_followed_up_too.
+
+### SESSION 76 — TIER-1 DEEP-RESEARCH ENRICHMENT + enrich_company curated-first (June 15, 2026)
+**4 Tier-1 companies in live sequences deep-researched (Claude web_search, not paid vendors) and refreshed in BOTH the companies record and company_intelligence:**
+- **Sierra** (sierra.ai): $80M -> **$1.585B** raised, $15.8B valuation (Series E, May 2026), $150M+ ARR, CEO Bret Taylor, Head of Marketing Anna Rosenman. Competes directly with Decagon (in pipeline) — category conflict.
+- **Norm Ai** (norm.ai): $3M -> **$140M+** (Blackstone-led, Nov 2025), Legal/RegTech AI, CEO John Nay, launched AI-native law firm Norm Law.
+- **Netradyne** (netradyne.com): $55M -> **$308-317M**, $1.34B valuation (Series D, Jan 2025), AI fleet safety, CEO Avneesh Agrawal, CMO Adam Kahn; May-2026 Moove (Europe) acquisition.
+- **Rocket Lawyer** (rocketlawyer.com): corrected $750M error -> **$276-288M**, legal tech, interim CEO Paul Hollerbach (founder Charley Moore retired Mar 2025).
+Each record carries 5-6 dated 2025-26 signals, competitors, business model, confidence notes. Provenance marker = data_refreshed_by='claude_deep_research' + data_refreshed_at='2026-06-15' (NOT market_data_status, which the LinkedIn keep-alive cron owns and re-stamps to 'linkedin_live_jun2026' on these in-sequence companies — it touches only that field, never the real data).
+**enrich_company is now CURATED-FIRST** — reads the companies record and returns it instead of re-deriving; only does a live web enrichment if no companies record exists. Stops the per-call Sonnet+web_search spend and the data-source conflict (search_companies / entity_detail / enrich_company / company_intel now agree).
+**Commit:** 732d210.

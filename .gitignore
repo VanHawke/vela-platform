@@ -37,3 +37,7 @@ kiko-worker/logs/
 kiko-worker/.env
 kiko-worker/node_modules/
 kiko-extension/node_modules/
+
+# deep-research enrichment tooling (loads env from .env.local)
+_research.mjs
+_apply.mjs
