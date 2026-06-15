@@ -41,3 +41,4 @@ kiko-extension/node_modules/
 # deep-research enrichment tooling (loads env from .env.local)
 _research.mjs
 _apply.mjs
+_enrich.mjs

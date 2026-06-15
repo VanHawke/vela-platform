@@ -513,3 +513,14 @@ This is mandatory from Supabase's Data API change (enforced Oct 30, 2026). All 1
 Each record carries 5-6 dated 2025-26 signals, competitors, business model, confidence notes. Provenance marker = data_refreshed_by='claude_deep_research' + data_refreshed_at='2026-06-15' (NOT market_data_status, which the LinkedIn keep-alive cron owns and re-stamps to 'linkedin_live_jun2026' on these in-sequence companies — it touches only that field, never the real data).
 **enrich_company is now CURATED-FIRST** — reads the companies record and returns it instead of re-deriving; only does a live web enrichment if no companies record exists. Stops the per-call Sonnet+web_search spend and the data-source conflict (search_companies / entity_detail / enrich_company / company_intel now agree).
 **Commit:** 732d210.
+
+### SESSION 77 — TIER-1 ENRICHMENT EXPANSION (11 more companies) + _enrich.mjs batch tool (June 15, 2026)
+Continued deep-research enrichment of the highest-readiness unenriched Tier-1 companies (dual-written companies.data + company_intelligence; Claude web_search, no paid vendors). 11 companies, cybersecurity-led:
+- **Cyber:** BlueVoyant (~$665-696M, new CEO John Hernandez May 2026), Claroty (~$882-940M, $3B val, Series F Jan 2026), Dragos (~$440M, $1.7B val), Zscaler (public ~$21B mcap, $3.33B rev, CMO seat VACANT), Axonius ($200M ARR, new CEO Joe Diamond May 2026), Vectra AI (~$169M est), Semperis (~$365-382M, $100M+ ARR).
+- **Semiconductor:** GlobalFoundries (public ~$42-47B mcap, $6.79B rev), Axcelis (public ~$2.6B mcap, $839M rev, PENDING VEECO MERGER H2 2026 + rebrand).
+- **Robotics:** Symbotic (public, $2.247B FY25 rev; was wrongly $10M ARR).
+- **Fintech:** Capital.com (decentralized, no Group CEO, $3.42T 2025 volume).
+**CATEGORY CONFLICT (Kiko flagged):** the cyber cluster (Claroty/Dragos/BlueVoyant/Zscaler/Axonius/Vectra/Semperis) all compete for ONE F1 cyber category slot per team — cannot run multiple at the same team. Decide before parallel outreach.
+**_enrich.mjs** (repo root, gitignored): research (Opus+web_search) + dual-write both stores + diff in one pass; handles public companies (market cap/revenue); run in BACKGROUND (foreground >4min wedges the MCP).
+**Quirk:** valuation lives only in companies.data (company_intelligence has no valuation column) — shows "blank" in company_intel reads but IS stored.
+15 companies deep-researched this session total (4 in-sequence + 11 expansion).
