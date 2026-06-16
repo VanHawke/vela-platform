@@ -149,7 +149,7 @@ async function discoverDomain(domain) {
 
   // Extract structured discoveries via Haiku for alerts
   const extract = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6-20250514', max_tokens: 1200, // Sonnet — competitive analysis
+    model: 'claude-sonnet-4-6', max_tokens: 1200, // Sonnet — competitive analysis
     system: `Extract the most important NEW discoveries. Return ONLY valid JSON array. Each item: { "entity": "Name", "type": "competitor|prospect|disruptor|market_shift|agency_intel", "threat_level": "high|medium|low", "summary": "1 sentence", "action": "What Van Hawke should do" }. Maximum 5 items. Only genuinely NEW intelligence.`,
     messages: [{ role: 'user', content: `Domain: ${domain.label}\n\n${text.slice(0, 3000)}` }],
   });

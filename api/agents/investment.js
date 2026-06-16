@@ -1,7 +1,7 @@
 // api/agents/investment.js — Investment / Capital Strategy Agent (Phase 5 Rebuild)
 // Supports Van Hawke Maison raises + future capital events.
 // Now pulls pipeline and deal data for revenue context.
-// Model: claude-opus-4-6
+// Model: claude-opus-4-8
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
 
@@ -58,7 +58,7 @@ async function analyse(question, context = '') {
   } catch {}
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-opus-4-6', max_tokens: 1200,
+      model: 'claude-opus-4-8', max_tokens: 1200,
       system: INVESTMENT_PROMPT,
       messages: [{ role: 'user', content: `${question}\n\n${dataContext}${context ? `ADDITIONAL: ${context}` : ''}` }],
     });

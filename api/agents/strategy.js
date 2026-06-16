@@ -1,6 +1,6 @@
 // api/agents/strategy.js — Strategy Agent (Decision Engine)
 // Delivers verdicts, not summaries. Called for strategic questions.
-// Model: claude-opus-4-6 (highest reasoning)
+// Model: claude-opus-4-8 (highest reasoning)
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
 
@@ -156,7 +156,7 @@ async function evaluate(question, context = '') {
 
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
+      model: 'claude-opus-4-8',
       max_tokens: 1000,
       system: STRATEGY_PROMPT,
       messages: [{ role: 'user', content: `STRATEGIC QUESTION: ${question}${fullContext ? `\n\nCONTEXT:\n${fullContext}` : ''}` }],
@@ -189,7 +189,7 @@ async function prioritise(items = [], criteria = '') {
 
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
+      model: 'claude-opus-4-8',
       max_tokens: 800,
       system: STRATEGY_PROMPT,
       messages: [{ role: 'user', content: `PRIORITISE these ${items.length} items. Rank by revenue impact × urgency. Top 5 only.\n\n${JSON.stringify(items, null, 2)}${criteria ? `\n\nAdditional criteria: ${criteria}` : ''}` }],

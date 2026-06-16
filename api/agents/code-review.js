@@ -20,7 +20,7 @@ async function analyseArchitecture() {
   try {
     const agentDir = path.join(process.cwd(), 'api', 'agents');
     const cronFiles = fs.readdirSync(path.join(process.cwd(), 'api')).filter(f => f.startsWith('cron-'));
-    const agentFiles = fs.readdirSync(agentDir).filter(f => f.endsWith('.js'));
+    const agentFiles = fs.readdirSync(agentDir).filter(f => f.endsWith('.js') && !f.startsWith('._'));
     
     let analysis = `KIKO CODEBASE ANALYSIS:\n\n`;
     analysis += `Core files: kiko.js, kiko-tools.js, kiko-self-knowledge.js\n`;

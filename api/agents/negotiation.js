@@ -1,6 +1,6 @@
 // api/agents/negotiation.js — Negotiation Agent
 // Protects margin and deal value during active negotiations.
-// Model: claude-opus-4-6 (needs highest reasoning for adversarial thinking)
+// Model: claude-opus-4-8 (needs highest reasoning for adversarial thinking)
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
 
@@ -90,7 +90,7 @@ async function analysePosition(situation, context = '') {
 
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
+      model: 'claude-opus-4-8',
       max_tokens: 1200,
       system: NEGOTIATION_PROMPT,
       messages: [{ role: 'user', content: `NEGOTIATION SITUATION:\n${situation}${crmContext ? `\n\nCRM CONTEXT:\n${crmContext}` : ''}${preferencesContext ? `\n${preferencesContext}` : ''}${context ? `\n\nADDITIONAL CONTEXT:\n${context}` : ''}` }],
@@ -119,7 +119,7 @@ async function counterOffer(theirOffer, ourPosition = '', dealContext = '') {
   }
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
+      model: 'claude-opus-4-8',
       max_tokens: 800,
       system: NEGOTIATION_PROMPT,
       messages: [{ role: 'user', content: `They offered: ${theirOffer}\n${ourPosition ? `Our position: ${ourPosition}\n` : ''}${enrichment}${dealContext ? `Context: ${dealContext}\n` : ''}\nBuild a counter-position. Include: what we counter with, what we trade, what we hold firm on, and the exact language to use.` }],
