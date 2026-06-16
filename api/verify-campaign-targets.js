@@ -17,6 +17,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { resolveEmailForPerson } from './resolve-email.js';
 
 
 const supabase = createClient(
@@ -66,6 +67,18 @@ If you cannot determine status with reasonable confidence, return still_at_compa
     else if (parsed.still_at_company === false) verResult = 'moved_company';
     else verResult = 'unreachable';
 
+    // Resolve best-available email with explicit confidence — only if still in seat (Session 77)
+    let _email = target.decision_maker_email || null, _emailConfidence = null, _emailSource = null;
+    if (verResult === 'verified_at_company') {
+      try {
+        const domain = _email && _email.includes('@') ? _email.split('@')[1] : null;
+        const er = await resolveEmailForPerson({
+          name, company, title: parsed.current_title || title, domain,
+          knownEmail: _email, knownVerified: target.source === 'crm',
+        });
+        _email = er.email || _email; _emailConfidence = er.confidence || null; _emailSource = er.source || null;
+      } catch {}
+    }
     return {
       ...target,
       _result: verResult,
@@ -73,6 +86,7 @@ If you cannot determine status with reasonable confidence, return still_at_compa
       _current_title: parsed.current_title || null,
       _current_company: parsed.current_company || null,
       _confidence: parsed.confidence || 'low',
+      _email, _email_confidence: _emailConfidence, _email_source: _emailSource,
     };
   } catch (err) {
     return { ...target, _result: 'unreachable', _notes: `Verification error: ${err.message}` };
@@ -81,7 +95,7 @@ If you cannot determine status with reasonable confidence, return still_at_compa
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  const { campaign_id, sequence_id, force } = req.body || {};
+  const { campaign_id, sequence_id, force, shortlist_only, shortlist_size } = req.body || {};
   const id = campaign_id || sequence_id;
   if (!id) return res.status(400).json({ error: 'campaign_id required' });
 
@@ -92,11 +106,15 @@ export default async function handler(req, res) {
     const filterStatus = force ? '' : '&verification_status=eq.unverified';
     const { data: targets, error: tErr } = await supabase
       .from('campaign_targets')
-      .select('id, company_name, decision_maker_name, decision_maker_title, decision_maker_email, source, contact_id, verification_status')
+      .select('id, rank, company_name, decision_maker_name, decision_maker_title, decision_maker_email, source, contact_id, verification_status')
       .eq('campaign_id', id);
     if (tErr) throw tErr;
 
-    const toVerify = (targets || []).filter(t => force || t.verification_status === 'unverified');
+    let toVerify = (targets || []).filter(t => force || t.verification_status === 'unverified');
+    if (shortlist_only) {
+      const N = shortlist_size || 8;
+      toVerify = toVerify.filter(t => (t.rank || 999) <= N);
+    }
     if (toVerify.length === 0) {
       return res.status(200).json({
         ok: true,
@@ -127,6 +145,9 @@ export default async function handler(req, res) {
         verification_status: newStatus,
         verified_at: verifiedAt,
         decision_maker_title: v._current_title || v.decision_maker_title,
+        decision_maker_email: v._email || v.decision_maker_email,
+        email_confidence: v._email_confidence || null,
+        email_source: v._email_source || null,
       }).eq('id', v.id);
 
       // Propagate to contacts table if this target is linked to a contact
@@ -153,6 +174,12 @@ export default async function handler(req, res) {
       moved: nMoved,
       unreachable: nUnreachable,
       duration_ms: Date.now() - startedAt,
+      emails_verified: verified.filter(v => v._email_confidence === 'verified').length,
+      emails_sourced: verified.filter(v => v._email_confidence === 'sourced').length,
+      emails_inferred: verified.filter(v => v._email_confidence === 'inferred').length,
+      shortlist: verified
+        .filter(v => v._result === 'verified_at_company')
+        .map(v => ({ rank: v.rank, name: v.decision_maker_name, title: v._current_title || v.decision_maker_title, company: v.company_name, email: v._email, email_confidence: v._email_confidence, email_source: v._email_source })),
       moved_details: verified
         .filter(v => v._result === 'moved_company')
         .map(v => ({ name: v.decision_maker_name, was_at: v.company_name, now_at: v._current_company, notes: v._notes })),

@@ -45,7 +45,9 @@ const CATEGORY_CRITERIA = {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  const { category } = req.body || {};
+  const { category, overrides: rawOverrides } = req.body || {};
+  const overrides = (rawOverrides && typeof rawOverrides === 'object' && !Array.isArray(rawOverrides)) ? rawOverrides : {};
+  const criteria = { ...(CATEGORY_CRITERIA[category] || { revenue_min: '$500M', dm_seniority: 'CMO / VP Marketing' }), ...overrides };
   if (!category) return res.status(400).json({ error: 'category required' });
 
   // ─── Job tracking (Sunny spec 2026-04-12 v0.0.38) ───
@@ -158,6 +160,26 @@ export default async function handler(req, res) {
       }
     }
 
+    // ─── Pipeline-aware exclusion (Kiko, Session 77) ───
+    // Never cold-pitch a company we already have an OPEN deal with or an ACTIVE
+    // enrollment in. Lost/archived deals and finished enrollments are approachable again.
+    const pipelineExcluded = new Set();
+    try {
+      const { data: openDeals } = await supabase.from('deals')
+        .select('data').not('data->>status', 'in', '(lost,archived)');
+      for (const d of openDeals || []) {
+        const n = (d.data?.company || '').trim();
+        if (n) { exclusionSet.add(n.toLowerCase()); pipelineExcluded.add(n); }
+      }
+      const { data: activeEnr } = await supabase.from('kiko_sequence_enrollments')
+        .select('company,status').not('status', 'in', '(replied,bounced,stopped,completed,unsubscribed)');
+      for (const e of activeEnr || []) {
+        const n = (e.company || '').trim();
+        if (n) { exclusionSet.add(n.toLowerCase()); pipelineExcluded.add(n); }
+      }
+    } catch (e) { console.warn('[build-campaign] pipeline-exclusion failed:', e?.message); }
+    console.log(`[build-campaign] pipeline-exclusion protected ${pipelineExcluded.size} company names`);
+
     // ─── STEP 6: Find or create the campaign sequence ───
     // CRITICAL: If a sequence already exists for this team+category combo AND it
     // already has targets, return early. Re-running build burns credits and risks
@@ -180,7 +202,7 @@ export default async function handler(req, res) {
           team: { id: team.id, name: team.name, full_name: team.full_name, principal: team.team_principal },
           category: { id: category, name: catRow.name },
           why: `Existing campaign found with ${count} targets — returning cached. Delete the sequence first if you want to re-source.`,
-          criteria: CATEGORY_CRITERIA[category] || { revenue_min: '$500M', dm_seniority: 'CMO / VP Marketing' },
+          criteria,
           competitive_landscape: [],
           top_50: existingTargets || [],
           top_8: (existingTargets || []).slice(0, 8),
@@ -263,16 +285,17 @@ export default async function handler(req, res) {
     const crmCompanyCount = crmResults.length;
     const webGap = Math.max(20, 50 - crmCompanyCount);  // Always source at least 20 from web for diversity
 
+    const signalLine = criteria.signals ? `\n- MUST visibly show: ${Array.isArray(criteria.signals) ? criteria.signals.join('; ') : criteria.signals}` : '';
     const sourcingPrompt = `You are sourcing ${webGap} companies in the ${catRow.name} sector for an F1 sponsorship campaign with ${team.name}. This is a real outreach list.
 
 CONTEXT: ${crmCompanyCount} ${catRow.name} companies are ALREADY in our CRM and being added separately. You are sourcing FRESH companies that are NOT in our CRM and NOT already F1 partners.
 
 CRITERIA (all must be met):
-- Annual revenue: ${CATEGORY_CRITERIA[category]?.revenue_min || '$500M+'}
-${CATEGORY_CRITERIA[category]?.funding_min ? `- OR recent funding: ${CATEGORY_CRITERIA[category].funding_min}+` : ''}
-- Geography: ${CATEGORY_CRITERIA[category]?.geography || 'Global'}
+- Annual revenue: ${criteria.revenue_min || '$500M+'}
+${criteria.funding_min ? `- OR recent funding: ${criteria.funding_min}+` : ''}
+- Geography: ${criteria.geography || 'Global'}
 - Active brand/marketing budget visible (sports sponsorships, ad campaigns, conference presence)
-- Decision-maker reachable: ${CATEGORY_CRITERIA[category]?.dm_seniority || 'CMO / VP Marketing'}
+- Decision-maker reachable: ${criteria.dm_seniority || 'CMO / VP Marketing'}${signalLine}
 
 CRITICAL EXCLUSION RULE: The following companies are EITHER already F1 partners OR already in our CRM. They MUST NOT appear in your list. Find DIFFERENT companies. Exclusion list: ${exclusionListForPrompt}
 
@@ -373,6 +396,12 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
     // Wipe any previous targets for this campaign first
     await supabase.from('campaign_targets').delete().eq('campaign_id', sequenceId);
     const allTargetRows = [...crmTargetRows, ...webTargetRows];
+    // ─── Fit-scoring (Kiko, Session 77) ───
+    // Rank the whole list by a transparent rubric so the top 8 is the BEST 8, not
+    // CRM-first order. Deterministic — no LLM judgment in the path.
+    for (const r of allTargetRows) r._fit = fitScore(r, criteria);
+    allTargetRows.sort((a, b) => b._fit - a._fit);
+    allTargetRows.forEach((r, i) => { r.rank = i + 1; delete r._fit; });
     let insertedCount = 0;
     if (allTargetRows.length > 0) {
       // Chunk inserts in 50s — Supabase has a 1000-row limit per insert and we want
@@ -449,7 +478,7 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
       team: { id: team.id, name: team.name, full_name: team.full_name, principal: team.team_principal },
       category: { id: category, name: catRow.name },
       why: `${team.name} has zero active partners in ${catRow.name} or overlapping categories (${expandedCategories.join(', ')}). ${openTeams.length === 1 ? 'Only team with this slot open.' : `${openTeams.length} teams have this slot open; ${team.name} picked alphabetically for determinism.`} Competitive landscape verified against ${allPartnerships?.length || 0} live partnership records.`,
-      criteria: CATEGORY_CRITERIA[category] || { revenue_min: '$500M', dm_seniority: 'CMO / VP Marketing' },
+      criteria,
       competitive_landscape: competitiveLandscape,
       top_50: top50,
       top_8: top50.slice(0, 8),
@@ -463,6 +492,8 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
       emails_pending: webContactsNeedingEmail.length,
       email_enrichment: webContactsNeedingEmail.length > 0 ? 'running_in_background' : 'not_needed',
       excluded_companies_count: exclusionSet.size,
+      pipeline_excluded_count: pipelineExcluded.size,
+      pipeline_excluded_sample: [...pipelineExcluded].slice(0, 10),
       blocked_teams: [...blockedTeamIds],
       next_action: webContactsNeedingEmail.length > 0
         ? `${crmTargetRows.filter(t => t.decision_maker_email).length} CRM contacts have emails. ${webContactsNeedingEmail.length} web-sourced contacts are being enriched in the background — you'll get a notification when done. Enroll now to start with CRM contacts.`
@@ -512,6 +543,38 @@ const CATEGORY_INDUSTRY_MAP = {
 };
 
 // ─── Email validation — reject obvious fakes, role-based, and malformed addresses ───
+function parseMoney(str) {
+  if (!str) return null;
+  const matches = [...String(str).toLowerCase().matchAll(/(\d+(?:\.\d+)?)\s*(b|bn|billion|m|mn|million|k)/g)];
+  let best = null;
+  for (const m of matches) {
+    let v = parseFloat(m[1]);
+    const u = m[2][0];
+    if (u === 'b') v *= 1000; else if (u === 'k') v /= 1000;
+    if (best === null || v > best) best = v;
+  }
+  return best; // approx $millions
+}
+function revenueFitScore(rev, floor) {
+  const v = parseMoney(rev), f = parseMoney(floor);
+  if (v === null) return 8;
+  if (f === null) return 18;
+  if (v >= f) return 25;
+  if (v >= f * 0.5) return 15;
+  return 5;
+}
+function fitScore(row, criteria) {
+  let s = 0;
+  if ((row.source || '').toLowerCase().includes('crm')) s += 40; // known + reachable
+  if (row.decision_maker_email) s += 20;
+  s += revenueFitScore(row.revenue_estimate, criteria?.revenue_min);
+  if (row.decision_maker_name && !/unknown/i.test(row.decision_maker_name)) s += 10;
+  if (/chief|cmo|cro|cfo|ceo|\bvp\b|head|president|director|founder/i.test(row.decision_maker_title || '')) s += 8;
+  if (/sponsor|motorsport|formula|f1|racing|sports|brand|partnership/i.test(row.rationale || '')) s += 12;
+  if (/funding|raised|series\s[a-f]|ipo|acqui|valuation|round/i.test(row.rationale || '')) s += 6;
+  return s;
+}
+
 function isValidEmail(email) {
   if (!email || typeof email !== 'string') return false;
   const e = email.trim().toLowerCase();
@@ -619,7 +682,7 @@ async function sourceFromCRM(category, exclusionSet, maxCompanies = 30) {
 
     // Take top 5 decision-makers per company
     const topContacts = scoredContacts.slice(0, 5).map(x => ({
-      contact_id: x.ct.id,
+      contact_id: (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(x.ct.id || '') ? x.ct.id : null),
       name: `${x.ct.data?.firstName || ''} ${x.ct.data?.lastName || ''}`.trim(),
       title: x.ct.verified_title || x.ct.data?.title || '',
       email: x.ct.data?.email || null,

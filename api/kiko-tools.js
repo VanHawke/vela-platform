@@ -452,10 +452,11 @@ export const TOOL_DEFINITIONS = [
   // ── Campaign Builder (full end-to-end) ──
   {
     name: 'build_campaign',
-    description: 'Build a COMPLETE outreach campaign end-to-end. Sources companies, finds decision-makers, verifies emails, creates sequence, enrolls prospects — all in one action. Use when user says "build a campaign for X" or "target Y sector" or "create a Z campaign for [team]". This is the PREFERRED tool for campaign creation — do NOT redirect users to the UI.',
+    description: 'Discover prospects AND build a COMPLETE campaign end-to-end, returning a VERIFIED ready-to-launch shortlist. Sources companies (CRM + web), excludes anyone already in the pipeline, ranks by fit, then for the top 8 confirms the decision-maker is still in seat and resolves a real email with a confidence label. Use whenever the user wants to FIND or TARGET prospects, e.g. "find me cybersecurity companies over $1B that sponsor sports", "target legal-AI", "build a fintech campaign". Extract any precision criteria from the user sentence into `overrides`. PREFERRED tool — do NOT redirect users to the UI.',
     input_schema: { type: 'object', properties: {
-      category: { type: 'string', description: 'Sector/category to target. E.g. "legal_ai", "banking", "cybersecurity", "fintech". Can also be a free-text description like "Legal AI Technology companies".' },
+      category: { type: 'string', description: 'Closest sector. One of: banking, fintech, cybersecurity, cloud, ai_data, software, semiconductors, telecom, gaming, crypto, energy, automotive, hospitality, fashion, watches, food_bev, health, logistics, legal, robotics, whiskey. Pick the nearest if the user names a narrower vertical.' },
       team: { type: 'string', description: 'F1 team name. Default: auto-selects based on category availability. E.g. "alpine", "haas".' },
+      overrides: { type: 'object', description: 'OPTIONAL precision criteria parsed from the user request. Fields: revenue_min (e.g. "$1B"), funding_min (e.g. "$100M"), geography (e.g. "US and Europe"), dm_seniority (e.g. "CMO / Head of Brand"), signals (array, e.g. ["current sports sponsorship"]). Only include fields the user actually specified.' },
     }, required: ['category'] },
   },
   {
@@ -1907,7 +1908,7 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
   // ── Campaign Builder (full end-to-end) ──
   if (name === 'build_campaign') {
     try {
-      const { category, team } = input;
+      const { category, team, overrides } = input;
       if (!category) return 'Error: category is required (e.g. "legal_ai", "banking", "cybersecurity")';
       const baseUrl = 'http://127.0.0.1:3000';
       
@@ -1915,26 +1916,43 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
       const res = await fetch(`${baseUrl}/api/build-campaign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: category.toLowerCase().replace(/\s+/g, '_'), team: team || undefined, user_id: userId }),
+        body: JSON.stringify({ category: category.toLowerCase().replace(/\s+/g, '_'), team: team || undefined, overrides: overrides || undefined, user_id: userId }),
         signal: AbortSignal.timeout(240000), // 4 min max
       });
       const data = await res.json();
       
-      if (data.success) {
-        const emailStatus = data.email_enrichment === 'running_in_background'
-          ? `\n📧 Email enrichment running in background for ${data.emails_pending} web-sourced contacts. You'll get a notification when done.`
-          : '';
-        return `✅ CAMPAIGN BUILT: "${data.sequence_name}"\n\n` +
-          `Team: ${data.team?.name || 'Auto-selected'}\n` +
-          `Category: ${data.category?.name || category}\n` +
-          `Companies sourced: ${data.sourced_total || 0} (${data.filtered_count || 0} after filtering)\n` +
-          `Decision-makers found: ${data.inserted_count || 0}\n` +
-          `Emails verified: ${data.emails_found || 0}\n` +
-          `Sequence ID: ${data.sequence_id}\n` +
-          emailStatus +
-          `\n\n${data.next_action || 'Review the campaign in /campaigns, then activate when ready.'}`;
-      }
-      return `Campaign build failed: ${data.error || JSON.stringify(data).slice(0, 300)}`;
+      if (!data.success) return `Campaign build failed: ${data.error || JSON.stringify(data).slice(0, 300)}`;
+
+      // Verify the TOP 8 synchronously — still-in-seat + resolve a real email with confidence
+      let shortlist = [];
+      try {
+        const vr = await fetch(`${baseUrl}/api/verify-campaign-targets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ campaign_id: data.sequence_id, shortlist_only: true, shortlist_size: 8, force: true }),
+          signal: AbortSignal.timeout(120000),
+        });
+        const vd = await vr.json();
+        if (Array.isArray(vd.shortlist)) shortlist = vd.shortlist;
+      } catch (e) { console.warn('[build_campaign] shortlist verify failed:', e?.message); }
+
+      const CONF = { verified: '✅ verified', sourced: '🔎 sourced', inferred: '✱ inferred', unknown: '— no email' };
+      const lines = shortlist
+        .sort((a, b) => (a.rank || 99) - (b.rank || 99))
+        .map(t => `${t.rank}. ${t.name || t.decision_maker_name || '—'} · ${t.title || '—'} · ${t.company || t.company_name}\n     ${t.email || 'no email found'}  (${CONF[t.email_confidence] || t.email_confidence || 'unknown'})`)
+        .join('\n');
+      const crit = data.criteria || {};
+      const critLine = [crit.revenue_min && `revenue ≥ ${crit.revenue_min}`, crit.geography, crit.dm_seniority, Array.isArray(crit.signals) ? crit.signals.join('; ') : crit.signals].filter(Boolean).join(' · ');
+      const pipelineNote = data.pipeline_excluded_count
+        ? `\n🛡️ Skipped ${data.pipeline_excluded_count} company(ies) already in your pipeline${data.pipeline_excluded_sample?.length ? ` (e.g. ${data.pipeline_excluded_sample.slice(0, 3).join(', ')})` : ''}.`
+        : '';
+      return `✅ CAMPAIGN BUILT: "${data.sequence_name}" — ${data.team?.name || 'team auto-selected'}, ${data.category?.name || category}\n` +
+        (critLine ? `Criteria: ${critLine}\n` : '') +
+        `Sourced ${data.sourced_total || 0}, ranked ${data.inserted_count || 0} decision-makers.${pipelineNote}\n\n` +
+        `TOP 8 — verified & ready to review:\n${lines || '(shortlist verification returned nothing — review in /campaigns)'}\n\n` +
+        `Sequence ID: ${data.sequence_id}\n` +
+        `Confidence: ✅ verified (send now) · 🔎 sourced · ✱ inferred (company pattern — sanity-check) · — none found.\n` +
+        `Review & launch in /campaigns, or tell me to refine the targeting.`;
     } catch (e) { return `Campaign build error: ${e.message}`; }
   }
 
