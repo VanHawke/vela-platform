@@ -88,6 +88,9 @@ async function runTask({ taskId, startedAt, query, user_id }) {
   let fullText = '';
   let lastFlush = 0;
   let finalized = false;
+  const toolsUsed = [];
+  // toolStatus values the brain emits that are NOT a specific tool (skip these).
+  const GENERIC_STATUS = new Set(['', 'Connecting...', 'Deep analysis...', 'Still working...']);
 
   const patch = async (body) => {
     try {
@@ -114,6 +117,7 @@ async function runTask({ taskId, startedAt, query, user_id }) {
       elapsed_seconds: elapsed,
     };
     if (status === 'done') body.result_text = fullText;
+    if (toolsUsed.length) body.tools_used = toolsUsed;
     if (errorMessage) body.error_message = String(errorMessage).slice(0, 1000);
     await patch(body);
   };
@@ -127,6 +131,10 @@ async function runTask({ taskId, startedAt, query, user_id }) {
       try {
         const obj = JSON.parse(payload);
         if (typeof obj.delta === 'string') fullText += obj.delta;
+        else if (typeof obj.toolStatus === 'string') {
+          const s = obj.toolStatus.trim();
+          if (s && !GENERIC_STATUS.has(s) && !toolsUsed.includes(s)) toolsUsed.push(s);
+        }
       } catch {}
     }
     flush(false);

@@ -46,6 +46,7 @@ import googleAuth from "./api/google-auth.js";
 import calendarWebhook from "./api/calendar-webhook.js";
 import { startMonitors } from "./monitors/scheduler.js";
 import { startScheduler } from "./src/cron-scheduler.js";
+import { reapOrphanTasks } from "./api/lib/reap-orphan-tasks.js";
 import { requireAuth } from "./api/_auth.js";
 import archiveDossier from "./api/archive-dossier.js";
 import archiveBrief from "./api/archive-brief.js";
@@ -152,6 +153,7 @@ app.listen(PORT, "127.0.0.1", () => {
   console.log(`[kiko-worker] Nginx proxies public traffic → this port`);
   startMonitors();
   startScheduler();
+  reapOrphanTasks(); // mark any tasks orphaned by a previous worker death as error
 });
 
 process.on("SIGTERM", () => { console.log("[kiko-worker] SIGTERM"); process.exit(0); });
