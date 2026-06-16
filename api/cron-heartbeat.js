@@ -81,7 +81,7 @@ export default async function handler(req, res) {
 
     // Ask Haiku: "Is this worth alerting Sunny about?"
     const evaluation = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', // Upgraded from Haiku — signal classification needs real reasoning
+      model: 'claude-sonnet-4-6', // Upgraded from Haiku — signal classification needs real reasoning
       max_tokens: 400,
       messages: [{ role: 'user', content: `You are Kiko, evaluating whether new signals require Sunny's immediate attention.
 

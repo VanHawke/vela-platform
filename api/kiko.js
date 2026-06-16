@@ -22,7 +22,7 @@ import { callEAAgent } from './agents/ea.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = process.env.KIKO_BRAIN_MODEL || 'claude-opus-4-8';
-const COGNITIVE = process.env.KIKO_COGNITIVE_MODEL || 'claude-sonnet-4-20250514';
+const COGNITIVE = process.env.KIKO_COGNITIVE_MODEL || 'claude-sonnet-4-6';
 const UTILITY = process.env.KIKO_UTILITY_MODEL || 'claude-haiku-4-5-20251001';
 
 // ═══ UTILITIES ═══

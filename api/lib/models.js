@@ -3,7 +3,7 @@
 // Kiko can update this via kiko_self_modify to upgrade herself.
 
 export const BRAIN = process.env.KIKO_BRAIN_MODEL || 'claude-opus-4-8';        // Memory, learning, self-eval, main conversation
-export const COGNITIVE = process.env.KIKO_COGNITIVE_MODEL || 'claude-sonnet-4-20250514'; // Classification, deal analysis, email intel
+export const COGNITIVE = process.env.KIKO_COGNITIVE_MODEL || 'claude-sonnet-4-6'; // Classification, deal analysis, email intel
 export const UTILITY = process.env.KIKO_UTILITY_MODEL || 'claude-haiku-4-5-20251001';     // Titles, health checks, navigation
 
 // Usage in any file:

@@ -63,7 +63,7 @@ export async function callDealAgent(instruction, userEmail = 'sunny@vanhawke.com
   try {
     // Ask Claude to parse the instruction into a structured operation
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', // Upgraded from Haiku — deal analysis needs real reasoning
+      model: 'claude-sonnet-4-6', // Upgraded from Haiku — deal analysis needs real reasoning
       max_tokens: 300,
       system: DEAL_AGENT_PROMPT,
       messages: [{ role: 'user', content: instruction }],
@@ -124,7 +124,7 @@ async function moveStage({ company, new_stage, reason }) {
       const stageHistory = await sbFetch(`deal_stage_history?deal_id=eq.${match.id}&order=changed_at.asc&select=from_stage,to_stage,changed_at`);
       const activities = await sbFetch(`activities?deal_id=eq.${match.id}&order=created_at.desc&limit=10&select=type,subject,created_at`);
       const analysis = await new Anthropic({ apiKey: process.env.ANTHROPIC_KEY }).messages.create({
-        model: 'claude-sonnet-4-20250514', // Upgraded from Haiku — deal analysis needs real reasoning max_tokens: 400,
+        model: 'claude-sonnet-4-6', // Upgraded from Haiku — deal analysis needs real reasoning max_tokens: 400,
         system: 'Analyse this deal outcome. Return JSON: { "key_factors": ["what drove the outcome"], "lessons": ["actionable lessons for future deals"], "analysis": "2-sentence summary" }',
         messages: [{ role: 'user', content: `Deal: ${match.data.company} (${match.data.pipeline})\nOutcome: ${new_stage}\nValue: $${match.data.value || '?'}\nStage journey: ${JSON.stringify(stageHistory || [])}\nActivities: ${JSON.stringify(activities || [])}\nReason: ${reason || 'not specified'}` }],
       });

@@ -32,7 +32,7 @@ Return JSON with:
 
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 500, // Sonnet — email understanding
+      model: 'claude-sonnet-4-6', max_tokens: 500, // Sonnet — email understanding
       messages: [{ role: 'user', content: prompt }],
     });
     const text = res.content?.[0]?.text || '{}';
