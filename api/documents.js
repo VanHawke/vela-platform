@@ -1,5 +1,6 @@
 // api/documents.js — Document Intelligence: extract, analyse, embed, link to CRM
 
+export const config = { api: { bodyParser: { sizeLimit: '4mb' } } }
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
 
@@ -216,7 +217,7 @@ export default async function handler(req, res) {
         user_email: userEmail, name: fileName, doc_type: fileType || 'text/plain',
         summary: intelligence.summary || '', content: text.slice(0, 15000),
         storage_path: storagePath, 
-        access_level: accessLevel || intelligence.access_recommendation || 'workspace',
+        access_level: accessLevel || 'private',
         org_id: ORG_ID, intelligence, scan_status: 'complete',
         last_scanned_at: new Date().toISOString(), scan_version: 1,
         category: category || intelligence.suggested_category || 'general',
@@ -283,6 +284,11 @@ export default async function handler(req, res) {
   if (action === 'list') {
     const { context: ctx } = req.body
     let filter = `org_id=eq.${ORG_ID}`
+    // ── PRIVACY: non-super-admins only see their OWN uploads + workspace-shared docs ──
+    const adminRes = await fetch(`${SB}/rest/v1/kiko_user_config?email=eq.${encodeURIComponent(userEmail || '')}&select=role&limit=1`, { headers: h })
+    const adminRows = await adminRes.json().catch(() => [])
+    const isAdmin = Array.isArray(adminRows) && adminRows[0]?.role === 'super_admin'
+    if (!isAdmin) filter += `&or=(user_email.eq.${encodeURIComponent(userEmail || '')},access_level.eq.workspace)`
     if (team) filter += `&linked_team=ilike.*${encodeURIComponent(team)}*`
     if (category) filter += `&category=eq.${encodeURIComponent(category)}`
     if (ctx && ctx !== 'all') filter += `&context=eq.${encodeURIComponent(ctx)}`
@@ -328,7 +334,7 @@ export default async function handler(req, res) {
         title: intelligence.title || doc.title || doc.name?.replace(/\.[^.]+$/, '').replace(/_/g, ' '),
         sport: intelligence.sport || doc.sport || null,
         team_name: intelligence.team_name || intelligence.detected_team || doc.team_name || null,
-        access_level: intelligence.access_recommendation || doc.access_level || 'workspace',
+        access_level: doc.access_level || 'private',
         kiko_analysis: [
           intelligence.positioning,
           intelligence.talking_points?.length ? 'Key points: ' + intelligence.talking_points.join(', ') : null,

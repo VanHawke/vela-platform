@@ -280,14 +280,27 @@ async function getOutreachIntelligence({ focus = 'patterns', company, pipeline }
   return `Outreach data: ${total} scored, ${replyRate}% reply rate. Ask about "patterns", "timing", "race_windows", "persona", or "company".`;
 }
 
-async function searchDocuments({ query, team, category, sport }) {
+// Privacy: is this user a super_admin? (fail-closed → unknown/error treated as NON-admin)
+async function isSuperAdminEmail(userEmail) {
+  try {
+    const rows = await sbFetch(`kiko_user_config?email=eq.${encodeURIComponent(userEmail || '')}&select=role&limit=1`);
+    return Array.isArray(rows) && rows[0]?.role === 'super_admin';
+  } catch { return false; }
+}
+
+async function searchDocuments({ query, team, category, sport }, userEmail) {
   const words = (query || '').toLowerCase().split(/\s+/).filter(w => w.length > 2).slice(0, 3);
-  let filter = 'select=id,title,name,file_name,team_name,sport,category,summary,kiko_analysis,file_size,access_level,file_url,created_at&limit=15&order=created_at.desc';
+  let filter = 'select=id,title,name,file_name,team_name,sport,category,summary,kiko_analysis,file_size,access_level,user_email,file_url,created_at&limit=15&order=created_at.desc';
   if (words.length) filter += '&or=(' + words.map(w => `title.ilike.*${encodeURIComponent(w)}*,name.ilike.*${encodeURIComponent(w)}*,summary.ilike.*${encodeURIComponent(w)}*,team_name.ilike.*${encodeURIComponent(w)}*,sport.ilike.*${encodeURIComponent(w)}*`).join(',') + ')';
   if (team) filter += `&team_name=ilike.*${encodeURIComponent(team)}*`;
   if (sport) filter += `&sport=ilike.*${encodeURIComponent(sport)}*`;
   if (category) filter += `&category=eq.${encodeURIComponent(category)}`;
-  const docs = await sbFetch(`documents?${filter}`);
+  let docs = await sbFetch(`documents?${filter}`);
+  // ── PRIVACY GATE: non-super-admins only see their OWN uploads + workspace-shared docs.
+  //    Confidential files (private / super_admin_only) never surface to another user. ──
+  if (!(await isSuperAdminEmail(userEmail))) {
+    docs = (docs || []).filter(d => d.user_email === userEmail || d.access_level === 'workspace');
+  }
   if (!docs?.length) return `No documents found matching "${query || team || sport || category}".`;
   let out = `DOCUMENT SEARCH — ${docs.length} found\n\n`;
   for (const doc of docs) {
@@ -659,7 +672,7 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
       case 'pipeline_notifications': return await getPipelineNotifications(params);
       case 'deal_history': return await getDealHistory(params);
       case 'activity_feed': return await getActivityFeed(params);
-      case 'search_documents': return await searchDocuments(params);
+      case 'search_documents': return await searchDocuments(params, userEmail);
       case 'past_conversations': return await searchPastConversations(params);
       case 'recent_conversations': return await getRecentConversations(params);
       case 'learning_search': return await searchLearningLog(params);
