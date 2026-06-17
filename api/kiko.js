@@ -377,9 +377,11 @@ export default async function handler(req, res) {
     ]);
 
 
+    const effectiveTz = userConfig?.timezone || timezone || 'Asia/Qatar';
     const now = new Date();
-    const dateStr = now.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-    const timeStr = now.toLocaleTimeString('en-GB', { timeZone: timezone || 'Europe/London', hour:'2-digit', minute:'2-digit' });
+    const dateStr = now.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric', timeZone: effectiveTz });
+    const timeStr = now.toLocaleTimeString('en-GB', { timeZone: effectiveTz, hour:'2-digit', minute:'2-digit' });
+    const tzLabel = (effectiveTz.split('/').pop() || '').replace(/_/g, ' ');
     const pageRole = PAGE_ROLES[currentPage] || '';
 
     let systemPrompt = SYSTEM_PROMPT
@@ -390,7 +392,7 @@ export default async function handler(req, res) {
       .replace('{DYNAMIC_SELF_KNOWLEDGE}', selfKnowledge || '')
       .replace('{currentPage}', currentPage || 'home');
 
-    systemPrompt += `\nDate: ${dateStr}, ${timeStr} UK${pageRole}`;
+    systemPrompt += `\nDate: ${dateStr}, ${timeStr} (${tzLabel} time)${pageRole}`;
     if (entityContext) systemPrompt += `\n\n[ENTITY CONTEXT]\n${entityContext}`;
     if (spineRecall) systemPrompt += `\n\n[KNOWLEDGE RECALL — your own verified learnings, dossiers, lessons and propositions relevant to this message. Treat as memory, cite naturally.]\n${spineRecall}`;
     if (conversationSummary) systemPrompt += conversationSummary;
@@ -414,7 +416,7 @@ export default async function handler(req, res) {
     const systemCached = [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }];
 
     // ═══ BUILD TOOLS — ALWAYS FULL, NEVER FILTERED ═══
-    const nativeTools = buildNativeTools(userConfig, timezone);
+    const nativeTools = buildNativeTools(userConfig, effectiveTz);
     const allTools = [...nativeTools, ...TOOL_DEFINITIONS, DIGEST_BRIEF_TOOL];
     const toolsWithCache = [...allTools];
     if (toolsWithCache.length > 0) { const last = { ...toolsWithCache[toolsWithCache.length - 1] }; last.cache_control = { type: 'ephemeral' }; toolsWithCache[toolsWithCache.length - 1] = last; }

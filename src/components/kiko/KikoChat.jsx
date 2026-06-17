@@ -165,6 +165,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [typewriterText, setTypewriterText] = useState('')
   const typewriterDone = useRef(false)
   const [streaming, setStreaming] = useState(false)
+  const [queuedMessage, setQueuedMessage] = useState(null)
   const [streamText, setStreamText] = useState('')
   const [toolStatus, setToolStatus] = useState(null)
   const [hoveredMsg, setHoveredMsg] = useState(null)
@@ -304,6 +305,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const streamTextRef = useRef('')
   const lastQueryRef = useRef('')
   const streamingRef = useRef(false)
+  const queuedMessageRef = useRef(null)
   
   // ── Smooth streaming buffer — renders 3 chars per frame for fluid text flow ──
   const streamBufferRef = useRef([])
@@ -973,7 +975,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }
       setStreamText('')
     }
-    finally { clearTimeout(hardTimeout); try { clearInterval(inactivityCheckId) } catch {}; if (isActiveChat()) { flushStreamBuffer(); setStreaming(false); setToolStatus(null); setStreamText('') }; streamingRef.current = false; bgStreamingChats.current.delete(thisChatId) }
+    finally { clearTimeout(hardTimeout); try { clearInterval(inactivityCheckId) } catch {}; if (isActiveChat()) { flushStreamBuffer(); setStreaming(false); setToolStatus(null); setStreamText('') }; streamingRef.current = false; bgStreamingChats.current.delete(thisChatId); if (isActiveChat() && queuedMessageRef.current) { const qm = queuedMessageRef.current; queuedMessageRef.current = null; setQueuedMessage(null); setTimeout(() => handleSubmit(qm), 100); } }
   }, [input, streaming, messages, user, activeConvId, pendingAttachments])
 
   const processFileForKiko = async (file) => {
@@ -1107,20 +1109,59 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {promptFocused && <div style={{ position: 'absolute', inset: 0, borderRadius: 24, pointerEvents: 'none', background: `radial-gradient(circle 140px at ${mousePos.x}% ${mousePos.y}%, rgba(0,0,0,0.04) 0%, transparent 70%)`, transition: `opacity 300ms ${'cubic-bezier(0.25, 0.1, 0.25, 1)'}`, opacity: 1, zIndex: 0 }} />}
         {/* Shimmer edge on focus — plays once then settles */}
         {promptFocused && <div onAnimationEnd={() => setShimmerDone(true)} style={{ position: 'absolute', inset: -1, borderRadius: 25, pointerEvents: 'none', background: 'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.05) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.05) 75%, transparent 100%)', backgroundSize: '200% 100%', animation: shimmerDone ? 'none' : 'glowShimmer 1.5s linear forwards', opacity: shimmerDone ? 0.15 : 0.6, transition: 'opacity 600ms ease', zIndex: 0 }} />}
-        {/* Pending attachments display — shows ALL stacked files */}
+        {/* Pending attachments display — clean thumbnail cards (file-type badge + name + size + private lock) */}
         {pendingAttachments.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 0 8px', marginBottom: 6, borderBottom: '0.5px solid rgba(0,0,0,0.04)' }}>
-            {pendingAttachments.map((att, ai) => (
-              <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 8, background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.06)', maxWidth: 200 }}>
-                {att.previewUrl ? (
-                  <img src={att.previewUrl} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
-                ) : (
-                  <span style={{ fontSize: 14, flexShrink: 0 }}>{att.fileType === 'text' ? '📄' : att.name?.match(/\.pdf$/i) ? '📕' : att.name?.match(/\.xlsx?$/i) ? '📊' : att.name?.match(/\.docx?$/i) ? '📝' : att.name?.match(/\.pptx?$/i) ? '📎' : '📄'}</span>
-                )}
-                <span style={{ fontSize: 11, color: '#6B6B6B', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: C.font }}>{att.name}{att.pages ? ` · ${att.pages}p` : ''}</span>
-                <button onClick={() => { setPendingAttachments(prev => prev.filter((_, i) => i !== ai)); if (att.previewUrl) setImagePreview(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', padding: 0, fontSize: 12, width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✕</button>
-              </div>
-            ))}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, padding: '0 0 10px', marginBottom: 8 }}>
+            {pendingAttachments.map((att, ai) => {
+              const ext = (att.name?.match(/\.([a-z0-9]+)$/i)?.[1] || '').toLowerCase();
+              const kind = (att.fileType === 'image' || att.previewUrl) ? 'image'
+                : /^pdf$/.test(ext) ? 'pdf'
+                : /^(xlsx?|xlsm|csv)$/.test(ext) ? 'sheet'
+                : /^docx?$/.test(ext) ? 'doc'
+                : /^pptx?$/.test(ext) ? 'ppt'
+                : 'file';
+              const palette = ({
+                pdf:   { bg: '#FBEAEA', fg: '#A32D2D', label: 'PDF' },
+                sheet: { bg: '#EAF3DE', fg: '#3B6D11', label: 'XLSX' },
+                doc:   { bg: '#E6F1FB', fg: '#185FA5', label: 'DOCX' },
+                ppt:   { bg: '#FAEEDA', fg: '#854F0B', label: 'PPTX' },
+                image: { bg: '#F1EFE8', fg: '#5F5E5A', label: 'IMG' },
+                file:  { bg: '#F1EFE8', fg: '#5F5E5A', label: ext ? ext.toUpperCase().slice(0, 4) : 'FILE' },
+              })[kind];
+              const typeName = ({ pdf: 'PDF', sheet: 'Spreadsheet', doc: 'Document', ppt: 'Presentation', image: 'Image', file: 'File' })[kind];
+              const sizeStr = att.size ? (att.size < 1048576 ? Math.round(att.size / 1024) + ' KB' : (att.size / 1048576).toFixed(1) + ' MB') : '';
+              const meta = [typeName, sizeStr, att.pages ? `${att.pages}p` : ''].filter(Boolean).join(' · ');
+              return (
+                <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px 10px 10px', borderRadius: 12, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', minWidth: 210, maxWidth: 280 }}>
+                  {att.previewUrl ? (
+                    <img src={att.previewUrl} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                  ) : (
+                    <div style={{ width: 40, height: 40, borderRadius: 8, background: palette.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 600, color: palette.fg, fontFamily: C.font, letterSpacing: 0.3 }}>{palette.label}</div>
+                  )}
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: C.font }}>{att.name}</div>
+                    <div style={{ fontSize: 11, color: '#9A9A9A', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 5, marginTop: 1 }}>
+                      <span>{meta}</span>
+                      <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="#9A9A9A" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      <span>Private</span>
+                    </div>
+                  </div>
+                  <button onClick={() => { setPendingAttachments(prev => prev.filter((_, i) => i !== ai)); if (att.previewUrl) setImagePreview(null) }} aria-label="Remove file" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B0B0B0', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {/* Queued follow-up — auto-sends when Kiko finishes (she is never interrupted) */}
+        {queuedMessage && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', marginBottom: 6, borderRadius: 10, background: 'rgba(232,112,10,0.06)', border: '1px solid rgba(232,112,10,0.16)' }}>
+            <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#B45A28" strokeWidth="2" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <span style={{ fontSize: 12, color: '#B45A28', fontFamily: C.font, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Sends when Kiko finishes: "{queuedMessage}"</span>
+            <button onClick={() => { queuedMessageRef.current = null; setQueuedMessage(null) }} aria-label="Cancel queued message" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B45A28', padding: 2, display: 'flex', flexShrink: 0 }}>
+              <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
           </div>
         )}
         {/* File processing indicator */}
@@ -1158,11 +1199,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             )}
           </div>}
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
-            {/* File attachment indicator */}
-            {pendingAttachments.length > 0 && (
-              <div style={{ fontSize: 10, color: '#A0A0A0', marginBottom: 2, fontFamily: C.font }}>{pendingAttachments.length} file{pendingAttachments.length > 1 ? 's' : ''} attached</div>
-            )}
-            <textarea ref={inputRef} value={input} dir="ltr" onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px' }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+            <textarea ref={inputRef} value={input} dir="ltr" onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px' }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (streaming) { const qt = input.trim(); if (qt) { queuedMessageRef.current = qt; setQueuedMessage(qt); setInput(''); if (inputRef.current) inputRef.current.style.height = 'auto'; } } else { handleSubmit(); } } }}
               onPaste={e => { 
                 // Handle pasted images (Cmd+V screenshots)
                 const items = e.clipboardData?.items
@@ -1241,11 +1278,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             )}
           </div>}
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
-            {/* File attachment indicator */}
-            {pendingAttachments.length > 0 && (
-              <div style={{ fontSize: 10, color: '#A0A0A0', marginBottom: 2, fontFamily: C.font }}>{pendingAttachments.length} file{pendingAttachments.length > 1 ? 's' : ''} attached</div>
-            )}
-            <textarea ref={inputRef} value={input} dir="ltr" onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px' }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+            <textarea ref={inputRef} value={input} dir="ltr" onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px' }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (streaming) { const qt = input.trim(); if (qt) { queuedMessageRef.current = qt; setQueuedMessage(qt); setInput(''); if (inputRef.current) inputRef.current.style.height = 'auto'; } } else { handleSubmit(); } } }}
               onPaste={e => { 
                 // Handle pasted images (Cmd+V screenshots)
                 const items = e.clipboardData?.items
