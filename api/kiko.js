@@ -219,9 +219,8 @@ function checkRateLimit(email) {
 function buildNativeTools(userConfig, tz) {
   // web_search: omit user_location — Anthropic supports only a subset of country codes for localisation (Qatar/QA, Singapore/SG, etc. return 400 and kill the whole turn); Kiko does global research where localised results aren't wanted. Robust for any location Sunny is in.
   const tool = { type: 'web_search_20250305', name: 'web_search', max_uses: 5 };
-  const tools = [tool];
-  if (userConfig?.role === 'super_admin') tools.unshift({ type: 'memory_20250818', name: 'memory' });
-  return tools;
+  // memory_20250818 native tool removed — it needs beta plumbing that stalls s.finalMessage() before any tool logs, hanging super_admin (Sunny) turns. Kiko's custom memory (injected KIKO_MEMORY.md + handleMemory + memory-engine + semantic recall) already covers this.
+  return [tool];
 }
 
 // ═══ SYSTEM PROMPT ═══
@@ -295,6 +294,7 @@ export default async function handler(req, res) {
   // ═══ FULL CONVERSATION PATH — NO GATES, NO RESTRICTIONS ═══
   const queryStartTime = Date.now();
   const userConfig = await getUserConfig(userEmail);
+  try{ console.log('[KTIME] A getUserConfig done'); }catch{}
   const userId = userConfig.user_id || crypto.randomUUID();
   const isSuperAdmin = userConfig.role === 'super_admin';
   const isRegistered = !!userConfig.user_id;
@@ -374,6 +374,7 @@ export default async function handler(req, res) {
     ]);
 
 
+    try{ console.log('[KTIME] B Promise.all(context) done'); }catch{}
     const effectiveTz = timezone || userConfig?.timezone || 'Asia/Qatar';
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric', timeZone: effectiveTz });
@@ -442,9 +443,10 @@ ${att.data.slice(0, 80000)}
     const needsDeepThink = isSuperAdmin && (deepThink || (message && ['analyse', 'analyze', 'strategy', 'evaluate', 'compare', 'assess', 'deep dive', 'think through', 'review the', 'what should'].some(t => message.toLowerCase().includes(t))));
     const params = { model: MODEL, max_tokens: needsDeepThink ? 32000 : 16384, system: systemCached, messages, tools: toolsWithCache };
     if (needsDeepThink) { params.thinking = { type: 'adaptive' }; write({ toolStatus: 'Deep analysis...' }); }
+    console.log('[KTIME] deepThink='+needsDeepThink+' nTools='+(Array.isArray(toolsWithCache)?toolsWithCache.length:'?')+' page='+(currentPage||'none'));
 
     async function streamAndCapture(streamParams) {
-      const s = isSuperAdmin ? anthropic.beta.messages.stream(streamParams) : anthropic.messages.stream(streamParams);
+      const s = anthropic.messages.stream(streamParams); // regular endpoint for ALL users — anthropic.beta.messages.stream stalled finalMessage() for super_admin (Sunny), hanging every turn in the initial stream before any tool ran
       let xmlBuf = '';
       for await (const event of s) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
@@ -461,7 +463,9 @@ ${att.data.slice(0, 80000)}
       return await s.finalMessage();
     }
 
+    console.log('[KTIME] firstStream START @'+Date.now());
     let response = await streamAndCapture(params);
+    console.log('[KTIME] firstStream END stop='+response.stop_reason);
 
     // ═══ TOOL ROUND LOOP ═══
     let toolRounds = 0;
