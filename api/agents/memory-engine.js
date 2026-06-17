@@ -55,12 +55,13 @@ ${transcript}` }]
 }
 
 // ── Recall: get all relevant context for an entity ──
-async function recall(entityName) {
+async function recall(entityName, userId = null) {
   if (!entityName) return 'No entity specified for recall.';
   const q = entityName.toLowerCase();
+  const uf = userId ? `&user_id=eq.${userId}` : `&user_id=eq.00000000-0000-0000-0000-000000000000`;
 
   // Search learning log
-  const learnings = await sbFetch('kiko_learning_log?select=category,content,entity_name,created_at&order=created_at.desc&limit=30');
+  const learnings = await sbFetch(`kiko_learning_log?select=category,content,entity_name,created_at&order=created_at.desc&limit=30${uf}`);
   
   // Apply memory decay — flag stale entries
   function decayLabel(created_at) {
@@ -99,7 +100,7 @@ async function recall(entityName) {
   }
 
   // Search past conversations
-  const convos = await sbFetch('conversations?select=id,title,messages,updated_at&order=updated_at.desc&limit=30');
+  const convos = await sbFetch(`conversations?select=id,title,messages,updated_at&order=updated_at.desc&limit=30${uf}`);
   const relevantConvos = (convos || []).filter(c => {
     const text = JSON.stringify(c.messages || []).toLowerCase();
     return text.includes(q);
@@ -126,7 +127,7 @@ async function recall(entityName) {
   }
 
   // Search thought journal
-  const thoughts = await sbFetch('kiko_thought_journal?select=topic,insight,related_entities,confidence,created_at&order=created_at.desc&limit=20');
+  const thoughts = await sbFetch(`kiko_thought_journal?select=topic,insight,related_entities,confidence,created_at&order=created_at.desc&limit=20${uf}`);
   const matchedThoughts = (thoughts || []).filter(t =>
     t.topic?.toLowerCase().includes(q) ||
     t.insight?.toLowerCase().includes(q) ||
@@ -139,7 +140,7 @@ async function recall(entityName) {
   }
 
   // Search conversation insights
-  const insights = await sbFetch('kiko_conversation_insights?select=key_facts,decisions_made,open_threads,entities_discussed,summary,created_at&order=created_at.desc&limit=20');
+  const insights = await sbFetch(`kiko_conversation_insights?select=key_facts,decisions_made,open_threads,entities_discussed,summary,created_at&order=created_at.desc&limit=20${uf}`);
   const matchedInsights = (insights || []).filter(i =>
     (i.entities_discussed || []).some(e => e.toLowerCase().includes(q)) ||
     i.summary?.toLowerCase().includes(q)
@@ -155,7 +156,7 @@ async function recall(entityName) {
   }
 
   // Search relationships
-  const rels = await sbFetch(`kiko_relationships?select=contact_name,company,warmth_score,relationship_type,emails_sent,emails_received&or=(contact_name.ilike.*${encodeURIComponent(entityName)}*,company.ilike.*${encodeURIComponent(entityName)}*)&limit=5`);
+  const rels = await sbFetch(`kiko_relationships?select=contact_name,company,warmth_score,relationship_type,emails_sent,emails_received&or=(contact_name.ilike.*${encodeURIComponent(entityName)}*,company.ilike.*${encodeURIComponent(entityName)}*)&limit=5${uf}`);
   if (rels?.length) {
     out += `── Relationships ──\n`;
     for (const r of rels) out += `${r.contact_name} @ ${r.company} | Warmth: ${r.warmth_score}/10 | Type: ${r.relationship_type} | Emails: ${r.emails_sent || 0} sent, ${r.emails_received || 0} received\n`;
@@ -170,8 +171,8 @@ async function recall(entityName) {
 }
 
 // ── Pre-draft context: gather everything before writing to someone ──
-async function getDraftContext(companyOrContact) {
-  const recallData = await recall(companyOrContact);
+async function getDraftContext(companyOrContact, userId = null) {
+  const recallData = await recall(companyOrContact, userId);
 
   // Also check outreach scores for this company
   let outreachContext = '';
@@ -193,8 +194,8 @@ async function getDraftContext(companyOrContact) {
 }
 
 // ── Summarise relationship with an entity ──
-async function getRelationshipSummary(entityName) {
-  const context = await recall(entityName);
+async function getRelationshipSummary(entityName, userId = null) {
+  const context = await recall(entityName, userId);
   
   try {
     const res = await anthropic.messages.create({
@@ -209,13 +210,13 @@ async function getRelationshipSummary(entityName) {
 }
 
 // ── Main Dispatch ──
-export async function callMemoryEngine(operation, params = {}) {
+export async function callMemoryEngine(operation, params = {}, userId = null) {
   try {
     switch (operation) {
       case 'extract_and_store': return await extractAndStore(params.messages, params.entityContext);
-      case 'recall': return await recall(params.entity_name || params.query);
-      case 'draft_context': return await getDraftContext(params.entity_name || params.query);
-      case 'relationship_summary': return await getRelationshipSummary(params.entity_name || params.query);
+      case 'recall': return await recall(params.entity_name || params.query, userId);
+      case 'draft_context': return await getDraftContext(params.entity_name || params.query, userId);
+      case 'relationship_summary': return await getRelationshipSummary(params.entity_name || params.query, userId);
       default: return `Unknown memory operation: ${operation}. Available: extract_and_store, recall, draft_context, relationship_summary`;
     }
   } catch (err) {

@@ -452,7 +452,7 @@ export const TOOL_DEFINITIONS = [
   // ── Campaign Builder (full end-to-end) ──
   {
     name: 'build_campaign',
-    description: 'Discover prospects AND build a COMPLETE campaign end-to-end, returning a VERIFIED ready-to-launch shortlist. Sources companies (CRM + web), excludes anyone already in the pipeline, ranks by fit, then for the top 8 confirms the decision-maker is still in seat and resolves a real email with a confidence label. Use whenever the user wants to FIND or TARGET prospects, e.g. "find me cybersecurity companies over $1B that sponsor sports", "target legal-AI", "build a fintech campaign". Extract any precision criteria from the user sentence into `overrides`. PREFERRED tool — do NOT redirect users to the UI.',
+    description: 'Discover prospects AND build a COMPLETE campaign end-to-end, returning a VERIFIED ready-to-launch shortlist. Sources companies (CRM + web), excludes anyone already in the pipeline, ranks by fit, then for the top 8 confirms the decision-maker is still in seat and resolves a real email with a confidence label. Use whenever the user wants to FIND or TARGET prospects, e.g. "find me cybersecurity companies over $1B that sponsor sports", "target legal-AI", "build a fintech campaign". Extract any precision criteria from the user sentence into `overrides`. PREFERRED tool — do NOT redirect users to the UI. AUTHORITATIVE OUTPUT: the shortlist this returns is the real result of live CRM + web sourcing and email verification. Present those exact companies and decision-makers to the user. NEVER replace, pad, or substitute the list with companies from your own training knowledge; relaying the verified output IS the task, not generating your own prospect list.',
     input_schema: { type: 'object', properties: {
       category: { type: 'string', description: 'Closest sector. One of: banking, fintech, cybersecurity, cloud, ai_data, software, semiconductors, telecom, gaming, crypto, energy, automotive, hospitality, fashion, watches, food_bev, health, logistics, legal, robotics, whiskey. Pick the nearest if the user names a narrower vertical.' },
       team: { type: 'string', description: 'F1 team name. Default: auto-selects based on category availability. E.g. "alpine", "haas".' },
@@ -1016,7 +1016,7 @@ Document:\n${document_text.slice(0, 25000)}` }],
   if (name === 'ask_memory_engine') {
     try {
       const { callMemoryEngine } = await import('./agents/memory-engine.js');
-      return await callMemoryEngine(input.operation, input.params || {});
+      return await callMemoryEngine(input.operation, input.params || {}, userId);
     } catch (e) { return agentError('Memory Engine', e); }
   }
 
