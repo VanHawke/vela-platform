@@ -26,7 +26,7 @@ async function analyse(question, context = '') {
       }
     }
     // Pull any documents tagged as legal
-    const docs = await sbFetch(`documents?select=name,category&category=ilike.*legal*&limit=5`);
+    const docs = await sbFetch(`documents?select=name,category&category=ilike.*legal*&access_level=eq.workspace&limit=5`);
     if (docs?.length) {
       crmContext += '\n\nLegal documents on file: ' + docs.map(d => d.name).join(', ');
     }

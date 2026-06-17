@@ -34,7 +34,7 @@ async function analyse(question, context = '') {
       }
     }
     // Check documents tagged as product
-    const docs = await sbFetch(`documents?select=name,category&or=(category.ilike.*product*,category.ilike.*maison*,category.ilike.*eyewear*)&limit=5`);
+    const docs = await sbFetch(`documents?select=name,category&or=(category.ilike.*product*,category.ilike.*maison*,category.ilike.*eyewear*)&access_level=eq.workspace&limit=5`);
     if (docs?.length) productContext += '\n\nProduct docs on file: ' + docs.map(d => d.name).join(', ');
   } catch {}
 

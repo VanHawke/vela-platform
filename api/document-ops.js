@@ -22,8 +22,11 @@ export default async function handler(req, res) {
       }
 
       case 'documents': {
-        const { entityType, entityId, docType } = req.body || {};
+        const { entityType, entityId, docType, userId } = req.body || {};
+        let isAdmin = false;
+        if (userId) { try { const u = await sbFetch(`kiko_user_config?user_id=eq.${userId}&select=role&limit=1`); isAdmin = u?.[0]?.role === 'super_admin'; } catch {} }
         let query = 'kiko_documents?order=created_at.desc&limit=50';
+        if (!isAdmin && userId) query += `&created_by=eq.${userId}`;
         if (entityType && entityId) query += `&entity_type=eq.${entityType}&entity_id=eq.${entityId}`;
         if (docType) query += `&doc_type=eq.${docType}`;
         const docs = await sbFetch(query);
