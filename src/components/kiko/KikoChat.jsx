@@ -133,7 +133,7 @@ const AvatarEq = () => {
 
 // CTA equalizer: 5 smaller bars, always pulsing
 const CtaEq = () => {
-  const bars = [
+  const ctaBars = [
     { anim: 'eqBarS0', speed: '0.50s' },
     { anim: 'eqBarS1', speed: '0.42s' },
     { anim: 'eqBarS2', speed: '0.55s' },
@@ -142,7 +142,7 @@ const CtaEq = () => {
   ]
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 28 }}>
-      {bars.map((b, i) => (
+      {ctaBars.map((b, i) => (
         <div key={i} style={{ width: 3.5, borderRadius: 1.75, background: 'rgba(90,100,112,0.6)', height: 3, animation: `${b.anim} ${b.speed} ease-in-out ${i * 0.07}s infinite` }} />
       ))}
     </div>
