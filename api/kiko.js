@@ -217,11 +217,8 @@ function checkRateLimit(email) {
 }
 
 function buildNativeTools(userConfig, tz) {
-  const loc = userConfig?.location || '';
-  const city = loc.split(',')[0].trim();
-  const country = loc.includes('UK') ? 'GB' : loc.includes('US') ? 'US' : loc.includes('Qatar') ? 'QA' : '';
+  // web_search: omit user_location — Anthropic supports only a subset of country codes for localisation (Qatar/QA, Singapore/SG, etc. return 400 and kill the whole turn); Kiko does global research where localised results aren't wanted. Robust for any location Sunny is in.
   const tool = { type: 'web_search_20250305', name: 'web_search', max_uses: 5 };
-  if (city || country) { tool.user_location = { type: 'approximate' }; if (city) tool.user_location.city = city; if (country) tool.user_location.country = country; if (tz) tool.user_location.timezone = tz; }
   const tools = [tool];
   if (userConfig?.role === 'super_admin') tools.unshift({ type: 'memory_20250818', name: 'memory' });
   return tools;
