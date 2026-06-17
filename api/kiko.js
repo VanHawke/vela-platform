@@ -275,7 +275,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Origin', '*'); res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS'); res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); return res.status(200).end(); }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { message: rawMessage, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false, voiceMode = false, timezone = 'Europe/London', draftOnly = false } = req.body;
+  const { message: rawMessage, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false, voiceMode = false, timezone = '', draftOnly = false } = req.body;
   const message = sanitizeUnicode(rawMessage);
   if (!message && action !== 'title') return res.status(400).json({ error: 'message required' });
   if (!checkRateLimit(userEmail)) return res.status(429).json({ error: 'Rate limit exceeded.' });
@@ -377,7 +377,7 @@ export default async function handler(req, res) {
     ]);
 
 
-    const effectiveTz = userConfig?.timezone || timezone || 'Asia/Qatar';
+    const effectiveTz = timezone || userConfig?.timezone || 'Asia/Qatar';
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric', timeZone: effectiveTz });
     const timeStr = now.toLocaleTimeString('en-GB', { timeZone: effectiveTz, hour:'2-digit', minute:'2-digit' });
