@@ -31,8 +31,14 @@ import linkedinCookieImport from "./api/linkedin-cookie-import.js";
 import teamMessages from "./api/team-messages.js";
 import linkedinKeepalive from "./api/cron-linkedin-keepalive.js";
 import linkedinMonitor from "./api/cron-linkedin-monitor.js";
-import crmEnrich from "./api/cron-crm-enrich.js";
+// REMOVED S70: crm-enrich import (file moved to _archive/dead_crons)
 import dailyIntelligence from "./api/cron-daily-intelligence.js";
+import sequenceReplyDetect from "./api/cron-sequence-reply-detect.js";
+import sequenceSender from "./api/cron-sequence-sender.js";
+import sequenceEnqueue from "./api/cron-sequence-enqueue.js";
+import jobProcessor from "./api/cron-job-processor.js";
+import selfcheckWatcher from "./api/cron-selfcheck-watcher.js";
+import conversationLearning from "./api/cron-conversation-learning.js";
 import documentOps from "./api/document-ops.js";
 import meetingTranscripts from "./api/meeting-transcripts.js";
 import selfcheck from "./api/selfcheck.js";
@@ -40,6 +46,11 @@ import googleAuth from "./api/google-auth.js";
 import calendarWebhook from "./api/calendar-webhook.js";
 import { startMonitors } from "./monitors/scheduler.js";
 import { startScheduler } from "./src/cron-scheduler.js";
+import { reapOrphanTasks } from "./api/lib/reap-orphan-tasks.js";
+import { requireAuth } from "./api/_auth.js";
+import archiveDossier from "./api/archive-dossier.js";
+import archiveBrief from "./api/archive-brief.js";
+import contactDraft from "./api/contact-draft.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, "package.json"), "utf8"));
@@ -62,17 +73,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Auth middleware — /api/* routes are PUBLIC (browser calls them directly)
-// /linkedin/* routes require shared secret
-app.use((req, res, next) => {
-  if (req.path === "/health" || req.path === "/" || req.path.startsWith("/api/") || req.path.startsWith("/docs/") || req.path.startsWith("/linkedin-queue/") || req.path.startsWith("/email-intel/")) return next();
-  const auth = req.headers["authorization"] || "";
-  const token = auth.replace(/^Bearer\s+/i, "");
-  if (token !== SHARED_SECRET) {
-    return res.status(401).json({ error: "unauthorized" });
-  }
-  next();
-});
+// ═══ IRON-CLAD AUTH (Session 70) ═══
+// Every route except a tiny external-callback allowlist requires EITHER a valid
+// Supabase user token (identity derived from it) OR the shared worker secret
+// (internal/cron). Monitor vs enforce controlled by AUTH_ENFORCE env (break-glass).
+app.use(requireAuth());
 
 // Root
 app.get("/", (req, res) => {
@@ -85,6 +90,9 @@ app.use("/api/webhooks", webhookRoutes);
 app.all("/api/user-bible", userBible);
 app.all("/api/org-bible", orgBible);
 app.post("/api/create-gmail-draft", gmailDraft);
+app.post("/api/archive/dossier", archiveDossier);  // Archive re-engagement dossier (ring-fenced)
+app.post("/api/archive/brief", archiveBrief);  // Archive v2: Kiko re-engagement brief (cached per viewer)
+app.post("/api/contact/draft", contactDraft);  // Contact draft: real correspondence + real voice examples + company intel
 app.post("/api/gmail-send", gmailSend);
 app.post("/api/capture-correction", captureCorrection);
 // app.post("/api/cron-proactive-recommendations", proactiveRecs); // FILE MISSING — disabled
@@ -108,22 +116,26 @@ app.all("/api/team-messages", teamMessages);
 app.all("/api/cron-gmail-sync", gmailSync);
 app.post("/api/cron-linkedin-keepalive", linkedinKeepalive);
 app.post("/api/cron-linkedin-monitor", linkedinMonitor);
-app.post("/api/cron-crm-enrich", crmEnrich);
 app.post("/api/cron-daily-intelligence", dailyIntelligence);
+app.all("/api/cron-sequence-reply-detect", sequenceReplyDetect);
+app.all("/api/cron-sequence-sender", sequenceSender);
+app.all("/api/cron-sequence-enqueue", sequenceEnqueue);
+app.all("/api/cron-job-processor", jobProcessor);
+app.all("/api/cron-selfcheck-watcher", selfcheckWatcher);
+app.all("/api/cron-conversation-learning", conversationLearning);
 app.all("/api/document-ops", documentOps);
 
 // Campaign sequence generation
 import generateSequence from "./api/generate-sequence.js";
 import campaignMonitor from "./api/cron-campaign-monitor.js";
 import raceWeekIntel from "./api/cron-race-week-intel.js";
-import morningSynthesis from "./api/cron-morning-synthesis.js";
+// REMOVED S70: morning-synthesis import (file moved to _archive/dead_crons)
 import heartbeat from "./api/cron-heartbeat.js";
 import signalEvaluator from "./api/signal-evaluator.js";
 import weeklyLearning from "./api/cron-weekly-learning.js";
 app.all("/api/generate-sequence", generateSequence);
 app.all("/api/cron-campaign-monitor", campaignMonitor);
 app.all("/api/cron-race-week-intel", raceWeekIntel);
-app.all("/api/cron-morning-synthesis", morningSynthesis);
 app.all("/api/cron-heartbeat", heartbeat);
 app.all("/api/signal-evaluator", signalEvaluator);
 app.all("/api/cron-weekly-learning", weeklyLearning);
@@ -135,12 +147,15 @@ app.use((err, req, res, next) => {
   if (!res.headersSent) res.status(500).json({ error: err.message || "internal error" });
 });
 
-app.listen(PORT, "127.0.0.1", () => {
+const server = app.listen(PORT, "127.0.0.1", () => {
   console.log(`[kiko-worker] v${pkg.version} listening on 127.0.0.1:${PORT}`);
   console.log(`[kiko-worker] Kiko Chat API on /api/kiko (NO timeout limits)`);
   console.log(`[kiko-worker] Nginx proxies public traffic → this port`);
   startMonitors();
   startScheduler();
+  reapOrphanTasks(); // mark any tasks orphaned by a previous worker death as error
 });
+server.keepAliveTimeout = 65000; // > nginx upstream keepalive (~60s): stop nginx reusing sockets Node already closed
+server.headersTimeout = 66000;
 
 process.on("SIGTERM", () => { console.log("[kiko-worker] SIGTERM"); process.exit(0); });
