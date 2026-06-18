@@ -325,7 +325,7 @@ export default function PartnershipMatrix({ user }) {
                     {gaps.map(c => (
                       <div key={`gap-${c.id}`} style={{ padding: '10px 12px', borderRadius: '0 10px 10px 0', background: 'rgba(184,100,62,0.02)', border: `1px dashed ${T.gapBorder}`, borderLeft: `3px dashed ${T.red}`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <p style={{ fontSize: 10, fontWeight: 500, color: T.red, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{c.name} — Open gap</p>
-                        <p style={{ fontSize: 11, color: T.textTertiary, margin: 0 }}>No partner. <span onClick={() => window.location.href = `/campaigns?team=${encodeURIComponent(team.name)}&category=${encodeURIComponent(c.id)}`} style={{ color: T.red, cursor: 'pointer', fontWeight: 500 }}>Launch campaign →</span></p>
+                        <p style={{ fontSize: 11, color: T.textTertiary, margin: 0 }}>No partner. <span onClick={() => window.location.href = `/campaigns?team=${encodeURIComponent(team.id)}&category=${encodeURIComponent(c.id)}`} style={{ color: T.red, cursor: 'pointer', fontWeight: 500 }}>Launch campaign →</span></p>
                       </div>
                     ))}
                   </div>
@@ -453,7 +453,7 @@ export default function PartnershipMatrix({ user }) {
                           {gapTeams.map(t => (
                             <span key={t.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 6, background: T.surface, border: `1px solid ${T.border}`, fontSize: 11, fontWeight: 500 }}>
                               <TeamLogo team={t} size={14} /> {t.name}
-                              <span onClick={() => window.location.href = `/campaigns?team=${encodeURIComponent(t.name)}&category=${encodeURIComponent(category.id)}`} style={{ color: T.red, cursor: 'pointer', marginLeft: 4, fontWeight: 500, fontSize: 10 }}>Launch →</span>
+                              <span onClick={() => window.location.href = `/campaigns?team=${encodeURIComponent(t.id)}&category=${encodeURIComponent(category.id)}`} style={{ color: T.red, cursor: 'pointer', marginLeft: 4, fontWeight: 500, fontSize: 10 }}>Launch →</span>
                             </span>
                           ))}
                         </div>

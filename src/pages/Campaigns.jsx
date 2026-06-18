@@ -445,6 +445,7 @@ export default function Campaigns({ user }) {
     if (CATEGORY_BY_NAME[v]) return CATEGORY_BY_NAME[v]
     return null
   }
+  const TEAM_SLUGS = new Set(['alpine','aston_martin','audi','cadillac','ferrari','haas','mclaren','mercedes','racing_bulls','red_bull','williams'])
   const matrixDeepLinkConsumed = useRef(false)
   useEffect(() => {
     if (matrixDeepLinkConsumed.current) return
@@ -453,15 +454,19 @@ export default function Campaigns({ user }) {
     const slug = resolveCategorySlug(catParam)
     if (!slug) return
     if (!user?.id) return
+    const teamParam = (searchParams.get('team') || '').trim().toLowerCase()
+    const teamSlug = TEAM_SLUGS.has(teamParam) ? teamParam : 'auto'
     matrixDeepLinkConsumed.current = true
     setBuildCategory(slug)
+    if (teamSlug !== 'auto') setBuildTeam(teamSlug)
     setBuildOpen(true)
     setBuildPhase('idle')
-    runBuildCampaign(slug)
+    runBuildCampaign(slug, teamSlug)
   }, [searchParams, user])
 
-  async function runBuildCampaign(categoryOverride) {
+  async function runBuildCampaign(categoryOverride, teamOverride) {
     const cat = (typeof categoryOverride === 'string' && categoryOverride) ? categoryOverride : buildCategory
+    const team = (typeof teamOverride === 'string' && teamOverride) ? teamOverride : buildTeam
     setBuildPhase('building')
     setBuildError(null)
     setBuildResult(null)
@@ -472,7 +477,7 @@ export default function Campaigns({ user }) {
     setBuildJobId(jobId)
     try {
       const payload = { category: cat, job_id: jobId, user_id: user?.id }
-      if (buildTeam && buildTeam !== 'auto') payload.preferredTeam = buildTeam
+      if (team && team !== 'auto') payload.preferredTeam = team
       const r = await fetch('https://api.vanhawke.agency/api/build-campaign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
