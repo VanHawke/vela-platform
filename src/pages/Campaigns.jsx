@@ -1,7 +1,7 @@
 // src/pages/Campaigns.jsx — Campaign Prospecting view
 // Left rail: campaign list. Main: prospects table for selected campaign.
 // Real data from Supabase. Realtime updates. Pause/activate per-campaign and per-prospect.
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
@@ -433,7 +433,35 @@ export default function Campaigns({ user }) {
   // and BuildingProgress can poll /api/job-status?id=xxx for real backend state
   // instead of relying on a frontend timer estimate.
   const [buildJobId, setBuildJobId] = useState(null)
-  async function runBuildCampaign() {
+  // Category resolver + Partnership Matrix deep-link: open the smart (auto) builder pre-set to the clicked category and run it
+  const BUILD_CATEGORIES = [['ai_data','AI / Data Analytics'],['automotive','Automotive / Engineering'],['banking','Banking / Financial Services'],['cloud','Cloud / IT Infrastructure'],['crypto','Crypto / Web3'],['cybersecurity','Cybersecurity'],['energy','Energy / Petrochemical'],['fashion','Fashion / Lifestyle'],['fintech','FinTech / Payments'],['food_bev','Food & Beverage'],['gaming','Gaming / Entertainment'],['health','Health / Wellness'],['hospitality','Hospitality / Travel'],['legal','Legal / Professional Services'],['legal_ai','Legal AI / Technology'],['logistics','Logistics / Shipping'],['robotics','Robotics / Manufacturing'],['semiconductors','Semiconductors / Hardware'],['software','Enterprise Software'],['telecom','Telecoms / Connectivity'],['watches','Watches / Luxury'],['whiskey','Whiskey / Premium Spirits']]
+  const CATEGORY_SLUGS = new Set(BUILD_CATEGORIES.map(c => c[0]))
+  const CATEGORY_BY_NAME = Object.fromEntries(BUILD_CATEGORIES.map(c => [c[1].toLowerCase(), c[0]]))
+  function resolveCategorySlug(raw) {
+    if (!raw) return null
+    let v = ''
+    try { v = decodeURIComponent(String(raw)).trim().toLowerCase() } catch { v = String(raw).trim().toLowerCase() }
+    if (CATEGORY_SLUGS.has(v)) return v
+    if (CATEGORY_BY_NAME[v]) return CATEGORY_BY_NAME[v]
+    return null
+  }
+  const matrixDeepLinkConsumed = useRef(false)
+  useEffect(() => {
+    if (matrixDeepLinkConsumed.current) return
+    const catParam = searchParams.get('category')
+    if (!catParam) return
+    const slug = resolveCategorySlug(catParam)
+    if (!slug) return
+    if (!user?.id) return
+    matrixDeepLinkConsumed.current = true
+    setBuildCategory(slug)
+    setBuildOpen(true)
+    setBuildPhase('idle')
+    runBuildCampaign(slug)
+  }, [searchParams, user])
+
+  async function runBuildCampaign(categoryOverride) {
+    const cat = (typeof categoryOverride === 'string' && categoryOverride) ? categoryOverride : buildCategory
     setBuildPhase('building')
     setBuildError(null)
     setBuildResult(null)
@@ -443,7 +471,7 @@ export default function Campaigns({ user }) {
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`
     setBuildJobId(jobId)
     try {
-      const payload = { category: buildCategory, job_id: jobId, user_id: user?.id }
+      const payload = { category: cat, job_id: jobId, user_id: user?.id }
       if (buildTeam && buildTeam !== 'auto') payload.preferredTeam = buildTeam
       const r = await fetch('https://api.vanhawke.agency/api/build-campaign', {
         method: 'POST',
@@ -548,8 +576,9 @@ export default function Campaigns({ user }) {
               <h1 style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 300, fontSize: 36, letterSpacing: '-0.018em', lineHeight: 1.0, margin: 0 }}>Campaigns</h1>
               <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 8 }}>{campaigns.length} sequences · {campaigns.reduce((s, c) => s + (c.counts?.total || 0), 0)} enrolled</p>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setWizardOpen(true)} style={{ height: 32, padding: '0 14px', background: '#0A0A0A', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: 4, fontSize: 12, fontWeight: 500, fontFamily: C.font }}>+ New Campaign</button>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button onClick={() => { setBuildOpen(true); setBuildPhase('idle') }} style={{ height: 32, padding: '0 14px', background: '#0A0A0A', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: 4, fontSize: 12, fontWeight: 500, fontFamily: C.font }}>+ New Campaign</button>
+              <button onClick={() => setWizardOpen(true)} title="Build a campaign manually, step by step" style={{ height: 32, padding: '0 12px', background: 'transparent', color: '#6B6B6B', border: '1px solid rgba(0,0,0,0.12)', cursor: 'pointer', borderRadius: 4, fontSize: 12, fontWeight: 400, fontFamily: C.font }}>Manual</button>
             </div>
           </div>
         </div>
