@@ -1626,6 +1626,32 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
         return '';
       }
 
+      // Find attachment parts (filename + attachmentId) anywhere in the payload tree
+      function findAttachmentParts(p, out = []) {
+        if (!p) return out;
+        if (p.filename && p.filename.length > 0 && p.body?.attachmentId) out.push({ id: p.body.attachmentId, filename: p.filename, size: p.body.size || 0 });
+        if (p.parts) for (const c of p.parts) findAttachmentParts(c, out);
+        return out;
+      }
+      // Download + extract text from a message's attachments (PDF/Word/Excel/PPT) so Kiko can reason over them
+      async function attachmentsText(payload, msgId, token) {
+        const atts = findAttachmentParts(payload);
+        if (!atts.length) return '';
+        let mod; try { mod = await import('./lib/extract-buffer.js'); } catch (e) { return `\n\n[Attachments present but extractor unavailable: ${e.message}]`; }
+        const chunks = [];
+        for (const a of atts.slice(0, 4)) {
+          if (!mod.isExtractable(a.filename)) { chunks.push(`[ATTACHMENT: ${a.filename} \u2014 not readable as text]`); continue; }
+          if (a.size > 12 * 1024 * 1024) { chunks.push(`[ATTACHMENT: ${a.filename} \u2014 too large (${Math.round(a.size / 1048576)}MB) to read]`); continue; }
+          try {
+            const att = await gfetch(token, `/messages/${msgId}/attachments/${a.id}`);
+            if (!att?.data) { chunks.push(`[ATTACHMENT: ${a.filename} \u2014 could not download]`); continue; }
+            const txt = await mod.extractTextFromBuffer(Buffer.from(att.data, 'base64url'), a.filename, 6000);
+            chunks.push(`[ATTACHMENT: ${a.filename}]\n${txt || '(no extractable text found)'}`);
+          } catch (e) { chunks.push(`[ATTACHMENT: ${a.filename} \u2014 could not read: ${e.message}]`); }
+        }
+        return chunks.length ? `\n\n--- ATTACHMENTS (extracted) ---\n${chunks.join('\n\n')}` : '';
+      }
+
       // Build account list based on permissions — parallel token refresh
       const teamEmails = isSuperAdmin
         ? (await sbFetch('users?select=email&order=role.asc') || []).map(u => u.email).filter(Boolean)
@@ -1667,7 +1693,9 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
               const detail = await gfetch(acct.token, `/messages/${m.id}?format=full`);
               const hdrs = detail.payload?.headers || [];
               const body = extractBody(detail.payload) || detail.snippet || '';
-              allResults.push({ account: acct.label, from: (hdrs.find(h => h.name === 'From')?.value || '?').split('<')[0].trim(), to: hdrs.find(h => h.name === 'To')?.value || '', subject: hdrs.find(h => h.name === 'Subject')?.value || '(no subject)', date: hdrs.find(h => h.name === 'Date')?.value || '', body: body.slice(0, 1500), threadId: detail.threadId });
+              const _atts = findAttachmentParts(detail.payload);
+              const _attFlag = _atts.length ? `\n[ATTACHMENTS: ${_atts.map(a => a.filename).join(', ')} \u2014 use read_thread to read their contents]` : '';
+              allResults.push({ account: acct.label, from: (hdrs.find(h => h.name === 'From')?.value || '?').split('<')[0].trim(), to: hdrs.find(h => h.name === 'To')?.value || '', subject: hdrs.find(h => h.name === 'Subject')?.value || '(no subject)', date: hdrs.find(h => h.name === 'Date')?.value || '', body: body.slice(0, 1500) + _attFlag, threadId: detail.threadId });
             }
           } catch (e) { console.log(`[read_email] search error for ${acct.label}:`, e.message); }
         }
@@ -1682,11 +1710,13 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
           try {
             const thread = await gfetch(acct.token, `/threads/${threadId}?format=full`);
             if (thread.messages?.length) {
-              const msgs = thread.messages.map(m => {
+              const msgs = [];
+              for (const m of thread.messages) {
                 const hdrs = m.payload?.headers || [];
                 const body = extractBody(m.payload) || m.snippet || '';
-                return { from: hdrs.find(h => h.name === 'From')?.value || '?', to: hdrs.find(h => h.name === 'To')?.value || '', date: hdrs.find(h => h.name === 'Date')?.value || '', subject: hdrs.find(h => h.name === 'Subject')?.value || '', body: body.slice(0, 3000) };
-              });
+                const attText = await attachmentsText(m.payload, m.id, acct.token);
+                msgs.push({ from: hdrs.find(h => h.name === 'From')?.value || '?', to: hdrs.find(h => h.name === 'To')?.value || '', date: hdrs.find(h => h.name === 'Date')?.value || '', subject: hdrs.find(h => h.name === 'Subject')?.value || '', body: body.slice(0, 3000) + attText });
+              }
               return `FULL THREAD (${msgs.length} messages, ${acct.label}'s inbox):\n\n${msgs.map(m => `FROM: ${m.from}\nTO: ${m.to}\nDATE: ${m.date}\nSUBJECT: ${m.subject}\n\n${m.body}\n`).join('\n═══════════════════════════════\n')}`;
             }
           } catch {}
