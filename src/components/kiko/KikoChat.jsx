@@ -722,7 +722,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       // Instant scroll on conversation load — no animation
       scrollRef.current?.scrollIntoView({ behavior: 'instant' })
       justLoadedRef.current = false
-    } else {
+    } else if (!(streaming && userScrolledUp.current)) {
+      // Don't yank the user to the bottom if they scrolled up to read while Kiko is streaming
       scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
   }, [messages, streamText, voiceMessages])
