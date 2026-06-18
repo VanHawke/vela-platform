@@ -306,6 +306,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const lastQueryRef = useRef('')
   const streamingRef = useRef(false)
   const queuedMessageRef = useRef(null)
+  const lastActivityRef = useRef(0) // last stream activity ts (drives stuck-stream watchdog)
   
   // ── Smooth streaming buffer — renders 3 chars per frame for fluid text flow ──
   const streamBufferRef = useRef([])
@@ -345,6 +346,28 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: voiceActive, speaking: voiceState.speaking, thinking: voiceState.thinking, status: voiceState.status } }))
   }, [voiceActive, voiceState.speaking, voiceState.thinking, voiceState.status])
+
+  // Stuck-stream watchdog — recovers the UI even if the request never aborts (dead/stale connection).
+  // If streaming is on but no chunk (delta/toolStatus) has arrived for 45s, force-clear the thinking
+  // state and surface a retryable error, independent of the fetch's own abort/timeout logic.
+  useEffect(() => {
+    if (!streaming) return
+    const wd = setInterval(() => {
+      if (Date.now() - (lastActivityRef.current || 0) < 45000) return
+      clearInterval(wd)
+      try { if (abortRef.current) abortRef.current.abort() } catch {}
+      streamingRef.current = false
+      try { flushStreamBuffer() } catch {}
+      setStreaming(false); setToolStatus(null); setStreamText('')
+      setMessages(prev => {
+        const last = prev[prev.length - 1]
+        if (last && last.role === 'assistant' && /did not respond|timed out|connection/i.test(last.content || '')) return prev
+        return [...prev, { role: 'assistant', content: 'Kiko did not respond. The connection may have dropped. Please try again, or refresh the page if it keeps happening.' }]
+      })
+      try { showToast('Connection dropped — please try again', 'error') } catch {}
+    }, 5000)
+    return () => clearInterval(wd)
+  }, [streaming])
 
   // Edit mode: pre-fill input when edit button clicked
   useEffect(() => {
@@ -860,7 +883,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     } else {
       setMessages(prev => [...prev, userMsg])
     }
-    setStreaming(true); setStreamText(''); setToolStatus(null); setThinkingSteps([]); setShowSteps(true)
+    lastActivityRef.current = Date.now(); setStreaming(true); setStreamText(''); setToolStatus(null); setThinkingSteps([]); setShowSteps(true)
     streamingRef.current = true; streamTextRef.current = ''; lastQueryRef.current = msg || ''
     streamBufferRef.current = []; streamDisplayRef.current = ''; if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
 
@@ -916,7 +939,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }, 5000)
       while (true) {
         const { done, value } = await reader.read(); if (done) break
-        lastDataTime = Date.now()
+        lastDataTime = Date.now(); lastActivityRef.current = lastDataTime
         buf += dec.decode(value, { stream: true })
         const lines = buf.split('\n'); buf = lines.pop() || ''
         for (const line of lines) {
