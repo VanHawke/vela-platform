@@ -6,6 +6,8 @@ import LoginPage from '@/components/auth/LoginPage'
 import AuthCallback from '@/pages/AuthCallback'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
+import useMobile from '@/hooks/useMobile'
+import { MobilePipeline, MobileRecords, MobileCampaigns } from '@/mobile/MobileScreens'
 import Settings from '@/components/settings/Settings'
 import PermissionGate from '@/components/PermissionGate'
 // Lazy-loaded pages (code-split for bundle size reduction)
@@ -109,6 +111,8 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
+  const isMobile = useMobile()
+
   if (session === undefined) return <Spinner />
 
   return (
@@ -124,9 +128,9 @@ export default function App() {
           <Route index element={<KikoChat user={user} />} />
           <Route path="home" element={<KikoChat user={user} />} />
           <Route path="dashboard" element={<KikoChat user={user} />} />
-          <Route path="pipeline" element={<PermissionGate pageKey="pipeline" user={user}><Pipeline user={user} /></PermissionGate>} />
+          <Route path="pipeline" element={<PermissionGate pageKey="pipeline" user={user}>{isMobile ? <MobilePipeline /> : <Pipeline user={user} />}</PermissionGate>} />
           <Route path="contacts/:id" element={<PermissionGate pageKey="contacts" user={user}><ContactDetail user={user} /></PermissionGate>} />
-          <Route path="records" element={<Records user={user} />} />
+          <Route path="records" element={isMobile ? <MobileRecords /> : <Records user={user} />} />
           <Route path="records/contact/:id" element={<PermissionGate pageKey="contacts" user={user}><ContactDetail user={user} /></PermissionGate>} />
           <Route path="records/company/:id" element={<CompanyDetail />} />
           <Route path="companies" element={<Navigate to="/organisations" replace />} />
@@ -138,7 +142,7 @@ export default function App() {
           <Route path="races" element={<Navigate to="/sporting-events" replace />} />
           {/* Knowledge Library removed — documents accessible via Kiko chat upload */}
 
-          <Route path="campaigns" element={<PermissionGate pageKey="campaigns" user={user}><Campaigns user={user} /></PermissionGate>} />
+          <Route path="campaigns" element={<PermissionGate pageKey="campaigns" user={user}>{isMobile ? <MobileCampaigns /> : <Campaigns user={user} />}</PermissionGate>} />
           <Route path="sequences" element={<Navigate to="/campaigns" replace />} />
           <Route path="campaigns/:id" element={<SequenceDetail user={user} />} />
           <Route path="messages" element={<Messages user={user} />} />
