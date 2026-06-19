@@ -1739,7 +1739,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── WELCOME STATE (no text messages, not in voice mode) ──
   if (!hasMessages && !compact) {
     return (
-      <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
+      <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 'calc(54px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
       <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
         style={{ flex: 1, display: 'flex', flexDirection: 'column', background: isMobile ? '#FFFFFF' : 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
@@ -1947,7 +1947,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   // ── CONVERSATION STATE (text messages) ──
   return (
-    <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
+    <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 'calc(54px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
     <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
       style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: isMobile ? '#FFFFFF' : 'transparent', position: 'relative', overflow: 'hidden' }}>
