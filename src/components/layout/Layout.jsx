@@ -28,7 +28,7 @@ const C = {
   font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   r: 8,
 }
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database, Compass, Linkedin, Activity, Brain } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database, Compass, Linkedin, Activity, Brain, MessageCircle } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import ThreadIndicator from '../kiko/ThreadIndicator'
 import NotificationToast from '../kiko/NotificationToast'
@@ -623,19 +623,16 @@ export default function Layout({ user }) {
         borderTop: '0.5px solid rgba(0,0,0,0.08)',
         display: 'none', // shown via CSS media query
         justifyContent: 'space-around', alignItems: 'center',
-        padding: '6px 0 env(safe-area-inset-bottom, 8px)',
+        padding: '5px 0 max(8px, calc(env(safe-area-inset-bottom, 0px) - 12px))',
         boxShadow: '0 -4px 24px rgba(0,0,0,0.3)',
       }}>
-        {TABS.slice(0, 4).map(tab => {
+        {[{ label: 'Chat', path: '/', Icon: MessageCircle }, { label: 'Today', path: '/today', Icon: Home }, { label: 'Records', path: '/records', Icon: Users }, { label: 'Messenger', path: '/messages', Icon: Send }].map(tab => {
           const active = isTabActive(tab.path)
           const Icon = tab.Icon || Home
           return (
-            <button key={tab.path} onClick={() => {
-              if (tab.path === '/') { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }
-              nav(tab.path)
-            }} style={{
+            <button key={tab.path} onClick={() => { nav(tab.path) }} style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-              background: 'none', border: 'none', cursor: 'pointer', padding: '6px 16px',
+              background: 'none', border: 'none', cursor: 'pointer', padding: '5px 14px',
               color: active ? '#0A0A0A' : '#A0A0A0',
               transition: 'color 0.15s', fontFamily: C.font,
             }}>
@@ -644,14 +641,7 @@ export default function Layout({ user }) {
             </button>
           )
         })}
-        <button onClick={() => setMoreOpen(!moreOpen)} style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-          background: 'none', border: 'none', cursor: 'pointer', padding: '6px 16px',
-          color: '#A0A0A0', fontFamily: C.font,
-        }}>
-          <MoreHorizontal size={20} strokeWidth={1.5} />
-          <span style={{ fontSize: 10, fontWeight: 300 }}>More</span>
-        </button>
+        {/* secondary screens (Settings, Partnership Matrix) reachable via fast-follow */}
       </nav>
 
       {/* Mobile bottom tab bar */}

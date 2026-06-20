@@ -123,50 +123,68 @@ export function MobilePipeline() {
 
 export function MobileRecords() {
   const nav = useNavigate()
-  const [tab, setTab] = useState('people')
   const [q, setQ] = useState('')
   const [contacts, setContacts] = useState(null)
   const [companies, setCompanies] = useState(null)
+  const [deals, setDeals] = useState([])
   useEffect(() => {
-    supabase.from('contacts').select('id, data').order('updated_at', { ascending: false }).range(0, 399).then(({ data }) => setContacts(data || []))
-    supabase.from('companies').select('id, data').order('data->>name', { ascending: true }).range(0, 399).then(({ data }) => setCompanies(data || []))
+    supabase.from('contacts').select('id, data').order('updated_at', { ascending: false }).range(0, 299).then(({ data }) => setContacts(data || []))
+    supabase.from('companies').select('id, data').order('updated_at', { ascending: false }).range(0, 299).then(({ data }) => setCompanies(data || []))
+    supabase.from('deals').select('id, data').or('data->>archived.is.null,data->>archived.neq.true').then(({ data }) => setDeals(data || []))
   }, [])
-  const loading = (tab === 'people' ? contacts : companies) === null
-  const ql = q.trim().toLowerCase()
-  const people = (contacts || []).filter(c => {
-    const n = [c.data && c.data.firstName, c.data && c.data.lastName].filter(Boolean).join(' ')
-    return !ql || (n + ' ' + ((c.data && c.data.company) || '') + ' ' + ((c.data && c.data.title) || '')).toLowerCase().includes(ql)
-  })
-  const orgs = (companies || []).filter(c => !ql || ((c.data && c.data.name) || '').toLowerCase().includes(ql))
-  const Toggle = (
-    <div style={{ display: 'flex', gap: 4, background: C.alt, borderRadius: 24, padding: 3 }}>
-      {['people', 'companies'].map(t => (
-        <button key={t} onClick={() => setTab(t)} style={{ border: 'none', cursor: 'pointer', borderRadius: 22, padding: '6px 12px', fontSize: 12, fontFamily: C.sans, fontWeight: tab === t ? 500 : 400, background: tab === t ? C.card : 'transparent', color: tab === t ? C.text : C.sub, boxShadow: tab === t ? C.shadow : 'none' }}>{t === 'people' ? 'People' : 'Companies'}</button>
-      ))}
-    </div>
-  )
+  const dealStage = useMemo(() => {
+    const byCo = {}, byContact = {}
+    for (const d of (deals || [])) {
+      const st = d.data && d.data.stage
+      if (!st) continue
+      const co = d.data && d.data.company
+      const cn = d.data && d.data.contactName
+      if (co && !byCo[co]) byCo[co] = st
+      if (cn && !byContact[cn]) byContact[cn] = st
+    }
+    return { byCo, byContact }
+  }, [deals])
+  const items = useMemo(() => {
+    const people = (contacts || []).map(c => {
+      const name = [c.data && c.data.firstName, c.data && c.data.lastName].filter(Boolean).join(' ') || 'Unnamed'
+      const company = (c.data && c.data.company) || ''
+      return { key: 'p' + c.id, kind: 'person', name, sub: [c.data && c.data.title, company].filter(Boolean).join('  \u00b7  '), status: dealStage.byContact[name] || dealStage.byCo[company] || null, to: '/records/contact/' + c.id }
+    })
+    const orgs = (companies || []).map(c => {
+      const name = (c.data && c.data.name) || 'Unnamed company'
+      const desc = (c.data && (c.data.description || c.data.industry || c.data.sector)) || ''
+      const emp = (c.data && c.data.employees) ? (c.data.employees + ' staff') : ''
+      return { key: 'c' + c.id, kind: 'company', name, sub: [desc, emp].filter(Boolean).join('  \u00b7  '), status: dealStage.byCo[name] || ((c.data && Number(c.data.openDeals) > 0) ? 'Active deal' : null), to: '/records/company/' + c.id }
+    })
+    let all = people.concat(orgs)
+    const ql = q.trim().toLowerCase()
+    if (ql) all = all.filter(x => (x.name + ' ' + x.sub).toLowerCase().includes(ql))
+    return all
+  }, [contacts, companies, q, dealStage])
+  if (contacts === null || companies === null) return <Loading />
   return (
-    <Screen title="Records" subtitle={tab === 'people' ? people.length + ' people' : orgs.length + ' companies'} search={q} onSearch={setQ} right={Toggle}>
-      {loading ? <Loading /> : tab === 'people' ? people.map(c => {
-        const name = [c.data && c.data.firstName, c.data && c.data.lastName].filter(Boolean).join(' ') || 'Unnamed'
-        const init = (name[0] || '?').toUpperCase()
-        const sub = [c.data && c.data.title, c.data && c.data.company].filter(Boolean).join('  \u00b7  ')
-        return (
-          <div key={c.id} onClick={() => nav('/records/contact/' + c.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.card, border: `1px solid ${C.line}`, borderRadius: 14, padding: '11px 13px', marginBottom: 8, boxShadow: C.shadow }}>
-            <div style={{ width: 34, height: 34, borderRadius: '50%', background: C.alt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 500, color: C.sub, flexShrink: 0 }}>{init}</div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 450, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
-              {sub && <div style={{ fontSize: 13, color: C.sub, fontWeight: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sub}</div>}
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: C.bg, fontFamily: C.sans, color: C.text }}>
+      <div style={{ padding: '20px 18px 6px' }}>
+        <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 28, margin: 0, letterSpacing: '-0.01em' }}>Records</h1>
+        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search people & companies" style={{ width: '100%', marginTop: 12, boxSizing: 'border-box', border: '1px solid ' + C.line, background: C.card, borderRadius: 12, padding: '11px 14px', fontSize: 14, fontFamily: C.sans, color: C.text, outline: 'none' }} />
+      </div>
+      <div style={{ padding: '8px 18px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+        <div style={{ fontSize: 11, fontWeight: 500, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '2px 2px 11px' }}>{q ? items.length + ' results' : 'People & companies'}</div>
+        {items.slice(0, 120).map(x => {
+          const init = (x.name[0] || '?').toUpperCase()
+          return (
+            <div key={x.key} onClick={() => nav(x.to)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.card, border: '1px solid ' + C.line, borderRadius: 14, padding: '11px 13px', marginBottom: 8, boxShadow: C.shadow }}>
+              <div style={{ width: 36, height: 36, borderRadius: x.kind === 'company' ? 9 : '50%', background: C.alt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 500, color: C.sub, flexShrink: 0 }}>{init}</div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 450, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.name}</div>
+                {x.sub && <div style={{ fontSize: 13, color: C.sub, fontWeight: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.sub}</div>}
+              </div>
+              {x.status && <span style={{ flexShrink: 0, padding: '3px 9px', borderRadius: 20, background: C.alt, fontSize: 11, fontWeight: 400, color: C.sub, whiteSpace: 'nowrap' }}>{x.status}</span>}
             </div>
-          </div>
-        )
-      }) : orgs.map(c => (
-        <div key={c.id} onClick={() => nav('/records/company/' + c.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.card, border: `1px solid ${C.line}`, borderRadius: 14, padding: '11px 13px', marginBottom: 8, boxShadow: C.shadow }}>
-          <div style={{ width: 34, height: 34, borderRadius: 9, background: C.alt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 500, color: C.sub, flexShrink: 0 }}>{((((c.data && c.data.name)) || '?')[0] || '?').toUpperCase()}</div>
-          <div style={{ fontSize: 15, fontWeight: 450, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{(c.data && c.data.name) || 'Unnamed company'}</div>
-        </div>
-      ))}
-    </Screen>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -223,7 +241,7 @@ export function MobileToday({ userName = 'there' }) {
     const t = (msg || input).trim()
     if (!t) return
     try { ctx.setKikoMessages && ctx.setKikoMessages([]); ctx.setKikoConvId && ctx.setKikoConvId(null); ctx.setKikoResetKey && ctx.setKikoResetKey(k => k + 1) } catch (e) {}
-    nav('/home', { state: { initialMessage: t } })
+    nav('/', { state: { initialMessage: t } })
   }
   const dateStr = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()
   const chips = ['Brief me on today', 'Pipeline update', 'Check my email']
@@ -271,6 +289,67 @@ export function MobileToday({ userName = 'there' }) {
             })}
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+function relTime(ts) {
+  if (!ts) return ''
+  const d = new Date(ts), now = new Date()
+  const diff = (now - d) / 1000
+  if (diff < 60) return 'now'
+  if (diff < 3600) return Math.floor(diff / 60) + 'm'
+  if (diff < 86400 && d.getDate() === now.getDate()) return Math.floor(diff / 3600) + 'h'
+  const y = new Date(now); y.setDate(now.getDate() - 1)
+  if (d.getDate() === y.getDate() && d.getMonth() === y.getMonth()) return 'Yesterday'
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
+export function MobileMessenger() {
+  const [channels, setChannels] = useState(null)
+  const [msgs, setMsgs] = useState([])
+  useEffect(() => {
+    supabase.from('kiko_team_channels').select('*').order('last_message_at', { ascending: false }).then(({ data }) => setChannels(data || []))
+    supabase.from('kiko_team_messages').select('*').order('created_at', { ascending: false }).then(({ data }) => setMsgs(data || []))
+  }, [])
+  const lastByCh = useMemo(() => {
+    const m = {}
+    for (const msg of (msgs || [])) { if (!m[msg.channel_id]) m[msg.channel_id] = msg }
+    return m
+  }, [msgs])
+  if (!channels) return <Loading />
+  const unread = channels.filter(ch => { const l = lastByCh[ch.id]; return l && (!l.read_by || l.read_by.length === 0) }).length
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: C.bg, fontFamily: C.sans, color: C.text }}>
+      <div style={{ padding: '20px 18px 10px' }}>
+        <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 28, margin: 0, letterSpacing: '-0.01em' }}>Messenger</h1>
+        <p style={{ color: C.sub, fontSize: 13, fontWeight: 300, margin: '3px 0 0' }}>{unread > 0 ? unread + '  unread  \u00b7  ' : ''}your deal team</p>
+      </div>
+      <div style={{ padding: '0 10px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+        {channels.length === 0 && <div style={{ textAlign: 'center', color: C.mut, fontSize: 14, padding: '48px 0' }}>No conversations yet.</div>}
+        {channels.map(ch => {
+          const last = lastByCh[ch.id]
+          const name = ch.name || 'Channel'
+          const init = name.replace(/[^A-Za-z0-9 ]/g, '').split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '#'
+          const isUnread = last && (!last.read_by || last.read_by.length === 0)
+          const preview = last ? ((last.from_name ? last.from_name.split(' ')[0] + ': ' : '') + (last.content || '')) : 'No messages yet'
+          return (
+            <div key={ch.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 12px', borderRadius: 14, marginBottom: 2 }}>
+              <div style={{ width: 44, height: 44, borderRadius: '50%', background: C.alt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500, color: C.sub, flexShrink: 0 }}>{init}</div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+                  <span style={{ fontSize: 15, fontWeight: isUnread ? 600 : 450, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</span>
+                  <span style={{ fontSize: 12, color: C.mut, flexShrink: 0 }}>{last ? relTime(last.created_at) : ''}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                  <span style={{ fontSize: 13, color: isUnread ? C.text : C.sub, fontWeight: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{preview}</span>
+                  {isUnread && <span style={{ width: 8, height: 8, borderRadius: '50%', background: C.accent, flexShrink: 0 }} />}
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

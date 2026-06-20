@@ -7,7 +7,7 @@ import AuthCallback from '@/pages/AuthCallback'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
 import useMobile from '@/hooks/useMobile'
-import { MobilePipeline, MobileRecords, MobileCampaigns, MobileToday } from '@/mobile/MobileScreens'
+import { MobilePipeline, MobileRecords, MobileCampaigns, MobileToday, MobileMessenger } from '@/mobile/MobileScreens'
 
 function MobileChatRoute({ user }) {
   const loc = useLocation()
@@ -131,7 +131,8 @@ export default function App() {
         <Route path="/admin/system" element={session ? <AdminRoute><AdminSystem /></AdminRoute> : <Navigate to="/login" replace />} />
         <Route path="/voice" element={session ? <Suspense fallback={null}><MobileVoicePage /></Suspense> : <Navigate to="/login" replace />} />
         <Route element={session ? <Layout key="app" user={user} /> : <Navigate to="/login" replace />}>
-          <Route index element={isMobile ? <MobileToday userName={firstName} /> : <KikoChat user={user} />} />
+          <Route index element={isMobile ? <MobileChatRoute user={user} /> : <KikoChat user={user} />} />
+          <Route path="today" element={isMobile ? <MobileToday userName={firstName} /> : <KikoChat user={user} />} />
           <Route path="home" element={isMobile ? <MobileChatRoute user={user} /> : <KikoChat user={user} />} />
           <Route path="dashboard" element={<KikoChat user={user} />} />
           <Route path="pipeline" element={<PermissionGate pageKey="pipeline" user={user}>{isMobile ? <MobilePipeline /> : <Pipeline user={user} />}</PermissionGate>} />
@@ -151,7 +152,7 @@ export default function App() {
           <Route path="campaigns" element={<PermissionGate pageKey="campaigns" user={user}>{isMobile ? <MobileCampaigns /> : <Campaigns user={user} />}</PermissionGate>} />
           <Route path="sequences" element={<Navigate to="/campaigns" replace />} />
           <Route path="campaigns/:id" element={<SequenceDetail user={user} />} />
-          <Route path="messages" element={<Messages user={user} />} />
+          <Route path="messages" element={isMobile ? <MobileMessenger /> : <Messages user={user} />} />
           <Route path="sequences/:id" element={<SequenceDetail user={user} />} />
           {/* LinkedIn page removed — handled by campaign prospect detail panel */}
           <Route path="inbox" element={<Navigate to="/command-centre" replace />} />

@@ -741,7 +741,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   useEffect(() => {
     if (typewriterDone.current) return
     typewriterDone.current = true
-    const phrase = 'Ask Kiko anything — deals, contacts, drafts, strategy…'
+    const phrase = 'Ask Kiko anything…'
     let i = 0
     const timer = setInterval(() => {
       i++
@@ -1319,7 +1319,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 setTimeout(() => { if (inputRef.current) { inputRef.current.style.height = 'auto'; inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 200) + 'px' } }, 0) 
               }}
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
-              placeholder={fileUploading ? "Processing file..." : pendingAttachments.length > 0 ? "Add a comment about your files..." : "Ask Kiko anything — deals, contacts, drafts, strategy…"}
+              placeholder={fileUploading ? "Processing file..." : pendingAttachments.length > 0 ? "Add a comment about your files..." : "Ask Kiko anything…"}
               autoFocus rows={1}
               style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: isMobile ? 17 : 15, color: '#0A0A0A', fontFamily: C.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
           </div>
