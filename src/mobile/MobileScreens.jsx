@@ -45,45 +45,79 @@ function fmtValue(v, cur) {
   return sym + n
 }
 
+function sumByCurrency(deals) {
+  const by = {}
+  for (const d of deals) { const c = (d.data && d.data.currency) || 'EUR'; const v = Number(d.data && d.data.value) || 0; if (v) by[c] = (by[c] || 0) + v }
+  return by
+}
+function fmtTotals(by) {
+  const entries = Object.entries(by).sort((a, b) => b[1] - a[1])
+  if (!entries.length) return null
+  return entries.slice(0, 2).map(([c, v]) => fmtValue(v, c)).join('  \u00b7  ')
+}
+
 export function MobilePipeline() {
   const [deals, setDeals] = useState(null)
+  const [filter, setFilter] = useState('All')
   useEffect(() => {
     supabase.from('deals').select('id, data, updated_at')
       .or('data->>archived.is.null,data->>archived.neq.true')
       .order('updated_at', { ascending: false })
       .then(({ data }) => setDeals(data || []))
   }, [])
-  const groups = useMemo(() => {
-    if (!deals) return []
-    const by = {}
-    for (const d of deals) { const st = (d.data && d.data.stage) || 'Unsorted'; (by[st] = by[st] || []).push(d) }
-    return Object.entries(by)
+  const pipelines = useMemo(() => {
+    const set = new Set();
+    (deals || []).forEach(d => { const p = d.data && d.data.pipeline; if (p) set.add(p) })
+    return Array.from(set)
   }, [deals])
+  const filtered = useMemo(() => filter === 'All' ? (deals || []) : (deals || []).filter(d => (d.data && d.data.pipeline) === filter), [deals, filter])
+  const groups = useMemo(() => {
+    const by = {}
+    for (const d of filtered) { const st = (d.data && d.data.stage) || 'Unsorted'; (by[st] = by[st] || []).push(d) }
+    return Object.entries(by)
+  }, [filtered])
   if (!deals) return <Loading />
+  const totalStr = fmtTotals(sumByCurrency(filtered))
   return (
-    <Screen title="Pipeline" subtitle={deals.length + ' deals'}>
-      {groups.map(([stage, items]) => (
-        <div key={stage} style={{ marginBottom: 22 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', margin: '0 2px 9px' }}>
-            <span style={{ fontSize: 11, fontWeight: 500, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage}</span>
-            <span style={{ fontSize: 12, color: C.mut }}>{items.length}</span>
-          </div>
-          {items.map(d => {
-            const val = fmtValue(d.data && d.data.value, d.data && d.data.currency)
-            const sub = [d.data && d.data.company, d.data && d.data.contactName].filter(Boolean).join('  \u00b7  ')
-            return (
-              <div key={d.id} style={{ background: C.card, border: `1px solid ${C.line}`, borderRadius: 14, padding: '13px 14px', marginBottom: 8, boxShadow: C.shadow }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                  <span style={{ fontSize: 15, fontWeight: 450, color: C.text, lineHeight: 1.25 }}>{(d.data && (d.data.title || d.data.company)) || 'Untitled deal'}</span>
-                  {val && <span style={{ fontSize: 14, fontWeight: 500, color: C.text, whiteSpace: 'nowrap' }}>{val}</span>}
-                </div>
-                {sub && <div style={{ fontSize: 13, color: C.sub, fontWeight: 300, marginTop: 3 }}>{sub}</div>}
-              </div>
-            )
-          })}
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: C.bg, fontFamily: C.sans, color: C.text }}>
+      <div style={{ padding: '16px 18px 6px' }}>
+        <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 26, margin: 0, letterSpacing: '-0.01em' }}>Pipeline</h1>
+        <p style={{ color: C.sub, fontSize: 13, fontWeight: 300, margin: '3px 0 0' }}>{totalStr ? totalStr + '  \u00b7  ' : ''}{filtered.length} {filtered.length === 1 ? 'deal' : 'deals'}</p>
+      </div>
+      {pipelines.length > 1 && (
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '6px 18px 12px' }}>
+          {['All'].concat(pipelines).map(p => (
+            <button key={p} onClick={() => setFilter(p)} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', borderRadius: 24, padding: '7px 14px', fontSize: 13, fontFamily: C.sans, fontWeight: filter === p ? 500 : 400, background: filter === p ? C.accent : C.alt, color: filter === p ? '#fff' : C.sub, whiteSpace: 'nowrap' }}>{p}</button>
+          ))}
         </div>
-      ))}
-    </Screen>
+      )}
+      <div style={{ padding: '0 18px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+        {groups.map(([stage, items]) => {
+          const stageTotal = fmtTotals(sumByCurrency(items))
+          return (
+            <div key={stage} style={{ marginBottom: 22 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', margin: '0 2px 9px' }}>
+                <span style={{ fontSize: 11, fontWeight: 500, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage}</span>
+                <span style={{ fontSize: 12, color: C.mut, fontWeight: 500 }}>{stageTotal || items.length}</span>
+              </div>
+              {items.map(d => {
+                const val = fmtValue(d.data && d.data.value, d.data && d.data.currency)
+                const sub = [d.data && d.data.company, d.data && d.data.contactName].filter(Boolean).join('  \u00b7  ')
+                return (
+                  <div key={d.id} style={{ background: C.card, border: `1px solid ${C.line}`, borderRadius: 14, padding: '13px 14px', marginBottom: 8, boxShadow: C.shadow }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                      <span style={{ fontSize: 15, fontWeight: 450, color: C.text, lineHeight: 1.25 }}>{(d.data && (d.data.title || d.data.company)) || 'Untitled deal'}</span>
+                      {val && <span style={{ fontSize: 14, fontWeight: 500, color: C.text, whiteSpace: 'nowrap' }}>{val}</span>}
+                    </div>
+                    {sub && <div style={{ fontSize: 13, color: C.sub, fontWeight: 300, marginTop: 3 }}>{sub}</div>}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
