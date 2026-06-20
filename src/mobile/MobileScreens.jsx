@@ -17,7 +17,7 @@ function Loading() {
 
 function Screen({ title, subtitle, search, onSearch, right, children }) {
   return (
-    <div style={{ minHeight: '100%', background: C.bg, fontFamily: C.sans, color: C.text }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: C.bg, fontFamily: C.sans, color: C.text }}>
       <div style={{ padding: '16px 18px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
           <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 26, margin: 0, letterSpacing: '-0.01em' }}>{title}</h1>
@@ -31,7 +31,7 @@ function Screen({ title, subtitle, search, onSearch, right, children }) {
             style={{ width: '100%', boxSizing: 'border-box', height: 42, border: `1px solid ${C.line}`, borderRadius: 16, padding: '0 14px', fontSize: 15, fontFamily: C.sans, color: C.text, background: C.card, outline: 'none' }} />
         </div>
       )}
-      <div style={{ padding: '4px 18px 28px' }}>{children}</div>
+      <div style={{ padding: '4px 18px calc(80px + env(safe-area-inset-bottom, 0px))' }}>{children}</div>
     </div>
   )
 }
