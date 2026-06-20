@@ -149,7 +149,7 @@ const CtaEq = () => {
   )
 }
 
-export default function KikoChat({ user, compact = false, initialMessage = '' }) {
+export default function KikoChat({ user, compact = false, initialMessage = '', openHistory = false }) {
   const navigate = useNavigate()
   const outletCtx = useOutletContext() || {}
   const isMobile = outletCtx.isMobile || false
@@ -231,6 +231,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     window.addEventListener('kiko-chat-updated', handler)
     return () => window.removeEventListener('kiko-chat-updated', handler)
   }, [loadMobileHistory])
+
+  // Open the history drawer when arriving from the home menu
+  useEffect(() => { if (isMobile && openHistory) { setMobileHistoryOpen(true); loadMobileHistory() } }, [])
 
   // KikoLive context handles alert count via Realtime — no polling needed
   const toggleHistory = (val) => {
@@ -1541,9 +1544,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const MobileHeader = () => isMobile ? (
     <div style={{ padding: '10px 20px', paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button onClick={() => { if (voiceActive) stopVoice(); setMobileHistoryOpen(!mobileHistoryOpen); setMobileCommandOpen(false); if (!mobileHistoryOpen) loadMobileHistory() }}
-          style={{ width: 40, height: 40, borderRadius: '50%', background: mobileHistoryOpen ? '#0A0A0A' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={mobileHistoryOpen ? '#FEFEFC' : '#6B6B6B'} strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="12" y1="7" x2="12" y2="13"/></svg>
+        <button onClick={() => navigate('/')} aria-label="Back to home"
+          style={{ width: 40, height: 40, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <div onClick={startNewChat} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
       </div>

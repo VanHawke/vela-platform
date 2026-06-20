@@ -311,6 +311,7 @@ function relTime(ts) {
 }
 
 export function MobileMessenger() {
+  const nav = useNavigate()
   const [channels, setChannels] = useState(null)
   const [msgs, setMsgs] = useState([])
   useEffect(() => {
@@ -326,7 +327,8 @@ export function MobileMessenger() {
   const unread = channels.filter(ch => { const l = lastByCh[ch.id]; return l && (!l.read_by || l.read_by.length === 0) }).length
   return (
     <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: C.bg, fontFamily: C.sans, color: C.text }}>
-      <div style={{ padding: '18px 18px 6px' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 12px) 18px 6px' }}>
+        <button onClick={() => nav('/')} aria-label="Back" style={{ width: 38, height: 38, marginLeft: -8, marginBottom: 4, borderRadius: '50%', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.sub }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
         <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 28, margin: 0, letterSpacing: '-0.02em' }}>Messenger</h1>
         <p style={{ color: C.sub, fontSize: 13, margin: '4px 0 0' }}>{unread > 0 ? unread + '  unread  \u00b7  ' : ''}your deal team</p>
       </div>
@@ -354,6 +356,72 @@ export function MobileMessenger() {
             </div>
           )
         })}
+      </div>
+    </div>
+  )
+}
+
+
+const NUMW = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
+function numWord(n) { return n < NUMW.length ? NUMW[n] : String(n) }
+function cap(x) { return x.charAt(0).toUpperCase() + x.slice(1) }
+function partOfDay() { const h = new Date().getHours(); return h < 12 ? 'this morning' : h < 18 ? 'this afternoon' : 'this evening' }
+
+export function MobileHome({ userName = 'there' }) {
+  const nav = useNavigate()
+  const [deals, setDeals] = useState(null)
+  const [msgs, setMsgs] = useState([])
+  useEffect(() => {
+    supabase.from('deals').select('id, data').or('data->>archived.is.null,data->>archived.neq.true').then(({ data }) => setDeals(data || []))
+    supabase.from('kiko_team_messages').select('*').order('created_at', { ascending: false }).then(({ data }) => setMsgs(data || []))
+  }, [])
+  const unread = useMemo(() => (msgs || []).filter(m => !m.read_by || m.read_by.length === 0), [msgs])
+  const items = useMemo(() => {
+    const mi = unread.slice(0, 2).map(m => ({ key: 'm' + m.id, title: (m.from_name ? m.from_name.split(' ')[0] : 'Someone'), sub: 'waiting on your reply', right: 'reply', word: true, act: () => nav('/messages') }))
+    const di = (deals || [])
+      .filter(d => { const st = d.data && d.data.stage; return st === 'Negotiation' || st === 'Proposal' })
+      .sort((a, b) => Number((b.data && b.data.value) || 0) - Number((a.data && a.data.value) || 0))
+      .slice(0, 3)
+      .map(d => { const co = (d.data && (d.data.company || d.data.name)) || 'deal'; return { key: 'd' + d.id, title: (d.data && (d.data.name || d.data.company)) || 'Deal', sub: (d.data && d.data.stage) || '', right: fmtValue(d.data && d.data.value, d.data && d.data.currency), word: false, act: () => nav('/chat', { state: { initialMessage: 'Brief me on the ' + co + ' deal' } }) } })
+    return mi.concat(di).slice(0, 4)
+  }, [unread, deals])
+  if (deals === null) return <Loading />
+  const brief = items.length === 0 ? "You're all clear for now." : cap(numWord(items.length)) + (items.length === 1 ? ' thing wants' : ' things want') + ' your attention ' + partOfDay() + '.'
+  const ibtn = { width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: C.text, cursor: 'pointer', margin: '0 -6px', position: 'relative' }
+  return (
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: C.bg, fontFamily: C.sans, color: C.text }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'calc(env(safe-area-inset-top, 0px) + 12px) 20px 8px', flexShrink: 0 }}>
+        <button onClick={() => nav('/chat', { state: { openHistory: true } })} style={ibtn} aria-label="History"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+        <div style={{ fontFamily: C.serif, fontWeight: 500, fontSize: 18, letterSpacing: '0.01em' }}>Kiko</div>
+        <button onClick={() => nav('/messages')} style={ibtn} aria-label="Messages"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v12a1 1 0 0 1-1 1H8l-4 3z"/></svg>{unread.length > 0 && <span style={{ position: 'absolute', top: 5, right: 5, width: 8, height: 8, borderRadius: '50%', background: '#C8553D', border: '2px solid ' + C.bg }} />}</button>
+      </div>
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ padding: '30px 26px 0' }}>
+          <div style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 30, lineHeight: 1.1, letterSpacing: '-0.022em' }}>{greetingPart()}, {userName}.</div>
+          <div style={{ fontSize: 15.5, lineHeight: 1.5, color: C.sub, marginTop: 12, maxWidth: 300 }}>{brief}</div>
+        </div>
+        {items.length > 0 && (
+          <div style={{ marginTop: 24, borderTop: '1px solid ' + C.line }}>
+            {items.map(it => (
+              <div key={it.key} onClick={it.act} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '15px 26px', borderBottom: '1px solid ' + C.line, cursor: 'pointer' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 15.5, fontWeight: 450, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.title}</div>
+                  <div style={{ fontSize: 12.5, color: C.mut, marginTop: 2 }}>{it.sub}</div>
+                </div>
+                <div style={it.word ? { fontSize: 13, color: C.sub, flexShrink: 0 } : { fontFamily: C.serif, fontWeight: 500, fontSize: 14.5, flexShrink: 0 }}>{it.right}</div>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={C.mut} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div style={{ padding: '14px 16px calc(14px + env(safe-area-inset-bottom, 0px))', flexShrink: 0 }}>
+        <div onClick={() => nav('/chat')} style={{ display: 'flex', alignItems: 'center', gap: 9, background: C.card, border: '1px solid ' + C.line, borderRadius: 27, boxShadow: '0 6px 26px rgba(0,0,0,0.07)', padding: '8px 8px 8px 16px', cursor: 'text' }}>
+          <span style={{ color: C.mut, display: 'flex', flexShrink: 0 }}><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+          <span style={{ flex: 1, fontSize: 16, color: C.mut }}>Ask Kiko anything\u2026</span>
+          <span style={{ color: C.sub, display: 'flex', flexShrink: 0 }}><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg></span>
+          <span style={{ width: 38, height: 38, borderRadius: '50%', background: C.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>
+        </div>
       </div>
     </div>
   )

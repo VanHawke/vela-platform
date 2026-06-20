@@ -617,32 +617,7 @@ export default function Layout({ user }) {
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
 
       {/* Mobile bottom tab bar — visible only below 768px */}
-      <nav className="mobile-bottom-nav" style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
-        background: 'rgba(0,0,0,0.02)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
-        borderTop: '0.5px solid rgba(0,0,0,0.08)',
-        display: 'none', // shown via CSS media query
-        justifyContent: 'space-around', alignItems: 'center',
-        padding: '5px 0 max(8px, calc(env(safe-area-inset-bottom, 0px) - 12px))',
-        boxShadow: '0 -4px 24px rgba(0,0,0,0.3)',
-      }}>
-        {[{ label: 'Chat', path: '/', Icon: MessageCircle }, { label: 'Today', path: '/today', Icon: Home }, { label: 'Records', path: '/records', Icon: Users }, { label: 'Messenger', path: '/messages', Icon: Send }].map(tab => {
-          const active = isTabActive(tab.path)
-          const Icon = tab.Icon || Home
-          return (
-            <button key={tab.path} onClick={() => { nav(tab.path) }} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-              background: 'none', border: 'none', cursor: 'pointer', padding: '5px 14px',
-              color: active ? '#0A0A0A' : '#A0A0A0',
-              transition: 'color 0.15s', fontFamily: C.font,
-            }}>
-              <Icon size={20} strokeWidth={active ? 2 : 1.5} />
-              <span style={{ fontSize: 10, fontWeight: active ? 500 : 300, letterSpacing: '0.01em' }}>{tab.label}</span>
-            </button>
-          )
-        })}
-        {/* secondary screens (Settings, Partnership Matrix) reachable via fast-follow */}
-      </nav>
+      {/* mobile bottom nav removed — single-canvas Kiko home */}
 
       {/* Mobile bottom tab bar */}
       {/* Bottom nav removed — mobile is Kiko-only with bell for Command Centre */}
