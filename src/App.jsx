@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import LoginPage from '@/components/auth/LoginPage'
@@ -7,7 +7,12 @@ import AuthCallback from '@/pages/AuthCallback'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
 import useMobile from '@/hooks/useMobile'
-import { MobilePipeline, MobileRecords, MobileCampaigns } from '@/mobile/MobileScreens'
+import { MobilePipeline, MobileRecords, MobileCampaigns, MobileToday } from '@/mobile/MobileScreens'
+
+function MobileChatRoute({ user }) {
+  const loc = useLocation()
+  return <KikoChat user={user} initialMessage={(loc.state && loc.state.initialMessage) || ''} />
+}
 import Settings from '@/components/settings/Settings'
 import PermissionGate from '@/components/PermissionGate'
 // Lazy-loaded pages (code-split for bundle size reduction)
@@ -112,6 +117,7 @@ export default function App() {
   }, [])
 
   const isMobile = useMobile()
+  const firstName = (user && user.user_metadata && user.user_metadata.full_name && String(user.user_metadata.full_name).split(' ')[0]) || 'there'
 
   if (session === undefined) return <Spinner />
 
@@ -125,8 +131,8 @@ export default function App() {
         <Route path="/admin/system" element={session ? <AdminRoute><AdminSystem /></AdminRoute> : <Navigate to="/login" replace />} />
         <Route path="/voice" element={session ? <Suspense fallback={null}><MobileVoicePage /></Suspense> : <Navigate to="/login" replace />} />
         <Route element={session ? <Layout key="app" user={user} /> : <Navigate to="/login" replace />}>
-          <Route index element={<KikoChat user={user} />} />
-          <Route path="home" element={<KikoChat user={user} />} />
+          <Route index element={isMobile ? <MobileToday userName={firstName} /> : <KikoChat user={user} />} />
+          <Route path="home" element={isMobile ? <MobileChatRoute user={user} /> : <KikoChat user={user} />} />
           <Route path="dashboard" element={<KikoChat user={user} />} />
           <Route path="pipeline" element={<PermissionGate pageKey="pipeline" user={user}>{isMobile ? <MobilePipeline /> : <Pipeline user={user} />}</PermissionGate>} />
           <Route path="contacts/:id" element={<PermissionGate pageKey="contacts" user={user}><ContactDetail user={user} /></PermissionGate>} />

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 
 const C = {
@@ -190,5 +190,88 @@ export function MobileCampaigns() {
       ))}
       {seqs.length === 0 && <div style={{ color: C.mut, fontSize: 14, padding: '20px 2px' }}>No campaigns yet.</div>}
     </Screen>
+  )
+}
+
+
+function greetingPart() {
+  const h = new Date().getHours()
+  return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
+}
+
+export function MobileToday({ userName = 'there' }) {
+  const nav = useNavigate()
+  const ctx = useOutletContext() || {}
+  const [input, setInput] = useState('')
+  const [deals, setDeals] = useState(null)
+  useEffect(() => {
+    supabase.from('deals').select('id, data, updated_at')
+      .or('data->>archived.is.null,data->>archived.neq.true')
+      .order('updated_at', { ascending: false })
+      .then(({ data }) => setDeals(data || []))
+  }, [])
+  const attention = useMemo(() => {
+    if (!deals) return []
+    const late = ['Negotiation', 'Proposal', 'negotiation', 'proposal']
+    return deals
+      .filter(d => late.includes(d.data && d.data.stage))
+      .sort((a, b) => (Number(b.data && b.data.value) || 0) - (Number(a.data && a.data.value) || 0))
+      .slice(0, 5)
+  }, [deals])
+  const totalAttn = fmtTotals(sumByCurrency(attention))
+  const send = (msg) => {
+    const t = (msg || input).trim()
+    if (!t) return
+    try { ctx.setKikoMessages && ctx.setKikoMessages([]); ctx.setKikoConvId && ctx.setKikoConvId(null); ctx.setKikoResetKey && ctx.setKikoResetKey(k => k + 1) } catch (e) {}
+    nav('/home', { state: { initialMessage: t } })
+  }
+  const dateStr = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()
+  const chips = ['Brief me on today', 'Pipeline update', 'Check my email']
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: C.bg, fontFamily: C.sans, color: C.text }}>
+      <div style={{ padding: '22px 20px calc(84px + env(safe-area-inset-bottom, 0px))' }}>
+        <div style={{ fontSize: 11, fontWeight: 500, color: C.mut, letterSpacing: '0.08em', marginBottom: 8 }}>{dateStr}</div>
+        <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 30, lineHeight: 1.12, margin: 0, letterSpacing: '-0.015em' }}>{greetingPart()}, {userName}.</h1>
+        <p style={{ color: C.sub, fontSize: 14, fontWeight: 300, margin: '8px 0 0', lineHeight: 1.4 }}>
+          {!deals ? '\u2026' : attention.length > 0 ? (attention.length + (attention.length === 1 ? ' deal needs' : ' deals need') + ' your attention' + (totalAttn ? '  \u00b7  ' + totalAttn + ' in play' : '') + '.') : 'Pipeline is quiet right now. Ask me anything.'}
+        </p>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 18, background: C.card, border: '1px solid ' + C.line, borderRadius: 26, padding: '7px 7px 7px 18px', boxShadow: C.shadow }}>
+          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send() }} placeholder="Ask Kiko anything…" style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontFamily: C.sans, color: C.text, minWidth: 0 }} />
+          <button onClick={() => send()} aria-label="Send" style={{ width: 38, height: 38, borderRadius: '50%', background: C.accent, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', marginTop: 12, paddingBottom: 2 }}>
+          {chips.map(c => (
+            <button key={c} onClick={() => send(c)} style={{ flexShrink: 0, border: '1px solid ' + C.line, background: C.card, cursor: 'pointer', borderRadius: 24, padding: '8px 14px', fontSize: 13, fontFamily: C.sans, fontWeight: 400, color: C.text, whiteSpace: 'nowrap' }}>{c}</button>
+          ))}
+        </div>
+
+        {attention.length > 0 && (
+          <div style={{ marginTop: 30 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 2px 11px' }}>Needs your attention</div>
+            {attention.map(d => {
+              const val = fmtValue(d.data && d.data.value, d.data && d.data.currency)
+              return (
+                <div key={d.id} onClick={() => nav('/pipeline')} style={{ background: C.card, border: '1px solid ' + C.line, borderRadius: 14, padding: '13px 14px', marginBottom: 8, boxShadow: C.shadow }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 15, fontWeight: 450, color: C.text, lineHeight: 1.25 }}>{(d.data && (d.data.title || d.data.company)) || 'Untitled deal'}</div>
+                      <div style={{ fontSize: 13, color: C.sub, fontWeight: 300, marginTop: 5, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ padding: '2px 8px', borderRadius: 20, background: C.alt, fontSize: 11, color: C.sub }}>{d.data && d.data.stage}</span>
+                        {d.data && d.data.company ? <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.data.company}</span> : null}
+                      </div>
+                    </div>
+                    {val && <span style={{ fontSize: 14, fontWeight: 500, color: C.text, whiteSpace: 'nowrap' }}>{val}</span>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
