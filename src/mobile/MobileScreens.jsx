@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 const C = {
   bg: '#FEFEFC', card: '#FFFFFF', alt: '#F5F4F1',
   text: '#0A0A0A', sub: '#6B6B6B', mut: '#A0A0A0',
-  line: 'rgba(0,0,0,0.07)', accent: '#0A0A0A',
+  line: 'rgba(0,0,0,0.07)', line2: 'rgba(0,0,0,0.05)', accent: '#0A0A0A',
   serif: "'Source Serif 4', Georgia, serif",
   sans: "'Inter', system-ui, -apple-system, sans-serif",
   shadow: '0 1px 2px rgba(0,0,0,0.04)',
@@ -124,6 +124,7 @@ export function MobilePipeline() {
 export function MobileRecords() {
   const nav = useNavigate()
   const [q, setQ] = useState('')
+  const [filter, setFilter] = useState('all')
   const [contacts, setContacts] = useState(null)
   const [companies, setCompanies] = useState(null)
   const [deals, setDeals] = useState([])
@@ -137,8 +138,7 @@ export function MobileRecords() {
     for (const d of (deals || [])) {
       const st = d.data && d.data.stage
       if (!st) continue
-      const co = d.data && d.data.company
-      const cn = d.data && d.data.contactName
+      const co = d.data && d.data.company, cn = d.data && d.data.contactName
       if (co && !byCo[co]) byCo[co] = st
       if (cn && !byContact[cn]) byContact[cn] = st
     }
@@ -154,35 +154,39 @@ export function MobileRecords() {
       const name = (c.data && c.data.name) || 'Unnamed company'
       const desc = (c.data && (c.data.description || c.data.industry || c.data.sector)) || ''
       const emp = (c.data && c.data.employees) ? (c.data.employees + ' staff') : ''
-      return { key: 'c' + c.id, kind: 'company', name, sub: [desc, emp].filter(Boolean).join('  \u00b7  '), status: dealStage.byCo[name] || ((c.data && Number(c.data.openDeals) > 0) ? 'Active deal' : null), to: '/records/company/' + c.id }
+      return { key: 'c' + c.id, kind: 'company', name, sub: [desc, emp].filter(Boolean).join('  \u00b7  '), status: dealStage.byCo[name] || ((c.data && Number(c.data.openDeals) > 0) ? 'Active' : null), to: '/records/company/' + c.id }
     })
-    let all = people.concat(orgs)
+    let all = filter === 'people' ? people : filter === 'companies' ? orgs : people.concat(orgs)
     const ql = q.trim().toLowerCase()
     if (ql) all = all.filter(x => (x.name + ' ' + x.sub).toLowerCase().includes(ql))
     return all
-  }, [contacts, companies, q, dealStage])
+  }, [contacts, companies, q, filter, dealStage])
   if (contacts === null || companies === null) return <Loading />
+  const segBtn = (key, label) => (
+    <button key={key} onClick={() => setFilter(key)} style={{ flex: 1, border: 'none', borderRadius: 9, padding: '8px 0', fontFamily: C.sans, fontSize: 13, fontWeight: 500, cursor: 'pointer', background: filter === key ? C.card : 'transparent', color: filter === key ? C.text : C.sub, boxShadow: filter === key ? C.shadow : 'none' }}>{label}</button>
+  )
   return (
     <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: C.bg, fontFamily: C.sans, color: C.text }}>
-      <div style={{ padding: '20px 18px 6px' }}>
-        <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 28, margin: 0, letterSpacing: '-0.01em' }}>Records</h1>
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search people & companies" style={{ width: '100%', marginTop: 12, boxSizing: 'border-box', border: '1px solid ' + C.line, background: C.card, borderRadius: 12, padding: '11px 14px', fontSize: 14, fontFamily: C.sans, color: C.text, outline: 'none' }} />
+      <div style={{ padding: '18px 18px 0' }}>
+        <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 28, margin: 0, letterSpacing: '-0.02em' }}>Records</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: C.card, border: '1px solid ' + C.line, borderRadius: 13, padding: '11px 14px', marginTop: 12 }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.mut} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search people & companies" style={{ border: 'none', outline: 'none', background: 'none', fontFamily: C.sans, fontSize: 15, color: C.text, width: '100%' }} />
+        </div>
+        <div style={{ display: 'flex', gap: 3, background: C.alt, borderRadius: 11, padding: 3, marginTop: 12 }}>{segBtn('all', 'All')}{segBtn('people', 'People')}{segBtn('companies', 'Companies')}</div>
       </div>
-      <div style={{ padding: '8px 18px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
-        <div style={{ fontSize: 11, fontWeight: 500, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '2px 2px 11px' }}>{q ? items.length + ' results' : 'People & companies'}</div>
-        {items.slice(0, 120).map(x => {
-          const init = (x.name[0] || '?').toUpperCase()
-          return (
-            <div key={x.key} onClick={() => nav(x.to)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.card, border: '1px solid ' + C.line, borderRadius: 14, padding: '11px 13px', marginBottom: 8, boxShadow: C.shadow }}>
-              <div style={{ width: 36, height: 36, borderRadius: x.kind === 'company' ? 9 : '50%', background: C.alt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 500, color: C.sub, flexShrink: 0 }}>{init}</div>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 450, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.name}</div>
-                {x.sub && <div style={{ fontSize: 13, color: C.sub, fontWeight: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.sub}</div>}
-              </div>
-              {x.status && <span style={{ flexShrink: 0, padding: '3px 9px', borderRadius: 20, background: C.alt, fontSize: 11, fontWeight: 400, color: C.sub, whiteSpace: 'nowrap' }}>{x.status}</span>}
+      <div style={{ padding: '10px 18px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+        {items.slice(0, 150).map((x, i) => (
+          <div key={x.key} onClick={() => nav(x.to)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 2px', borderTop: i === 0 ? 'none' : '1px solid ' + C.line2, cursor: 'pointer' }}>
+            <div style={{ width: 38, height: 38, borderRadius: x.kind === 'company' ? 10 : '50%', background: C.alt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 500, color: C.sub, flexShrink: 0 }}>{(x.name[0] || '?').toUpperCase()}</div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 500, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.name}</div>
+              {x.sub && <div style={{ fontSize: 12.5, color: C.sub, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.sub}</div>}
             </div>
-          )
-        })}
+            {x.status && <span style={{ flexShrink: 0, padding: '3px 9px', borderRadius: 18, background: C.alt, fontSize: 10.5, fontWeight: 500, color: C.sub, whiteSpace: 'nowrap' }}>{x.status}</span>}
+          </div>
+        ))}
+        {items.length === 0 && <div style={{ textAlign: 'center', color: C.mut, fontSize: 14, padding: '40px 0' }}>No matches.</div>}
       </div>
     </div>
   )
@@ -217,76 +221,76 @@ function greetingPart() {
   return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
 }
 
+function dateOverline() {
+  const d = new Date()
+  return d.toLocaleDateString('en-GB', { weekday: 'long' }).toUpperCase() + '  \u00b7  ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }).toUpperCase()
+}
+
 export function MobileToday({ userName = 'there' }) {
-  const nav = useNavigate()
-  const ctx = useOutletContext() || {}
-  const [input, setInput] = useState('')
   const [deals, setDeals] = useState(null)
+  const [msgs, setMsgs] = useState([])
   useEffect(() => {
-    supabase.from('deals').select('id, data, updated_at')
-      .or('data->>archived.is.null,data->>archived.neq.true')
-      .order('updated_at', { ascending: false })
-      .then(({ data }) => setDeals(data || []))
+    supabase.from('deals').select('id, data').or('data->>archived.is.null,data->>archived.neq.true').then(({ data }) => setDeals(data || []))
+    supabase.from('kiko_team_messages').select('*').order('created_at', { ascending: false }).then(({ data }) => setMsgs(data || []))
   }, [])
-  const attention = useMemo(() => {
-    if (!deals) return []
-    const late = ['Negotiation', 'Proposal', 'negotiation', 'proposal']
-    return deals
-      .filter(d => late.includes(d.data && d.data.stage))
-      .sort((a, b) => (Number(b.data && b.data.value) || 0) - (Number(a.data && a.data.value) || 0))
-      .slice(0, 5)
-  }, [deals])
-  const totalAttn = fmtTotals(sumByCurrency(attention))
-  const send = (msg) => {
-    const t = (msg || input).trim()
-    if (!t) return
-    try { ctx.setKikoMessages && ctx.setKikoMessages([]); ctx.setKikoConvId && ctx.setKikoConvId(null); ctx.setKikoResetKey && ctx.setKikoResetKey(k => k + 1) } catch (e) {}
-    nav('/', { state: { initialMessage: t } })
-  }
-  const dateStr = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()
-  const chips = ['Brief me on today', 'Pipeline update', 'Check my email']
+  const hot = useMemo(() => (deals || [])
+    .filter(d => { const st = d.data && d.data.stage; return st === 'Negotiation' || st === 'Proposal' })
+    .sort((a, b) => Number((b.data && b.data.value) || 0) - Number((a.data && a.data.value) || 0))
+    .slice(0, 5), [deals])
+  const totals = useMemo(() => {
+    const by = {}
+    for (const d of hot) { const cur = (d.data && d.data.currency) || 'EUR'; by[cur] = (by[cur] || 0) + Number((d.data && d.data.value) || 0) }
+    return by
+  }, [hot])
+  if (deals === null) return <Loading />
+  const briefing = hot.length
+    ? hot.length + ' deal' + (hot.length > 1 ? 's' : '') + ' need' + (hot.length > 1 ? '' : 's') + ' your attention  \u00b7  ' + fmtTotals(totals) + ' in play.'
+    : 'Pipeline is quiet today.'
+  const recent = (msgs || []).slice(0, 3)
+  const pill = { display: 'inline-block', padding: '2px 8px', borderRadius: 16, background: C.alt, fontSize: 10.5, fontWeight: 500, color: C.sub, marginRight: 6 }
   return (
     <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: C.bg, fontFamily: C.sans, color: C.text }}>
-      <div style={{ padding: '22px 20px calc(84px + env(safe-area-inset-bottom, 0px))' }}>
-        <div style={{ fontSize: 11, fontWeight: 500, color: C.mut, letterSpacing: '0.08em', marginBottom: 8 }}>{dateStr}</div>
-        <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 30, lineHeight: 1.12, margin: 0, letterSpacing: '-0.015em' }}>{greetingPart()}, {userName}.</h1>
-        <p style={{ color: C.sub, fontSize: 14, fontWeight: 300, margin: '8px 0 0', lineHeight: 1.4 }}>
-          {!deals ? '\u2026' : attention.length > 0 ? (attention.length + (attention.length === 1 ? ' deal needs' : ' deals need') + ' your attention' + (totalAttn ? '  \u00b7  ' + totalAttn + ' in play' : '') + '.') : 'Pipeline is quiet right now. Ask me anything.'}
-        </p>
+      <div style={{ padding: '20px 18px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+        <div style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.mut }}>{dateOverline()}</div>
+        <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 28, lineHeight: 1.1, letterSpacing: '-0.02em', margin: '5px 0 0' }}>{greetingPart()}, {userName}.</h1>
+        <p style={{ fontSize: 14, lineHeight: 1.45, color: C.sub, margin: '8px 0 0' }}>{briefing}</p>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 18, background: C.card, border: '1px solid ' + C.line, borderRadius: 26, padding: '7px 7px 7px 18px', boxShadow: C.shadow }}>
-          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send() }} placeholder="Ask Kiko anything…" style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontFamily: C.sans, color: C.text, minWidth: 0 }} />
-          <button onClick={() => send()} aria-label="Send" style={{ width: 38, height: 38, borderRadius: '50%', background: C.accent, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          </button>
-        </div>
-
-        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', marginTop: 12, paddingBottom: 2 }}>
-          {chips.map(c => (
-            <button key={c} onClick={() => send(c)} style={{ flexShrink: 0, border: '1px solid ' + C.line, background: C.card, cursor: 'pointer', borderRadius: 24, padding: '8px 14px', fontSize: 13, fontFamily: C.sans, fontWeight: 400, color: C.text, whiteSpace: 'nowrap' }}>{c}</button>
-          ))}
-        </div>
-
-        {attention.length > 0 && (
-          <div style={{ marginTop: 30 }}>
-            <div style={{ fontSize: 11, fontWeight: 500, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 2px 11px' }}>Needs your attention</div>
-            {attention.map(d => {
-              const val = fmtValue(d.data && d.data.value, d.data && d.data.currency)
-              return (
-                <div key={d.id} onClick={() => nav('/pipeline')} style={{ background: C.card, border: '1px solid ' + C.line, borderRadius: 14, padding: '13px 14px', marginBottom: 8, boxShadow: C.shadow }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 450, color: C.text, lineHeight: 1.25 }}>{(d.data && (d.data.title || d.data.company)) || 'Untitled deal'}</div>
-                      <div style={{ fontSize: 13, color: C.sub, fontWeight: 300, marginTop: 5, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ padding: '2px 8px', borderRadius: 20, background: C.alt, fontSize: 11, color: C.sub }}>{d.data && d.data.stage}</span>
-                        {d.data && d.data.company ? <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.data.company}</span> : null}
-                      </div>
-                    </div>
-                    {val && <span style={{ fontSize: 14, fontWeight: 500, color: C.text, whiteSpace: 'nowrap' }}>{val}</span>}
+        {hot.length > 0 && (
+          <div>
+            <div style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.mut, margin: '24px 2px 10px' }}>Needs attention</div>
+            <div style={{ background: C.card, border: '1px solid ' + C.line, borderRadius: 15, overflow: 'hidden', boxShadow: C.shadow }}>
+              {hot.map((d, i) => (
+                <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 14px', borderTop: i === 0 ? 'none' : '1px solid ' + C.line2 }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{(d.data && (d.data.name || d.data.title || d.data.company)) || 'Deal'}</div>
+                    <div style={{ fontSize: 11.5, color: C.sub, marginTop: 3 }}><span style={pill}>{d.data && d.data.stage}</span>{(d.data && d.data.company) || ''}</div>
                   </div>
+                  <div style={{ fontFamily: C.serif, fontWeight: 500, fontSize: 14, flexShrink: 0 }}>{fmtValue(d.data && d.data.value, d.data && d.data.currency)}</div>
                 </div>
-              )
-            })}
+              ))}
+            </div>
+          </div>
+        )}
+
+        {recent.length > 0 && (
+          <div>
+            <div style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.mut, margin: '24px 2px 10px' }}>Recent updates</div>
+            <div style={{ background: C.card, border: '1px solid ' + C.line, borderRadius: 15, overflow: 'hidden', boxShadow: C.shadow }}>
+              {recent.map((m, i) => {
+                const nm = m.from_name || 'Someone'
+                const init = nm.split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase()
+                return (
+                  <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 14px', borderTop: i === 0 ? 'none' : '1px solid ' + C.line2 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: C.alt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 500, color: C.sub, flexShrink: 0 }}>{init}</div>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nm}</div>
+                      <div style={{ fontSize: 12, color: C.sub, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.content || ''}</div>
+                    </div>
+                    <span style={{ fontSize: 11, color: C.mut, flexShrink: 0 }}>{relTime(m.created_at)}</span>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -322,28 +326,28 @@ export function MobileMessenger() {
   const unread = channels.filter(ch => { const l = lastByCh[ch.id]; return l && (!l.read_by || l.read_by.length === 0) }).length
   return (
     <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: C.bg, fontFamily: C.sans, color: C.text }}>
-      <div style={{ padding: '20px 18px 10px' }}>
-        <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 28, margin: 0, letterSpacing: '-0.01em' }}>Messenger</h1>
-        <p style={{ color: C.sub, fontSize: 13, fontWeight: 300, margin: '3px 0 0' }}>{unread > 0 ? unread + '  unread  \u00b7  ' : ''}your deal team</p>
+      <div style={{ padding: '18px 18px 6px' }}>
+        <h1 style={{ fontFamily: C.serif, fontWeight: 400, fontSize: 28, margin: 0, letterSpacing: '-0.02em' }}>Messenger</h1>
+        <p style={{ color: C.sub, fontSize: 13, margin: '4px 0 0' }}>{unread > 0 ? unread + '  unread  \u00b7  ' : ''}your deal team</p>
       </div>
-      <div style={{ padding: '0 10px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+      <div style={{ padding: '8px 14px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
         {channels.length === 0 && <div style={{ textAlign: 'center', color: C.mut, fontSize: 14, padding: '48px 0' }}>No conversations yet.</div>}
-        {channels.map(ch => {
+        {channels.map((ch, i) => {
           const last = lastByCh[ch.id]
           const name = ch.name || 'Channel'
           const init = name.replace(/[^A-Za-z0-9 ]/g, '').split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '#'
           const isUnread = last && (!last.read_by || last.read_by.length === 0)
           const preview = last ? ((last.from_name ? last.from_name.split(' ')[0] + ': ' : '') + (last.content || '')) : 'No messages yet'
           return (
-            <div key={ch.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 12px', borderRadius: 14, marginBottom: 2 }}>
+            <div key={ch.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 4px', borderTop: i === 0 ? 'none' : '1px solid ' + C.line2 }}>
               <div style={{ width: 44, height: 44, borderRadius: '50%', background: C.alt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500, color: C.sub, flexShrink: 0 }}>{init}</div>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
                   <span style={{ fontSize: 15, fontWeight: isUnread ? 600 : 450, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</span>
-                  <span style={{ fontSize: 12, color: C.mut, flexShrink: 0 }}>{last ? relTime(last.created_at) : ''}</span>
+                  <span style={{ fontSize: 11.5, color: C.mut, flexShrink: 0 }}>{last ? relTime(last.created_at) : ''}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                  <span style={{ fontSize: 13, color: isUnread ? C.text : C.sub, fontWeight: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{preview}</span>
+                  <span style={{ fontSize: 13, color: isUnread ? C.text : C.sub, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{preview}</span>
                   {isUnread && <span style={{ width: 8, height: 8, borderRadius: '50%', background: C.accent, flexShrink: 0 }} />}
                 </div>
               </div>
