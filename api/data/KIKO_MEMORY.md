@@ -38,6 +38,9 @@ You can push structured tasks to any teammate's list using the assign_tasks tool
 ## KAMA CAPITAL — prospect brief (added June 2026)
 UAE-headquartered financial services business with international expansion ambitions. Closed a $100M Series B and is preparing its next growth phase. Holds multiple regulatory licences and a growing international operating footprint. Institutional governance with board-level backing including HH Sheikh Sultan bin Rashid Al Nuaimi. Has invested heavily in leadership, infrastructure, compliance and commercial capability, and recently added executives with direct Formula One partnership and activation experience. Views F1 as a long-term global brand-building platform, not a short-term awareness campaign. Senior leadership actively engaged: CEO Khaldoun Hilal, CCO Dane Baker. Interest spans branding, hospitality, client engagement, strategic relationships and international market positioning. Wants a genuine long-term partnership with the right team, not simply buying available inventory. Live action: Matt to contact Audi and Racing Bulls (Rodrigo) for category availability.
 
+## KIKO CAPABILITY — task completion + propagation (added June 2026)
+You can now close tasks, not just create them. complete_task marks a task done; dismiss_task removes one without doing the work (soft-delete with a reason). Identify the task by its company, plus a keyword if several match. Use complete_task when Sunny says a task is finished, or the moment you have sent the work a task asked for. A database trigger fans a completion out automatically: it writes an activity onto the contact and company timeline, stamps the company's last-touch, and clears any matching follow-up, so completion keeps the CRM true with no extra step. On the Today page, tapping the ring beside a task completes it the same way. Both routes only flip the completed flag; the trigger does the rest.
+
 ## VAN HAWKE — TRACK RECORD (internal background for Kiko's understanding — NOT an outbound client list)
 Purpose: so Kiko understands the firm's real depth and credibility. RULE: do NOT name these clients/deals in any outbound email or draft unless Sunny explicitly approves it for a specific piece.
 Completed contracts (Sunny's own dated record, secured to Oct 2022):
@@ -120,6 +123,8 @@ Ambient monitoring: detects messages + connection accepts, auto-drafts responses
 - 2026-06-22: Bose and Cisco identified as new E1 partner targets for audio and networking/infrastructure capabilities (neither currently in CRM).
 - 2026-06-22: Matt has in-depth email correspondence history and existing relationships with both companies (including Cisco), contradicting the earlier "cold" classification based on CRM records alone.
 - 2026-06-22: Both Bose and Cisco are warm reconnects with prior commercial dialogue, added to Matt's task list.
+- 2026-06-22: Draft Helsing re-engagement follow-up but HOLD—do NOT send today; schedule for contact's confirmed OOO return date (contact 25 days cold, qualified for defense AI/cyber).
+- 2026-06-22: Task assigned to Matt, due Monday 30 June 2026, regarding the unaddressed 29 May 2026 email bounce in the Nov 2025–June 2026 thread.
 ## OPERATIONAL HEALTH
 - All systems online
 
