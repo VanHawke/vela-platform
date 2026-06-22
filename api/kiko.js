@@ -305,7 +305,7 @@ export default async function handler(req, res) {
   let watchdog = null;
   const watchdogStart = Date.now();
   const WATCHDOG_IDLE_MS = 45000;      // abort after 45s of NO streamed progress — fail-fast on a hung/silent turn (deliberate, S69)
-  const WATCHDOG_CEILING_MS = 105000;  // absolute backstop, just under the 110s frontend hard-abort
+  const WATCHDOG_CEILING_MS = 240000;  // absolute backstop, just under the 245s frontend hard-abort (S73: multi-brief research turns)
   // Progress-aware watchdog (S72): re-armed on every streamed write (delta/toolStatus/8s heartbeat).
   // A turn making steady progress — multi-tool deep research — runs to completion; a genuinely
   // silent turn still dies after 45s idle. Per-tool 30s/15s race still kills individual hung tools.
@@ -487,7 +487,8 @@ ${att.data.slice(0, 80000)}
         try {
           const toolPromise = block.name === 'memory' ? handleMemory(block.input, userId) : executeTool(block.name, block.input, userEmail, pageContext, userId);
           const LONG_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent', 'crm_search', 'campaign_engine', 'pipeline_analytics', 'build_campaign', 'generate_document', 'ask_content_agent', 'ask_document_agent', 'ask_ea_agent', 'read_email', 'web_search', 'ask_signal_agent', 'knowledge_ops'];
-          const timeoutMs = LONG_TOOLS.includes(block.name) ? 30000 : 15000;
+          const RESEARCH_TOOLS = ['reengagement_brief', 'deep_research']; // Opus + live web synthesis ~45s — must clear the 15/30s caps (S73)
+          const timeoutMs = RESEARCH_TOOLS.includes(block.name) ? 75000 : (LONG_TOOLS.includes(block.name) ? 30000 : 15000);
           result = await Promise.race([toolPromise, new Promise((_, rej) => setTimeout(() => rej(new Error(`Tool timeout: ${block.name} > ${timeoutMs/1000}s`)), timeoutMs))]);
         } catch (toolErr) {
           const errMsg = toolErr.message || String(toolErr);
