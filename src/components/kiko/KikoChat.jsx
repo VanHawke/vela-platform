@@ -1863,8 +1863,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
                 )}
               </div>}
 
-              {/* Alerts pill (permanent sage, left) + 4 dynamic chips — hidden on mobile */}
-              {!isMobile && <div id="kikoChipsWrap" style={{
+              {/* Alerts pill + dynamic chips wrap — stripped under redesign (redundant with tasks/priority surface) */}
+              {!isMobile && !USE_REDESIGN_DASHBOARD && <div id="kikoChipsWrap" style={{
                 display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center',
                 flexWrap: 'wrap',
                 width: '100%', maxWidth: 660,

@@ -240,7 +240,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
               Work through these <ChevronRight size={13} />
             </span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: '52vh', overflowY: 'auto', paddingRight: 4 }}>
             {tasks.map(t => {
               const due = t.data?.dueDate || t.data?.due_date
               const overdue = due && new Date(due) < new Date()
@@ -297,17 +297,11 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
         const days = Math.max(0, Math.ceil((new Date(next.date) - now) / 86400000))
         const dateLabel = new Date(next.date).toLocaleDateString('en-GB', { month: 'long', day: 'numeric' })
         return (
-          <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'border-color 0.15s, box-shadow 0.2s', marginBottom: 4 }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.05)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.boxShadow = 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="1.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>{next.name}</div>
-                <div style={{ fontSize: 12, color: '#6B6B6B' }}>{dateLabel} · {next.circuit}</div>
-              </div>
-            </div>
-            <span style={{ fontSize: 12, color: '#A0A0A0', fontWeight: 500 }}>{days === 0 ? 'Today' : `${days} days`}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 2px', fontFamily: "'Inter', system-ui, sans-serif" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="1.5" style={{ flexShrink: 0 }}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            <span style={{ fontSize: 13, color: '#0A0A0A', fontWeight: 500, flexShrink: 0 }}>{next.name}</span>
+            <span style={{ fontSize: 12, color: '#A0A0A0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>· {dateLabel} · {next.circuit}</span>
+            <span style={{ fontSize: 12, color: '#A0A0A0', fontWeight: 500, marginLeft: 'auto', flexShrink: 0 }}>{days === 0 ? 'Today' : `${days} days`}</span>
           </div>
         )
       })()}
@@ -332,25 +326,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
         </div>
       )}
 
-      {/* Next race */}
-      {nextRace && (
-        <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'default' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Flag size={16} style={{ color: '#6B6B6B' }} />
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A' }}>{nextRace.name}</div>
-              <div style={{ fontSize: 12, color: '#6B6B6B' }}>
-                {new Date(nextRace.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}
-                {nextRace.circuit ? ` · ${nextRace.circuit}` : ''}
-                {nextRace.location ? `, ${nextRace.location}` : ''}
-              </div>
-            </div>
-          </div>
-          <span style={{ fontSize: 12, color: '#A0A0A0', fontWeight: 500 }}>
-            {daysToRace !== null ? `${daysToRace} days` : ''}
-          </span>
-        </div>
-      )}
+      {/* DB next-race card removed — consolidated into the minimal text line above */}
     </div>
   )
 }
