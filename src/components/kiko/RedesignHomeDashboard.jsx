@@ -57,6 +57,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
             .or('data->>archived.is.null,data->>archived.neq.true')
             .order('updated_at', { ascending: false }),
           supabase.from('tasks').select('id, data, updated_at')
+            .eq('user_id', user?.id)
             .order('updated_at', { ascending: false }).limit(50),
           supabase.from('kiko_alerts').select('id, type, title, detail, entity_name, created_at')
             .eq('dismissed', false)
@@ -105,12 +106,13 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
           return d && new Date(d) < new Date()
         })
         overdue.slice(0, 2).forEach(t => {
+          const label = (t.data?.notes || t.data?.title || 'Task').slice(0, 44)
           items.push({
             id: `task-${t.id}`, priority: 'high',
-            title: `Overdue — ${t.data?.title || 'Task'}`,
-            detail: t.data?.description || '',
+            title: `Overdue — ${label}`,
+            detail: t.data?.company || '',
             time: timeAgo(t.data?.dueDate || t.data?.due_date),
-            onClick: () => { window.dispatchEvent(new CustomEvent('kiko_prefill', { detail: { text: `What do I need to do about the overdue task: ${t.data?.title || 'this task'}?` } })); nav('/') },
+            onClick: () => { window.dispatchEvent(new CustomEvent('kiko_prefill', { detail: { text: `What do I need to do about the overdue task: ${t.data?.notes || 'this task'}?` } })); nav('/') },
           })
         })
 
@@ -222,6 +224,41 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* This week's tasks — scoped to the current user */}
+      {tasks.length > 0 && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '0 0 12px 0' }}>
+            <h2 style={{ ...sectionTitle, margin: 0 }}>This week's tasks</h2>
+            <span
+              onClick={() => onPromptClick && onPromptClick(`Walk me through my tasks one by one and help me action each. Start with the first and wait for me before moving to the next.\n\nMy open tasks:\n` + tasks.map((t, i) => `${i + 1}. ${t.data?.notes || 'Task'}${t.data?.company ? ` — ${t.data.company}` : ''}`).join('\n'))}
+              style={{ fontSize: 12, fontWeight: 500, color: '#b8643e', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 2 }}
+            >
+              Work through these <ChevronRight size={13} />
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {tasks.slice(0, 8).map(t => {
+              const due = t.data?.dueDate || t.data?.due_date
+              const overdue = due && new Date(due) < new Date()
+              return (
+                <div key={t.id} onClick={() => onPromptClick && onPromptClick(`Help me with this task: ${t.data?.notes || ''}${t.data?.company ? ` (${t.data.company})` : ''}`)} style={cardStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <svg width="6" height="6" style={{ flexShrink: 0, marginTop: 6 }}><circle cx="3" cy="3" r="3" fill={overdue ? '#b8643e' : '#B89C5C'} /></svg>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', lineHeight: 1.4 }}>{t.data?.notes || 'Task'}</div>
+                      {(t.data?.company || t.data?.type) && (
+                        <div style={{ fontSize: 12, color: '#6B6B6B', fontWeight: 400, marginTop: 2 }}>{[t.data?.company, t.data?.type].filter(Boolean).join(' · ')}</div>
+                      )}
+                    </div>
+                    {due && <span style={{ fontSize: 11, color: overdue ? '#b8643e' : '#A0A0A0', flexShrink: 0, fontWeight: 500, marginTop: 1 }}>{overdue ? 'overdue' : new Date(due).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
