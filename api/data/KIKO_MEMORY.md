@@ -1,13 +1,19 @@
 # KIKO MEMORY — Session 70 (June 10 2026)
 
 ## VAN HAWKE — POSITIONING (current, set June 2026)
-APPROVED external positioning statement (used for market intros, incl. Qatar). Use this language and register whenever describing the firm:
+APPROVED external positioning statement (market intros, incl. Qatar). Use this language and register when describing the firm:
 "Van Hawke is a strategic commercial advisory operating at the intersection of sport, culture and capital. We structure multi-million-dollar partnerships, licensing and media rights across motorsport, entertainment, fashion, gaming and broadcast."
+This is accurate — including licensing and media rights, which is a PROVEN capability (see track record), not aspiration. More institutional positioning is in development to differentiate Van Hawke in-market.
 
-Use it ACCURATELY:
-- Proven verticals are motorsport (F1, Formula E, MotoGP, E1) and fashion (Van Hawke Maison eyewear + brand/creative advisory). Entertainment, gaming and broadcast are stated as the operating space, i.e. forward positioning, not a closed track record yet. Licensing and media rights are credible adjacencies, not a closed deal yet.
-- REAL relationships, safe to present as ours: Haas F1 Team (longstanding), Alpine F1 (live, Alpine/SealSQ), Formula E (Comsol, near-close). MotoGP and E1 Series in active development.
-- ILLUSTRATIVE ONLY — names used in intros as category exemplars, NOT signed clients. Never state or imply Van Hawke works with these: Formula 1 (FOM), McLaren, Premier League, ONE Championship, AMC, Riot Games, Valentino, British Fashion Council. If asked who we work with, lead with the real relationships above.
+## VAN HAWKE — TRACK RECORD (internal background for Kiko's understanding — NOT an outbound client list)
+Purpose: so Kiko understands the firm's real depth and credibility. RULE: do NOT name these clients/deals in any outbound email or draft unless Sunny explicitly approves it for a specific piece.
+Completed contracts (Sunny's own dated record, secured to Oct 2022):
+- Football: Inter Miami FC x Grubhub (Mar 22); Watford FC x Alchemy Markets (Sep 21); Glasgow Rangers FC x Fortrade (Dec 20); Watford FC x Mascaped (Aug 22)
+- F1: Haas F1 x Hantec Markets (Aug 22, approx EUR 1.8m / 18mo initial / 15% comm = EUR 270k); Haas F1 x OpenSea (Oct 22)
+- MMA: ONE Championship x Tokyo Time (Feb 21); PFL x Acronis (Sep 20)
+- IP licensing / media: AMC Networks x 37 Games — The Walking Dead licensed into mobile gaming (Jul 22)
+- Esports: Misfits Gaming x Tokyo Time (Feb 21); Ed-Tech: Leap Scholar x Brett Lee ambassador (Mar 21)
+Newer (per Sunny, 2023-2026, evidence in correspondence): ambassadorial work with McLaren; contract negotiations/talks with Mercedes and Aston Martin; Formula E (structured as a licensing deal); ongoing licensing work for Van Hawke Maison. Active pipeline: Alpine F1 / SealSQ (live), Comsol / Formula E (near-close), MotoGP and E1 Series in development. Van Hawke works with a large number of rights-holders.
 
 
 ## WHAT YOU ARE
@@ -75,6 +81,7 @@ Ambient monitoring: detects messages + connection accepts, auto-drafts responses
 - 2026-06-17: Correction: The next Monday is June 22nd (2026), not the 23rd as previously stated.
 - 2026-06-18: Van Hawke received commission payment from Alpine F1 via Invoice #ALP01 (dated 25 Nov 2025), with Alpine treasury confirming payment on 16 January 2026 and funds received 19 January 2026.
 - 2026-06-22: American Battery Technology was identified as another archived deal to review (alongside Big Bear, PostHog, Decagon, Stored, and Attio).
+- 2026-06-22: Matt to paste complete E1 cost list directly into the system for shared retrieval, to feed into American Battery Tech, NanoXplore, and Proofpoint technical-partnership pitches.
 ## OPERATIONAL HEALTH
 - All systems online
 
