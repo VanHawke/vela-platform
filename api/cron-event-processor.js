@@ -132,13 +132,31 @@ async function processEvent(event) {
   const acctState = acctCompany ? await getAccountState(acctCompany).catch(() => null) : null;
   const acctGuidance = acctState ? `\n\nACCOUNT STATE (authoritative — obey it):\n- Current owner: ${acctState.owner_name || 'unassigned'} (assign every task for this account to them, no one else)\n- Current strategy: ${acctState.current_strategy || 'none set'}${acctState.current_series ? ` (series: ${acctState.current_series})` : ''}\n- Ruled-out plays, do NOT propose these: ${(acctState.ruled_out || []).map(r => `${r.strategy} (${r.reason})`).join('; ') || 'none'}` : '';
 
-  // ── Relationship signal for this contact — grounds routing + channel in fact (no blind defaults) ──
-  let priorSenderEmail = null;
+  // ── Relationship signal — PERSONAL correspondence vs non-engaged CAMPAIGN blast ──
+  // A templated campaign send that drew no engagement is NOT a relationship. Re-approaching that contact, or new
+  // contacts at the same company, is suppressed. Real signal = a personal 1:1 email, a reply, or CRM ownership.
+  const cEmail = (context.contact?.email || '').trim();
+  const cCompany = (context.contact?.company || '').trim();
+  let priorSenderEmail = null;       // most recent PERSONAL (non-campaign) email to this contact
+  let companyPersonal = false, companyReply = false, hasCampaign = false, companyOwned = false;
   try {
-    const _ce = context.contact?.email ? `recipient_email.ilike.${encodeURIComponent(context.contact.email)}` : null;
-    const _cn = `recipient_name.ilike.*${encodeURIComponent(entity_name)}*`;
-    const _track = await sbFetch(`kiko_email_tracking?or=(${[_ce, _cn].filter(Boolean).join(',')})&order=sent_at.desc&select=sender_email&limit=1`).catch(() => []);
-    priorSenderEmail = _track?.[0]?.sender_email || null;
+    const recMatch = `or=(${[cEmail ? `recipient_email.ilike.${encodeURIComponent(cEmail)}` : null, `recipient_name.ilike.*${encodeURIComponent(entity_name)}*`].filter(Boolean).join(',')})`;
+    const personal = await sbFetch(`kiko_email_tracking?source=in.(gmail,gmail_sync,direct_send)&${recMatch}&order=sent_at.desc&select=sender_email&limit=1`).catch(() => []);
+    priorSenderEmail = personal?.[0]?.sender_email || null;
+    if (cCompany) {
+      const cco = encodeURIComponent(cCompany);
+      const [cPers, cRepl, cCamp, cOwned, cLem] = await Promise.all([
+        sbFetch(`kiko_email_tracking?company=ilike.${cco}&source=in.(gmail,gmail_sync,direct_send)&select=id&limit=1`).catch(() => []),
+        sbFetch(`kiko_email_tracking?company=ilike.${cco}&replied_at=not.is.null&select=id&limit=1`).catch(() => []),
+        sbFetch(`kiko_email_tracking?company=ilike.${cco}&source=eq.campaign&select=id&limit=1`).catch(() => []),
+        sbFetch(`contacts?data->>company=ilike.${cco}&data->>owner=not.is.null&select=id&limit=1`).catch(() => []),
+        sbFetch(`contacts?data->>company=ilike.${cco}&data->>source=eq.lemlist&select=id&limit=1`).catch(() => []),
+      ]);
+      companyPersonal = Array.isArray(cPers) && cPers.length > 0;
+      companyReply = Array.isArray(cRepl) && cRepl.length > 0;
+      hasCampaign = (Array.isArray(cCamp) && cCamp.length > 0) || (Array.isArray(cLem) && cLem.length > 0);
+      companyOwned = Array.isArray(cOwned) && cOwned.length > 0;
+    }
   } catch {}
   let hasLinkedInConn = false;
   try {
@@ -147,8 +165,14 @@ async function processEvent(event) {
   } catch {}
   const contactOwnerName = (context.contact?.owner || '').trim();
   const hasContactRecord = !!context.contact?.id;
-  const derivedType = priorSenderEmail ? 'Email Follow-up' : (hasLinkedInConn ? 'LinkedIn Follow-up' : 'First Outreach');
-  const channelGuidance = `\n\nRELATIONSHIP FACTS (ground every action in these, never contradict them):\n- Contact on record: ${hasContactRecord ? 'yes' : 'NO — this person is not yet a contact'}\n- Prior email to them: ${priorSenderEmail ? `yes (from ${priorSenderEmail})` : 'none'}\n- LinkedIn connection on record: ${hasLinkedInConn ? 'yes' : 'no'}\n- Therefore this is: ${derivedType}.${derivedType === 'First Outreach' ? ' Do NOT call it a follow-up — there is no prior relationship. Frame it as a first, cold approach and do not assume a LinkedIn connection.' : ''}\n- Relationship owner: ${contactOwnerName || (priorSenderEmail ? (priorSenderEmail.includes('matt') ? 'Matt Smith' : 'Sunny Sidhu') : 'unassigned — do not invent one')}`;
+  // Real relationship at this account = a personal 1:1 email, a reply, or a CRM-owned contact anywhere at the company.
+  const realSignal = !!priorSenderEmail || !!contactOwnerName || companyPersonal || companyReply || companyOwned;
+  // Cold campaign = the company was blasted by a templated campaign (or seeded as campaign leads) and nobody engaged or is owned.
+  const coldCampaign = hasCampaign && !realSignal;
+  const derivedType = priorSenderEmail ? 'Email Follow-up'
+    : (realSignal ? (cEmail ? 'Email Follow-up' : (hasLinkedInConn ? 'LinkedIn Follow-up' : 'Reach out'))
+    : (hasLinkedInConn ? 'LinkedIn Follow-up' : 'First Outreach'));
+  const channelGuidance = `\n\nRELATIONSHIP FACTS (ground every action in these, never contradict them):\n- Contact on record: ${hasContactRecord ? 'yes' : 'NO — not yet a contact'}\n- Personal 1:1 email to them: ${priorSenderEmail ? `yes (from ${priorSenderEmail})` : 'none'}\n- Anyone at the company replied or was personally emailed: ${(companyPersonal || companyReply) ? 'yes' : 'no'}\n- CRM-owned relationship at the company: ${(contactOwnerName || companyOwned) ? (contactOwnerName || 'yes') : 'no'}\n- Templated campaign sent to this company: ${hasCampaign ? 'yes' : 'no'}\n- LinkedIn connection on record: ${hasLinkedInConn ? 'yes' : 'no'}\n${coldCampaign ? '- VERDICT: COLD CAMPAIGN, NO ENGAGEMENT. This company received a templated campaign and nobody engaged or replied. Do NOT propose re-outreach to this person or to new contacts here. The only valid action is create_alert, never create_task.' : `- VERDICT: ${realSignal ? 'real relationship — a genuine follow-up is appropriate' : 'net-new with no prior touch — a first cold approach only, do NOT call it a follow-up'}.`}\n- Relationship owner: ${contactOwnerName || (priorSenderEmail ? (priorSenderEmail.includes('matt') ? 'Matt Smith' : 'Sunny Sidhu') : 'unassigned — do not invent one')}`;
 
   // ── STEP 5: ACTION (Haiku — generate structured actions) ──
   const actionResult = await callClaude(HAIKU,
@@ -177,6 +201,8 @@ async function processEvent(event) {
       if (action.type === 'create_task') {
         const d = action.data || action; // model sometimes puts fields directly on action
         if (!d.title) continue;
+        // Gate 0 — cold-campaign suppression: a non-engaged templated blast is not a relationship; do not re-approach.
+        if (coldCampaign) { executed.push({ type: 'create_task', title: d.title, success: false, skipped: 'cold_campaign_no_engagement' }); continue; }
         const taskCompany = context.contact?.company || '';
         // Reconciliation gate 1 — dedup: skip if an open task already exists for this account (kills the daily pile-up)
         if (taskCompany) {
