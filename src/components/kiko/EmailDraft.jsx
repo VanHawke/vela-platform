@@ -309,6 +309,8 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
 
   // ── SEND NOW — actually sends the email to the prospect ──
   const [sendNowState, setSendNowState] = useState(false) // false | 'confirm' | 'sending' | 'sent' | 'error'
+  const [taskConfirm, setTaskConfirm] = useState(null) // { draft_action_id, company, notes } | null — from gmail-send response
+  const [taskConfirmState, setTaskConfirmState] = useState(false) // false | 'confirming' | 'done'
   const handleSendNow = async () => {
     if (sendNowState === false) { setSendNowState('confirm'); return }
     if (sendNowState !== 'confirm') return
@@ -323,6 +325,7 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
       const data = await res.json()
       if (data.ok || data.success || data.messageId) {
         setSendNowState('sent')
+        if (data.taskConfirm) setTaskConfirm(data.taskConfirm)
         // Auto-dismiss follow-up tracking and mark tasks complete
         fetch('https://api.vanhawke.agency/api/team-messages?action=complete-followup', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -337,6 +340,21 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
         }
       } else { setSendNowState('error'); setTimeout(() => setSendNowState(false), 3000) }
     } catch (e) { console.error('[EmailDraft] Send now failed:', e); setSendNowState('error'); setTimeout(() => setSendNowState(false), 3000) }
+  }
+
+  // ── Confirm-CTA after a send: tap to mark the originating task done (approves the staged action; idempotent) ──
+  const handleConfirmTask = async () => {
+    if (!taskConfirm?.draft_action_id || taskConfirmState === 'confirming' || taskConfirmState === 'done') return
+    setTaskConfirmState('confirming')
+    try {
+      const res = await fetch('https://api.vanhawke.agency/api/kiko-draft-actions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve', id: taskConfirm.draft_action_id })
+      })
+      const d = await res.json()
+      if (d.success) setTaskConfirmState('done')
+      else setTaskConfirmState(false)
+    } catch (e) { console.error('[EmailDraft] Task confirm failed:', e); setTaskConfirmState(false) }
   }
 
   const handleRewrite = async (prompt) => {
@@ -605,6 +623,19 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
           )}
         </div>
       </div>
+      {taskConfirm && (
+        <div style={{ padding: '12px 16px', borderTop: '0.5px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(180,90,40,0.03)' }}>
+          {taskConfirmState === 'done' ? (
+            <div style={{ fontSize: 12.5, color: '#5a6a42', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}><Check size={13} /> Task marked done{taskConfirm.company ? ` — ${taskConfirm.company}` : ''}.</div>
+          ) : (
+            <>
+              <div style={{ flex: 1, fontSize: 12.5, color: '#6B6B6B', fontFamily: T.font }}>Sent. {taskConfirm.company ? `Mark the ${taskConfirm.company} task done?` : 'Mark this task done?'}</div>
+              <button onClick={handleConfirmTask} disabled={taskConfirmState === 'confirming'} style={{ padding: '6px 14px', borderRadius: 50, border: '1px solid rgba(34,197,94,0.25)', background: 'rgba(34,197,94,0.08)', color: 'rgba(34,150,80,0.95)', fontSize: 11.5, fontWeight: 600, cursor: taskConfirmState === 'confirming' ? 'wait' : 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 5 }}><Check size={11} /> {taskConfirmState === 'confirming' ? 'Marking...' : 'Mark done'}</button>
+              <button onClick={() => setTaskConfirm(null)} style={{ padding: '6px 10px', borderRadius: 50, background: 'transparent', border: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.4)', fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>Not yet</button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }

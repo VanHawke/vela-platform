@@ -1,6 +1,6 @@
 // api/gmail-send.js — Send email directly via Gmail API (not draft)
 import { getGoogleToken } from './cron-utils.js';
-import { sbFetch } from './kiko-tools.js';
+import { sbFetch, findOpenTaskForCompany } from './kiko-tools.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
@@ -67,6 +67,7 @@ export default async function handler(req, res) {
     if (!gmailRes.ok) return res.status(500).json({ error: result.error?.message || 'Gmail send failed' });
 
     // Track the send — but NOT for test emails
+    let taskConfirm = null;
     if (!isTest) {
       // 1. Track in email_tracking with follow-up due
       await sbFetch('kiko_email_tracking', { method: 'POST', body: JSON.stringify({
@@ -94,13 +95,24 @@ export default async function handler(req, res) {
         metadata: { sender: fromEmail, recipient: to },
       }) }).catch(() => {});
 
-      // 3b. If this send was for a task, stage a confirm-CTA to mark that task done (user taps; never auto-complete)
-      if (task_id) {
-        await sbFetch('kiko_draft_actions', { method: 'POST', body: JSON.stringify({
-          action_type: 'task_complete',
-          status: 'pending',
-          payload: { task_id, entity: recipientName, sent_to: to, summary: `Sent "${(subject || 'your message').slice(0, 60)}" to ${recipientName}. Mark this task done?`, source: 'gmail_send' },
-        }) }).catch(() => {});
+      // 3b. Resolve the task this send relates to (explicit task_id, else by the recipient's company) and stage a
+      //     pending confirm-CTA. The send never auto-completes the task; the caller surfaces a tap that approves it.
+      let resolvedTaskId = task_id;
+      let resolvedTask = null;
+      if (!resolvedTaskId) {
+        const contact = (await sbFetch(`contacts?select=data&data->>email=ilike.${encodeURIComponent(to)}&limit=1`).catch(() => []))?.[0];
+        const company = contact?.data?.company;
+        if (company) { resolvedTask = await findOpenTaskForCompany(company).catch(() => null); resolvedTaskId = resolvedTask?.id || null; }
+      }
+      if (resolvedTaskId) {
+        if (!resolvedTask) resolvedTask = (await sbFetch(`tasks?id=eq.${encodeURIComponent(resolvedTaskId)}&select=id,data&limit=1`).catch(() => []))?.[0];
+        const tcompany = resolvedTask?.data?.company || '';
+        const staged = await sbFetch('kiko_draft_actions', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify({
+          action_type: 'task_complete', status: 'pending',
+          payload: { task_id: resolvedTaskId, entity: tcompany || recipientName, sent_to: to, summary: `Sent to ${recipientName}. Mark this task done?`, source: 'gmail_send' },
+        }) }).catch(() => null);
+        const draftActionId = Array.isArray(staged) ? staged[0]?.id : staged?.id;
+        if (draftActionId) taskConfirm = { draft_action_id: draftActionId, company: tcompany, notes: resolvedTask?.data?.notes || '' };
       }
 
       // 4. Update contact last activity — or CREATE contact if doesn't exist
@@ -158,7 +170,7 @@ export default async function handler(req, res) {
       }
     } // end if (!isTest)
 
-    return res.status(200).json({ success: true, messageId: result.id, threadId: result.threadId, isTest });
+    return res.status(200).json({ success: true, messageId: result.id, threadId: result.threadId, isTest, taskConfirm });
   } catch (e) {
     console.error('[gmail-send] Error:', e);
     return res.status(500).json({ error: e.message });
