@@ -1,5 +1,15 @@
 # KIKO MEMORY — Session 70 (June 10 2026)
 
+## VAN HAWKE — POSITIONING (current, set June 2026)
+APPROVED external positioning statement (used for market intros, incl. Qatar). Use this language and register whenever describing the firm:
+"Van Hawke is a strategic commercial advisory operating at the intersection of sport, culture and capital. We structure multi-million-dollar partnerships, licensing and media rights across motorsport, entertainment, fashion, gaming and broadcast."
+
+Use it ACCURATELY:
+- Proven verticals are motorsport (F1, Formula E, MotoGP, E1) and fashion (Van Hawke Maison eyewear + brand/creative advisory). Entertainment, gaming and broadcast are stated as the operating space, i.e. forward positioning, not a closed track record yet. Licensing and media rights are credible adjacencies, not a closed deal yet.
+- REAL relationships, safe to present as ours: Haas F1 Team (longstanding), Alpine F1 (live, Alpine/SealSQ), Formula E (Comsol, near-close). MotoGP and E1 Series in active development.
+- ILLUSTRATIVE ONLY — names used in intros as category exemplars, NOT signed clients. Never state or imply Van Hawke works with these: Formula 1 (FOM), McLaren, Premier League, ONE Championship, AMC, Riot Games, Valentino, British Fashion Council. If asked who we work with, lead with the real relationships above.
+
+
 ## WHAT YOU ARE
 Claude Opus 4.8, strategic operating partner for Van Hawke Group.
 8 operational rules including Rule 7 (verification) and Rule 8 (signal classification).
@@ -54,6 +64,17 @@ Ambient monitoring: detects messages + connection accepts, auto-drafts responses
 
 - 2026-06-10: Multiple facts here. The most significant strategic/decision fact:; ; Brain model decision: Staying on Opus 4.8 ($5/$25); Fable 5 ($10/$50) was evaluated and rejected.
 - 2026-06-10: cron-crm-enrich was not disabled on June 9; it kept running June 8-10 (3:00-3:49am), causing the June 10 credit outage and failed 6am briefing, and was only truly killed June 10.
+- 2026-06-14: Decision: remove priority actions since all 50 deals are inactive (38 Closed Lost, 12 Archived), leaving an empty pipeline.
+- 2026-06-14: The Spanish GP moved to Madrid in September 2026 (Barcelona remains on the 2026 calendar).
+- 2026-06-14: Cleo Lant at PostHog is the active contact for the Haas F1 / PostHog opportunity.
+- 2026-06-15: Four Tier-1 companies (Netradyne, Norm Ai, Rocket Lawyer, Sierra) deep-researched and refreshed in live sequences.
+- 2026-06-15: Refreshed 6 Tier-1 outreach targets via deep research: BlueVoyant, Claroty, Dragos, Capital.com, GlobalFoundries, Zscaler.
+- 2026-06-15: Alex Roberts was promoted from CFO to CEO of WhistlePig in early February 2026, replacing Charles Gibb who departed by mutual consent.
+- 2026-06-15: Subject line for an email changed from "Long overdue" to "Catch up."
+- 2026-06-17: Reminder set for Monday 23 June to follow up with Alex on the same thread with a one-line nudge.
+- 2026-06-17: Correction: The next Monday is June 22nd (2026), not the 23rd as previously stated.
+- 2026-06-18: Van Hawke received commission payment from Alpine F1 via Invoice #ALP01 (dated 25 Nov 2025), with Alpine treasury confirming payment on 16 January 2026 and funds received 19 January 2026.
+- 2026-06-22: American Battery Technology was identified as another archived deal to review (alongside Big Bear, PostHog, Decagon, Stored, and Attio).
 ## OPERATIONAL HEALTH
 - All systems online
 
@@ -216,3 +237,28 @@ DECISION: BUILD on CURRENT design tokens (C palette above), NOT the older brief'
 - FIX A — thread_history (api/agents/data.js): getThreadHistory now accepts query||entity||company||name (crm_search schema documents the term as `query`; it read only entity/company, so a schema-correct params.query call silently read nothing → caused the false "Tenstorrent never got off the ground"). True miss returns an explicit error naming expected params, never silent-empty.
 - FIX B — progress-aware watchdog (api/kiko.js): armWatchdog() re-arms on every streamed write() (delta/toolStatus/8s heartbeat); 45s IDLE window bounded by 105s absolute ceiling (under the 110s frontend hard-abort) via Math.min. Steady-progress deep research runs to completion; a truly silent turn still dies at 45s; per-tool 30s/15s race still kills hung tools. Abort path NO LONGER extracts insights from the partial sseBuffer (Kiko's review gotcha — truncated buffers persisted garbage learnings); clean-completion path owns extraction.
 - KIKO CONSULTED BEFORE CODING (approved both + flagged the partial-buffer extraction gotcha, which was implemented) and VERIFIED AFTER line-by-line against live source (4/4 confirmed). Pure-logic tests 11/11. Deployed: node --check (local+server) → scp → chown kiko:kiko → pm2 restart. LIVE PROOF: the exact failing transcript query (semiconductor firms outside SEALSQ) ran 71s and completed CLEANLY (no recovering), thread_history resolved, contradiction gone. Bible updated (§ STREAMING WATCHDOG + thread_history).
+
+
+## SESSION 78 (June 17 2026) — DATA CONFIDENTIALITY SILOED PLATFORM-WIDE + Timezone + Account-Health (Claude + Sunny)
+THE GUARANTEE (now enforced + live-verified end to end): every user's uploaded docs, generated docs, memory, conversation history, conversation insights, thought journal, personal context, goals and bible are PRIVATE to that user. No other user (esp. Matt) can see, name, or retrieve them through ANY agent path. Workspace-marked docs + the CRM pipeline (contacts/companies/deals/emails/campaigns) are shared by design. super_admin (Sunny) sees ALL DOCUMENTS across users — but NOT other users' personal memory (memory is hard-scoped to the requesting userId for everyone incl. Sunny; this is correct and safe).
+
+LEAKS FOUND + FIXED THIS SESSION:
+- legal.js:29 + product-dev.js:37 — read the documents table (service role) and appended matching doc NAMES to agent context with NO user filter (another user prompting these agents saw private doc names). FIXED: added &access_level=eq.workspace so only shared doc names ever surface; private never leaks. Commit 1be2d7e.
+- document-ops.js 'documents' case — kiko_documents generated-docs listing had no owner filter (service role). FIXED: scoped to created_by; super_admin sees all. Commit 1be2d7e.
+- memory-engine.js recall() — callMemoryEngine was NEVER passed userId (kiko-tools.js:1019), so recall read conversations (FULL messages), kiko_thought_journal, kiko_conversation_insights, kiko_learning_log and kiko_relationships across ALL users. FIXED: userId now threaded dispatch -> callMemoryEngine -> recall/getDraftContext/getRelationshipSummary; all 5 personal reads filtered by user_id (fail-closed sentinel UUID if userId ever absent). Shared reads (deals, contacts, deal_stage_history, outreach_scores) left org-wide by design. Commit 1108cfd.
+
+CONFIRMED ALREADY SAFE (no change needed):
+- kiko_memories / kiko_personal_context / user_bibles / kiko_goals / kiko_intents are user_id-scoped. kiko.js:301 `const userId = userConfig.user_id || crypto.randomUUID()` guarantees userId is NEVER empty — an unknown user gets a random UUID matching nothing (fail-CLOSED, not open).
+- Semantic recall verified at the DATABASE level: spine_recall (the MAIN per-message recall) has WHERE (s.user_id IS NULL OR s.user_id = p_user) on kiko_knowledge_spine — returns shared/global + own rows only. search_conversations_semantic has WHERE (filter_user_id IS NULL OR ce.user_id = filter_user_id); userId is always passed. query_conversation_insights tool is user_id-scoped.
+
+LIVE VERIFICATION (planted test rows for both users, ran the REAL agent functions, then deleted):
+- DOCUMENTS: AS MATT own=true, Sunny-private=FALSE, workspace=true; AS SUNNY own=true, Matt-private=TRUE (super_admin cross-user), workspace=true; legal ambient query shows the workspace doc, NOT the private one.
+- MEMORY: AS MATT all Sunny markers (insight/thought/conversation) = FALSE; AS SUNNY all = TRUE.
+
+DOCTRINE PROPAGATED so Kiko knows it: lean prompt RULE 12 (DATA CONFIDENTIALITY) added — injected every turn (commit 1b2a65f). kiko_core_bible v3 prepended a SECURITY & CONFIDENTIALITY section — read_bible(core) now carries it (len 30430). REMINDER: read_bible reads the kiko_core_bible TABLE, not the KIKO_BIBLE.md file (the .md is developer-only; keep them conceptually in sync but the table is the live doctrine).
+
+IDS (confirmed live): Sunny userId 9f486437-4bf5-4111-abfe-fe19bfa76063 (super_admin). Matt userId f1cb67ee-2917-44a3-affe-e8779ede3851 (user). Shared org_id 35975d96-c2c9-4b6c-b4d4-bb947ae817d5.
+
+TIMEZONE (commit ec6223c): browser-driven is the standard. Frontend already sends the live Intl timezone (KikoChat.jsx:906). A prior segment wrongly made the brain prefer the static profile — REVERTED. kiko.js now resolves effectiveTz = browser timezone || profile || 'Asia/Qatar' (browser-first). Sunny is in Doha (Asia/Qatar).
+
+ACCOUNT-HEALTH / CREDITS DECISION: the Anthropic API does NOT expose remaining credit balance — the model only learns of billing problems via call FAILURES (there is no balance endpoint; only the Usage & Cost Admin API for historical spend, which needs a separate sk-ant-admin key). A "credit too low" log was confirmed STALE, not current — the key works. DECISION (Sunny): do NOT build an in-Kiko balance/failure alert — it would just duplicate the email Anthropic already sends when credits run out, and Kiko cannot see the balance pre-emptively anyway. Sunny declined auto-reload (wants manual spend control). Recommended path for early warning without losing control: a console SPEND ALERT. Revisit only if an Admin API key is created (a real spend tracker via the Usage & Cost API becomes buildable) or if overnight crons silently fail before the email lands.
