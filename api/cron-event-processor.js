@@ -204,10 +204,28 @@ async function processEvent(event) {
         // Gate 0 — cold-campaign suppression: a non-engaged templated blast is not a relationship; do not re-approach.
         if (coldCampaign) { executed.push({ type: 'create_task', title: d.title, success: false, skipped: 'cold_campaign_no_engagement' }); continue; }
         const taskCompany = context.contact?.company || '';
-        // Reconciliation gate 1 — dedup: skip if an open task already exists for this account (kills the daily pile-up)
+        // Reconciliation gate 1 — dedup + GROUP: if an open task already exists for this account, append this
+        // person to its contacts[] (one company card, multiple people as sub-items) instead of dropping or duplicating.
         if (taskCompany) {
           const existingOpen = await findOpenTaskForCompany(taskCompany).catch(() => null);
-          if (existingOpen) { executed.push({ type: 'create_task', title: d.title, success: false, skipped: 'duplicate_open_task' }); continue; }
+          if (existingOpen) {
+            const ed = existingOpen.data || {};
+            let contacts = (Array.isArray(ed.contacts) && ed.contacts.length)
+              ? ed.contacts.slice()
+              : (ed.contact ? [{ name: ed.contact, role: '', channel: ed.type || 'Follow-up', notes: ed.notes || '' }] : []);
+            const newName = (entity_name || '').trim();
+            const already = contacts.some(c => (c.name || '').trim().toLowerCase() === newName.toLowerCase());
+            if (newName && !already) {
+              contacts.push({ name: newName, role: (context.contact?.title || context.contact?.jobTitle || ''), channel: derivedType, notes: d.notes || '' });
+              await sbFetch(`tasks?id=eq.${existingOpen.id}`, { method: 'PATCH', body: JSON.stringify({
+                updated_at: new Date().toISOString(), data: { ...ed, contacts }
+              }) });
+              executed.push({ type: 'create_task', title: d.title, success: false, skipped: 'grouped_into_existing' });
+            } else {
+              executed.push({ type: 'create_task', title: d.title, success: false, skipped: 'duplicate_open_task' });
+            }
+            continue;
+          }
         }
         // Reconciliation gate 2 — owner: route by the REAL owner, never blind-default to a person.
         // Precedence: contact.owner → prior-email sender → account owner → unowned.
@@ -247,6 +265,7 @@ async function processEvent(event) {
           data: {
             type: derivedType, notes: d.notes || '', company: context.contact?.company || '',
             contact: entity_name, dueDate: dueDate,
+            contacts: [{ name: entity_name, role: (context.contact?.title || context.contact?.jobTitle || ''), channel: derivedType, notes: d.notes || '' }],
             completed: false, createdAt: new Date().toISOString(),
             assignedTo: taskAssignee,
             ...(routingUnowned ? { routing: 'unowned' } : {}),

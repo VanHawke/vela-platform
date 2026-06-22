@@ -249,15 +249,40 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
               Work through these <ChevronRight size={13} />
             </span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: '272px', overflowY: 'auto', paddingRight: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: '52vh', overflowY: 'auto', paddingRight: 4 }}>
             {tasks.map(t => {
               const due = t.data?.dueDate || t.data?.due_date
               const overdue = due && new Date(due) < new Date()
+              const groupContacts = Array.isArray(t.data?.contacts) ? t.data.contacts : []
+              if (groupContacts.length > 1) {
+                return (
+                  <div key={t.id} style={{ ...cardStyle, position: 'relative', cursor: 'default' }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', minWidth: 0 }}>{t.data?.company || 'Company'}<span style={{ color: '#A0A0A0', fontWeight: 400 }}> · {groupContacts.length} to reach</span></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                        {due && <span style={{ fontSize: 11, color: overdue ? '#b8643e' : '#A0A0A0', fontWeight: 500 }}>{overdue ? 'overdue' : new Date(due).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
+                        <button onClick={(e) => { e.stopPropagation(); completeTask(t) }} title="Mark all done" style={{ width: 13, height: 13, borderRadius: '50%', border: `1.5px solid ${overdue ? 'rgba(184,100,62,0.5)' : 'rgba(0,0,0,0.2)'}`, background: 'transparent', cursor: 'pointer', padding: 0, transition: 'background 120ms ease, border-color 120ms ease' }} onMouseEnter={(e)=>{e.currentTarget.style.background='#34D399';e.currentTarget.style.borderColor='#34D399'}} onMouseLeave={(e)=>{e.currentTarget.style.background='transparent';e.currentTarget.style.borderColor=overdue?'rgba(184,100,62,0.5)':'rgba(0,0,0,0.2)'}} />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {groupContacts.map((c, i) => (
+                        <div key={i} onClick={() => onPromptClick && onPromptClick(`Help me reach out to ${c.name}${c.role ? ` (${c.role})` : ''} at ${t.data?.company || ''}.${c.notes ? ` ${c.notes}` : ''}`)} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '7px 9px', borderRadius: 9, background: 'rgba(0,0,0,0.025)', cursor: 'pointer', transition: 'background 120ms ease' }} onMouseEnter={(e)=>{e.currentTarget.style.background='rgba(0,0,0,0.05)'}} onMouseLeave={(e)=>{e.currentTarget.style.background='rgba(0,0,0,0.025)'}}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12.5, fontWeight: 500, color: '#0A0A0A' }}>{c.name}{c.role ? <span style={{ color: '#6B6B6B', fontWeight: 400 }}> · {c.role}</span> : null}</div>
+                            {(c.notes || c.channel) && <div style={{ fontSize: 11.5, color: '#6B6B6B', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.channel || ''}{c.channel && c.notes ? ' — ' : ''}{c.notes || ''}</div>}
+                          </div>
+                          <ChevronRight size={13} style={{ color: '#C0C0C0', flexShrink: 0, marginTop: 2 }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
               return (
-                <div key={t.id} onClick={() => onPromptClick && onPromptClick(`Help me with this task: ${t.data?.notes || ''}${t.data?.company ? ` (${t.data.company})` : ''}`)} style={{ ...cardStyle, position: 'relative', height: 86, overflow: 'hidden', boxSizing: 'border-box' }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <div key={t.id} onClick={() => onPromptClick && onPromptClick(`Help me with this task: ${t.data?.notes || ''}${t.data?.company ? ` (${t.data.company})` : ''}`)} style={{ ...cardStyle, position: 'relative' }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, paddingBottom: 8 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{t.data?.notes || 'Task'}</div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', lineHeight: 1.4 }}>{t.data?.notes || 'Task'}</div>
                       {(t.data?.company || t.data?.type) && (
                         <div style={{ fontSize: 12, color: '#6B6B6B', fontWeight: 400, marginTop: 2 }}>{[t.data?.company, t.data?.type].filter(Boolean).join(' · ')}</div>
                       )}
