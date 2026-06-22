@@ -254,15 +254,8 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
               const due = t.data?.dueDate || t.data?.due_date
               const overdue = due && new Date(due) < new Date()
               return (
-                <div key={t.id} onClick={() => onPromptClick && onPromptClick(`Help me with this task: ${t.data?.notes || ''}${t.data?.company ? ` (${t.data.company})` : ''}`)} style={cardStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); completeTask(t) }}
-                      title="Mark complete"
-                      style={{ flexShrink: 0, marginTop: 2, width: 15, height: 15, borderRadius: '50%', border: `1.5px solid ${overdue ? '#b8643e' : 'rgba(0,0,0,0.28)'}`, background: 'transparent', cursor: 'pointer', padding: 0, transition: 'background 120ms ease, border-color 120ms ease' }}
-                      onMouseEnter={e => { e.currentTarget.style.background = '#34D399'; e.currentTarget.style.borderColor = '#34D399' }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = overdue ? '#b8643e' : 'rgba(0,0,0,0.28)' }}
-                    />
+                <div key={t.id} onClick={() => onPromptClick && onPromptClick(`Help me with this task: ${t.data?.notes || ''}${t.data?.company ? ` (${t.data.company})` : ''}`)} style={{ ...cardStyle, position: 'relative' }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, paddingBottom: 8 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', lineHeight: 1.4 }}>{t.data?.notes || 'Task'}</div>
                       {(t.data?.company || t.data?.type) && (
@@ -271,6 +264,13 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
                     </div>
                     {due && <span style={{ fontSize: 11, color: overdue ? '#b8643e' : '#A0A0A0', flexShrink: 0, fontWeight: 500, marginTop: 1 }}>{overdue ? 'overdue' : new Date(due).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
                   </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); completeTask(t) }}
+                    title="Mark complete"
+                    style={{ position: 'absolute', right: 10, bottom: 8, width: 13, height: 13, borderRadius: '50%', border: `1.5px solid ${overdue ? 'rgba(184,100,62,0.5)' : 'rgba(0,0,0,0.2)'}`, background: 'transparent', cursor: 'pointer', padding: 0, transition: 'background 120ms ease, border-color 120ms ease' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#34D399'; e.currentTarget.style.borderColor = '#34D399' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = overdue ? 'rgba(184,100,62,0.5)' : 'rgba(0,0,0,0.2)' }}
+                  />
                 </div>
               )
             })}
