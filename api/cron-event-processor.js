@@ -7,7 +7,7 @@
 // 5. ACTION — generate specific actions (Haiku)
 // Runs every 10 minutes during business hours
 import Anthropic from '@anthropic-ai/sdk';
-import { sbFetch, cronHeartbeat } from './kiko-tools.js';
+import { sbFetch, cronHeartbeat, findOpenTaskForCompany, getAccountState } from './kiko-tools.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const HAIKU = 'claude-haiku-4-5-20251001';
@@ -127,10 +127,15 @@ async function processEvent(event) {
   const psychAnalysis = { analysis: psychResult.text };
   await saveStep(id, 4, 'psychology', { contact: contactInfo, deal: dealInfo }, psychAnalysis, SONNET, psychResult.tokens, psychResult.duration);
 
+  // ── Account state (current owner / strategy / ruled-out plays) for this company ──
+  const acctCompany = context.contact?.company || '';
+  const acctState = acctCompany ? await getAccountState(acctCompany).catch(() => null) : null;
+  const acctGuidance = acctState ? `\n\nACCOUNT STATE (authoritative — obey it):\n- Current owner: ${acctState.owner_name || 'unassigned'} (assign every task for this account to them, no one else)\n- Current strategy: ${acctState.current_strategy || 'none set'}${acctState.current_series ? ` (series: ${acctState.current_series})` : ''}\n- Ruled-out plays, do NOT propose these: ${(acctState.ruled_out || []).map(r => `${r.strategy} (${r.reason})`).join('; ') || 'none'}` : '';
+
   // ── STEP 5: ACTION (Haiku — generate structured actions) ──
   const actionResult = await callClaude(HAIKU,
     'You generate structured CRM actions from a strategic analysis. Respond with ONLY raw JSON, no markdown, no code fences.',
-    `Based on this analysis:\n${psychResult.text.slice(0, 1500)}\n\nEntity: ${entity_name}\nEvent type: ${event_type}\nContact email: ${context.contact?.email || 'unknown'}\nCompany: ${context.contact?.company || ''}\nCurrent deal stage: ${context.deal?.stage || 'none'}\nCurrent deal status: ${context.deal?.status || 'none'}\n\nGenerate ALL applicable actions as raw JSON. Available action types:\n1. "create_alert" — always create one with brief_for_user summary\n2. "create_task" — create a follow-up task with specific timing from the analysis. REQUIRED fields: title, notes, due_date (YYYY-MM-DD), assigned_to ("Matt Smith" or "Sunny Sidhu")\n3. "update_deal" — if the deal stage should change (e.g. from "Closed Lost" to "To revisit" when prospect re-engages). Fields: stage, status, notes\n4. "update_contact_notes" — append a timestamped note to the contact record. Fields: note (1-2 sentences summarising what happened and what to do next)\n\nIMPORTANT: The task due_date must match your psychological recommendation. If you recommend following up in 6-8 weeks, set due_date to 6 weeks from today (${new Date().toISOString().split('T')[0]}). Be specific.\n\nFormat: {"actions":[...],"brief_for_user":"2-3 sentence summary"}`,
+    `Based on this analysis:\n${psychResult.text.slice(0, 1500)}\n\nEntity: ${entity_name}\nEvent type: ${event_type}\nContact email: ${context.contact?.email || 'unknown'}\nCompany: ${context.contact?.company || ''}\nCurrent deal stage: ${context.deal?.stage || 'none'}\nCurrent deal status: ${context.deal?.status || 'none'}\n\nGenerate ALL applicable actions as raw JSON. Available action types:\n1. "create_alert" — always create one with brief_for_user summary\n2. "create_task" — create a follow-up task with specific timing from the analysis. REQUIRED fields: title, notes, due_date (YYYY-MM-DD), assigned_to ("Matt Smith" or "Sunny Sidhu")\n3. "update_deal" — if the deal stage should change (e.g. from "Closed Lost" to "To revisit" when prospect re-engages). Fields: stage, status, notes\n4. "update_contact_notes" — append a timestamped note to the contact record. Fields: note (1-2 sentences summarising what happened and what to do next)\n\nIMPORTANT: The task due_date must match your psychological recommendation. If you recommend following up in 6-8 weeks, set due_date to 6 weeks from today (${new Date().toISOString().split('T')[0]}). Be specific.${acctGuidance}\n\nFormat: {"actions":[...],"brief_for_user":"2-3 sentence summary"}`,
     800
   );
   let actions = { actions: [], brief_for_user: '' };
@@ -154,6 +159,29 @@ async function processEvent(event) {
       if (action.type === 'create_task') {
         const d = action.data || action; // model sometimes puts fields directly on action
         if (!d.title) continue;
+        const taskCompany = context.contact?.company || '';
+        // Reconciliation gate 1 — dedup: skip if an open task already exists for this account (kills the daily pile-up)
+        if (taskCompany) {
+          const existingOpen = await findOpenTaskForCompany(taskCompany).catch(() => null);
+          if (existingOpen) { executed.push({ type: 'create_task', title: d.title, success: false, skipped: 'duplicate_open_task' }); continue; }
+        }
+        // Reconciliation gate 2 — owner: force to the account's current owner if one is set
+        let taskAssignee = d.assigned_to || 'Matt Smith';
+        if (acctState?.owner_name) taskAssignee = acctState.owner_name;
+        // Reconciliation gate 3 — ruled-out: skip if the task pushes a strategy that has been ruled out
+        const ruledHit = (acctState?.ruled_out || []).find(r => {
+          const key = (r.strategy || '').toLowerCase().split(/\s+/)[0];
+          const hay = `${d.title || ''} ${d.notes || ''}`.toLowerCase();
+          return key && key.length > 2 && hay.includes(key);
+        });
+        if (ruledHit) { executed.push({ type: 'create_task', title: d.title, success: false, skipped: `ruled_out:${ruledHit.strategy}` }); continue; }
+        // Resolve the owning user_id so the task lands on the right person's Today immediately
+        let taskUserId = acctState?.current_owner || null;
+        if (!taskUserId) {
+          const _fn = (taskAssignee || '').split(/\s+/)[0];
+          const _u = _fn ? await sbFetch(`users?full_name=ilike.*${encodeURIComponent(_fn)}*&select=id&limit=1`).catch(() => []) : [];
+          taskUserId = (_u && _u[0]?.id) || null;
+        }
         // Fix hallucinated past dates — replace year with current, add 1 if still past
         let dueDate = d.due_date || null;
         if (dueDate) {
@@ -167,12 +195,13 @@ async function processEvent(event) {
         await sbFetch('tasks', { method: 'POST', body: JSON.stringify({
           id: `t${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
           org_id: '35975d96-c2c9-4b6c-b4d4-bb947ae817d5',
+          user_id: taskUserId,
           updated_at: new Date().toISOString(),
           data: {
             type: 'Follow-up', notes: d.notes || '', company: context.contact?.company || '',
             contact: entity_name, dueDate: dueDate,
             completed: false, createdAt: new Date().toISOString(),
-            assignedTo: d.assigned_to || 'Matt Smith',
+            assignedTo: taskAssignee,
           }
         }) });
         executed.push({ type: 'create_task', title: d.title, success: true });

@@ -19,6 +19,25 @@ export const sbFetch = async (path, opts = {}) => {
   catch { console.error(`[sbFetch] Non-JSON response for ${path}: ${text.slice(0, 200)}`); return opts.method && opts.method !== 'GET' ? {} : []; }
 };
 
+// ── Reconciliation helpers (account ownership/strategy state + task dedup) ──
+// Find an OPEN task for a company, org-wide across ALL users. Used to stop duplicate generation.
+export const findOpenTaskForCompany = async (company, orgId = ORG_ID) => {
+  const c = (company || '').trim();
+  if (!c) return null;
+  const enc = encodeURIComponent(c);
+  const rows = await sbFetch(`tasks?org_id=eq.${orgId}&data->>company=ilike.${enc}&or=(data->>completed.is.null,data->>completed.eq.false)&select=id,data&limit=1`).catch(() => []);
+  return (rows && rows[0]) || null;
+};
+
+// Read the current account state (owner / strategy / ruled-out plays) for a company.
+export const getAccountState = async (company, orgId = ORG_ID) => {
+  const c = (company || '').trim().toLowerCase();
+  if (!c) return null;
+  const enc = encodeURIComponent(c);
+  const rows = await sbFetch(`kiko_account_state?org_id=eq.${orgId}&account_key=eq.${enc}&select=*&limit=1`).catch(() => []);
+  return (rows && rows[0]) || null;
+};
+
 // ── Error Logger (write to kiko_error_log for self-monitoring) ──
 export const logError = async (component, errorMessage, context = '', severity = 'error') => {
   try {
@@ -612,8 +631,40 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
     } catch (e) {
       return agentError('assign_tasks', e);
     }
+    // ── Delegation handoff: assigning to someone else transfers the account and clears the delegator's own copies ──
+    let handoffNote = '';
+    if (caller && target.id !== caller.id) {
+      const companies = [...new Set(rows.map(r => (r.data.company || '').trim()).filter(Boolean))];
+      let removedTotal = 0;
+      for (const comp of companies) {
+        const key = comp.toLowerCase();
+        const strat = (rows.find(r => (r.data.company || '').trim().toLowerCase() === key)?.data.notes || '').slice(0, 300);
+        // 1. Record the account's new owner + current strategy (ruled-out plays preserved on merge)
+        try {
+          await sbFetch('kiko_account_state?on_conflict=org_id,account_key', {
+            method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' },
+            body: JSON.stringify({
+              account_key: key, org_id: orgId,
+              current_owner: target.id, owner_name: target.full_name || target.email,
+              current_strategy: strat, delegated_from: caller.id,
+              status: 'active', updated_at: new Date().toISOString(),
+            }),
+          });
+        } catch {}
+        // 2. Dismiss the delegator's own OPEN tasks for this account (handoff, not duplication)
+        try {
+          const mine = await sbFetch(`tasks?org_id=eq.${orgId}&user_id=eq.${caller.id}&data->>company=ilike.${encodeURIComponent(comp)}&or=(data->>completed.is.null,data->>completed.eq.false)&select=id,data`).catch(() => []);
+          for (const mt of (mine || [])) {
+            const nd = { ...mt.data, completed: true, completedAt: new Date().toISOString(), dismissed: true, dismissReason: `Delegated to ${target.full_name || target.email}`, dismissedAt: new Date().toISOString() };
+            await sbFetch(`tasks?id=eq.${encodeURIComponent(mt.id)}`, { method: 'PATCH', body: JSON.stringify({ data: nd, updated_at: new Date().toISOString() }) });
+            removedTotal++;
+          }
+        } catch {}
+      }
+      if (removedTotal > 0) handoffNote = ` Cleared ${removedTotal} matching task${removedTotal > 1 ? 's' : ''} off your own list, this is ${target.full_name || target.email}'s to run now.`;
+    }
     try { await autoLogActivity('task', target.full_name || target.email, `Assigned ${rows.length} task(s) to ${target.full_name || target.email}`); } catch {}
-    return `Done. Pushed ${rows.length} task${rows.length > 1 ? 's' : ''} to ${target.full_name || target.email}'s list. They will appear on their Today page.\n` + rows.map((r, i) => `${i + 1}. ${r.data.notes.slice(0, 90)}${r.data.company ? ` (${r.data.company})` : ''}`).join('\n');
+    return `Done. Pushed ${rows.length} task${rows.length > 1 ? 's' : ''} to ${target.full_name || target.email}'s list.${handoffNote} They will appear on their Today page.\n` + rows.map((r, i) => `${i + 1}. ${r.data.notes.slice(0, 90)}${r.data.company ? ` (${r.data.company})` : ''}`).join('\n');
   }
 
   // ── Complete / Dismiss task — flips completed; a DB trigger fans out to activity, company, follow-up ──
