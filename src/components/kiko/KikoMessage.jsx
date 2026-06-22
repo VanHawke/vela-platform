@@ -23,6 +23,8 @@ function cleanForDisplay(text) {
     .replace(/<tool_call>[\s\S]*/g, '')
     .replace(/<tool_response>[\s\S]*/g, '')
     .replace(/\{"success"\s*:\s*true[\s\S]*?\}\s*/g, '')
+    .replace(/<cite\b[^>]*>/gi, '"')
+    .replace(/<\/cite>/gi, '"')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }
