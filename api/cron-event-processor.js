@@ -132,10 +132,28 @@ async function processEvent(event) {
   const acctState = acctCompany ? await getAccountState(acctCompany).catch(() => null) : null;
   const acctGuidance = acctState ? `\n\nACCOUNT STATE (authoritative — obey it):\n- Current owner: ${acctState.owner_name || 'unassigned'} (assign every task for this account to them, no one else)\n- Current strategy: ${acctState.current_strategy || 'none set'}${acctState.current_series ? ` (series: ${acctState.current_series})` : ''}\n- Ruled-out plays, do NOT propose these: ${(acctState.ruled_out || []).map(r => `${r.strategy} (${r.reason})`).join('; ') || 'none'}` : '';
 
+  // ── Relationship signal for this contact — grounds routing + channel in fact (no blind defaults) ──
+  let priorSenderEmail = null;
+  try {
+    const _ce = context.contact?.email ? `recipient_email.ilike.${encodeURIComponent(context.contact.email)}` : null;
+    const _cn = `recipient_name.ilike.*${encodeURIComponent(entity_name)}*`;
+    const _track = await sbFetch(`kiko_email_tracking?or=(${[_ce, _cn].filter(Boolean).join(',')})&order=sent_at.desc&select=sender_email&limit=1`).catch(() => []);
+    priorSenderEmail = _track?.[0]?.sender_email || null;
+  } catch {}
+  let hasLinkedInConn = false;
+  try {
+    const _li = await sbFetch(`kiko_linkedin_queue?contact_name=ilike.*${encodeURIComponent(entity_name)}*&status=in.(connected,accepted,already_connected)&select=id&limit=1`).catch(() => []);
+    hasLinkedInConn = Array.isArray(_li) && _li.length > 0;
+  } catch {}
+  const contactOwnerName = (context.contact?.owner || '').trim();
+  const hasContactRecord = !!context.contact?.id;
+  const derivedType = priorSenderEmail ? 'Email Follow-up' : (hasLinkedInConn ? 'LinkedIn Follow-up' : 'First Outreach');
+  const channelGuidance = `\n\nRELATIONSHIP FACTS (ground every action in these, never contradict them):\n- Contact on record: ${hasContactRecord ? 'yes' : 'NO — this person is not yet a contact'}\n- Prior email to them: ${priorSenderEmail ? `yes (from ${priorSenderEmail})` : 'none'}\n- LinkedIn connection on record: ${hasLinkedInConn ? 'yes' : 'no'}\n- Therefore this is: ${derivedType}.${derivedType === 'First Outreach' ? ' Do NOT call it a follow-up — there is no prior relationship. Frame it as a first, cold approach and do not assume a LinkedIn connection.' : ''}\n- Relationship owner: ${contactOwnerName || (priorSenderEmail ? (priorSenderEmail.includes('matt') ? 'Matt Smith' : 'Sunny Sidhu') : 'unassigned — do not invent one')}`;
+
   // ── STEP 5: ACTION (Haiku — generate structured actions) ──
   const actionResult = await callClaude(HAIKU,
     'You generate structured CRM actions from a strategic analysis. Respond with ONLY raw JSON, no markdown, no code fences.',
-    `Based on this analysis:\n${psychResult.text.slice(0, 1500)}\n\nEntity: ${entity_name}\nEvent type: ${event_type}\nContact email: ${context.contact?.email || 'unknown'}\nCompany: ${context.contact?.company || ''}\nCurrent deal stage: ${context.deal?.stage || 'none'}\nCurrent deal status: ${context.deal?.status || 'none'}\n\nGenerate ALL applicable actions as raw JSON. Available action types:\n1. "create_alert" — always create one with brief_for_user summary\n2. "create_task" — create a follow-up task with specific timing from the analysis. REQUIRED fields: title, notes, due_date (YYYY-MM-DD), assigned_to ("Matt Smith" or "Sunny Sidhu")\n3. "update_deal" — if the deal stage should change (e.g. from "Closed Lost" to "To revisit" when prospect re-engages). Fields: stage, status, notes\n4. "update_contact_notes" — append a timestamped note to the contact record. Fields: note (1-2 sentences summarising what happened and what to do next)\n\nIMPORTANT: The task due_date must match your psychological recommendation. If you recommend following up in 6-8 weeks, set due_date to 6 weeks from today (${new Date().toISOString().split('T')[0]}). Be specific.${acctGuidance}\n\nFormat: {"actions":[...],"brief_for_user":"2-3 sentence summary"}`,
+    `Based on this analysis:\n${psychResult.text.slice(0, 1500)}\n\nEntity: ${entity_name}\nEvent type: ${event_type}\nContact email: ${context.contact?.email || 'unknown'}\nCompany: ${context.contact?.company || ''}\nCurrent deal stage: ${context.deal?.stage || 'none'}\nCurrent deal status: ${context.deal?.status || 'none'}\n\nGenerate ALL applicable actions as raw JSON. Available action types:\n1. "create_alert" — always create one with brief_for_user summary\n2. "create_task" — create a follow-up task with specific timing from the analysis. REQUIRED fields: title, notes, due_date (YYYY-MM-DD), assigned_to ("Matt Smith" or "Sunny Sidhu")\n3. "update_deal" — if the deal stage should change (e.g. from "Closed Lost" to "To revisit" when prospect re-engages). Fields: stage, status, notes\n4. "update_contact_notes" — append a timestamped note to the contact record. Fields: note (1-2 sentences summarising what happened and what to do next)\n\nIMPORTANT: The task due_date must match your psychological recommendation. If you recommend following up in 6-8 weeks, set due_date to 6 weeks from today (${new Date().toISOString().split('T')[0]}). Be specific.${acctGuidance}${channelGuidance}\n\nFormat: {"actions":[...],"brief_for_user":"2-3 sentence summary"}`,
     800
   );
   let actions = { actions: [], brief_for_user: '' };
@@ -165,9 +183,11 @@ async function processEvent(event) {
           const existingOpen = await findOpenTaskForCompany(taskCompany).catch(() => null);
           if (existingOpen) { executed.push({ type: 'create_task', title: d.title, success: false, skipped: 'duplicate_open_task' }); continue; }
         }
-        // Reconciliation gate 2 — owner: force to the account's current owner if one is set
-        let taskAssignee = d.assigned_to || 'Matt Smith';
-        if (acctState?.owner_name) taskAssignee = acctState.owner_name;
+        // Reconciliation gate 2 — owner: route by the REAL owner, never blind-default to a person.
+        // Precedence: contact.owner → prior-email sender → account owner → unowned.
+        let taskAssignee = contactOwnerName || null;
+        if (!taskAssignee && priorSenderEmail) taskAssignee = priorSenderEmail.includes('matt') ? 'Matt Smith' : (priorSenderEmail.includes('sunny') ? 'Sunny Sidhu' : null);
+        if (!taskAssignee && acctState?.owner_name) taskAssignee = acctState.owner_name;
         // Reconciliation gate 3 — ruled-out: skip if the task pushes a strategy that has been ruled out
         const ruledHit = (acctState?.ruled_out || []).find(r => {
           const key = (r.strategy || '').toLowerCase().split(/\s+/)[0];
@@ -175,13 +195,14 @@ async function processEvent(event) {
           return key && key.length > 2 && hay.includes(key);
         });
         if (ruledHit) { executed.push({ type: 'create_task', title: d.title, success: false, skipped: `ruled_out:${ruledHit.strategy}` }); continue; }
-        // Resolve the owning user_id so the task lands on the right person's Today immediately
+        // Resolve the owning user_id from the assignee (account current_owner wins if present)
         let taskUserId = acctState?.current_owner || null;
-        if (!taskUserId) {
-          const _fn = (taskAssignee || '').split(/\s+/)[0];
+        if (!taskUserId && taskAssignee) {
+          const _fn = taskAssignee.split(/\s+/)[0];
           const _u = _fn ? await sbFetch(`users?full_name=ilike.*${encodeURIComponent(_fn)}*&select=id&limit=1`).catch(() => []) : [];
           taskUserId = (_u && _u[0]?.id) || null;
         }
+        const routingUnowned = !(taskUserId || taskAssignee);
         // Fix hallucinated past dates — replace year with current, add 1 if still past
         let dueDate = d.due_date || null;
         if (dueDate) {
@@ -198,10 +219,11 @@ async function processEvent(event) {
           user_id: taskUserId,
           updated_at: new Date().toISOString(),
           data: {
-            type: 'Follow-up', notes: d.notes || '', company: context.contact?.company || '',
+            type: derivedType, notes: d.notes || '', company: context.contact?.company || '',
             contact: entity_name, dueDate: dueDate,
             completed: false, createdAt: new Date().toISOString(),
             assignedTo: taskAssignee,
+            ...(routingUnowned ? { routing: 'unowned' } : {}),
           }
         }) });
         executed.push({ type: 'create_task', title: d.title, success: true });
