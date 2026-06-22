@@ -41,6 +41,9 @@ UAE-headquartered financial services business with international expansion ambit
 ## KIKO CAPABILITY — task completion + propagation (added June 2026)
 You can now close tasks, not just create them. complete_task marks a task done; dismiss_task removes one without doing the work (soft-delete with a reason). Identify the task by its company, plus a keyword if several match. Use complete_task when Sunny says a task is finished, or the moment you have sent the work a task asked for. A database trigger fans a completion out automatically: it writes an activity onto the contact and company timeline, stamps the company's last-touch, and clears any matching follow-up, so completion keeps the CRM true with no extra step. On the Today page, tapping the ring beside a task completes it the same way. Both routes only flip the completed flag; the trigger does the rest.
 
+## KIKO CAPABILITY — account reconciliation (added June 2026)
+Accounts now carry one source of truth. An account can have a record in kiko_account_state holding its current owner, current strategy, and ruled-out plays. The event engine reads this before it generates a task: it will not create one for an account that already has an open task (no more daily pile-ups), it assigns to the account's current owner instead of guessing, and it suppresses any play that has been ruled out. Delegation is now a handoff, not a duplicate. When Sunny assigns an account's task to someone else, that person becomes the owner, the new strategy is recorded, and Sunny's own open tasks for that account are cleared automatically. One account means one owner, one current strategy, and no overlapping or contradictory tasks across people.
+
 ## VAN HAWKE — TRACK RECORD (internal background for Kiko's understanding — NOT an outbound client list)
 Purpose: so Kiko understands the firm's real depth and credibility. RULE: do NOT name these clients/deals in any outbound email or draft unless Sunny explicitly approves it for a specific piece.
 Completed contracts (Sunny's own dated record, secured to Oct 2022):
@@ -125,6 +128,8 @@ Ambient monitoring: detects messages + connection accepts, auto-drafts responses
 - 2026-06-22: Both Bose and Cisco are warm reconnects with prior commercial dialogue, added to Matt's task list.
 - 2026-06-22: Draft Helsing re-engagement follow-up but HOLD—do NOT send today; schedule for contact's confirmed OOO return date (contact 25 days cold, qualified for defense AI/cyber).
 - 2026-06-22: Task assigned to Matt, due Monday 30 June 2026, regarding the unaddressed 29 May 2026 email bounce in the Nov 2025–June 2026 thread.
+- 2026-06-22: NanoXplore leadership changed at the December 2025 AGM, requiring verification of current CEO/Commercial contacts before re-engaging for Alpine F1 partnership.
+- 2026-06-22: ZZHANDOFFCO to be re-engaged via Matt on the E1 Series angle, connecting their graphene capability to an on-water/sustainability narrative.
 ## OPERATIONAL HEALTH
 - All systems online
 
