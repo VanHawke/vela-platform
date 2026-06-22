@@ -49,13 +49,10 @@ export default async function handler(req, res) {
           const existing = await sbFetch(`kiko_email_tracking?gmail_message_id=eq.${msg.id}&limit=1`);
           if (existing?.length > 0) continue; // Already tracked
 
-          // Find contact in CRM
-          const contacts = await sbFetch(`contacts?select=id,data&limit=5`);
-          const contact = (contacts || []).find(c => {
-            const email = (c.data?.email || '').toLowerCase();
-            return email === recipientEmail.toLowerCase();
-          });
-          const contactName = contact?.data?.name || contact?.data?.firstName || recipientEmail.split('@')[0];
+          // Find contact in CRM by the actual recipient email
+          const _cm = await sbFetch(`contacts?data->>email=ilike.${encodeURIComponent(recipientEmail)}&select=id,data&limit=1`).catch(() => []);
+          const contact = _cm?.[0] || null;
+          const contactName = contact?.data?.name || [contact?.data?.firstName, contact?.data?.lastName].filter(Boolean).join(' ') || recipientEmail.split('@')[0];
           const company = contact?.data?.company || '';
 
           // Create tracking record
