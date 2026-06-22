@@ -13,7 +13,9 @@ Completed contracts (Sunny's own dated record, secured to Oct 2022):
 - MMA: ONE Championship x Tokyo Time (Feb 21); PFL x Acronis (Sep 20)
 - IP licensing / media: AMC Networks x 37 Games — The Walking Dead licensed into mobile gaming (Jul 22)
 - Esports: Misfits Gaming x Tokyo Time (Feb 21); Ed-Tech: Leap Scholar x Brett Lee ambassador (Mar 21)
-Newer (per Sunny, 2023-2026, evidence in correspondence): ambassadorial work with McLaren; contract negotiations/talks with Mercedes and Aston Martin; Formula E (structured as a licensing deal); ongoing licensing work for Van Hawke Maison. Active pipeline: Alpine F1 / SealSQ (live), Comsol / Formula E (near-close), MotoGP and E1 Series in development. Van Hawke works with a large number of rights-holders.
+Other completed (per Sunny): McLaren ambassadorial (approx 2018-2019); Perplexity x Quadrant; TransferMate (deals across multiple entities). Formula E engagement was structured as a licensing deal; ongoing licensing work for Van Hawke Maison.
+In negotiation / talks (per Sunny): Aston Martin F1 (contract negotiation); Mercedes.
+Active pipeline: Alpine F1 / SealSQ (live), Comsol / Formula E (near-close), MotoGP and E1 Series in development. Van Hawke holds credible, established, contracted relationships across motorsport, football, MMA, IP licensing, esports and gaming, with a large number of rights-holders.
 
 
 ## WHAT YOU ARE
