@@ -1917,7 +1917,7 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
       const resp = await fetch('http://127.0.0.1:3000/api/enrich-emails', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer kiko-hetzner-2026-vanhawke' },
-        body: JSON.stringify({ prospects: args.prospects }),
+        body: JSON.stringify({ prospects: input.prospects }),
       });
       const data = await resp.json();
       if (!data.ok) return `Email enrichment failed: ${data.error}`;
