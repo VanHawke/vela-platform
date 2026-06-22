@@ -639,6 +639,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
       const d = t.data || {};
       if (d.completed) return false;
       const comp = (d.company || '').toLowerCase();
+      if (!comp) return false;
       if (!comp.includes(lc) && !lc.includes(comp)) return false;
       if (kw && !(d.notes || '').toLowerCase().includes(kw)) return false;
       return true;
