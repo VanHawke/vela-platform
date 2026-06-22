@@ -133,6 +133,7 @@ Ambient monitoring: detects messages + connection accepts, auto-drafts responses
 - 2026-06-22: Task assigned to Matt, due Monday 30 June 2026, regarding the unaddressed 29 May 2026 email bounce in the Nov 2025–June 2026 thread.
 - 2026-06-22: NanoXplore leadership changed at the December 2025 AGM, requiring verification of current CEO/Commercial contacts before re-engaging for Alpine F1 partnership.
 - 2026-06-22: ZZHANDOFFCO to be re-engaged via Matt on the E1 Series angle, connecting their graphene capability to an on-water/sustainability narrative.
+- 2026-06-22: Correction: "Time for a catch up" email to Alex was actually sent Mon 15 Jun 2026, not 16 Jun.
 ## OPERATIONAL HEALTH
 - All systems online
 
@@ -320,3 +321,15 @@ IDS (confirmed live): Sunny userId 9f486437-4bf5-4111-abfe-fe19bfa76063 (super_a
 TIMEZONE (commit ec6223c): browser-driven is the standard. Frontend already sends the live Intl timezone (KikoChat.jsx:906). A prior segment wrongly made the brain prefer the static profile — REVERTED. kiko.js now resolves effectiveTz = browser timezone || profile || 'Asia/Qatar' (browser-first). Sunny is in Doha (Asia/Qatar).
 
 ACCOUNT-HEALTH / CREDITS DECISION: the Anthropic API does NOT expose remaining credit balance — the model only learns of billing problems via call FAILURES (there is no balance endpoint; only the Usage & Cost Admin API for historical spend, which needs a separate sk-ant-admin key). A "credit too low" log was confirmed STALE, not current — the key works. DECISION (Sunny): do NOT build an in-Kiko balance/failure alert — it would just duplicate the email Anthropic already sends when credits run out, and Kiko cannot see the balance pre-emptively anyway. Sunny declined auto-reload (wants manual spend control). Recommended path for early warning without losing control: a console SPEND ALERT. Revisit only if an Admin API key is created (a real spend tracker via the Usage & Cost API becomes buildable) or if overnight crons silently fail before the email lands.
+
+
+## KIKO CAPABILITY — routing and channel are derived from real signal, never guessed (Jun 2026)
+
+Auto-generated outreach tasks (from kiko_events via cron-event-processor) are now grounded in fact, not model guesses. This is core reasoning Kiko must carry everywhere, not just in the cron.
+
+1. ROUTING. Every task is assigned by the REAL owner of the relationship, in this precedence: the contact's own CRM owner (contact.owner) first, then whoever last sent that contact a personal email, then the account owner in kiko_account_state, then nobody. Tasks are never blind-defaulted to a person. If no real owner can be resolved, the task is flagged data.routing = 'unowned' and must not be dumped on Sunny.
+
+2. CHANNEL / CTA. A task is only a "follow-up" when a real prior touch exists. The channel is derived: a personal 1:1 email on record means Email Follow-up; a LinkedIn connection on record means LinkedIn Follow-up; neither means First Outreach (a cold, first approach) and must never be labelled a follow-up.
+
+3. PERSONAL vs CAMPAIGN — the distinction that matters most. A templated campaign blast is NOT a relationship. kiko_email_tracking.source separates them: 'gmail', 'gmail_sync' and 'direct_send' are personal 1:1 correspondence; 'campaign' is a templated blast, and contacts with source 'lemlist' are campaign leads. A real relationship means personal correspondence, OR a reply received, OR a CRM-owned contact at the company. If a company's ONLY footprint is a non-engaged campaign (it was blasted and nobody there ever replied, was personally emailed, or is owned), it is a COLD, DEAD lead. Kiko must NOT suggest reaching back out to that person, and must NOT suggest reaching out to new contacts at that company either. The generator now SUPPRESSES outreach tasks entirely for cold-campaigned companies (it may still raise an alert, never an outreach task). Grounding: of 291 campaign sends, zero drew a reply. Re-approaching non-engagers, or fresh contacts at a company that already ignored a blast, is the wrong instinct and Sunny expects this judgement applied by default.
+</content>
