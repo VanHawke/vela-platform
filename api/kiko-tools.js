@@ -501,6 +501,20 @@ export const TOOL_DEFINITIONS = [
       refresh: { type: 'boolean', description: 'Force regeneration (Opus + web search, ~45s) instead of the cached brief. Default false.' },
     }, required: ['company'] },
   },
+  {
+    name: 'assign_tasks',
+    description: 'Push one or more concrete tasks to a teammate\'s task list, which appears on their Today page. Use when Sunny says "push to <name>\'s task list", "assign these to <name>", "add to <name>\'s tasks", or hands you a weekly task list meant for someone. Resolve the person by name or email (e.g. "Matt" or "matt.smith@vanhawke.com"). Each task is one action. Only Sunny (super_admin) can assign to other people; a non-admin can only add to their own list.',
+    input_schema: { type: 'object', properties: {
+      assignee: { type: 'string', description: 'Who the tasks are for — a name or email, e.g. "Matt".' },
+      tasks: { type: 'array', description: 'The tasks to push.', items: { type: 'object', properties: {
+        notes: { type: 'string', description: 'The task itself — the action to take. Required.' },
+        company: { type: 'string', description: 'Related company, if any.' },
+        contact: { type: 'string', description: 'Related contact, if any.' },
+        type: { type: 'string', enum: ['Email Follow-up', 'Call', 'Research', 'Outreach', 'Other'], description: 'Task type. Default Other.' },
+        dueDate: { type: 'string', description: 'Optional due date in YYYY-MM-DD.' },
+      }, required: ['notes'] } },
+    }, required: ['assignee', 'tasks'] },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -532,6 +546,56 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
       })});
     } catch {} // Never fail on logging
   };
+
+  // ── Assign Tasks — push structured tasks to a teammate's list (their Today page) ──
+  if (name === 'assign_tasks') {
+    const who = (input.assignee || '').trim();
+    const items = Array.isArray(input.tasks) ? input.tasks.filter(t => t && String(t.notes || '').trim()) : [];
+    if (!who) return 'Who are these tasks for? Give me a name, e.g. "Matt".';
+    if (!items.length) return 'No tasks with a description to assign — give me at least one task.';
+    let caller = null;
+    try { const c = await sbFetch(`users?email=eq.${encodeURIComponent(userEmail)}&select=id,role,org_id,full_name&limit=1`); caller = (c && c[0]) || null; } catch {}
+    const term = who.replace(/[%,()]/g, ' ').trim();
+    let matches = [];
+    try { matches = (await sbFetch(`users?select=id,full_name,email,org_id,role&or=(email.ilike.*${encodeURIComponent(term)}*,full_name.ilike.*${encodeURIComponent(term)}*)&limit=6`)) || []; } catch {}
+    if (!matches.length) {
+      let all = [];
+      try { all = (await sbFetch('users?select=full_name,email&limit=20')) || []; } catch {}
+      return `I could not find anyone matching "${who}". People I can assign to: ${all.map(u => u.full_name || u.email).join(', ') || '(none found)'}.`;
+    }
+    if (matches.length > 1) {
+      return `"${who}" matches more than one person: ${matches.map(u => `${u.full_name} (${u.email})`).join(', ')}. Which one?`;
+    }
+    const target = matches[0];
+    if (caller && caller.role !== 'super_admin' && caller.id !== target.id) {
+      return `Only an admin can assign tasks to other people. I can add these to your own list instead.`;
+    }
+    const orgId = target.org_id || (caller && caller.org_id);
+    const now = Date.now();
+    const rows = items.map((t, i) => ({
+      id: 't' + (now + i),
+      org_id: orgId,
+      user_id: target.id,
+      data: {
+        type: t.type || 'Other',
+        notes: String(t.notes).trim(),
+        company: t.company || '',
+        contact: t.contact || '',
+        dueDate: t.dueDate || '',
+        completed: false,
+        createdAt: new Date().toISOString(),
+        assignedTo: target.full_name || target.email,
+        assignedBy: (caller && caller.full_name) || 'Kiko',
+      },
+    }));
+    try {
+      await sbFetch('tasks', { method: 'POST', body: JSON.stringify(rows) });
+    } catch (e) {
+      return agentError('assign_tasks', e);
+    }
+    try { await autoLogActivity('task', target.full_name || target.email, `Assigned ${rows.length} task(s) to ${target.full_name || target.email}`); } catch {}
+    return `Done. Pushed ${rows.length} task${rows.length > 1 ? 's' : ''} to ${target.full_name || target.email}'s list. They will appear on their Today page.\n` + rows.map((r, i) => `${i + 1}. ${r.data.notes.slice(0, 90)}${r.data.company ? ` (${r.data.company})` : ''}`).join('\n');
+  }
 
   // ── Re-engagement brief (Archive v2 — same engine as the dossier UI, same ring-fence) ──
   if (name === 'reengagement_brief') {
