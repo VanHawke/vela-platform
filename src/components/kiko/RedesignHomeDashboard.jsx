@@ -58,6 +58,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
             .order('updated_at', { ascending: false }),
           supabase.from('tasks').select('id, data, updated_at')
             .eq('user_id', user?.id)
+            .or('data->>completed.is.null,data->>completed.eq.false')
             .order('updated_at', { ascending: false }).limit(50),
           supabase.from('kiko_alerts').select('id, type, title, detail, entity_name, created_at')
             .eq('dismissed', false)
