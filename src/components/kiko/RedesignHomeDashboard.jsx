@@ -249,7 +249,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
               Work through these <ChevronRight size={13} />
             </span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: '52vh', overflowY: 'auto', paddingRight: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: '290px', overflowY: 'auto', paddingRight: 4 }}>
             {tasks.map(t => {
               const due = t.data?.dueDate || t.data?.due_date
               const overdue = due && new Date(due) < new Date()
