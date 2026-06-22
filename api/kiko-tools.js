@@ -515,6 +515,25 @@ export const TOOL_DEFINITIONS = [
       }, required: ['notes'] } },
     }, required: ['assignee', 'tasks'] },
   },
+  {
+    name: 'complete_task',
+    description: 'Mark a task on someone\'s list as done. Use when Sunny says a task is finished, "mark the <company> task done", "complete that task", or when you have just sent the work a task asked for. Completing removes it from the Today list and writes the completion through to the contact\'s activity history, the company record, and any matching follow-up. Identify the task by the company it relates to, plus a keyword if several could match.',
+    input_schema: { type: 'object', properties: {
+      company: { type: 'string', description: 'The company the task relates to, e.g. "Helsing".' },
+      match: { type: 'string', description: 'Optional keyword from the task notes to disambiguate if several match.' },
+      assignee: { type: 'string', description: 'Optional, whose list to look on (name or email). Defaults to the current user.' },
+    }, required: ['company'] },
+  },
+  {
+    name: 'dismiss_task',
+    description: 'Remove a task from someone\'s list without completing the underlying work. Use when Sunny says "remove that from my task list", "drop the <company> task", or a task is no longer relevant. Soft-deletes it with an optional reason (kept for the record) and takes it off the Today list. Identify it by company, plus a keyword if several match.',
+    input_schema: { type: 'object', properties: {
+      company: { type: 'string', description: 'The company the task relates to, e.g. "Helsing".' },
+      match: { type: 'string', description: 'Optional keyword to disambiguate.' },
+      reason: { type: 'string', description: 'Optional short reason for dismissing.' },
+      assignee: { type: 'string', description: 'Optional, whose list. Defaults to the current user.' },
+    }, required: ['company'] },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -595,6 +614,47 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
     }
     try { await autoLogActivity('task', target.full_name || target.email, `Assigned ${rows.length} task(s) to ${target.full_name || target.email}`); } catch {}
     return `Done. Pushed ${rows.length} task${rows.length > 1 ? 's' : ''} to ${target.full_name || target.email}'s list. They will appear on their Today page.\n` + rows.map((r, i) => `${i + 1}. ${r.data.notes.slice(0, 90)}${r.data.company ? ` (${r.data.company})` : ''}`).join('\n');
+  }
+
+  // ── Complete / Dismiss task — flips completed; a DB trigger fans out to activity, company, follow-up ──
+  if (name === 'complete_task' || name === 'dismiss_task') {
+    const isDismiss = name === 'dismiss_task';
+    const company = (input.company || '').trim();
+    if (!company) return 'Which task? Tell me the company it relates to.';
+    let target = null;
+    if (input.assignee && input.assignee.trim()) {
+      const term = input.assignee.replace(/[%,()]/g, ' ').trim();
+      const m = await sbFetch(`users?select=id,full_name,email&or=(email.ilike.*${encodeURIComponent(term)}*,full_name.ilike.*${encodeURIComponent(term)}*)&limit=2`).catch(() => []);
+      target = (m && m[0]) || null;
+    }
+    if (!target) {
+      const c = await sbFetch(`users?email=eq.${encodeURIComponent(userEmail)}&select=id,full_name,email&limit=1`).catch(() => []);
+      target = (c && c[0]) || null;
+    }
+    if (!target) return 'Could not resolve whose task list to update.';
+    const all = await sbFetch(`tasks?user_id=eq.${target.id}&select=id,data&order=updated_at.desc&limit=200`).catch(() => []);
+    const lc = company.toLowerCase();
+    const kw = (input.match || '').toLowerCase().trim();
+    const matches = (all || []).filter(t => {
+      const d = t.data || {};
+      if (d.completed) return false;
+      const comp = (d.company || '').toLowerCase();
+      if (!comp.includes(lc) && !lc.includes(comp)) return false;
+      if (kw && !(d.notes || '').toLowerCase().includes(kw)) return false;
+      return true;
+    });
+    if (!matches.length) return `No open task found for "${company}"${kw ? ` matching "${input.match}"` : ''} on ${target.full_name || target.email}'s list.`;
+    if (matches.length > 1) {
+      return `${matches.length} open tasks match "${company}" on ${target.full_name || target.email}'s list:\n` + matches.map((t, i) => `${i + 1}. ${(t.data.notes || '').slice(0, 80)}`).join('\n') + `\nGive me a keyword to pick the right one.`;
+    }
+    const t = matches[0];
+    const newData = { ...t.data, completed: true, completedAt: new Date().toISOString() };
+    if (isDismiss) { newData.dismissed = true; newData.dismissReason = input.reason || ''; newData.dismissedAt = new Date().toISOString(); }
+    try {
+      await sbFetch(`tasks?id=eq.${encodeURIComponent(t.id)}`, { method: 'PATCH', body: JSON.stringify({ data: newData, updated_at: new Date().toISOString() }) });
+    } catch (e) { return agentError(name, e); }
+    const whose = (target.email && target.email.toLowerCase() === (userEmail || '').toLowerCase()) ? 'your' : `${target.full_name || target.email}'s`;
+    return `${isDismiss ? 'Dismissed' : 'Completed'} the ${t.data.company || company} task${t.data.notes ? ` (${String(t.data.notes).slice(0, 60)})` : ''}. It is off ${whose} list${isDismiss ? '.' : ', and the completion is written through to the contact and company record.'}`;
   }
 
   // ── Re-engagement brief (Archive v2 — same engine as the dossier UI, same ring-fence) ──
