@@ -232,7 +232,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
       {tasks.length > 0 && (
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '0 0 12px 0' }}>
-            <h2 style={{ ...sectionTitle, margin: 0 }}>This week's tasks</h2>
+            <h2 style={{ ...sectionTitle, margin: 0 }}>This week's tasks <span style={{ color: '#A0A0A0', fontWeight: 300, fontSize: 15 }}>{tasks.length}</span></h2>
             <span
               onClick={() => onPromptClick && onPromptClick(`Walk me through my tasks one by one and help me action each. Start with the first and wait for me before moving to the next.\n\nMy open tasks:\n` + tasks.map((t, i) => `${i + 1}. ${t.data?.notes || 'Task'}${t.data?.company ? ` — ${t.data.company}` : ''}`).join('\n'))}
               style={{ fontSize: 12, fontWeight: 500, color: '#b8643e', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 2 }}
@@ -241,7 +241,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
             </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {tasks.slice(0, 8).map(t => {
+            {tasks.map(t => {
               const due = t.data?.dueDate || t.data?.due_date
               const overdue = due && new Date(due) < new Date()
               return (
