@@ -1,9 +1,13 @@
 # KIKO MEMORY — Session 70 (June 10 2026)
 
-## VAN HAWKE — POSITIONING (current, set June 2026)
-APPROVED external positioning statement (market intros, incl. Qatar). Use this language and register when describing the firm:
-"Van Hawke is a strategic commercial advisory operating at the intersection of sport, culture and capital. We structure multi-million-dollar partnerships, licensing and media rights across motorsport, entertainment, fashion, gaming and broadcast."
-This is accurate — including licensing and media rights, which is a PROVEN capability (see track record), not aspiration. More institutional positioning is in development to differentiate Van Hawke in-market.
+## VAN HAWKE — INSTITUTIONAL POSITIONING (locked June 2026)
+What the firm IS. Use this language and register whenever describing or representing Van Hawke. (Replaces the earlier "strategic commercial advisory / multi-million-dollar partnerships" line.)
+Core statement: "Van Hawke is a rights and capital advisory operating at the intersection of sport and culture. We structure the licensing, media rights, IP and partnerships through which brands, rights-holders and capital take positions in sport and culture."
+Thesis (reason through this lens): the market is moving from sponsorship to rights. Brands used to pay for visibility; the value now sits in IP, licensing, media rights and equity, i.e. owning a position in culture rather than renting attention. Most of the field still sells visibility. Van Hawke operates at the rights and capital layer, where the value is going. Proof on the record: AMC / The Walking Dead licensing, Perplexity x Quadrant, category-exclusive F1.
+Posture: established authority and the reference point in the space. NOT a boutique, NOT a broker, NOT small. A house with Van Hawke Group behind it, scaling across verticals (advisory at the core; Maison and the rest as the cultural range across motorsport, football, fashion, gaming, broadcast, AI). Never describe Van Hawke as boutique, small, or a one-man band.
+"Capital" = the layer Van Hawke operates at (capital-allocation lens, IP and equity structuring), NOT that it manages anyone money / runs funds. Do not imply fund management or sovereign mandates Van Hawke does not hold.
+Geography: global in reach, built from a Gulf base; positioned as the bridge between global sport/culture rights and the capital increasingly sitting in the Gulf. The capital/Gulf story leads with capability and earns the front of the narrative as relationships land. Do not overclaim sovereign relationships (early there).
+Register: authority-led, category control, scarcity by design, board-level. The firm that defines the category, not one competing inside it.
 
 ## VAN HAWKE — TRACK RECORD (internal background for Kiko's understanding — NOT an outbound client list)
 Purpose: so Kiko understands the firm's real depth and credibility. RULE: do NOT name these clients/deals in any outbound email or draft unless Sunny explicitly approves it for a specific piece.
@@ -84,6 +88,9 @@ Ambient monitoring: detects messages + connection accepts, auto-drafts responses
 - 2026-06-18: Van Hawke received commission payment from Alpine F1 via Invoice #ALP01 (dated 25 Nov 2025), with Alpine treasury confirming payment on 16 January 2026 and funds received 19 January 2026.
 - 2026-06-22: American Battery Technology was identified as another archived deal to review (alongside Big Bear, PostHog, Decagon, Stored, and Attio).
 - 2026-06-22: Matt to paste complete E1 cost list directly into the system for shared retrieval, to feed into American Battery Tech, NanoXplore, and Proofpoint technical-partnership pitches.
+- 2026-06-22: Bose and Cisco identified as new E1 partner targets for audio and networking/infrastructure capabilities (neither currently in CRM).
+- 2026-06-22: Matt has in-depth email correspondence history and existing relationships with both companies (including Cisco), contradicting the earlier "cold" classification based on CRM records alone.
+- 2026-06-22: Both Bose and Cisco are warm reconnects with prior commercial dialogue, added to Matt's task list.
 ## OPERATIONAL HEALTH
 - All systems online
 
