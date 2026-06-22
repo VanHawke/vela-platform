@@ -204,6 +204,14 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
   const hoverIn = (e) => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.05)'; e.currentTarget.style.transform = 'translateY(-1px)' }
   const hoverOut = (e) => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none' }
 
+  // Mark a task complete — optimistic removal; the DB trigger fans out to activity/company/follow-up
+  const completeTask = async (task) => {
+    setTasks(prev => prev.filter(x => x.id !== task.id))
+    try {
+      await supabase.from('tasks').update({ data: { ...task.data, completed: true, completedAt: new Date().toISOString() }, updated_at: new Date().toISOString() }).eq('id', task.id)
+    } catch (e) { console.error('[completeTask]', e) }
+  }
+
   return (
     <div style={{ maxWidth: 720, width: '100%', margin: '24px auto 0', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
@@ -247,7 +255,13 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
               return (
                 <div key={t.id} onClick={() => onPromptClick && onPromptClick(`Help me with this task: ${t.data?.notes || ''}${t.data?.company ? ` (${t.data.company})` : ''}`)} style={cardStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <svg width="6" height="6" style={{ flexShrink: 0, marginTop: 6 }}><circle cx="3" cy="3" r="3" fill={overdue ? '#b8643e' : '#B89C5C'} /></svg>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); completeTask(t) }}
+                      title="Mark complete"
+                      style={{ flexShrink: 0, marginTop: 2, width: 15, height: 15, borderRadius: '50%', border: `1.5px solid ${overdue ? '#b8643e' : 'rgba(0,0,0,0.28)'}`, background: 'transparent', cursor: 'pointer', padding: 0, transition: 'background 120ms ease, border-color 120ms ease' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#34D399'; e.currentTarget.style.borderColor = '#34D399' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = overdue ? '#b8643e' : 'rgba(0,0,0,0.28)' }}
+                    />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', lineHeight: 1.4 }}>{t.data?.notes || 'Task'}</div>
                       {(t.data?.company || t.data?.type) && (
