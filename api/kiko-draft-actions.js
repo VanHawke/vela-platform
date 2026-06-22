@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     if (action === 'dismiss' && id) {
       await sbFetch(`kiko_draft_actions?id=eq.${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ status: 'rejected', resolved_at: new Date().toISOString() }),
+        body: JSON.stringify({ status: 'rejected', reviewed_at: new Date().toISOString() }),
       });
       return res.json({ success: true, id, status: 'rejected' });
     }
@@ -163,13 +163,12 @@ export default async function handler(req, res) {
         await logError('kiko-draft-actions', execErr.message, `action_type=${action_type}, id=${id}`);
       }
 
-      // Mark as approved regardless
+      // Mark as approved (columns on this table are status + reviewed_at; resolved_at/execution_result do not exist)
       await sbFetch(`kiko_draft_actions?id=eq.${id}`, {
         method: 'PATCH',
         body: JSON.stringify({
           status: 'approved',
-          resolved_at: new Date().toISOString(),
-          execution_result: executionResult,
+          reviewed_at: new Date().toISOString(),
         }),
       });
 
