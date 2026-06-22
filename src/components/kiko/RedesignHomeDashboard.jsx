@@ -249,15 +249,15 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
               Work through these <ChevronRight size={13} />
             </span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: '214px', overflowY: 'auto', paddingRight: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: '272px', overflowY: 'auto', paddingRight: 4 }}>
             {tasks.map(t => {
               const due = t.data?.dueDate || t.data?.due_date
               const overdue = due && new Date(due) < new Date()
               return (
-                <div key={t.id} onClick={() => onPromptClick && onPromptClick(`Help me with this task: ${t.data?.notes || ''}${t.data?.company ? ` (${t.data.company})` : ''}`)} style={{ ...cardStyle, position: 'relative' }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, paddingBottom: 8 }}>
+                <div key={t.id} onClick={() => onPromptClick && onPromptClick(`Help me with this task: ${t.data?.notes || ''}${t.data?.company ? ` (${t.data.company})` : ''}`)} style={{ ...cardStyle, position: 'relative', height: 86, overflow: 'hidden', boxSizing: 'border-box' }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', lineHeight: 1.4 }}>{t.data?.notes || 'Task'}</div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{t.data?.notes || 'Task'}</div>
                       {(t.data?.company || t.data?.type) && (
                         <div style={{ fontSize: 12, color: '#6B6B6B', fontWeight: 400, marginTop: 2 }}>{[t.data?.company, t.data?.type].filter(Boolean).join(' · ')}</div>
                       )}
