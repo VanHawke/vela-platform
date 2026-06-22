@@ -298,7 +298,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
         const dateLabel = new Date(next.date).toLocaleDateString('en-GB', { month: 'long', day: 'numeric' })
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 2px', fontFamily: "'Inter', system-ui, sans-serif" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="1.5" style={{ flexShrink: 0 }}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            <img src="/f1-logo.png" alt="F1" style={{ height: 18, width: 'auto', objectFit: 'contain', flexShrink: 0 }} />
             <span style={{ fontSize: 13, color: '#0A0A0A', fontWeight: 500, flexShrink: 0 }}>{next.name}</span>
             <span style={{ fontSize: 12, color: '#A0A0A0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>· {dateLabel} · {next.circuit}</span>
             <span style={{ fontSize: 12, color: '#A0A0A0', fontWeight: 500, marginLeft: 'auto', flexShrink: 0 }}>{days === 0 ? 'Today' : `${days} days`}</span>
