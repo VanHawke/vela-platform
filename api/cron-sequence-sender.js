@@ -342,6 +342,16 @@ export default async function handler(req, res) {
           }) });
         } catch (trackErr) { console.error('[Sender] tracking insert failed:', trackErr.message); }
 
+        // Log the send to the contact timeline as a recorded fact (parity with manual sends; tagged as a sequence touch)
+        try {
+          await sbFetch('activities', { method: 'POST', body: JSON.stringify({
+            type: 'email', direction: 'outbound', subject: email.subject || '',
+            entity_name: email.to_name || email.company || (email.to_email || '').split('@')[0],
+            created_at: now.toISOString(),
+            metadata: { sender: fromEmail, recipient: email.to_email, company: email.company || '', source: 'sequence_send', enrollment_id: email.enrollment_id },
+          }) });
+        } catch (actErr) { console.error('[Sender] activity log failed:', actErr.message); }
+
         // Update enrollment current_step
         if (email.enrollment_id) {
           const enrollment = await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}&limit=1`);

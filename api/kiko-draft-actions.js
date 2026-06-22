@@ -137,6 +137,24 @@ export default async function handler(req, res) {
             }),
           });
           executionResult = `Task created: ${payload?.suggested_action || 'action item'}`;
+        } else if (action_type === 'task_complete') {
+          // Confirm-CTA from a send — mark the originating task done (idempotent; the DB trigger fans out)
+          const taskId = payload?.task_id;
+          if (!taskId) {
+            executionResult = 'No task linked to this confirmation.';
+          } else {
+            const trows = await sbFetch(`tasks?id=eq.${encodeURIComponent(taskId)}&select=id,data&limit=1`);
+            const trow = trows?.[0];
+            if (!trow) executionResult = 'That task no longer exists.';
+            else if (trow.data?.completed) executionResult = `Already done${payload?.entity ? ` — ${payload.entity}` : ''}.`;
+            else {
+              await sbFetch(`tasks?id=eq.${encodeURIComponent(taskId)}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ data: { ...trow.data, completed: true, completedAt: new Date().toISOString() }, updated_at: new Date().toISOString() }),
+              });
+              executionResult = `Task marked done${payload?.entity ? ` — ${payload.entity}` : ''}. Logged to the record.`;
+            }
+          }
         } else {
           executionResult = `Unknown action type: ${action_type}. Draft marked approved.`;
         }

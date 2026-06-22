@@ -4,7 +4,7 @@ import { sbFetch } from './kiko-tools.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  const { to, subject, body, sender = 'sunny', cc, thread_id, isTest = false } = req.body || {};
+  const { to, subject, body, sender = 'sunny', cc, thread_id, isTest = false, task_id = null } = req.body || {};
   if (!to || !body) return res.status(400).json({ error: 'Missing to or body' });
 
   try {
@@ -93,6 +93,15 @@ export default async function handler(req, res) {
         created_at: new Date().toISOString(),
         metadata: { sender: fromEmail, recipient: to },
       }) }).catch(() => {});
+
+      // 3b. If this send was for a task, stage a confirm-CTA to mark that task done (user taps; never auto-complete)
+      if (task_id) {
+        await sbFetch('kiko_draft_actions', { method: 'POST', body: JSON.stringify({
+          action_type: 'task_complete',
+          status: 'pending',
+          payload: { task_id, entity: recipientName, sent_to: to, summary: `Sent "${(subject || 'your message').slice(0, 60)}" to ${recipientName}. Mark this task done?`, source: 'gmail_send' },
+        }) }).catch(() => {});
+      }
 
       // 4. Update contact last activity — or CREATE contact if doesn't exist
       let contactCompany = ''
