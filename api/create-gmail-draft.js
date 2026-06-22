@@ -2,7 +2,7 @@
 // Fetches user's Gmail signature and appends it to the draft body
 
 
-import { getGoogleToken } from './google-token.js';
+import { getGoogleToken } from './cron-utils.js';
 
 const SB_URL = () => process.env.VITE_SUPABASE_URL;
 const SB_KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
