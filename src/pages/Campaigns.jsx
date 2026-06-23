@@ -76,6 +76,9 @@ function deriveStatus(enr, queueRows) {
   return 'active'
 }
 
+// Categories build-campaign accepts — used to decide if a parked lead's category can drive a build.
+const VALID_CATS = new Set(['banking','fintech','cybersecurity','cloud','ai_data','software','semiconductors','telecom','gaming','crypto','energy','automotive','hospitality','fashion','watches','food_bev','health','logistics','legal','robotics','whiskey'])
+
 // ── main component ──
 export default function Campaigns({ user }) {
   const nav = useNavigate()
@@ -113,6 +116,9 @@ export default function Campaigns({ user }) {
   const [addProspectsPhase, setAddProspectsPhase] = useState('idle') // idle, sourcing, review, enrolling, done, error
   const [addProspectsResult, setAddProspectsResult] = useState(null)
   const [addProspectsError, setAddProspectsError] = useState(null)
+  // Parked intelligence (cold leads awaiting a category campaign)
+  const [parked, setParked] = useState([])
+  const [parkedExpanded, setParkedExpanded] = useState(false)
 
   // Load all campaigns for the left rail
   const loadCampaigns = useCallback(async () => {
@@ -147,7 +153,13 @@ export default function Campaigns({ user }) {
     setPageContext({ page: 'campaigns', summary: `Campaigns: ${arr.length} sequences` })
   }, [selectedId])
 
-  useEffect(() => { loadCampaigns() }, [loadCampaigns, loc.key])
+  // Load parked intelligence (cold leads awaiting a category campaign)
+  const loadParked = useCallback(async () => {
+    const { data } = await supabase.from('kiko_parked_intelligence').select('*').eq('status', 'parked').order('created_at', { ascending: false })
+    setParked(data || [])
+  }, [])
+
+  useEffect(() => { loadCampaigns(); loadParked() }, [loadCampaigns, loadParked, loc.key])
 
   // Load prospects for the selected campaign
   const loadProspects = useCallback(async (sequenceId) => {
@@ -522,6 +534,26 @@ export default function Campaigns({ user }) {
     setBuildError(null)
   }
 
+  // ── Parked intelligence actions ──
+  // Discard: a cold lead we will not pursue. Stays in the table (for dedupe), out of the queue.
+  async function discardParked(id) {
+    setParked(prev => prev.filter(p => p.id !== id))
+    await supabase.from('kiko_parked_intelligence').update({ status: 'discarded', reviewed_at: new Date().toISOString(), reviewed_by: user?.id || null }).eq('id', id)
+  }
+  // Promote a single lead: record the decision and, if its category drives a build, open the build flow.
+  async function promoteParked(p) {
+    setParked(prev => prev.filter(x => x.id !== p.id))
+    await supabase.from('kiko_parked_intelligence').update({ status: 'promoted', promoted_at: new Date().toISOString(), reviewed_by: user?.id || null }).eq('id', p.id)
+    if (p.category && VALID_CATS.has(p.category)) { setBuildCategory(p.category); setBuildOpen(true); setBuildPhase('idle'); runBuildCampaign(p.category) }
+  }
+  // Promote a whole category: mark every parked lead in it promoted and kick off the category build.
+  async function promoteCategory(cat, rows) {
+    const ids = rows.map(r => r.id)
+    setParked(prev => prev.filter(x => !ids.includes(x.id)))
+    await supabase.from('kiko_parked_intelligence').update({ status: 'promoted', promoted_at: new Date().toISOString(), reviewed_by: user?.id || null }).in('id', ids)
+    if (cat && VALID_CATS.has(cat)) { setBuildCategory(cat); setBuildOpen(true); setBuildPhase('idle'); runBuildCampaign(cat) }
+  }
+
   async function pauseProspect(p) {
     const newStatus = p.status === 'paused' ? 'active' : 'paused'
     await supabase.from('kiko_sequence_enrollments').update({ status: newStatus }).eq('id', p.id)
@@ -587,6 +619,57 @@ export default function Campaigns({ user }) {
             </div>
           </div>
         </div>
+        {/* Parked intelligence — cold leads awaiting a category campaign. Quiet when empty, collapsed by default. */}
+        {parked.length > 0 && (() => {
+          const groups = {}
+          for (const p of parked) { const k = p.category || '__none'; (groups[k] = groups[k] || []).push(p) }
+          const catLabel = (c) => c === '__none' ? 'Uncategorised' : c.replace(/_/g, ' ')
+          return (
+            <div style={{ padding: '0 44px 14px' }}>
+              <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, overflow: 'hidden' }}>
+                <div onClick={() => setParkedExpanded(v => !v)} style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', userSelect: 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#B89C5C', flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A' }}>{parked.length} parked {parked.length === 1 ? 'lead' : 'leads'}</span>
+                    <span style={{ fontSize: 12, color: '#A0A0A0' }}>· {Object.keys(groups).length} {Object.keys(groups).length === 1 ? 'category' : 'categories'} · cold, awaiting a campaign</span>
+                  </div>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="2" style={{ transform: parkedExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="9 18 15 12 9 6" /></svg>
+                </div>
+                {parkedExpanded && (
+                  <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                    {Object.entries(groups).map(([cat, rows]) => {
+                      const canBuild = cat !== '__none' && VALID_CATS.has(cat)
+                      return (
+                        <div key={cat}>
+                          <div style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FAFAF8' }}>
+                            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#6B6B6B' }}>{catLabel(cat)} · {rows.length}</span>
+                            {canBuild && <button onClick={() => promoteCategory(cat, rows)} style={{ height: 24, padding: '0 10px', background: '#0A0A0A', color: '#fff', border: 'none', borderRadius: 4, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Build {catLabel(cat)} campaign</button>}
+                          </div>
+                          {rows.map(p => (
+                            <div key={p.id} style={{ padding: '10px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontSize: 13, color: '#0A0A0A' }}>
+                                  <span style={{ fontWeight: 500 }}>{p.name || 'Unknown'}</span>
+                                  {p.role && <span style={{ color: '#6B6B6B' }}> · {p.role}</span>}
+                                  {p.company && <span style={{ color: '#6B6B6B' }}> · {p.company}</span>}
+                                </div>
+                                {p.rationale && <div style={{ fontSize: 12, color: '#A0A0A0', marginTop: 3, lineHeight: 1.4 }}>{p.rationale.length > 160 ? p.rationale.slice(0, 160) + '…' : p.rationale}</div>}
+                              </div>
+                              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                                <button onClick={() => promoteParked(p)} style={{ height: 26, padding: '0 10px', background: 'transparent', color: '#0A0A0A', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 4, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Promote</button>
+                                <button onClick={() => discardParked(p.id)} style={{ height: 26, padding: '0 10px', background: 'transparent', color: '#A0A0A0', border: '1px solid rgba(0,0,0,0.10)', borderRadius: 4, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Discard</button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })()}
         {/* Campaign cards */}
         <div style={{ padding: '0 44px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {campaigns.filter(c => !c.archived).map(c => {
