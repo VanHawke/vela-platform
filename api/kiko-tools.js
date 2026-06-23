@@ -929,8 +929,15 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
         if (!command) return 'Error: command required';
         const isAllowed = ALLOWED_COMMANDS.some(c => command.startsWith(c) || command === c.trim());
         if (!isAllowed) return `Error: Command not allowed. Permitted: ${ALLOWED_COMMANDS.join(', ')}`;
-        const result = execSync(command, { cwd: PROJECT_ROOT, timeout: 30000, encoding: 'utf8' });
-        return result.slice(0, 4000);
+        try {
+          const result = execSync(command, { cwd: PROJECT_ROOT, timeout: 30000, encoding: 'utf8' });
+          return (result || '').slice(0, 4000) || '[no output]';
+        } catch (e) {
+          // A non-zero exit is NOT a tool failure for search commands: grep/find return exit 1 when there are simply no matches.
+          // Surface the captured output + exit code instead of throwing "Command failed", which reads as a broken tool.
+          const out = `${e.stdout || ''}${e.stderr || ''}`.toString().trim();
+          return `[exit ${e.status ?? '?'}${e.signal ? ', signal ' + e.signal : ''}] ${out || '(no matches / no output)'}`.slice(0, 4000);
+        }
       }
 
       if (operation === 'full_deploy') {
