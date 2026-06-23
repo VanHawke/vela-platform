@@ -172,6 +172,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
   const [editingIdx, setEditingIdx] = useState(null)
   const [editText, setEditText] = useState('')
   const editingIdxRef = useRef(null)
+  const userStoppedRef = useRef(false)
   const [thinkingSteps, setThinkingSteps] = useState([])
   const [showSteps, setShowSteps] = useState(false)
   const [expandedSteps, setExpandedSteps] = useState(null)
@@ -372,15 +373,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
     return () => clearInterval(wd)
   }, [streaming])
 
-  // Edit mode: pre-fill input when edit button clicked
-  useEffect(() => {
-    if (editingIdx !== null) {
-      editingIdxRef.current = editingIdx
-      setInput(editText)
-      inputRef.current?.focus()
-      setEditingIdx(null)
-    }
-  }, [editingIdx])
+  // Inline message editing is handled in-bubble (saveEdit / cancelEdit); no prompt-bar prefill.
 
   // Auto-load conversation after navigation (page reload preserves state via sessionStorage)
   useEffect(() => {
@@ -892,6 +885,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
     streamBufferRef.current = []; streamDisplayRef.current = ''; if (streamRafRef.current) { cancelAnimationFrame(streamRafRef.current); streamRafRef.current = null }
 
     // AbortController for stop/halt
+    userStoppedRef.current = false
     const controller = new AbortController()
     abortRef.current = controller
     // Hard timeout — if Kiko doesn't respond within 110s, abort
@@ -991,9 +985,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
       }
     } catch (err) {
       if (err.name === 'AbortError') {
+        if (!userStoppedRef.current) {
         // User stopped Kiko or timeout — save partial response
         if (streamText) setMessages(prev => [...prev, { role: 'assistant', content: streamText + '\n\n*[Stopped]*' }])
         else setMessages(prev => [...prev, { role: 'assistant', content: 'Request timed out. Try a shorter question or break it into parts.' }])
+        }
+        userStoppedRef.current = false
       } else {
         const isNetwork = err.message?.toLowerCase().includes('network') || err.message?.toLowerCase().includes('failed to fetch')
         const friendlyMsg = isNetwork ? 'Connection issue — the message may have been too large. Try again with a shorter prompt or fewer attachments.' : `Error: ${err.message}`
@@ -1364,7 +1361,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
   // ── Render message bubbles (shared between text and voice) ──
   const copyToClipboard = (text) => { navigator.clipboard.writeText(text.replace(/<[^>]+>/g, '')); }
   const editAndResend = (idx) => { setEditingIdx(idx); setEditText(messages[idx]?.content || ''); }
+  const saveEdit = (idx) => { const t = (editText || '').trim(); if (!t) return; editingIdxRef.current = idx; setEditingIdx(null); handleSubmit(t); }
+  const cancelEdit = () => { setEditingIdx(null); setEditText(''); }
   const stopKiko = () => {
+    userStoppedRef.current = true
     if (abortRef.current) { abortRef.current.abort(); abortRef.current = null }
     setStreaming(false); streamingRef.current = false; setToolStatus(null); setThinkingSteps([])
     // Save partial response if any
@@ -1475,10 +1475,18 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
           color: '#0A0A0A',
           fontSize: 15, lineHeight: 1.7, fontFamily: C.font, fontWeight: 400,
         }}>
-          {isUser ? <>
+          {isUser ? (editingIdx === i ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', minWidth: isMobile ? 0 : 320 }}>
+              <textarea value={editText} autoFocus onChange={e => { setEditText(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(i) } else if (e.key === 'Escape') { e.preventDefault(); cancelEdit() } }} style={{ width: '100%', minHeight: 44, background: 'transparent', border: 'none', outline: 'none', resize: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', lineHeight: 'inherit', padding: 0 }} />
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button onClick={cancelEdit} style={{ padding: '5px 14px', borderRadius: 8, border: '1px solid currentColor', background: 'transparent', color: 'inherit', fontSize: 13, fontFamily: C.font, cursor: 'pointer', opacity: 0.5 }}>Cancel</button>
+                <button onClick={() => saveEdit(i)} style={{ padding: '5px 16px', borderRadius: 8, border: 'none', background: '#b8643e', color: '#fff', fontSize: 13, fontWeight: 500, fontFamily: C.font, cursor: 'pointer' }}>Save</button>
+              </div>
+            </div>
+          ) : <>
             {msg.imagePreview && <img src={msg.imagePreview} alt="Upload" style={{ maxWidth: 200, maxHeight: 150, borderRadius: 12, marginBottom: 8, display: 'block', objectFit: 'cover' }} />}
             {msg.content}
-          </> : (() => {
+          </>) : (() => {
             // Strip ---DRAFT--- block from display text (rendered separately in DraftPreview)
             let displayText = stripToolXml(msg.content.replace(/---DRAFT---[\s\S]*?---END DRAFT---/gi, ''))
             // Strip thinking text before email detection (same logic as md() thinking collapse)
@@ -1510,7 +1518,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
         </div>
         </div>
         {/* Timestamp + action buttons — single row. Kiko ribbon sits left of icons. */}
-        {!streaming && (
+        {!streaming && !(isUser && editingIdx === i) && (
           <div style={{ display: 'flex', gap: 2, alignItems: 'center', marginTop: 6, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
             {/* Timestamp */}
             <span style={{ fontSize: 11, color: '#A0A0A0', fontFamily: C.font, marginRight: 4 }}>
