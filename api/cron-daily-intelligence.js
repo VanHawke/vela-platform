@@ -47,6 +47,29 @@ export default async function handler(req, res) {
       }
     } catch (e) { console.error('[daily-intel] consolidation check failed:', e.message); }
 
+    // Stale pending-partnership nudge. Hold-for-confirm only protects the matrix if Sunny clears the
+    // pending strip; an unconfirmed detection past 14 days is effectively forgotten. Raise ONE aggregate
+    // alert (deduped on type, refreshed in place), and auto-dismiss it once the strip is cleared.
+    try {
+      const staleCutoff = new Date(Date.now() - 14 * 86400000).toISOString();
+      const { data: stalePending } = await supabase
+        .from('f1_partnerships')
+        .select('partner_name, team_id')
+        .eq('status', 'pending').eq('verified', false)
+        .lt('created_at', staleCutoff);
+      const { data: existingStale } = await supabase.from('kiko_alerts').select('id').eq('type', 'partnerships_pending_stale').eq('dismissed', false).limit(1);
+      if (stalePending?.length) {
+        const n = stalePending.length;
+        const names = stalePending.map(r => `${r.partner_name} (${r.team_id})`).join(', ');
+        const title = `${n} partnership detection${n === 1 ? '' : 's'} awaiting confirmation 14+ days`;
+        const detail = `${n} detected partnership${n === 1 ? '' : 's'} ${n === 1 ? 'has' : 'have'} been awaiting your confirmation for over 14 days: ${names}. They stay out of the matrix until confirmed. Open the Partnership Matrix and clear the pending strip — confirm the real ones, reject the rest.`;
+        if (existingStale?.length) await supabase.from('kiko_alerts').update({ title, detail, created_at: new Date().toISOString() }).eq('id', existingStale[0].id);
+        else await supabase.from('kiko_alerts').insert({ type: 'partnerships_pending_stale', severity: 'warning', title, detail, entity_type: 'partnership', entity_name: 'partnership-matrix', dismissed: false, metadata: { link: '/partnership-matrix', section: 'pending' } });
+      } else if (existingStale?.length) {
+        await supabase.from('kiko_alerts').update({ dismissed: true }).eq('id', existingStale[0].id); // strip cleared — resolve the nudge
+      }
+    } catch (e) { console.error('[daily-intel] stale-pending partnership check failed:', e.message); }
+
     // Deal state with idle counters
     const now = Date.now();
     const dealState = (deals.data || []).map(d => {
