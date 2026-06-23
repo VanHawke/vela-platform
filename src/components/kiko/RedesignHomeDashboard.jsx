@@ -3,7 +3,7 @@
 // Adds: priority actions (from Command Centre), calendar strip, preserves pipeline/race data
 // Priority actions auto-clear when actioned (reactive to real data)
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { TrendingUp, AlertTriangle, Mail, Calendar, Flag, ChevronRight, Clock } from 'lucide-react'
@@ -43,6 +43,25 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
   const [nextRace, setNextRace] = useState(null)
   const [priorityItems, setPriorityItems] = useState([])
   const [calendarEvents, setCalendarEvents] = useState([])
+
+  // Cap the visible task list to 2 cards (measured, so the natural card height is preserved); the rest scrolls.
+  const taskScrollRef = useRef(null)
+  const [taskMaxH, setTaskMaxH] = useState(null)
+  useLayoutEffect(() => {
+    const el = taskScrollRef.current
+    if (!el) return
+    const measure = () => {
+      const cards = Array.from(el.children)
+      if (cards.length <= 2) { setTaskMaxH(null); return }
+      const gap = 6
+      const h = cards[0].getBoundingClientRect().height + gap + cards[1].getBoundingClientRect().height
+      setTaskMaxH(Math.ceil(h) + 4)
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [tasks])
 
   useEffect(() => {
     let cancelled = false
@@ -249,7 +268,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
               Work through these <ChevronRight size={13} />
             </span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: '52vh', overflowY: 'auto', paddingRight: 4 }}>
+          <div ref={taskScrollRef} style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: taskMaxH ? `${taskMaxH}px` : '52vh', overflowY: 'auto', paddingRight: 4 }}>
             {tasks.map(t => {
               const due = t.data?.dueDate || t.data?.due_date
               const overdue = due && new Date(due) < new Date()
@@ -304,7 +323,9 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
       )}
 
       {/* Next Race Card — dynamically shows the next upcoming F1 race */}
-      {(() => {
+      <div>
+        <h2 style={sectionTitle}>Upcoming Race</h2>
+        {(() => {
         const F1_2026 = [
           { date: '2026-03-08', name: 'Australian Grand Prix', circuit: 'Albert Park, Melbourne' },
           { date: '2026-03-15', name: 'Chinese Grand Prix', circuit: 'Shanghai International Circuit' },
@@ -345,6 +366,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
           </div>
         )
       })()}
+      </div>
 
       {/* Bento stats removed per Sunny's direction — not needed on homepage */}
 
