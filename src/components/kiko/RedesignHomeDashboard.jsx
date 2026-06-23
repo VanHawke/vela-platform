@@ -34,6 +34,35 @@ function timeAgo(d) {
 
 const PRIORITY_DOT = { high: '#b8643e', medium: '#B89C5C', low: '#5a6470' }
 
+// Urgency classification for a task. Drives sort order and the on-card badge.
+// rank 0 = overdue, 1 = due today, 2 = upcoming, 3 = no date. Priority = overdue or due today.
+function taskUrgency(t) {
+  const raw = t?.data?.dueDate || t?.data?.due_date
+  const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0)
+  if (!raw) return { rank: 3, overdue: false, priority: false, label: null, sortKey: Infinity }
+  const d = new Date(raw)
+  if (isNaN(d)) return { rank: 3, overdue: false, priority: false, label: null, sortKey: Infinity }
+  const dd = new Date(d); dd.setHours(0, 0, 0, 0)
+  const diff = Math.round((dd - startOfToday) / 86400000)
+  if (diff < 0) return { rank: 0, overdue: true, priority: true, label: diff === -1 ? 'Overdue 1 day' : `Overdue ${-diff} days`, sortKey: dd.getTime() }
+  if (diff === 0) return { rank: 1, overdue: false, priority: true, label: 'Due today', sortKey: dd.getTime() }
+  return { rank: 2, overdue: false, priority: false, label: diff === 1 ? 'Due tomorrow' : `Due ${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`, sortKey: dd.getTime() }
+}
+
+// On-card badge. Priority tasks get a "Priority" pill plus the reason; others just show the date.
+function renderDueBadge(u) {
+  if (!u || !u.label) return null
+  if (u.priority) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase', color: '#b8643e', background: 'rgba(184,100,62,0.1)', border: '1px solid rgba(184,100,62,0.22)', borderRadius: 5, padding: '1px 5px', lineHeight: 1.5 }}>Priority</span>
+        <span style={{ fontSize: 11, fontWeight: 500, color: '#b8643e' }}>{u.label}</span>
+      </span>
+    )
+  }
+  return <span style={{ fontSize: 11, color: '#A0A0A0', fontWeight: 500 }}>{u.label}</span>
+}
+
 export default function RedesignHomeDashboard({ user, onPromptClick }) {
   const nav = useNavigate()
   const [loading, setLoading] = useState(true)
@@ -41,7 +70,6 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
   const [tasks, setTasks] = useState([])
   const [hotReplies, setHotReplies] = useState([])
   const [nextRace, setNextRace] = useState(null)
-  const [priorityItems, setPriorityItems] = useState([])
   const [calendarEvents, setCalendarEvents] = useState([])
 
   // Cap the visible task list to 2 cards (measured, so the natural card height is preserved); the rest scrolls.
@@ -102,79 +130,6 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
         setHotReplies(repliesRes.data || [])
         setNextRace(raceRes.data || null)
 
-        // Build priority actions from multiple sources
-        const items = []
-
-        // Hot replies — provenance-verified only (we contacted them first)
-        const provenanceTypes = ['email_reply', 'email_reply_manual', 'linkedin_reply', 'reply_from_prospect']
-        ;(repliesRes.data || [])
-          .filter(a => provenanceTypes.includes(a.type))
-          .slice(0, 3)
-          .forEach(a => {
-            items.push({
-              id: `reply-${a.id}`, priority: 'high',
-              title: `Reply — ${a.entity_name || 'Unknown'}`,
-              detail: a.title || a.detail || '',
-              time: timeAgo(a.created_at),
-              onClick: () => { window.dispatchEvent(new CustomEvent('kiko_prefill', { detail: { text: `Brief me on the reply from ${a.entity_name || 'this prospect'} and suggest next steps` } })); nav('/') },
-            })
-          })
-
-        // Overdue tasks
-        const overdue = filteredTasks.filter(t => {
-          const d = t.data?.dueDate || t.data?.due_date
-          return d && new Date(d) < new Date()
-        })
-        overdue.slice(0, 2).forEach(t => {
-          const label = (t.data?.notes || t.data?.title || 'Task').slice(0, 44)
-          items.push({
-            id: `task-${t.id}`, priority: 'high',
-            title: `Overdue — ${label}`,
-            detail: t.data?.company || '',
-            time: timeAgo(t.data?.dueDate || t.data?.due_date),
-            onClick: () => { window.dispatchEvent(new CustomEvent('kiko_prefill', { detail: { text: `What do I need to do about the overdue task: ${t.data?.notes || 'this task'}?` } })); nav('/') },
-          })
-        })
-
-        // Stale deals (>14 days no activity)
-        const now = Date.now()
-        ;(dealsRes.data || []).filter(d => {
-          const last = d.data?.lastActivity ? new Date(d.data.lastActivity) : new Date(d.updated_at)
-          return Math.floor((now - last) / 86400000) > 14
-        }).slice(0, 2).forEach(d => {
-          const days = Math.floor((now - new Date(d.data?.lastActivity || d.updated_at)) / 86400000)
-          items.push({
-            id: `stale-${d.id}`, priority: days > 30 ? 'high' : 'medium',
-            title: `Stale — ${d.data?.company || 'Deal'}`,
-            detail: `${days} days since last activity`,
-            time: `${days}d`,
-            onClick: () => { window.dispatchEvent(new CustomEvent('kiko_prefill', { detail: { text: `Brief me on ${d.data?.company || 'this deal'} — it has been stale for ${days} days. What should I do?` } })); nav('/') },
-          })
-        })
-
-        // Pending draft actions (max 2)
-        ;(draftsRes.data || []).slice(0, 2).forEach(d => {
-          items.push({
-            id: `draft-${d.id}`, priority: 'medium',
-            title: `Draft pending — ${d.payload?.entity || d.action_type || 'Action'}`,
-            detail: d.payload?.subject || 'Review and approve',
-            time: timeAgo(d.created_at),
-            onClick: () => { window.dispatchEvent(new CustomEvent('kiko_prefill', { detail: { text: `Show me the pending draft for ${d.payload?.entity || 'this prospect'} so I can review and approve it` } })); nav('/') },
-          })
-        })
-
-        // Sort by priority (high first), dedup by entity name, limit to 5
-        const order = { high: 0, medium: 1, low: 2 }
-        items.sort((a, b) => (order[a.priority] || 2) - (order[b.priority] || 2))
-        // Dedup — if a task and draft reference the same entity, keep the higher-priority one
-        const seen = new Set()
-        const deduped = items.filter(item => {
-          const key = item.title.replace(/^(Reply|Overdue|Stale|Draft pending) — /, '').toLowerCase().trim()
-          if (seen.has(key)) return false
-          seen.add(key)
-          return true
-        })
-        setPriorityItems(deduped.slice(0, 5))
 
         // Fetch calendar events for today via dedicated API endpoint
         try {
@@ -201,6 +156,11 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
   }, [user?.id])
 
   // Computed values
+  // Sort tasks by urgency: overdue first, then due today, then upcoming by date, no-date last.
+  const sortedTasks = useMemo(() => [...tasks].sort((a, b) => {
+    const ua = taskUrgency(a), ub = taskUrgency(b)
+    return ua.rank !== ub.rank ? ua.rank - ub.rank : ua.sortKey - ub.sortKey
+  }), [tasks])
   const weighted = useMemo(
     () => deals.reduce((s, d) => {
       const prob = (STAGE_PROB[d.data?.stage] || 10) / 100
@@ -235,43 +195,22 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
   return (
     <div style={{ maxWidth: 720, width: '100%', margin: '24px auto 0', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-      {/* Priority Actions */}
-      {priorityItems.length > 0 && (
-        <div>
-          <h2 style={sectionTitle}>Priority Actions</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {priorityItems.map(item => (
-              <div key={item.id} onClick={item.onClick} style={cardStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <svg width="6" height="6" style={{ flexShrink: 0 }}><circle cx="3" cy="3" r="3" fill={PRIORITY_DOT[item.priority] || PRIORITY_DOT.low} /></svg>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A' }}>{item.title}</div>
-                    <div style={{ fontSize: 12, color: '#6B6B6B', fontWeight: 400, marginTop: 1 }}>{item.detail}</div>
-                  </div>
-                  <span style={{ fontSize: 11, color: '#A0A0A0', flexShrink: 0 }}>{item.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* This week's tasks — scoped to the current user */}
+      {/* Tasks Due — scoped to the current user, sorted by urgency */}
       {tasks.length > 0 && (
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '0 0 12px 0' }}>
-            <h2 style={{ ...sectionTitle, margin: 0 }}>This week's tasks <span style={{ color: '#A0A0A0', fontWeight: 300, fontSize: 15 }}>{tasks.length}</span></h2>
+            <h2 style={{ ...sectionTitle, margin: 0 }}>Tasks Due <span style={{ color: '#A0A0A0', fontWeight: 300, fontSize: 15 }}>{tasks.length}</span></h2>
             <span
-              onClick={() => onPromptClick && onPromptClick(`Walk me through my tasks one by one and help me action each. Start with the first and wait for me before moving to the next.\n\nMy open tasks:\n` + tasks.map((t, i) => `${i + 1}. ${t.data?.notes || 'Task'}${t.data?.company ? ` — ${t.data.company}` : ''}`).join('\n'))}
+              onClick={() => onPromptClick && onPromptClick(`Walk me through my tasks one by one and help me action each. Start with the first and wait for me before moving to the next.\n\nMy open tasks:\n` + sortedTasks.map((t, i) => `${i + 1}. ${t.data?.notes || 'Task'}${t.data?.company ? ` — ${t.data.company}` : ''}`).join('\n'))}
               style={{ fontSize: 12, fontWeight: 500, color: '#b8643e', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 2 }}
             >
               Work through these <ChevronRight size={13} />
             </span>
           </div>
           <div ref={taskScrollRef} style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: taskMaxH ? `${taskMaxH}px` : '52vh', overflowY: 'auto', paddingRight: 4 }}>
-            {tasks.map(t => {
-              const due = t.data?.dueDate || t.data?.due_date
-              const overdue = due && new Date(due) < new Date()
+            {sortedTasks.map(t => {
+              const u = taskUrgency(t)
+              const overdue = u.overdue
               const groupContacts = Array.isArray(t.data?.contacts) ? t.data.contacts : []
               if (groupContacts.length > 1) {
                 return (
@@ -279,7 +218,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
                     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', minWidth: 0 }}>{t.data?.company || 'Company'}<span style={{ color: '#A0A0A0', fontWeight: 400 }}> · {groupContacts.length} to reach</span></div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                        {due && <span style={{ fontSize: 11, color: overdue ? '#b8643e' : '#A0A0A0', fontWeight: 500 }}>{overdue ? 'overdue' : new Date(due).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
+                        {renderDueBadge(u)}
                         <button onClick={(e) => { e.stopPropagation(); completeTask(t) }} title="Mark all done" style={{ width: 13, height: 13, borderRadius: '50%', border: `1.5px solid ${overdue ? 'rgba(184,100,62,0.5)' : 'rgba(0,0,0,0.2)'}`, background: 'transparent', cursor: 'pointer', padding: 0, transition: 'background 120ms ease, border-color 120ms ease' }} onMouseEnter={(e)=>{e.currentTarget.style.background='#34D399';e.currentTarget.style.borderColor='#34D399'}} onMouseLeave={(e)=>{e.currentTarget.style.background='transparent';e.currentTarget.style.borderColor=overdue?'rgba(184,100,62,0.5)':'rgba(0,0,0,0.2)'}} />
                       </div>
                     </div>
@@ -306,7 +245,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
                         <div style={{ fontSize: 12, color: '#6B6B6B', fontWeight: 400, marginTop: 2 }}>{[t.data?.company, t.data?.type].filter(Boolean).join(' · ')}</div>
                       )}
                     </div>
-                    {due && <span style={{ fontSize: 11, color: overdue ? '#b8643e' : '#A0A0A0', flexShrink: 0, fontWeight: 500, marginTop: 1 }}>{overdue ? 'overdue' : new Date(due).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
+                    {renderDueBadge(u)}
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); completeTask(t) }}
