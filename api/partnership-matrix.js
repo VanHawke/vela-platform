@@ -2,6 +2,57 @@
 import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
+// ── Category-conflict detection ───────────────────────────────────────────────
+// When a partnership is CONFIRMED in a category, alert Sunny immediately if a LIVE
+// campaign is running in that same (or an overlapping) category — the slot may now be
+// taken at that team, so the campaign needs a pause/re-target decision. Adjacency comes
+// from category_overlaps (e.g. ai_data blocks cloud), not exact match. Uses the standard
+// one-pending-alert-per-pair guard, which re-raises naturally once a stale alert is dismissed.
+export async function checkCategoryConflict({ team_id, partner_name, category_id }) {
+  if (!category_id) return { conflicts: [] };
+  // Expand the category through the overlap table (both directions + itself).
+  const [{ data: ov1 }, { data: ov2 }] = await Promise.all([
+    supabase.from('category_overlaps').select('blocking_category').eq('primary_category', category_id),
+    supabase.from('category_overlaps').select('primary_category').eq('blocking_category', category_id),
+  ]);
+  const expanded = new Set([category_id, ...(ov1 || []).map(o => o.blocking_category), ...(ov2 || []).map(o => o.primary_category)].filter(Boolean));
+  // Display names for the name fallback (legacy campaigns store their category only in their name).
+  const { data: catRows } = await supabase.from('sponsor_categories').select('id, name').in('id', [...expanded]);
+  const expandedNames = (catRows || []).map(c => (c.name || '').toLowerCase()).filter(Boolean);
+  const triggerCatName = (catRows || []).find(c => c.id === category_id)?.name || category_id;
+  // Live campaigns only (active and not archived).
+  const { data: campaigns } = await supabase.from('kiko_sequences')
+    .select('id, name, metadata, is_active, archived').eq('is_active', true);
+  const matches = (campaigns || []).filter(c => {
+    if (c.archived === true) return false;
+    const metaCat = c.metadata?.category_id;
+    const nameLc = (c.name || '').toLowerCase();
+    return (metaCat && expanded.has(metaCat)) || expandedNames.some(n => n && nameLc.includes(n));
+  });
+  if (!matches.length) return { conflicts: [] };
+  const { data: teamRow } = await supabase.from('f1_teams').select('name').eq('id', team_id).maybeSingle();
+  const teamName = teamRow?.name || team_id;
+  const pairEntity = `${team_id}:${partner_name}`;
+  const fired = [];
+  for (const c of matches) {
+    // One pending alert per partnership+campaign pair; a dismissed one re-raises next time.
+    const { data: existing } = await supabase.from('kiko_alerts')
+      .select('id').eq('type', 'category_conflict').eq('entity_id', pairEntity)
+      .eq('metadata->>campaign_id', c.id).eq('dismissed', false).limit(1);
+    if (existing && existing.length) continue;
+    await supabase.from('kiko_alerts').insert({
+      type: 'category_conflict', severity: 'critical',
+      title: `Category taken: ${partner_name} (${teamName}) collides with your live ${triggerCatName} campaign`,
+      detail: `${partner_name} was just added as a ${triggerCatName} partner for ${teamName}. You have a live campaign "${c.name}" running in that category space. That slot may now be closed at ${teamName} — review and pause or re-target the campaign before sending more.`,
+      entity_type: 'partnership', entity_id: pairEntity, entity_name: partner_name,
+      metadata: { team_id, team_name: teamName, partner_name, category_id, campaign_id: c.id, campaign_name: c.name, action: 'pause_campaign' },
+      dismissed: false,
+    });
+    fired.push(c.name);
+  }
+  return { conflicts: fired };
+}
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -83,7 +134,13 @@ export default async function handler(req, res) {
       last_verified_at: new Date().toISOString(), updated_at: new Date().toISOString(),
     }, { onConflict: 'team_id,partner_name' });
     if (error) return res.status(500).json({ error: error.message });
-    return res.json({ ok: true, message: `${partner_name} added to ${team_id}` });
+    // Confirmed partnership (manual adds are verified) → check for live-campaign conflicts and alert.
+    let conflictNote = '';
+    try {
+      const { conflicts } = await checkCategoryConflict({ team_id, partner_name, category_id });
+      if (conflicts.length) conflictNote = ` Conflict alert raised: collides with live campaign(s) ${conflicts.join(', ')}.`;
+    } catch (e) { console.error('[partnership-matrix] conflict check failed:', e.message); }
+    return res.json({ ok: true, message: `${partner_name} added to ${team_id}.${conflictNote}` });
   }
 
   // REMOVE — remove a partnership
