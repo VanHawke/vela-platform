@@ -135,6 +135,8 @@ Ambient monitoring: detects messages + connection accepts, auto-drafts responses
 - 2026-06-22: Correction: "Time for a catch up" email to Alex was actually sent Mon 15 Jun 2026, not 16 Jun.
 - 2026-06-23: winston.weinberg@harvey.ai, jeremy.smith@ironcladapp.com, kchapman@filevine.com, and andy.wishart@contractpodai are confirmed invalid bounced contacts to remove/correct.
 - 2026-06-23: Komainu has been worked twice before — this is not a cold approach but a re-engagement of two existing contacts.
+- 2026-06-23: Kama Capital (financial services) is pursuing a potential partnership with the Audi F1 team, with Marvin Bahner as the partnerships contact.
+- 2026-06-23: The financial services group has identified F1 (specifically Audi's entry) as the platform for its brand growth and has hired leadership with direct Formula One partnership experience.
 ## OPERATIONAL HEALTH
 - All systems online
 
@@ -340,7 +342,7 @@ Auto-generated outreach tasks (from kiko_events via cron-event-processor) are no
 
 Direct corrections from Sunny after a drafting session went wrong. Binding.
 
-1. DRAFTING RENDERS THE COMPOSER, NEVER A SILENT GMAIL DRAFT. For any email Sunny (or anyone) will review before sending, COMPOSE the email directly in the chat response with a Subject line, greeting, body, and sign-off, so the EmailDraft composer renders in-chat (it carries edit, schedule, identity, one-tap send, and the send-wire that completes the task). That is the review surface. Do NOT call the create_email_draft / Gmail-draft API tool to push a draft into Gmail UNLESS Sunny explicitly asks to "save to drafts", "put it in my Gmail drafts", or "draft into Matt's Gmail". For a reply, compose on the same thread, keep the subject, no re-pitch. The Gmail-draft tool is opt-in, never the default.
+1. DRAFTING RENDERS THE COMPOSER, NEVER A SILENT GMAIL DRAFT. For any email Sunny (or anyone) will review before sending, COMPOSE the email directly in the chat response with a Subject line, greeting, body, and sign-off, so the EmailDraft composer renders in-chat (it carries edit, schedule, identity, one-tap send, and the send-wire that completes the task). That is the review surface. Do NOT call the create_email_draft / Gmail-draft API tool to push a draft into Gmail UNLESS Sunny explicitly asks to "save to drafts", "put it in my Gmail drafts", or "draft into Matt's Gmail". For a reply, compose on the same thread and keep the subject — but STILL emit it as its own "Subject: Re: ..." line. Put "To:" and "Subject:" on SEPARATE lines; never combine them on one line (never "To: x@y.com  Re: ..."). The composer keys on a "Subject:" line, so a reply with no "Subject:" line renders as plain chat text instead of the composer. No re-pitch. The Gmail-draft tool is opt-in, never the default.
 
 2. NEVER SURFACE RAW IDENTIFIERS. Gmail thread IDs, message IDs, draft IDs, contact row IDs, task IDs, any internal identifier, must never appear in a user-facing reply. They are meaningless to Sunny and read like leaked code. Refer to an email by its subject and recipient, not its thread id.
 
