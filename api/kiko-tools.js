@@ -29,6 +29,54 @@ export const findOpenTaskForCompany = async (company, orgId = ORG_ID) => {
   return (rows && rows[0]) || null;
 };
 
+// ── Parked intelligence (cold prospects are parked, never tasked) ──
+// DOCTRINE: a task is earned by a real prior touch, and a touch is a TWO-WAY dialogue
+// (a reply we RECEIVED), not a send. A company we only emailed (personal or campaign)
+// with no reply is COLD. Warm = a reply on record from the company, or an active deal.
+export const companyHasReply = async (company) => {
+  const c = (company || '').trim();
+  if (!c) return false;
+  const enc = encodeURIComponent(c);
+  const replied = await sbFetch(`kiko_email_tracking?company=ilike.${enc}&replied_at=not.is.null&select=company&limit=1`).catch(() => []);
+  if (Array.isArray(replied) && replied.length) return true;
+  const deal = await sbFetch(`deals?data->>company=ilike.${enc}&data->>status=eq.active&select=id&limit=1`).catch(() => []);
+  return Array.isArray(deal) && deal.length > 0;
+};
+
+// Record a cold prospect hypothesis as dormant intelligence (deduped on email|company while parked).
+export const parkIntelligence = async (p = {}) => {
+  const company = (p.company || '').trim();
+  const name = (p.name || '').trim();
+  const email = (p.email || '').trim().toLowerCase();
+  const dedupe = `${(email || name).toLowerCase()}|${company.toLowerCase()}`;
+  try {
+    const existing = await sbFetch(`kiko_parked_intelligence?dedupe_key=eq.${encodeURIComponent(dedupe)}&status=eq.parked&select=id&limit=1`).catch(() => []);
+    if (Array.isArray(existing) && existing.length) return { parked: false, deduped: true, id: existing[0].id };
+    await sbFetch('kiko_parked_intelligence', { method: 'POST', body: JSON.stringify({
+      entity_type: p.entity_type || 'prospect',
+      name: name || null, role: p.role || null, company: company || null,
+      email: email || null, contact_id: p.contact_id || null,
+      category: p.category || null, target_team: p.target_team || null,
+      rationale: p.rationale || null, signals: p.signals || null,
+      source: p.source || 'system', status: 'parked',
+      dedupe_key: dedupe, org_id: p.org_id || ORG_ID,
+    }) });
+    return { parked: true };
+  } catch (e) { console.error('[parkIntelligence]', e.message); return { parked: false, error: e.message }; }
+};
+
+// Promote a parked row into an active campaign (the only path from note to outreach).
+export const promoteParkedIntelligence = async (id, opts = {}) => {
+  if (!id) return { promoted: false };
+  try {
+    await sbFetch(`kiko_parked_intelligence?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'promoted', promoted_at: new Date().toISOString(), promoted_to_sequence_id: opts.sequence_id || null }),
+    });
+    return { promoted: true };
+  } catch (e) { console.error('[promoteParkedIntelligence]', e.message); return { promoted: false, error: e.message }; }
+};
+
 // Read the current account state (owner / strategy / ruled-out plays) for a company.
 export const getAccountState = async (company, orgId = ORG_ID) => {
   const c = (company || '').trim().toLowerCase();
@@ -610,7 +658,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
     }
     const orgId = target.org_id || (caller && caller.org_id);
     const now = Date.now();
-    const rows = items.map((t, i) => ({
+    let rows = items.map((t, i) => ({
       id: 't' + (now + i),
       org_id: orgId,
       user_id: target.id,
@@ -626,8 +674,27 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
         assignedBy: (caller && caller.full_name) || 'Kiko',
       },
     }));
+    // ── Parked-intelligence guard: cold outreach is parked as intelligence, never pushed as a task ──
+    // A task is earned by a reply received, not a send. Outreach-type rows aimed at a company with no
+    // reply on record are parked as dormant intelligence instead of nagging on a Today list.
+    const GATED_TYPES = ['Outreach', 'First Outreach', 'Email Follow-up', 'Call', 'LinkedIn'];
+    const parkedItems = [];
+    {
+      const kept = [];
+      for (const r of rows) {
+        const comp = (r.data.company || '').trim();
+        if (GATED_TYPES.includes(r.data.type) && comp && !(await companyHasReply(comp))) {
+          await parkIntelligence({
+            name: r.data.contact || '', company: comp, source: 'assign_tasks_guard', org_id: r.org_id,
+            rationale: `Auto-parked from assign_tasks: ${r.data.type} requested for ${comp}, but no reply on record from this company (cold). Note: ${r.data.notes}`.slice(0, 900),
+          });
+          parkedItems.push(r.data.contact ? `${r.data.contact} (${comp})` : comp);
+        } else { kept.push(r); }
+      }
+      rows = kept;
+    }
     try {
-      await sbFetch('tasks', { method: 'POST', body: JSON.stringify(rows) });
+      if (rows.length) await sbFetch('tasks', { method: 'POST', body: JSON.stringify(rows) });
     } catch (e) {
       return agentError('assign_tasks', e);
     }
@@ -663,8 +730,12 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
       }
       if (removedTotal > 0) handoffNote = ` Cleared ${removedTotal} matching task${removedTotal > 1 ? 's' : ''} off your own list, this is ${target.full_name || target.email}'s to run now.`;
     }
+    const parkedNote = parkedItems.length ? ` Parked ${parkedItems.length} cold ${parkedItems.length > 1 ? 'items' : 'item'} as intelligence (no reply on record): ${parkedItems.join(', ')}.` : '';
+    if (!rows.length) {
+      return `No tasks created.${parkedNote} A task is earned by a real prior touch, so these cold ones are parked for review rather than actioned.`;
+    }
     try { await autoLogActivity('task', target.full_name || target.email, `Assigned ${rows.length} task(s) to ${target.full_name || target.email}`); } catch {}
-    return `Done. Pushed ${rows.length} task${rows.length > 1 ? 's' : ''} to ${target.full_name || target.email}'s list.${handoffNote} They will appear on their Today page.\n` + rows.map((r, i) => `${i + 1}. ${r.data.notes.slice(0, 90)}${r.data.company ? ` (${r.data.company})` : ''}`).join('\n');
+    return `Done. Pushed ${rows.length} task${rows.length > 1 ? 's' : ''} to ${target.full_name || target.email}'s list.${handoffNote}${parkedNote} They will appear on their Today page.\n` + rows.map((r, i) => `${i + 1}. ${r.data.notes.slice(0, 90)}${r.data.company ? ` (${r.data.company})` : ''}`).join('\n');
   }
 
   // ── Complete / Dismiss task — flips completed; a DB trigger fans out to activity, company, follow-up ──

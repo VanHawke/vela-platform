@@ -7,7 +7,7 @@
 // 5. ACTION — generate specific actions (Haiku)
 // Runs every 10 minutes during business hours
 import Anthropic from '@anthropic-ai/sdk';
-import { sbFetch, cronHeartbeat, findOpenTaskForCompany, getAccountState } from './kiko-tools.js';
+import { sbFetch, cronHeartbeat, findOpenTaskForCompany, getAccountState, parkIntelligence } from './kiko-tools.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const HAIKU = 'claude-haiku-4-5-20251001';
@@ -201,8 +201,21 @@ async function processEvent(event) {
       if (action.type === 'create_task') {
         const d = action.data || action; // model sometimes puts fields directly on action
         if (!d.title) continue;
-        // Gate 0 — cold-campaign suppression: a non-engaged templated blast is not a relationship; do not re-approach.
-        if (coldCampaign) { executed.push({ type: 'create_task', title: d.title, success: false, skipped: 'cold_campaign_no_engagement' }); continue; }
+        // Gate 0 — parked-intelligence: a task is earned by a real prior touch, and a touch is a REPLY
+        // received, not a send. If no reply on record from anyone at this company (a personal send and a
+        // campaign blast both count as cold), park as dormant intelligence instead of creating a task.
+        const _warm = companyReply || (context.deal?.status === 'active');
+        if (!_warm) {
+          await parkIntelligence({
+            name: entity_name, company: context.contact?.company || '',
+            role: (context.contact?.title || context.contact?.jobTitle || ''),
+            email: context.contact?.email || '', contact_id: context.contact?.id || null,
+            source: coldCampaign ? 'event_processor_cold_campaign' : 'event_processor_no_reply',
+            rationale: `Auto-parked by event processor on ${event_type}: no reply on record from this company (cold). ${(actions.brief_for_user || '').slice(0, 250)}`.slice(0, 900),
+          }).catch(e => console.error('[event-processor] park error:', e.message));
+          executed.push({ type: 'create_task', title: d.title, success: false, skipped: 'parked_no_reply' });
+          continue;
+        }
         const taskCompany = context.contact?.company || '';
         // Reconciliation gate 1 — dedup + GROUP: if an open task already exists for this account, append this
         // person to its contacts[] (one company card, multiple people as sub-items) instead of dropping or duplicating.
