@@ -39,9 +39,14 @@ export default async function handler(req, res) {
   const { prompt, body } = req.body || {}
   if (!body) return res.status(400).json({ error: 'Missing body' })
 
-  // Load voice profile for every rewrite — ensures Van Hawke voice is preserved
+  // Load voice profile ONLY to harvest its forbidden phrases (filler / AI-tells to avoid).
+  // We deliberately do NOT impose the full profile here: it was learned from cold F1 sponsorship
+  // outreach (tone "authoritative", no warm register), so forcing it onto a tone-refine turns warm
+  // personal notes into cold pitches. Tone buttons must adjust tone and PRESERVE the email.
   const profile = await loadVoiceProfile()
-  const voiceContext = voiceRules(profile)
+  const avoid = profile?.forbidden_phrases?.length
+    ? `\n\nAvoid these phrases entirely (they read as filler or AI-generated): ${profile.forbidden_phrases.join(', ')}.`
+    : ''
 
   try {
     const message = await client.messages.create({
@@ -49,7 +54,7 @@ export default async function handler(req, res) {
       max_tokens: 1024,
       messages: [{
         role: 'user',
-        content: `${prompt || 'Rewrite this email body to be shorter.'}\n${voiceContext}\n\nCRITICAL: Match the voice profile above EXACTLY. Never use any forbidden phrases. Use preferred phrases where natural. Write like a senior F1 sponsorship dealmaker — authoritative, precise, zero filler.\n\nOutput ONLY the rewritten email body paragraphs. No subject line, no "Dear X", no sign-off, no name, no analysis, no commentary. Just the body paragraphs:\n\n${body}`
+        content: `You are adjusting the TONE of an existing email. Apply ONLY the change requested below; otherwise leave the email as it is.\n\nHard rules:\n- Preserve the email's meaning, intent, and approximate length. A one-line note stays a one-line note.\n- Preserve the relationship register: if it reads as a warm, personal message to someone the sender knows, keep it warm and personal; if it reads as a formal business approach, keep it formal.\n- Do NOT add new arguments, offers, pitches, calls to action, or "category / participation / strategic positioning" framing that is not already in the email.\n- Do NOT turn a short personal message into a formal pitch.${avoid}\n\nCHANGE REQUESTED: ${prompt || 'Make this email body shorter.'}\n\nOutput ONLY the rewritten email body paragraphs. No subject line, no greeting, no sign-off, no name, no analysis, no commentary. Just the body:\n\n${body}`
       }]
     })
     const rewritten = (message.content[0]?.text || '')
