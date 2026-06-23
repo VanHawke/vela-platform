@@ -76,7 +76,7 @@ export default function PartnershipMatrix({ user }) {
     } catch {}
   }, [])
 
-  useEffect(() => { if (user?.id) { fetchMatrix(); fetchPending() } }, [user?.id, fetchPending])
+  useEffect(() => { if (user?.id) { fetchMatrix(); fetchPending() } }, [user?.id])
   useEffect(() => { if (tab === 'alerts') fetchAlerts() }, [tab, fetchAlerts])
 
   const fetchMatrix = async () => {
