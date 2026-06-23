@@ -11,26 +11,29 @@ function agencyEmail(email) { return email?.replace('@vanhawke.com', '@vanhawke.
 export function isEmailDraft(text) {
   if (!text || text.length < 60) return false
   const lower = text.toLowerCase()
-  const hasSubject = /\*?\*?subject\*?\*?\s*:/i.test(text) || /^subject\s*:/im.test(text) || /re:\s/i.test(text.split('\n')[0] || '')
+  const firstLines = text.split('\n').slice(0, 3).join('\n')
+  const hasSubject = /\*?\*?subject\*?\*?\s*:/i.test(text) || /^subject\s*:/im.test(text) || /(?:^|\n)\s*re:\s/i.test(firstLines)
   const hasGreeting = /\b(dear\s|hi\s|hello\s|hey\s|good\s(morning|afternoon|evening))/i.test(text)
   const hasSignoff = /\b(kind\s+regards|best\s+regards|warm\s+regards|sincerely|best,|regards,|cheers,|thank\s+you)/i.test(lower)
-  const hasDraftLabel = lower.includes('suggested draft') || lower.includes('email draft') || lower.includes('draft email') || lower.includes('here\'s the email') || lower.includes('here is the email') || lower.includes('i\'ve drafted') || lower.includes('here\'s a draft') || lower.includes('draft:') || lower.includes('proposed email')
-  const hasTo = /\*?\*?to\*?\*?\s*:/i.test(text)
+  const hasDraftLabel = lower.includes('suggested draft') || lower.includes('email draft') || lower.includes('draft email') || lower.includes('here\'s the email') || lower.includes('here is the email') || lower.includes('i\'ve drafted') || lower.includes('here\'s a draft') || lower.includes('draft:') || lower.includes('proposed email') || lower.includes('here\'s the reply') || lower.includes('here is the reply') || lower.includes('here\'s the note') || lower.includes('here\'s the follow')
+  const hasTo = /(?:^|\n)\s*\*?\*?to\*?\*?\s*:/i.test(text)
   const hasSubjectAndTo = hasSubject && hasTo
   const hasEmailStructure = hasSubject && (hasGreeting || hasSignoff)
   const hasDraftStructure = hasDraftLabel && (hasGreeting || hasSignoff)
-  return hasEmailStructure || hasDraftStructure || hasSubjectAndTo || (hasGreeting && hasSignoff && text.length > 150)
+  // A "To:" line plus a sign-off is an unambiguous reply draft — covers thread replies with no Subject: line.
+  return hasEmailStructure || hasDraftStructure || hasSubjectAndTo || (hasTo && hasSignoff) || (hasGreeting && hasSignoff && text.length > 150)
 }
 
 export function extractEmailSection(text) {
   const draftHeaderIdx = text.search(/#{1,3}\s*\d*\.?\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT\s*EMAIL)/i)
-  const hereIdx = text.search(/(?:Here(?:'|'|&#39;)?s the (?:email|draft)|Here is the (?:email|draft)|I(?:'|'|&#39;)?ve drafted)[^:]*:\s*/i)
+  const hereIdx = text.search(/(?:Here(?:'|'|&#39;)?s the (?:email|draft|reply|note|follow[- ]?up)|Here is the (?:email|draft|reply)|I(?:'|'|&#39;)?ve drafted)[^:]*:\s*/i)
   const subjectIdx = text.search(/(?:^|\n|\.|\:)\s*\*?\*?Subject\*?\*?\s*:/im)
-  if (draftHeaderIdx === -1 && hereIdx === -1 && subjectIdx === -1) return { pre: text, email: null }
+  const toIdx = text.search(/(?:^|\n)\s*\*?\*?To\*?\*?\s*:/i)
+  if (draftHeaderIdx === -1 && hereIdx === -1 && subjectIdx === -1 && toIdx === -1) return { pre: text, email: null }
   let emailStart
   if (draftHeaderIdx > -1) emailStart = draftHeaderIdx
-  else if (hereIdx > -1) { const afterHere = text.slice(hereIdx).search(/\n\s*\*?\*?Subject\*?\*?\s*:/i); emailStart = afterHere > -1 ? hereIdx + afterHere : hereIdx }
-  else emailStart = subjectIdx > 0 ? subjectIdx : 0
+  else if (hereIdx > -1) { const afterHere = text.slice(hereIdx).search(/\n\s*\*?\*?(?:Subject|To)\*?\*?\s*:/i); emailStart = afterHere > -1 ? hereIdx + afterHere : hereIdx }
+  else { const anchors = [subjectIdx, toIdx].filter(i => i > -1); emailStart = anchors.length ? Math.min(...anchors) : 0 }
   return { pre: text.slice(0, emailStart).trim(), email: text.slice(emailStart).trim() }
 }
 
@@ -46,12 +49,22 @@ function parseEmail(text) {
   let t = emailText.replace(/#{1,3}\s*\d*\.?\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT)\s*/gi, '').replace(/\*?\*?\[Subject to[^\]]*\]\*?\*?\s*/gi, '')
   t = t.replace(/(Subject\s*:)/i, '\n$1').replace(/(To\s*:)/i, '\n$1').replace(/(Dear\s+\w)/i, '\n$1')
   const subMatch = t.match(/\*?\*?Subject\*?\*?\s*:\s*(.+?)(?:\n|$)/i)
-  const subject = subMatch ? subMatch[1].replace(/\*\*/g, '').replace(/[\u2014\u2013]/g, '-').replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'").trim() : ''
+  let subject = subMatch ? subMatch[1].replace(/\*\*/g, '').replace(/[\u2014\u2013]/g, '-').replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'").trim() : ''
   const toMatch = t.match(/\*?\*?To\*?\*?\s*:\s*(.+?)(?:\n|$)/i)
   let to = toMatch ? toMatch[1].replace(/\*\*/g, '').replace(/\[|\]/g, '').trim() : ''
+  // Tolerate "To: email  Re: subject" (or "...  Subject: x") on a single line: split the To value and lift the subject out.
+  if (to) {
+    const inlineRe = to.match(/\s+(Re:\s*.+)$/i) || to.match(/\s+\*?\*?Subject\*?\*?\s*:\s*(.+)$/i)
+    if (inlineRe) {
+      to = to.slice(0, inlineRe.index).trim()
+      if (!subject) subject = inlineRe[1].replace(/^\*?\*?Subject\*?\*?\s*:\s*/i, '').replace(/\*\*/g, '').trim()
+    }
+  }
+  // Fallback: a thread reply may carry only a "Re: ..." line and no explicit Subject: — use it as the subject.
+  if (!subject) { const reLine = t.match(/(?:^|\n)\s*(Re:\s*.+?)(?:\n|$)/i); if (reLine) subject = reLine[1].replace(/\*\*/g, '').trim() }
   let bodyStartIdx = 0
-  if (toMatch) bodyStartIdx = t.indexOf(toMatch[0]) + toMatch[0].length
-  else if (subMatch) bodyStartIdx = t.indexOf(subMatch[0]) + subMatch[0].length
+  if (toMatch) bodyStartIdx = Math.max(bodyStartIdx, t.indexOf(toMatch[0]) + toMatch[0].length)
+  if (subMatch) bodyStartIdx = Math.max(bodyStartIdx, t.indexOf(subMatch[0]) + subMatch[0].length)
   let rawBody = t.slice(bodyStartIdx)
   // Hard cut at sign-off line — everything after is commentary
   const signoffPatterns = [
