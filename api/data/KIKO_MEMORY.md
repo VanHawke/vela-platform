@@ -134,6 +134,8 @@ Ambient monitoring: detects messages + connection accepts, auto-drafts responses
 - 2026-06-22: NanoXplore leadership changed at the December 2025 AGM, requiring verification of current CEO/Commercial contacts before re-engaging for Alpine F1 partnership.
 - 2026-06-22: ZZHANDOFFCO to be re-engaged via Matt on the E1 Series angle, connecting their graphene capability to an on-water/sustainability narrative.
 - 2026-06-22: Correction: "Time for a catch up" email to Alex was actually sent Mon 15 Jun 2026, not 16 Jun.
+- 2026-06-23: winston.weinberg@harvey.ai, jeremy.smith@ironcladapp.com, kchapman@filevine.com, and andy.wishart@contractpodai are confirmed invalid bounced contacts to remove/correct.
+- 2026-06-23: Komainu has been worked twice before — this is not a cold approach but a re-engagement of two existing contacts.
 ## OPERATIONAL HEALTH
 - All systems online
 
@@ -350,3 +352,19 @@ Direct corrections from Sunny after a drafting session went wrong. Binding.
 5. ALL CORRESPONDENCE IS RECONCILABLE. kiko_email_tracking now holds the full sent history (personal 1:1 sends backfilled across ~200 days plus ongoing sync), distinguished by source: gmail, gmail_sync, direct_send are personal correspondence; campaign is a templated blast; a reply (replied_at) is genuine engagement. Before reasoning that a relationship has no history, check the table. Be aware of every email sent, regardless of relationship type, and reconcile against it.
 
 6. ONE COMPANY, ONE CARD. When several people at the same company warrant outreach, they are grouped onto a single company task in data.contacts[] (each entry: name, role, channel, notes). The Today view renders one company card with each person as a tappable sub-row. Do not produce a separate task per person at the same company; the generator appends to the existing company task.
+
+## PARKED INTELLIGENCE DOCTRINE (added 2026-06-23, built with Sunny)
+
+CANONICAL RULE: A task is earned by a real prior touch. An opportunity without one is parked, never actioned and never deleted. Personal correspondence (kiko_email_tracking source in gmail / gmail_sync / direct_send) or a greenlit campaign enrollment is the only proof of touch. A campaign blast (source 'campaign' / 'lemlist') is NOT a touch, no matter how many were sent.
+
+PRIOR-TOUCH IS TWO-LEVEL:
+- Contact-level: have we personally emailed THIS person? Decides channel (follow-up vs first outreach to them).
+- Company-level: have we personally worked THIS company via any contact? Decides cold vs warm.
+- Company warm + contact cold = a legitimate First Outreach to a new contact at a worked account (a real task, for example a senior escalation). This is NOT a park.
+- Only when BOTH the contact and the company are cold does it become parked intelligence.
+
+WHERE PARKED ITEMS LIVE: table kiko_parked_intelligence. A cold prospect hypothesis is recorded there (name, role, company, category, target_team, rationale, signals), dormant, until it is promoted into a greenlit category campaign. Promotion is the only path from note to outreach.
+
+NEVER manufacture a cold prospect into a Today task. Never surface a First Outreach Today task for someone at a company we have not worked. While prospecting is paused, nothing in the outreach path fires; parking intelligence is the only permitted action on a cold prospect.
+
+BOUNCES: a bounced email address stays bounced. It is never auto-revived to a LinkedIn step or any other channel, and it is not parked. A bounce is a dead address, not intelligence.
