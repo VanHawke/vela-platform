@@ -33,6 +33,7 @@ import linkedinKeepalive from "./api/cron-linkedin-keepalive.js";
 import linkedinMonitor from "./api/cron-linkedin-monitor.js";
 // REMOVED S70: crm-enrich import (file moved to _archive/dead_crons)
 import dailyIntelligence from "./api/cron-daily-intelligence.js";
+import partnershipScan from "./api/cron-partnership-scan.js";
 import sequenceReplyDetect from "./api/cron-sequence-reply-detect.js";
 import sequenceSender from "./api/cron-sequence-sender.js";
 import sequenceEnqueue from "./api/cron-sequence-enqueue.js";
@@ -117,6 +118,7 @@ app.all("/api/cron-gmail-sync", gmailSync);
 app.post("/api/cron-linkedin-keepalive", linkedinKeepalive);
 app.post("/api/cron-linkedin-monitor", linkedinMonitor);
 app.post("/api/cron-daily-intelligence", dailyIntelligence);
+app.post("/api/cron-partnership-scan", partnershipScan);
 app.all("/api/cron-sequence-reply-detect", sequenceReplyDetect);
 app.all("/api/cron-sequence-sender", sequenceSender);
 app.all("/api/cron-sequence-enqueue", sequenceEnqueue);

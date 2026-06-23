@@ -94,9 +94,8 @@ Self-evolution via kiko_self_modify (path: /home/kiko/kiko-worker).
 - Apollo API key configured in server .env
 - MCP connectors (Lusha, Vibe, Bigdata, Ramp): Claude.ai only, not available via API
 
-## COMMAND CENTRE
-6 tabs: Signals, Outreach, Schedule, Follow-ups, Campaigns, Discover.
-Hidden from Matt via page permissions. Only Sunny (super_admin) can see it.
+## COMMAND CENTRE — REMOVED
+The Command Centre (/command-centre) has been REMOVED from the platform. Do not direct users there or reference it as a live page. Today (/) is the home surface and the bell icon shows alerts. Parked leads are reviewed at the top of Campaigns; pending partnership detections are reviewed on the Partnership Matrix.
 
 ## EMAIL + LINKEDIN
 All 4 Google accounts have FULL scope including mail.google.com. Matt CAN send drafts.
@@ -372,3 +371,17 @@ NEVER manufacture a cold prospect into a Today task. Never surface a First Outre
 BOUNCES: a bounced email address stays bounced. It is never auto-revived to a LinkedIn step or any other channel, and it is not parked. A bounce is a dead address, not intelligence.
 
 WORKED EXAMPLE (Komainu): Sunny and Matt sent Formula E pitches to Jordan and Wiskin across 2025 and 2026. Zero replies, no inbound. That is COLD, not warm, because there was no two-way dialogue. Paul Frost-Smith (Co-CEO) was therefore parked, not actioned. A task there would have been the scattergun.
+
+WHERE SUNNY REVIEWS PARKED LEADS: at the TOP of the Campaigns page (/campaigns). A quiet collapsed strip ("N parked leads") sits above the campaign cards and shows only when something is parked, so it never becomes an endless list. It expands into category groups; each lead shows name, role, company, rationale, with Promote and Discard. Promote records the decision and, when the lead's category maps to a buildable sponsor_category, opens the campaign build flow for it. Discard marks it discarded (kept for dedupe). This is the review surface for kiko_parked_intelligence — a holding queue Sunny actually sees, not a silent delete.
+
+## PARTNERSHIP CATEGORY-CONTROL SYSTEMS (added 2026-06-23, built with Sunny + Kiko; verified live)
+
+These guard the F1/FE sponsorship grid (f1_partnerships, 468 rows, 11 teams). Category exclusivity = one partner per category per team; overlaps are defined in the category_overlaps table (e.g. ai_data blocks cloud) and expanded both directions.
+
+CATEGORY-CONFLICT ALERT (forward). When a partnership is CONFIRMED on the Partnership Matrix, checkCategoryConflict (partnership-matrix.js) expands its category through category_overlaps and, if a LIVE campaign (is_active, not archived) occupies the same or an overlapping category, raises ONE critical 'category_conflict' alert per partnership+campaign pair, with a pause action and a dismiss-then-re-raise guard. Manual matrix adds are confirmed, so they run this check.
+
+CATEGORY-CONFLICT (reverse, at launch). campaign-conflicts.js returns a category_conflicts[] array when a campaign's category — or an overlapping one — is already held by a CONFIRMED partnership (verified=true, status=active) at the target team. build-campaign.js's saturation gate already filters status='active', so a pending detection never blocks a build.
+
+FORTNIGHTLY SCANNER — HOLD FOR CONFIRM. cron-partnership-scan.js is registered WEEKLY in src/cron-scheduler.js (Mon 07:00 UTC) but acts only on EVEN ISO weeks via an in-handler parity gate, so it is effectively fortnightly and survives pm2 restarts (a 14-day interval timer would drift and reset). It web-searches each of the 11 F1 teams (Sonnet 4.6 + web_search) for sponsors announced in the last 14 days and HOLDS every detection as an UNVERIFIED pending row in f1_partnerships (verified=false, status='pending') with its source URL — never written into the live matrix, never firing a conflict. Idempotency: it skips any team+partner already present (confirmed, pending, or rejected), so a re-scan never stacks duplicates. It raises exactly ONE info 'partnerships_detected' alert.
+
+WHERE SUNNY CONFIRMS DETECTIONS: on the Partnership Matrix page (/partnership-matrix), in a "Pending confirmation" strip shown above the tabs whenever pending detections exist. CONFIRM flips the row to verified+active and runs checkCategoryConflict (the only place a detection becomes real and the only place it can fire a conflict). REJECT marks it rejected (kept, not deleted, so the next scan does not re-surface it). Detection is silent except the one info alert; confirmation is the only thing that touches the matrix. The HOLD principle is the point: a web rumour can never auto-write the grid or pause a live campaign.

@@ -26,6 +26,7 @@ const SCHEDULES = [
 
   // ═══ INTELLIGENCE (consolidated — replaces morning-synthesis, partnership-scan, prospect-intel, evening-summary) ═══
   { schedule: '0 6 * * *',         path: '/api/cron-daily-intelligence',  name: 'daily-intelligence' },
+  { schedule: '0 7 * * 1',         path: '/api/cron-partnership-scan',    name: 'partnership-scan' }, // weekly trigger; fortnightly via ISO-week parity gate inside the handler
   { schedule: '0 8 * * 1-5',       path: '/api/cron-selfcheck-watcher',   name: 'selfcheck' },
   { schedule: '0 9 * * 1-5',       path: '/api/cron-campaign-monitor',    name: 'campaign-monitor' },
   { schedule: '0 3 * * 0',          path: '/api/cron-conversation-learning', name: 'conv-learning' },

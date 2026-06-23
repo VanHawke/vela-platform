@@ -53,10 +53,31 @@ export default async function handler(req, res) {
         }
       }
     }
+    // Category-vs-partnership reverse check (Kiko): if this campaign's category — or an overlapping
+    // one — is already held by a CONFIRMED partnership at the target team, surface it. This is the
+    // launch-time mirror of the confirmed-add conflict alert. Only confirmed partnerships count
+    // (verified=true, status=active), so a pending scanner detection never blocks a launch. Runs
+    // only when the caller passes category + team_id; otherwise behaviour is unchanged.
+    const categoryConflicts = [];
+    const cat = String(body.category || '').trim();
+    const teamId = String(body.team_id || '').trim();
+    if (cat && teamId) {
+      const [ov1, ov2] = await Promise.all([
+        sbFetch(`category_overlaps?primary_category=eq.${encodeURIComponent(cat)}&select=blocking_category`).catch(() => []),
+        sbFetch(`category_overlaps?blocking_category=eq.${encodeURIComponent(cat)}&select=primary_category`).catch(() => []),
+      ]);
+      const expanded = new Set([cat, ...(ov1 || []).map(o => o.blocking_category), ...(ov2 || []).map(o => o.primary_category)].filter(Boolean));
+      const parts = await sbFetch(`f1_partnerships?team_id=eq.${encodeURIComponent(teamId)}&status=eq.active&verified=is.true&select=partner_name,category_id,related_categories`).catch(() => []);
+      for (const p of (parts || [])) {
+        const hit = (p.category_id && expanded.has(p.category_id)) || (Array.isArray(p.related_categories) && p.related_categories.some(rc => expanded.has(rc)));
+        if (hit) categoryConflicts.push({ partner: p.partner_name, category: p.category_id, team_id: teamId });
+      }
+    }
     return res.json({
       ok: true,
       person_conflicts: personConflicts,
       company_conflicts: companyConflicts,
+      category_conflicts: categoryConflicts,
       recent_contacts: recentContacts,
       checked: { emails: emails.length, companies: companies.length, live_sequences: liveSeqIds.size },
     });

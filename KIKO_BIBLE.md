@@ -1,6 +1,24 @@
 # KIKO BIBLE — Operational Knowledge Base
 
-## Last updated: 2026-06-17 (Session 76 — Document confidentiality locked + verified live: per-user searchDocuments gate, private-by-default uploads, owner+super_admin RLS on documents/document_chunks/kiko_documents. Sunny relocated to Doha (Asia/Qatar); brain time/location now timezone-correct. Composer: upload thumbnails + queue-while-streaming follow-ups.)
+## Last updated: 2026-06-23 (Session 77 — Partnership category-control systems + parked intelligence live: see SESSION 77 block below.)
+
+## SESSION 77 UPDATE (June 23, 2026) — Category control, the parked queue, and the fortnightly scanner
+
+These are live and verified. They are the canonical behaviour for partnerships and cold leads; older notes that conflict are superseded.
+
+**1. THE TWO-WAY-TOUCH DOCTRINE (what earns a task).** A task is earned by a real prior touch, and a touch is a REPLY received — an inbound email or a phone conversation — or a greenlit campaign enrolment. An email SENT with no reply (personal OR campaign) is NOT a touch and NOT a relationship; sending into silence is cold. Warm vs cold is two-level: a contact-level reply drives follow-up vs first-outreach; a company-level reply drives warm vs cold. A company that has replied + a contact who has not = a legitimate first outreach (a real task). Neither has replied = PARK it. This is enforced in code (`companyHasReply` gate in kiko-tools.js + cron-event-processor.js).
+
+**2. PARKED INTELLIGENCE.** Cold leads (no reply on record from the company) are written to `kiko_parked_intelligence` as dormant intelligence, never pushed as a Today task. Helpers in kiko-tools.js: `companyHasReply(company)`, `parkIntelligence({...})`, `promoteParkedIntelligence(id, {sequence_id})`. Sunny reviews parked leads at the TOP of the Campaigns page — a quiet collapsed strip ("N parked leads") that expands into category groups; each lead can be Promoted (records the decision, opens the build flow when its category maps to a sponsor_category) or Discarded. A park is a holding queue Sunny sees, not a silent delete. Promotion into a greenlit campaign is the only path from a parked note to outreach.
+
+**3. BOUNCE NEUTER.** `handle_email_bounce()` is now a no-op. A hard bounce stays bounced — NO automatic LinkedIn fallback, NO auto-revive. A bounced contact leaves active sending and is never silently re-queued.
+
+**4. CATEGORY-CONFLICT ALERT (forward).** When a partnership is CONFIRMED on the Partnership Matrix, `checkCategoryConflict` (partnership-matrix.js) expands its category through `category_overlaps` and, if a LIVE campaign (is_active, not archived) occupies the same or an overlapping category, raises ONE critical `category_conflict` alert per partnership+campaign pair, with a pause action and the dismiss-then-re-raise guard. Manual matrix adds are confirmed, so they run this check.
+
+**5. CATEGORY-CONFLICT (reverse, at launch).** campaign-conflicts.js returns a `category_conflicts[]` array when a campaign's category — or an overlapping one — is already held by a CONFIRMED partnership (verified=true, status=active) at the target team. build-campaign.js's saturation gate already filters status='active', so a pending detection never blocks a build.
+
+**6. THE FORTNIGHTLY SCANNER (hold-for-confirm).** `api/cron-partnership-scan.js` is registered WEEKLY in src/cron-scheduler.js (Mon 07:00 UTC) but acts only on EVEN ISO weeks via an in-handler parity gate — effectively fortnightly, and restart-proof (an interval timer would drift/reset on pm2 restart). It web-searches each of the 11 F1 teams (Sonnet 4.6 + web_search) for sponsors announced in the last 14 days, and HOLDS every detection as an UNVERIFIED pending row in f1_partnerships (verified=false, status='pending') with the source URL — never written into the live matrix, never firing a conflict. Idempotency: it skips any team+partner already present (confirmed, pending, or rejected). It raises ONE info `partnerships_detected` alert. Sunny rules on each detection on the Matrix page's "Pending confirmation" strip: CONFIRM flips it to verified+active and runs checkCategoryConflict; REJECT marks it rejected (kept, not deleted, so the next scan does not re-surface it). Detection is silent except the one info alert; confirmation is the only thing that touches the matrix. Verified live 23 Jun: full run returns HTTP 200; pending → confirm → reject all proven.
+
+
 
 ### IDENTITY
 

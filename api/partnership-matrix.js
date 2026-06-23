@@ -150,6 +150,41 @@ export default async function handler(req, res) {
     return res.json({ ok: true });
   }
 
+  // PENDING — unverified detections from the fortnightly scanner, awaiting confirmation
+  if (action === 'pending') {
+    const { data } = await supabase.from('f1_partnerships')
+      .select('id, team_id, partner_name, category_id, tier, source_url, notes, created_at')
+      .eq('verified', false).eq('status', 'pending')
+      .order('created_at', { ascending: false });
+    return res.json({ pending: data || [] });
+  }
+
+  // CONFIRM — promote a detected partnership to verified, then run the live-campaign conflict check.
+  // This is the ONLY place a scanner detection becomes real and the only place it can fire a conflict.
+  if (action === 'confirm' && req.method === 'POST') {
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ error: 'id required' });
+    const { data: rows } = await supabase.from('f1_partnerships')
+      .update({ verified: true, status: 'active', last_verified_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq('id', id).select('team_id, partner_name, category_id');
+    const row = rows?.[0];
+    let conflicts = [];
+    if (row) {
+      try { const r = await checkCategoryConflict({ team_id: row.team_id, partner_name: row.partner_name, category_id: row.category_id }); conflicts = r.conflicts; }
+      catch (e) { console.error('[partnership-matrix] confirm conflict check failed:', e.message); }
+    }
+    return res.json({ ok: true, conflicts });
+  }
+
+  // REJECT — mark a detection rejected. Kept in the table (not deleted) so the next scan's
+  // idempotency check skips it and does not re-surface the same rejected announcement.
+  if (action === 'reject' && req.method === 'POST') {
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ error: 'id required' });
+    await supabase.from('f1_partnerships').update({ status: 'rejected', updated_at: new Date().toISOString() }).eq('id', id);
+    return res.json({ ok: true });
+  }
+
   // ACTIVITY — recent partnership changes from Kiko alerts
   if (action === 'activity') {
     const { data: alerts } = await supabase.from('kiko_alerts')

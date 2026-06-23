@@ -58,6 +58,9 @@ export default function PartnershipMatrix({ user }) {
   const [addForm, setAddForm] = useState({ team_id: '', partner_name: '', category_id: '', tier: 'partner' })
   const [alerts, setAlerts] = useState([])
   const [lastRefresh, setLastRefresh] = useState('')
+  // Fortnightly scanner: detections awaiting confirmation
+  const [pending, setPending] = useState([])
+  const [pendingBusy, setPendingBusy] = useState(null)
 
   const fetchAlerts = useCallback(async () => {
     try {
@@ -73,7 +76,7 @@ export default function PartnershipMatrix({ user }) {
     } catch {}
   }, [])
 
-  useEffect(() => { if (user?.id) fetchMatrix() }, [user?.id])
+  useEffect(() => { if (user?.id) { fetchMatrix(); fetchPending() } }, [user?.id, fetchPending])
   useEffect(() => { if (tab === 'alerts') fetchAlerts() }, [tab, fetchAlerts])
 
   const fetchMatrix = async () => {
@@ -98,6 +101,38 @@ export default function PartnershipMatrix({ user }) {
     if (!confirm('Remove this partnership?')) return
     await fetch('https://api.vanhawke.agency/api/partnership-matrix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'remove', id }) })
     fetchMatrix()
+  }
+
+  // ── Fortnightly scanner: pending detections ──
+  const fetchPending = useCallback(async () => {
+    try {
+      const res = await fetch('https://api.vanhawke.agency/api/partnership-matrix?action=pending')
+      const d = await res.json()
+      setPending(d.pending || [])
+    } catch {}
+  }, [])
+
+  // Confirm a detection → it becomes a verified, active partnership and the live-campaign conflict check runs.
+  const confirmPending = async (id) => {
+    setPendingBusy(id)
+    try {
+      const res = await fetch('https://api.vanhawke.agency/api/partnership-matrix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'confirm', id }) })
+      const d = await res.json()
+      setPending(prev => prev.filter(p => p.id !== id))
+      if (d.conflicts && d.conflicts.length) alert(`Confirmed. This category collides with live campaign(s): ${d.conflicts.join(', ')}. A critical alert has been raised so you can pause or rescope.`)
+      fetchMatrix()
+    } catch (e) { console.error('[Matrix] confirm', e) }
+    finally { setPendingBusy(null) }
+  }
+
+  // Reject a detection → kept as rejected so the next scan does not re-surface it.
+  const rejectPending = async (id) => {
+    setPendingBusy(id)
+    try {
+      await fetch('https://api.vanhawke.agency/api/partnership-matrix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reject', id }) })
+      setPending(prev => prev.filter(p => p.id !== id))
+    } catch (e) { console.error('[Matrix] reject', e) }
+    finally { setPendingBusy(null) }
   }
 
   const teams = data?.teams || []
@@ -162,6 +197,39 @@ export default function PartnershipMatrix({ user }) {
           )})}
         </div>
       </div>
+
+      {/* Pending confirmation — detections from the fortnightly scanner awaiting your ruling.
+          Unverified (verified=false): not in the matrix, no conflict fired, until you confirm. */}
+      {pending.length > 0 && (
+        <div style={{ padding: '12px 44px 0', flexShrink: 0 }}>
+          <div style={{ background: T.surface, border: `1px solid ${T.gapBorder}`, borderRadius: 14, overflow: 'hidden' }}>
+            <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: `1px solid ${T.border}`, background: 'rgba(184,156,92,0.06)' }}>
+              <AlertTriangle size={13} style={{ color: T.yellow }} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{pending.length} partnership{pending.length > 1 ? 's' : ''} detected — awaiting confirmation</span>
+              <span style={{ fontSize: 11, color: T.textTertiary }}>· unverified; not in the matrix until you confirm</span>
+            </div>
+            {pending.map(p => {
+              const team = teams.find(t => t.id === p.team_id)
+              const cat = categories.find(c => c.id === p.category_id)
+              const busy = pendingBusy === p.id
+              return (
+                <div key={p.id} style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, borderTop: `1px solid ${T.border}` }}>
+                  <div style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: T.text }}>{p.partner_name}</span>
+                    <span style={{ fontSize: 12, color: T.textSecondary }}>{team?.name || p.team_id}</span>
+                    {p.category_id && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', background: T.accentSoft, color: T.textSecondary }}>{cat?.name || p.category_id}</span>}
+                    {p.source_url && <a href={p.source_url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: T.blue, display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none' }}>source <ExternalLink size={10} /></a>}
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                    <button disabled={busy} onClick={() => confirmPending(p.id)} style={{ height: 28, padding: '0 12px', background: T.accent, color: '#fff', border: 'none', borderRadius: 4, fontSize: 12, fontWeight: 500, cursor: busy ? 'default' : 'pointer', fontFamily: T.font, opacity: busy ? 0.5 : 1, display: 'inline-flex', alignItems: 'center', gap: 5 }}><Check size={12} />Confirm</button>
+                    <button disabled={busy} onClick={() => rejectPending(p.id)} style={{ height: 28, padding: '0 12px', background: 'transparent', color: T.textTertiary, border: `1px solid ${T.border}`, borderRadius: 4, fontSize: 12, cursor: busy ? 'default' : 'pointer', fontFamily: T.font, opacity: busy ? 0.5 : 1 }}>Reject</button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Add Modal */}
       {showAdd && (
