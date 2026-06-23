@@ -353,18 +353,22 @@ Direct corrections from Sunny after a drafting session went wrong. Binding.
 
 6. ONE COMPANY, ONE CARD. When several people at the same company warrant outreach, they are grouped onto a single company task in data.contacts[] (each entry: name, role, channel, notes). The Today view renders one company card with each person as a tappable sub-row. Do not produce a separate task per person at the same company; the generator appends to the existing company task.
 
-## PARKED INTELLIGENCE DOCTRINE (added 2026-06-23, built with Sunny)
+## PARKED INTELLIGENCE DOCTRINE (added 2026-06-23, built with Sunny; corrected same day)
 
-CANONICAL RULE: A task is earned by a real prior touch. An opportunity without one is parked, never actioned and never deleted. Personal correspondence (kiko_email_tracking source in gmail / gmail_sync / direct_send) or a greenlit campaign enrollment is the only proof of touch. A campaign blast (source 'campaign' / 'lemlist') is NOT a touch, no matter how many were sent.
+CANONICAL RULE: A task is earned by a real prior touch, and a touch is a TWO-WAY dialogue: a reply we received (an inbound email, or a phone conversation), or a greenlit campaign enrollment. An email we SENT with no reply, whether a personal 1:1 or a campaign blast, is NOT a touch and NOT a relationship. Sending into silence is cold outreach, no matter how many were sent or how personal they were. An opportunity without a real touch is parked, never actioned and never deleted.
 
-PRIOR-TOUCH IS TWO-LEVEL:
-- Contact-level: have we personally emailed THIS person? Decides channel (follow-up vs first outreach to them).
-- Company-level: have we personally worked THIS company via any contact? Decides cold vs warm.
-- Company warm + contact cold = a legitimate First Outreach to a new contact at a worked account (a real task, for example a senior escalation). This is NOT a park.
-- Only when BOTH the contact and the company are cold does it become parked intelligence.
+PROOF OF A RELATIONSHIP IS A REPLY, NOT A SEND. Never treat outbound sends as evidence of a relationship. Check for a received reply (inbound correspondence) before ever calling a contact or a company warm.
+
+WARM VS COLD IS TWO-LEVEL:
+- Contact-level: has THIS person replied to us? Decides whether a follow-up to them is warranted.
+- Company-level: has ANYONE at this company replied to us? Decides cold vs warm for the account.
+- A reply somewhere at the company makes a new senior contact a legitimate warm escalation (a real task).
+- With no reply anywhere, the company is cold, and reaching any contact there is cold outreach: parked, never a standing task. Silence is cold. Sending more emails is not progress.
 
 WHERE PARKED ITEMS LIVE: table kiko_parked_intelligence. A cold prospect hypothesis is recorded there (name, role, company, category, target_team, rationale, signals), dormant, until it is promoted into a greenlit category campaign. Promotion is the only path from note to outreach.
 
-NEVER manufacture a cold prospect into a Today task. Never surface a First Outreach Today task for someone at a company we have not worked. While prospecting is paused, nothing in the outreach path fires; parking intelligence is the only permitted action on a cold prospect.
+NEVER manufacture a cold prospect into a Today task. Never surface a First Outreach Today task for someone at a company that has never replied to us. While prospecting is paused, nothing in the outreach path fires; parking intelligence is the only permitted action on a cold prospect.
 
 BOUNCES: a bounced email address stays bounced. It is never auto-revived to a LinkedIn step or any other channel, and it is not parked. A bounce is a dead address, not intelligence.
+
+WORKED EXAMPLE (Komainu): Sunny and Matt sent Formula E pitches to Jordan and Wiskin across 2025 and 2026. Zero replies, no inbound. That is COLD, not warm, because there was no two-way dialogue. Paul Frost-Smith (Co-CEO) was therefore parked, not actioned. A task there would have been the scattergun.
