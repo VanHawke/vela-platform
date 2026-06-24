@@ -382,36 +382,46 @@ export default async function handler(req, res) {
     const tzLabel = (effectiveTz.split('/').pop() || '').replace(/_/g, ' ');
     const pageRole = PAGE_ROLES[currentPage] || '';
 
-    let systemPrompt = SYSTEM_PROMPT
+    // PROMPT CACHE STRATEGY: split the system prompt into a STABLE block (cached) and a VOLATILE block
+    // (uncached). The stable block (template + self-knowledge) is identical across calls within a burst,
+    // so Anthropic serves it from cache at ~1/10th the input price instead of re-charging it every call.
+    // The volatile tail (clock, recall, goals, etc.) is small and changes per call, so it stays uncached.
+    // CURRENT PAGE is moved into the volatile block so page navigation does not invalidate the cached
+    // block. systemStable + systemVolatile is byte-identical to the previous single systemPrompt string.
+    const systemStable = SYSTEM_PROMPT
       .replace('{COMPANY_NAME}', userConfig.company_name || 'Van Hawke Group')
       .replace('{USER_NAME}', userConfig.display_name || 'Sunny')
       .replace('{USER_TITLE}', userConfig.job_title || 'CEO')
       .replace('{USER_LOCATION}', userConfig.location || 'Doha')
       .replace('{DYNAMIC_SELF_KNOWLEDGE}', selfKnowledge || '')
-      .replace('{currentPage}', currentPage || 'home');
+      .replace('\n\nCURRENT PAGE: {currentPage}', ''); // CURRENT PAGE moved to the volatile block below
 
-    systemPrompt += `\nDate: ${dateStr}, ${timeStr} (${tzLabel} time)${pageRole}`;
-    if (entityContext) systemPrompt += `\n\n[ENTITY CONTEXT]\n${entityContext}`;
-    if (spineRecall) systemPrompt += `\n\n[KNOWLEDGE RECALL — your own verified learnings, dossiers, lessons and propositions relevant to this message. Treat as memory, cite naturally.]\n${spineRecall}`;
-    if (conversationSummary) systemPrompt += conversationSummary;
-    if (learnedRulesResult?.length) systemPrompt += `\n\n[LEARNED RULES]\n${learnedRulesResult.map(r => `- ${r.rule_text} (${r.category}, weight:${r.weight})`).join('\n')}`;
-    if (preferencesResult?.length) systemPrompt += `\n\n[USER PREFERENCES]\n${preferencesResult.map(p => `- ${p.category}: ${p.preference}`).join('\n')}`;
+    let systemVolatile = `\n\nCURRENT PAGE: ${currentPage || 'home'}`;
+    systemVolatile += `\nDate: ${dateStr}, ${timeStr} (${tzLabel} time)${pageRole}`;
+    if (entityContext) systemVolatile += `\n\n[ENTITY CONTEXT]\n${entityContext}`;
+    if (spineRecall) systemVolatile += `\n\n[KNOWLEDGE RECALL — your own verified learnings, dossiers, lessons and propositions relevant to this message. Treat as memory, cite naturally.]\n${spineRecall}`;
+    if (conversationSummary) systemVolatile += conversationSummary;
+    if (learnedRulesResult?.length) systemVolatile += `\n\n[LEARNED RULES]\n${learnedRulesResult.map(r => `- ${r.rule_text} (${r.category}, weight:${r.weight})`).join('\n')}`;
+    if (preferencesResult?.length) systemVolatile += `\n\n[USER PREFERENCES]\n${preferencesResult.map(p => `- ${p.category}: ${p.preference}`).join('\n')}`;
 
     // Voice profile — Kiko drafts in user actual voice across ALL contexts
     try {
       const voiceProfile = await cachedFetch('voice:' + userId, 600000, () => loadVoiceProfile(sbFetch, userId));
       if (voiceProfile) {
         const vpPrompt = voiceProfileToPrompt(voiceProfile, 'peer'); // peer = the operator's baseline voice; recipient-specific register is applied later at the draft/polish layer where the recipient is known
-        if (vpPrompt) systemPrompt += "\n\n" + vpPrompt;
+        if (vpPrompt) systemVolatile += "\n\n" + vpPrompt;
       }
     } catch (vpErr) { console.warn("[kiko] Voice profile load failed:", vpErr.message); }
 
-    if (goalsResult?.length) systemPrompt += `\n\n[ACTIVE GOALS]\n${goalsResult.map(g => `- ${g.title} [${g.priority}] ${g.next_action || ''}`).join('\n')}`;
-    if (intentsResult?.length) systemPrompt += `\n\n[ACTIVE INTENTS]\n${intentsResult.map(i => `- ${i.title} [${i.status}/${i.priority}] due:${i.due_date || 'none'} next:${i.next_action || ''}`).join('\n')}`;
-    if (draftActionsResult?.length) systemPrompt += `\n\n[PENDING DRAFT ACTIONS]\n${draftActionsResult.map(d => `- ${d.action_type}: ${d.entity_name} — ${d.summary}`).join('\n')}`;
+    if (goalsResult?.length) systemVolatile += `\n\n[ACTIVE GOALS]\n${goalsResult.map(g => `- ${g.title} [${g.priority}] ${g.next_action || ''}`).join('\n')}`;
+    if (intentsResult?.length) systemVolatile += `\n\n[ACTIVE INTENTS]\n${intentsResult.map(i => `- ${i.title} [${i.status}/${i.priority}] due:${i.due_date || 'none'} next:${i.next_action || ''}`).join('\n')}`;
+    if (draftActionsResult?.length) systemVolatile += `\n\n[PENDING DRAFT ACTIONS]\n${draftActionsResult.map(d => `- ${d.action_type}: ${d.entity_name} — ${d.summary}`).join('\n')}`;
 
-    console.log(`[Kiko] systemPrompt ${systemPrompt.length} chars`);
-    const systemCached = [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }];
+    console.log(`[Kiko] systemStable ${systemStable.length} + volatile ${systemVolatile.length} chars`);
+    const systemCached = [
+      { type: 'text', text: systemStable, cache_control: { type: 'ephemeral' } },
+      { type: 'text', text: systemVolatile },
+    ];
 
     // ═══ BUILD TOOLS — ALWAYS FULL, NEVER FILTERED ═══
     const nativeTools = buildNativeTools(userConfig, effectiveTz);
@@ -466,6 +476,10 @@ ${att.data.slice(0, 80000)}
     console.log('[KTIME] firstStream START @'+Date.now());
     let response = await streamAndCapture(params);
     console.log('[KTIME] firstStream END stop='+response.stop_reason);
+    // Cache-health metric: write should be ~0 and read large on warm calls (bursty active use). If the
+    // write/read ratio climbs over time, something volatile is leaking into the stable block, or load has
+    // gone sparse so the 5-minute prefix cache keeps expiring cold.
+    try { const u = response.usage || {}; console.log(`[CACHE] in=${u.input_tokens} write=${u.cache_creation_input_tokens||0} read=${u.cache_read_input_tokens||0} stable=${systemStable.length} vol=${systemVolatile.length} nTools=${toolsWithCache.length}`); } catch {}
 
     // ═══ TOOL ROUND LOOP ═══
     let toolRounds = 0;
