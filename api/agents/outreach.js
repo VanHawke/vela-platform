@@ -20,16 +20,21 @@ async function draftEmail({ to, subject, body, cc, thread_id, contact_status = '
       loadVoiceProfile(sbFetch, userId),
     ]);
 
-    // If voice profile exists, re-run the body through it for alignment
-    // Uses Haiku — this is a simple tone rewrite, not creative composition
+    // Voice alignment, register-PRESERVING. This Gmail-draft path is always an INDIVIDUAL/personal
+    // draft, never a campaign blast (campaigns run through cron-sequence-enqueue), so it must NEVER
+    // impose the campaign "category ownership" cold voice. Preserve the body's own register and only
+    // strip the user's forbidden phrases. (Step 1 of the dynamic-voice rebuild; the shared
+    // resolveVoiceContext resolver will later SHAPE register from real prior correspondence.)
     let finalBody = body;
     if (voiceProfile && body && body.length > 40) {
       try {
-        const voicePrompt = voiceProfileToPrompt(voiceProfile);
+        const forbidden = voiceProfile?.forbidden_phrases?.length
+          ? `\n\nAvoid these phrases entirely (filler / AI-tells): ${voiceProfile.forbidden_phrases.join(', ')}.`
+          : '';
         const alignRes = await anthropic.messages.create({
-          model: 'claude-sonnet-4-6', // Upgraded — outreach needs quality
+          model: 'claude-sonnet-4-6',
           max_tokens: 800,
-          messages: [{ role: 'user', content: `${voicePrompt}\n\nRewrite the following email in the user's voice above. Preserve the meaning and structure but match tone, length, openings, closings, and avoid any forbidden phrases. Return ONLY the rewritten email body — no commentary, no subject line.\n\nEmail to rewrite:\n${body}` }],
+          messages: [{ role: 'user', content: `Lightly polish this email body. Preserve its meaning, length, and relationship register EXACTLY: if it reads warm and personal, keep it warm and personal; if it reads as a formal business note, keep it formal. Do NOT add arguments, pitches, calls to action, or "category / participation / strategic positioning" framing that is not already present. Do NOT impose a sales or outreach voice on a personal note.${forbidden}\n\nReturn ONLY the email body — no commentary, no subject line.\n\nEmail:\n${body}` }],
         });
         const rewritten = alignRes.content[0]?.text?.trim();
         if (rewritten && rewritten.length > 40) finalBody = rewritten;
