@@ -1111,6 +1111,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
         throttleRef.current = null
       }, 40)
     }, [])
+    // Close the attach (+) menu on any outside click — fixes the "stuck attach menu" bug.
+    // menuOpen lives in this PromptBar scope, so the handler must be declared here (not at top level).
+    useEffect(() => {
+      if (!menuOpen) return
+      const handler = () => setMenuOpen(false)
+      setTimeout(() => document.addEventListener('click', handler), 0)
+      return () => document.removeEventListener('click', handler)
+    }, [menuOpen])
     return (
       <div ref={barRef} onMouseMove={isMobile ? undefined : handleBarMouseMove} style={{
         display: 'flex', flexDirection: 'column',
