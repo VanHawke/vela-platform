@@ -60,6 +60,7 @@ export default async function handler(req, res) {
             method: 'POST',
             body: JSON.stringify({
               sender_email: user.email,
+              user_id: user.user_id, // attribute synced sends to the mailbox owner (getActiveUsers selects user_id) — stops null re-accumulation
               recipient_email: recipientEmail,
               recipient_name: contactName,
               company,

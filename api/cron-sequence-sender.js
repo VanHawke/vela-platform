@@ -329,6 +329,7 @@ export default async function handler(req, res) {
         try {
           await sbFetch('kiko_email_tracking', { method: 'POST', body: JSON.stringify({
             sender_email: fromEmail,
+            user_id: (fromEmail || '').includes('matt') ? 'f1cb67ee-2917-44a3-affe-e8779ede3851' : '9f486437-4bf5-4111-abfe-fe19bfa76063', // attribute campaign sends to the sending account
             recipient_email: email.to_email,
             recipient_name: email.to_name || '',
             company: email.company || '',

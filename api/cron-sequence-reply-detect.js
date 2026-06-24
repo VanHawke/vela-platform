@@ -5,6 +5,7 @@
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 import { apolloFindEmail, apolloSearchPeople } from '../lib/emailIntel.js';
+import { classifyReply, handleDealStateChange, createFollowUpTask } from "./lib/deal-automation.js";
 
 // Hunter domain search fallback — finds alternative contacts when Apollo fails
 const HUNTER_KEY = '404535bb1e247b82992209e153cd2b2fe3eacde6';
@@ -176,6 +177,7 @@ export default async function handler(req, res) {
             oooCount++;
             continue;
           }
+          // ── DECLINE DETECTION — classify reply sentiment ──          const sentiment = classifyReply(snippet);          if (sentiment === "declined") {            console.log(`[reply-detect] ❌ Decline detected from ${enrollment.contact_name}: ${snippet?.slice(0, 100)}`);            await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: "PATCH", body: JSON.stringify({ status: "declined", reply_detected_at: new Date().toISOString() }) });            await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.queued`, { method: "PATCH", body: JSON.stringify({ status: "cancelled" }) });            // Find and update deal to Closed Lost            const declineDeals = await sbFetch(`deals?data->>company=ilike.*${encodeURIComponent(enrollment.company)}*&select=id,data&limit=1`);            if (declineDeals?.[0]) {              await handleDealStateChange(declineDeals[0].id, "Closed Lost", `Prospect declined: ${enrollment.contact_name} - ${(snippet || "").slice(0, 150)}`, { contactEmail: enrollment.contact_email, contactName: enrollment.contact_name, company: enrollment.company, userId: tokenUserId });            } else {              await createFollowUpTask({ company: enrollment.company, contact: enrollment.contact_name, contactEmail: enrollment.contact_email, type: "Re-engagement after decline", notes: `${enrollment.contact_name} declined. Revisit in 3 months.`, dueDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), userId: tokenUserId });            }            await sbFetch("kiko_alerts", { method: "POST", body: JSON.stringify({ type: "prospect_declined", severity: "medium", title: `Declined: ${enrollment.contact_name} (${enrollment.company})`, detail: `${enrollment.contact_name} declined. Deal moved to Lost. 3-month follow-up created. Snippet: ${(snippet || "").slice(0, 200)}`, entity_type: "contact", entity_name: enrollment.contact_name || email, user_id: tokenUserId, created_at: new Date().toISOString() }) });            replies++;            continue;          }
 
           await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
             status: 'replied', reply_detected_at: new Date().toISOString()
@@ -213,6 +215,7 @@ export default async function handler(req, res) {
           // ── FOLLOW-UP GUARANTEE: Always create a response-needed task so prospect never vanishes ──
           await sbFetch('kiko_email_tracking', { method: 'POST', body: JSON.stringify({
             sender_email: 'matt.smith@vanhawke.agency',
+            user_id: tokenUserId, // attribute the reply-followup to the mailbox owner that received the reply
             recipient_email: email,
             recipient_name: enrollment.contact_name || email,
             company: enrollment.company,

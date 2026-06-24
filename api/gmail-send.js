@@ -72,6 +72,7 @@ export default async function handler(req, res) {
       // 1. Track in email_tracking with follow-up due
       await sbFetch('kiko_email_tracking', { method: 'POST', body: JSON.stringify({
         sender_email: fromEmail,
+        user_id: isMatt ? 'f1cb67ee-2917-44a3-affe-e8779ede3851' : '9f486437-4bf5-4111-abfe-fe19bfa76063', // attribute to the sending operator
         recipient_email: to,
         subject: subject || '',
         gmail_message_id: result.id,
