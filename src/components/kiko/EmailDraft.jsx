@@ -305,7 +305,7 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
         if (originalBodyRef.current && currentBody !== originalBodyRef.current) {
           fetch('https://api.vanhawke.agency/api/capture-correction', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ original: originalBodyRef.current, edited: currentBody, recipient: currentTo, subject: currentSubject })
+            body: JSON.stringify({ original: originalBodyRef.current, edited: currentBody, recipient: currentTo, subject: currentSubject, senderEmail })
           }).catch(() => {}) // fire and forget
         }
       } else {
@@ -348,7 +348,7 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
         if (originalBodyRef.current && currentBody !== originalBodyRef.current) {
           fetch('https://api.vanhawke.agency/api/capture-correction', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ original: originalBodyRef.current, edited: currentBody, recipient: currentTo, subject: currentSubject })
+            body: JSON.stringify({ original: originalBodyRef.current, edited: currentBody, recipient: currentTo, subject: currentSubject, senderEmail: selectedSender?.email || 'sunny@vanhawke.agency' })
           }).catch(() => {})
         }
       } else { setSendNowState('error'); setTimeout(() => setSendNowState(false), 3000) }
