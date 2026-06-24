@@ -790,11 +790,13 @@ FOLLOW-UP LIFECYCLE (MANDATORY RULES):
 5. NEVER show stale follow-ups. The Command Centre should only show genuinely unactioned items.
 6. When YOU send an email via "Send now", the follow-up is auto-dismissed and tasks auto-completed.
 
-EMAIL VOICE (GLOBAL):
-• Voice profile from 115 real sent emails is injected into the backend system prompt (kiko.js)
-• Forbidden phrases enforced platform-wide: genuinely, appreciate the candour, hope this finds you well, etc.
-• The /api/rewrite-email endpoint loads voice profile for EVERY tone adjustment
-• This applies to ALL email drafts everywhere — Command Centre, main chat, campaigns
+EMAIL VOICE (GLOBAL — dynamic, per-user, relationship-aware; Step 3, Jun 2026):
+• Each operator's voice profile is {base, registers:{warm, peer, cold}} — base mechanics plus a distinct register learned per relationship. mergeTraits (api/lib/email-format.js) merges base + the active register and unionises forbidden phrases.
+• The brain (kiko.js) injects the operator's PEER baseline into the system prompt (the recipient is not known at that point).
+• Personal drafts resolve the register from REAL prior correspondence with that recipient (resolveVoiceContext): a warm contact gets warmth, a peer gets peer register, a cold or new contact gets neutral-professional — NOT a sales pitch. draftEmail then re-voices via alignBodyVoice (tone and phrasing only, never content; a deterministic guard strips any synthesised greeting or [First name] placeholder).
+• Campaign BLASTS use the firm-level campaign voice (api/lib/campaign-voice.js), where category-ownership framing is legitimate — this is the house's voice, separate from any operator's personal register. Signature and From remain the sender's identity.
+• /api/rewrite-email (the Warmer/Sharper/Shorter buttons) resolves the register too. Forbidden phrases enforced platform-wide.
+• When a user edits a draft and sends, capture-correction adds the deleted phrases to THAT sender's base.forbidden_phrases only (scoped and fail-closed — never another user's profile).
 
 ═══ SESSION 66+ CAPABILITIES (May 7, 2026) ═══
 
@@ -1048,9 +1050,14 @@ export async function generateSelfKnowledge(userId) {
       k.push(`Voice profile: ${hasVoice ? `LOADED (${c.sent_emails_analyzed || 0} emails analysed, ${voiceAge !== null ? voiceAge + 'd old' : 'age unknown'})` : 'NOT YET LEARNED — hit /api/cron-email-voice-learning'}`);
       if (hasVoice && c.email_voice_profile) {
         const vp = c.email_voice_profile;
-        if (vp.formality) k.push(`  Voice: ${vp.formality}, tone: ${vp.tone || '?'}, avg length: ${vp.avg_length || '?'}`);
-        if (vp.forbidden_phrases?.length) k.push(`  Avoid: ${vp.forbidden_phrases.slice(0, 5).join(', ')}`);
-        if (vp.preferred_phrases?.length) k.push(`  Prefer: ${vp.preferred_phrases.slice(0, 5).join(', ')}`);
+        // {base, registers} shape (Step 3): read base mechanics + the peer baseline register; fall back to a legacy flat profile.
+        const base = vp.base || vp;
+        const peer = vp.registers?.peer || vp;
+        const forbidden = [...new Set([...(base.forbidden_phrases || []), ...(peer.forbidden_phrases || [])])];
+        if (peer.formality || base.avg_length) k.push(`  Voice (peer baseline): ${peer.formality || '?'}, tone: ${peer.tone || '?'}, avg length: ${base.avg_length || '?'}`);
+        if (forbidden.length) k.push(`  Avoid: ${forbidden.slice(0, 5).join(', ')}`);
+        if (peer.preferred_phrases?.length) k.push(`  Prefer: ${peer.preferred_phrases.slice(0, 5).join(', ')}`);
+        if (vp.registers) k.push(`  Registers: warm / peer / cold, resolved per recipient from real prior correspondence`);
       }
       k.push(`Email signature: ${hasSig ? 'configured' : 'NOT CONFIGURED — set in Settings'}`);
     }

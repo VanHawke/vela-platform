@@ -178,7 +178,17 @@ LinkedIn reinforces email, never replaces it. Emails always run regardless of co
 
 - **Simple emails / follow-ups**: Haiku (fast, \~5-6s). Used for: follow-up drafts, simple replies, acknowledgements
 - **Complex drafts / first-touch outreach**: Sonnet (thorough, \~15-17s). Used for: authority-led sequences, investor comms, board-level messaging
-- Voice alignment: every email passes through Haiku rewrite to match Sunny's writing style from 49 analysed sent emails
+- Voice alignment: every personal draft passes through alignBodyVoice (Sonnet) to match the sender's voice for the RESOLVED register (see Dynamic Voice below)
+
+### DYNAMIC VOICE — per-user, relationship-aware (Step 3, Jun 2026)
+
+Kiko holds NO single templated voice. Each operator's profile is `{base, registers:{warm, peer, cold}}` in kiko_user_config.email_voice_profile: base mechanics plus a register learned per relationship. `mergeTraits` (the SINGLE definition, in api/lib/email-format.js) merges base + the active register and unionises forbidden phrases; `voiceProfileToPrompt(profile, register='peer')` is shape-aware. resolve-voice-context.js imports mergeTraits from email-format.js (one-way dependency, no import cycle).
+
+- **Register resolution** (`resolveVoiceContext`, api/lib/resolve-voice-context.js): classifies warm / peer / cold from REAL prior correspondence with the recipient in kiko_email_tracking. warm = a reply on a personal thread; peer = personal correspondence with no reply on record; cold = campaign-only or no history. cold means register-neutral professional, never a sales pitch.
+- **Brain composition** (kiko.js): injects the operator's PEER baseline into the system prompt (the recipient is unknown when the prompt is built).
+- **Personal re-voicing** (`alignBodyVoice`, exported from api/agents/outreach.js): one Sonnet pass applying the resolved register to TONE and PHRASING only — openings/closings structural, preferred_phrases + punctuation additive-optional, every hard guard verbatim (no new arguments/pitches/CTAs/category framing; claims kept verbatim). A deterministic code guard strips any synthesised greeting or `[First name]` placeholder before the draft is saved. rewrite-email.js (Warmer/Sharper/Shorter) resolves the register too.
+- **Campaign blasts** (`campaignVoicePrompt`, api/lib/campaign-voice.js): a firm-level, version-controlled voice constant carrying the OUTREACH DOCTRINE posture + forbidden/preferred, where category-ownership framing is legitimate. Scarcity is a POSTURE, never a hardcoded count (that is a per-campaign fact). cron-sequence-enqueue.js injects this instead of an operator's personal register; signature + From stay the sender's identity. The campaign store and the personal registers are PROVEN separate.
+- **Correction capture** (capture-correction.js): when a user edits a draft and sends, the deleted phrases are added to THAT sender's `base.forbidden_phrases` only. The sender is resolved to a real user_id via kiko_user_config and the read + PATCH are scoped to that user's own row. FAIL-CLOSED: an unknown sender never touches any profile (Matt can never edit Sunny's voice).
 
 ### SUPABASE REALTIME ARCHITECTURE
 
