@@ -60,6 +60,20 @@ const sbGet = async (path) => {
   } catch { return []; }
 };
 
+// Merge the operator's base mechanics with the active register's voice. forbidden_phrases is
+// UNIONISED (a register can never silently un-ban a phrase); every other field: register wins,
+// base fills the rest. Backward-compatible: a flat profile (no `registers` key) is treated as base.
+function mergeTraits(profile, register) {
+  if (!profile) return null;
+  if (!profile.registers || typeof profile.registers !== 'object') return profile; // flat profile
+  const base = profile.base || {};
+  const reg = profile.registers[register] || profile.registers.cold || {};
+  const merged = { ...base, ...reg };
+  const forbidden = [...new Set([...(base.forbidden_phrases || []), ...(reg.forbidden_phrases || [])])];
+  if (forbidden.length) merged.forbidden_phrases = forbidden;
+  return merged;
+}
+
 export async function resolveVoiceContext({ userId, recipientEmail } = {}) {
   const out = {
     register: 'cold',
@@ -69,19 +83,19 @@ export async function resolveVoiceContext({ userId, recipientEmail } = {}) {
     behaviouralLens: '',
   };
 
-  // Operator voice traits, user-scoped. Used for forbidden_phrases / mechanics only,
-  // NOT to impose a voice. Tolerates userId being absent.
-  try { out.traits = await loadVoiceProfile(sbGet, userId); } catch {}
+  // Load the operator's raw profile (user-scoped); traits are resolved against the register below.
+  let profile = null;
+  try { profile = await loadVoiceProfile(sbGet, userId); } catch {}
 
   const email = (recipientEmail || '').trim();
-  if (!email) return out;
+  if (!email) { out.traits = mergeTraits(profile, out.register); return out; }
 
   const uf = userId ? `&user_id=eq.${encodeURIComponent(userId)}` : '';
   const rows = await sbGet(
     `kiko_email_tracking?recipient_email=ilike.${encodeURIComponent(email)}${uf}` +
     `&select=source,subject,snippet,reply_snippet,sent_at,replied_at&order=sent_at.desc&limit=25`
   );
-  if (!Array.isArray(rows) || rows.length === 0) return out;
+  if (!Array.isArray(rows) || rows.length === 0) { out.traits = mergeTraits(profile, out.register); return out; }
 
   const personal = rows.filter(r => PERSONAL_SOURCES.includes((r.source || '').toLowerCase()));
   const replied = personal.filter(r => r.replied_at);
@@ -99,6 +113,7 @@ export async function resolveVoiceContext({ userId, recipientEmail } = {}) {
     repliedAt: r.replied_at || null,
   }));
 
+  out.traits = mergeTraits(profile, out.register);
   return out;
 }
 
