@@ -26,6 +26,26 @@ import { loadVoiceProfile } from './email-format.js';
 
 const PERSONAL_SOURCES = ['gmail', 'gmail_sync', 'direct_send'];
 
+// Register → drafting guidance. Routing only (Step 2b); the behavioural-science layer is Step 4.
+// cold is deliberately NEUTRAL-PROFESSIONAL, never the campaign "category ownership" pitch.
+export const REGISTER_GUIDANCE = {
+  warm: 'This is a warm contact the sender already has a real relationship with (prior correspondence and replies on record). Keep it warm, personal and relaxed.',
+  peer: 'This is a professional peer the sender has corresponded with before. Keep it collegial, direct and respectful.',
+  cold: 'This is a new or cold contact with no prior relationship on record. Keep it professionally neutral and courteous. Do NOT use sales-pitch, "category ownership", or "participation" framing.',
+};
+
+// The two operators. Voice is keyed on the SENDER (the email goes out as them), so a caller that only
+// knows the sender address resolves the operator's user_id through here. Mirrors the tracking backfill.
+const SENDER_TO_USER = {
+  'sunny@vanhawke.agency': '9f486437-4bf5-4111-abfe-fe19bfa76063',
+  'sunny@vanhawke.com': '9f486437-4bf5-4111-abfe-fe19bfa76063',
+  'matt.smith@vanhawke.agency': 'f1cb67ee-2917-44a3-affe-e8779ede3851',
+  'matt.smith@vanhawke.com': 'f1cb67ee-2917-44a3-affe-e8779ede3851',
+};
+export function userIdForSender(email) {
+  return SENDER_TO_USER[(email || '').trim().toLowerCase()] || '9f486437-4bf5-4111-abfe-fe19bfa76063';
+}
+
 // Self-contained Supabase REST GET (keeps this module standalone / importable in isolation).
 const SB = () => process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SK = () => process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;

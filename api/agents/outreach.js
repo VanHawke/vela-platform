@@ -4,7 +4,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
 import { generateFollowup, getFollowupQueue } from '../kiko-followup.js';
-import { wrapEmailBody, loadUserSignatures, loadVoiceProfile, voiceProfileToPrompt } from '../lib/email-format.js';
+import { wrapEmailBody, loadUserSignatures } from '../lib/email-format.js';
+import { resolveVoiceContext, REGISTER_GUIDANCE } from '../lib/resolve-voice-context.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
@@ -14,27 +15,27 @@ async function draftEmail({ to, subject, body, cc, thread_id, contact_status = '
     const { getGoogleToken } = await import('../google-token.js');
     const token = await getGoogleToken(userEmail);
 
-    // Load voice + signatures (signatures come from Gmail API native sendAs)
-    const [signatures, voiceProfile] = await Promise.all([
+    // Voice + signatures. resolveVoiceContext classifies the register (warm/peer/cold) from REAL prior
+    // correspondence with this recipient and returns the sender's forbidden phrases. This Gmail-draft
+    // path is always INDIVIDUAL/personal (campaigns run through cron-sequence-enqueue), so cold here
+    // means register-neutral professional, never the campaign "category ownership" voice. (Step 2b.)
+    const [signatures, voiceCtx] = await Promise.all([
       loadUserSignatures(sbFetch, userId, token),
-      loadVoiceProfile(sbFetch, userId),
+      resolveVoiceContext({ userId, recipientEmail: to }),
     ]);
+    const register = voiceCtx?.register || 'cold';
+    const forbiddenList = voiceCtx?.traits?.forbidden_phrases || [];
 
-    // Voice alignment, register-PRESERVING. This Gmail-draft path is always an INDIVIDUAL/personal
-    // draft, never a campaign blast (campaigns run through cron-sequence-enqueue), so it must NEVER
-    // impose the campaign "category ownership" cold voice. Preserve the body's own register and only
-    // strip the user's forbidden phrases. (Step 1 of the dynamic-voice rebuild; the shared
-    // resolveVoiceContext resolver will later SHAPE register from real prior correspondence.)
     let finalBody = body;
-    if (voiceProfile && body && body.length > 40) {
+    if (body && body.length > 40) {
       try {
-        const forbidden = voiceProfile?.forbidden_phrases?.length
-          ? `\n\nAvoid these phrases entirely (filler / AI-tells): ${voiceProfile.forbidden_phrases.join(', ')}.`
+        const forbidden = forbiddenList.length
+          ? `\n\nAvoid these phrases entirely (filler / AI-tells): ${forbiddenList.join(', ')}.`
           : '';
         const alignRes = await anthropic.messages.create({
           model: 'claude-sonnet-4-6',
           max_tokens: 800,
-          messages: [{ role: 'user', content: `Lightly polish this email body. Preserve its meaning, length, and relationship register EXACTLY: if it reads warm and personal, keep it warm and personal; if it reads as a formal business note, keep it formal. Do NOT add arguments, pitches, calls to action, or "category / participation / strategic positioning" framing that is not already present. Do NOT impose a sales or outreach voice on a personal note.${forbidden}\n\nReturn ONLY the email body — no commentary, no subject line.\n\nEmail:\n${body}` }],
+          messages: [{ role: 'user', content: `Lightly polish this email body. ${REGISTER_GUIDANCE[register] || REGISTER_GUIDANCE.cold} Preserve its meaning and length. Do NOT add arguments, pitches, calls to action, or "category / participation / strategic positioning" framing that is not already present.${forbidden}\n\nReturn ONLY the email body — no commentary, no subject line.\n\nEmail:\n${body}` }],
         });
         const rewritten = alignRes.content[0]?.text?.trim();
         if (rewritten && rewritten.length > 40) finalBody = rewritten;
@@ -67,9 +68,9 @@ async function draftEmail({ to, subject, body, cc, thread_id, contact_status = '
     });
     const draft = await draftRes.json();
     if (!draftRes.ok) return `Failed to create draft: ${JSON.stringify(draft)}`;
-    try { await sbFetch('activities', { method: 'POST', body: JSON.stringify({ type: 'email_drafted', entity_name: to, subject: subject || 'No subject', status: 'draft', metadata: { to, subject, draft_id: draft?.id, voice_applied: !!voiceProfile, contact_status } }) }); } catch {}
+    try { await sbFetch('activities', { method: 'POST', body: JSON.stringify({ type: 'email_drafted', entity_name: to, subject: subject || 'No subject', status: 'draft', metadata: { to, subject, draft_id: draft?.id, voice_applied: !!voiceCtx, contact_status } }) }); } catch {}
     try { await sbFetch('kiko_draft_tracking', { method: 'POST', body: JSON.stringify({ user_id: userId, gmail_draft_id: draft?.id, gmail_message_id: draft?.message?.id, original_content: finalBody.slice(0, 2000), recipient: to, subject: subject || '', status: 'drafted' }) }); } catch {}
-    return `Draft created. To: ${to}${subject ? `, Subject: "${subject}"` : ''}. Saved in Gmail Drafts. ${voiceProfile ? '[voice-matched]' : '[no voice profile — run cron-email-voice-learning]'}`;
+    return `Draft created. To: ${to}${subject ? `, Subject: "${subject}"` : ''}. Saved in Gmail Drafts. ${voiceCtx?.traits ? '[voice-matched]' : '[no voice profile — run cron-email-voice-learning]'}`;
   } catch (e) { return `Draft error: ${e.message}`; }
 }
 

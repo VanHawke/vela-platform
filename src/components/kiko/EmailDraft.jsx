@@ -373,7 +373,7 @@ export default function EmailDraft({ text, defaultSender, defaultTo }) {
   const handleRewrite = async (prompt) => {
     setRewriting(true)
     try {
-      const res = await fetch('https://api.vanhawke.agency/api/rewrite-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, body: currentBody }) })
+      const res = await fetch('https://api.vanhawke.agency/api/rewrite-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, body: currentBody, recipientEmail: currentTo, senderEmail: selectedSender?.email || 'sunny@vanhawke.agency' }) })
       const data = await res.json()
       if (data.success && data.body && data.body.length > 20) { setCurrentBody(data.body); setHasRewritten(true) }
     } catch (e) { console.error('[EmailDraft] Rewrite failed:', e) }

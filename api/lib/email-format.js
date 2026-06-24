@@ -152,7 +152,7 @@ export async function loadUserSignatures(sbFetch, userId, accessToken = null, fr
 export async function loadVoiceProfile(sbFetch, userId) {
   try {
     const uf = userId ? `&user_id=eq.${userId}` : '';
-    const rows = await sbFetch(`kiko_user_config?select=email_voice_profile,voice_last_learned${uf}&limit=1`);
+    const rows = await sbFetch(`kiko_user_config?select=email_voice_profile,voice_last_learned${uf}&order=voice_last_learned.desc.nullslast&limit=1`);
     if (rows?.[0]?.email_voice_profile && Object.keys(rows[0].email_voice_profile).length > 0) {
       return rows[0].email_voice_profile;
     }
