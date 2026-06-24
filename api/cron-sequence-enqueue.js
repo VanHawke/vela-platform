@@ -4,7 +4,8 @@
 // STANDALONE — if this fails, nothing else breaks.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
-import { wrapEmailBody, loadUserSignatures, loadVoiceProfile, voiceProfileToPrompt } from './lib/email-format.js';
+import { wrapEmailBody, loadUserSignatures } from './lib/email-format.js';
+import { campaignVoicePrompt } from './lib/campaign-voice.js';
 
 export const config = { maxDuration: 60 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
@@ -124,20 +125,19 @@ export default async function handler(req, res) {
     const todayEnd = new Date(now);
     todayEnd.setHours(23, 59, 59, 999);
 
-    // Load Sunny's voice profile + signatures ONCE for this run
-    // Voice profile = patterns learned from his actual sent emails (Sun 4am cron)
-    // Signatures = pulled live from Gmail API (native sendAs signature) — no Settings UI needed
+    // Load signatures ONCE for this run (pulled live from Gmail API — native sendAs signature).
+    // Body VOICE is the firm campaign voice (see campaignVoicePrompt below), NOT a personal profile.
     const SUNNY_USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
     const SUNNY_EMAIL = 'sunny@vanhawke.agency';
     const FROM_ADDRESS = 'sunny@vanhawke.agency';
     const { getGoogleToken } = await import('./google-token.js');
     const accessToken = await getGoogleToken(SUNNY_EMAIL).catch(() => null);
-    const [voiceProfile, signatures] = await Promise.all([
-      loadVoiceProfile(sbFetch, SUNNY_USER_ID),
-      loadUserSignatures(sbFetch, SUNNY_USER_ID, accessToken, FROM_ADDRESS),
-    ]);
+    const signatures = await loadUserSignatures(sbFetch, SUNNY_USER_ID, accessToken, FROM_ADDRESS);
     console.log(`[cron-sequence-enqueue] signature source: ${signatures.source}`);
-    const voicePromptInjection = voiceProfileToPrompt(voiceProfile);
+    // Campaign blasts carry the FIRM campaign voice (category framing permitted), NOT an operator's
+    // personal register. The signature + From above are the sender's identity; the body voice is the
+    // house's. Personal 1:1 cold mail uses registers.cold via resolveVoiceContext, never this store.
+    const voicePromptInjection = campaignVoicePrompt();
 
     // Get active enrollments due today
     const enrollments = await sbFetch(
