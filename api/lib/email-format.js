@@ -194,6 +194,23 @@ export function voiceProfileToPrompt(profile, register = 'peer') {
   return lines.join('\n');
 }
 
+// Deterministic house-style guard. Kiko's Step-4 lock requires the post-polish guard to run LAST on
+// BOTH the draft (alignBodyVoice) and rewrite (rewrite-email) paths, identically — because Step 4's
+// behavioural framing makes an LLM likelier to reintroduce a banned construction. This enforces the
+// two things that CAN be enforced deterministically: Sunny's no-dash rule (em/en/figure dashes become
+// commas, never hyphens) and the removal of any literal [first name] / [name] / [recipient] placeholder.
+// Claims-verbatim and "no new content" stay prompt-enforced (they cannot be checked without the source).
+export function enforceHouseStyle(text) {
+  if (!text) return text;
+  return text
+    .replace(/\s*[\u2014\u2013\u2015\u2012]\s*/g, ', ')   // em / en / horizontal-bar / figure dash → comma
+    .replace(/ +,/g, ',')                                  // tidy any " ," produced by the swap
+    .replace(/,{2,}/g, ',')                                // collapse accidental double commas
+    .replace(/\[\s*(?:first[\s_]?name|name|recipient)\s*\]/gi, '')
+    .replace(/^\s*,\s*/, '')                               // drop a leading comma left by a stripped placeholder
+    .trim();
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Gmail signature inline image extraction & caching
 //

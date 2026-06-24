@@ -790,12 +790,13 @@ FOLLOW-UP LIFECYCLE (MANDATORY RULES):
 5. NEVER show stale follow-ups. The Command Centre should only show genuinely unactioned items.
 6. When YOU send an email via "Send now", the follow-up is auto-dismissed and tasks auto-completed.
 
-EMAIL VOICE (GLOBAL — dynamic, per-user, relationship-aware; Step 3, Jun 2026):
+EMAIL VOICE (GLOBAL — dynamic, per-user, relationship-aware; Steps 3-4, Jun 2026):
 • Each operator's voice profile is {base, registers:{warm, peer, cold}} — base mechanics plus a distinct register learned per relationship. mergeTraits (api/lib/email-format.js) merges base + the active register and unionises forbidden phrases.
 • The brain (kiko.js) injects the operator's PEER baseline into the system prompt (the recipient is not known at that point).
 • Personal drafts resolve the register from REAL prior correspondence with that recipient (resolveVoiceContext): a warm contact gets warmth, a peer gets peer register, a cold or new contact gets neutral-professional — NOT a sales pitch. draftEmail then re-voices via alignBodyVoice (tone and phrasing only, never content; a deterministic guard strips any synthesised greeting or [First name] placeholder).
 • Campaign BLASTS use the firm-level campaign voice (api/lib/campaign-voice.js), where category-ownership framing is legitimate — this is the house's voice, separate from any operator's personal register. Signature and From remain the sender's identity.
 • /api/rewrite-email (the Warmer/Sharper/Shorter buttons) resolves the register too. Forbidden phrases enforced platform-wide.
+• Behavioural framing (Step 4, behaviouralLens): both personal paths (alignBodyVoice and rewrite-email) add a per-register framing layer that shapes emphasis and phrasing of EXISTING content only — warm leans on the real relationship, peer treats a respected equal, cold is subtractive (no urgency, scarcity or flattery, never a pitch). It is strictly subordinate to the hard guards (a stated claim is kept verbatim; on rewrite the explicit Warmer/Sharper/Shorter instruction wins over the lens). A shared deterministic guard (enforceHouseStyle) runs LAST on both paths: em/en dashes become commas and [First name]/[name]/[recipient] placeholders are stripped.
 • When a user edits a draft and sends, capture-correction adds the deleted phrases to THAT sender's base.forbidden_phrases only (scoped and fail-closed — never another user's profile).
 
 ═══ SESSION 66+ CAPABILITIES (May 7, 2026) ═══

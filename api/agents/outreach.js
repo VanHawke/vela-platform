@@ -4,7 +4,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
 import { generateFollowup, getFollowupQueue } from '../kiko-followup.js';
-import { wrapEmailBody, loadUserSignatures } from '../lib/email-format.js';
+import { wrapEmailBody, loadUserSignatures, enforceHouseStyle } from '../lib/email-format.js';
 import { resolveVoiceContext, REGISTER_GUIDANCE } from '../lib/resolve-voice-context.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
@@ -21,6 +21,9 @@ export async function alignBodyVoice(body, voiceCtx) {
   if (!body || body.length <= 40) return body;
   const register = voiceCtx?.register || 'cold';
   const t = voiceCtx?.traits || {};
+  // Step 4 — register-conditioned behavioural framing (shapes phrasing/emphasis of existing content
+  // only; the lens text itself ends with the hard-guard subordination clause).
+  const lens = voiceCtx?.behaviouralLens ? ` ${voiceCtx.behaviouralLens}` : '';
   const forbiddenList = t.forbidden_phrases || [];
   const forbidden = forbiddenList.length ? `\n\nAvoid these phrases entirely (filler / AI-tells): ${forbiddenList.join(', ')}.` : '';
   const vlines = [];
@@ -35,15 +38,16 @@ export async function alignBodyVoice(body, voiceCtx) {
     const alignRes = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 800,
-      messages: [{ role: 'user', content: `Lightly polish this email body so it reads in the sender's own voice for this relationship. ${REGISTER_GUIDANCE[register] || REGISTER_GUIDANCE.cold}${voiceGuidance}\n\nHARD RULES (do not break):\n- Preserve the email's meaning and approximate length. Do NOT add arguments, pitches, calls to action, or "category / participation / strategic positioning" framing that is not already present.\n- Keep every stated fact, number, name, date, amount, and commitment EXACTLY as written. Warmth and register live in the greeting, the transitions, and the sign-off, never in the facts. Do not paraphrase, soften, or re-word any claim, even to sound warmer.\n- The voice notes adjust tone and phrasing only. If a register opening, closing, or preferred phrase cannot be applied without adding a sentence or altering a claim, do NOT apply it.\n- Never use em-dashes or en-dashes.${forbidden}\n\nReturn ONLY the email body — no commentary, no subject line.\n\nEmail:\n${body}` }],
+      messages: [{ role: 'user', content: `Lightly polish this email body so it reads in the sender's own voice for this relationship. ${REGISTER_GUIDANCE[register] || REGISTER_GUIDANCE.cold}${lens}${voiceGuidance}\n\nHARD RULES (do not break):\n- Preserve the email's meaning and approximate length. Do NOT add arguments, pitches, calls to action, or "category / participation / strategic positioning" framing that is not already present.\n- Keep every stated fact, number, name, date, amount, and commitment EXACTLY as written. Warmth and register live in the greeting, the transitions, and the sign-off, never in the facts. Do not paraphrase, soften, or re-word any claim, even to sound warmer.\n- The behavioural framing shapes emphasis and phrasing only; it NEVER licenses dropping, softening, or rewording a stated fact, number, offer, or commitment. Where the framing (for example "cut what is not load-bearing" or "no scarcity") would remove or alter a claim, keep the claim verbatim and let the framing yield.\n- The voice notes adjust tone and phrasing only. If a register opening, closing, or preferred phrase cannot be applied without adding a sentence or altering a claim, do NOT apply it.\n- Never use em-dashes or en-dashes.${forbidden}\n\nReturn ONLY the email body — no commentary, no subject line.\n\nEmail:\n${body}` }],
     });
     let rewritten = alignRes.content[0]?.text?.trim();
     if (rewritten && rewritten.length > 40) {
-      // Deterministic guards (never rely on the model obeying): do not let the polish SYNTHESISE a
-      // greeting where the body had none, and never let a literal name placeholder reach a draft.
+      // Deterministic guards run LAST (Kiko Step-4 lock; never rely on the model obeying): do not let
+      // the polish SYNTHESISE a greeting where the body had none, then enforce house style (em/en
+      // dashes -> commas, strip any literal name placeholder) via the shared guard.
       const GREETING = /^\s*(Dear|Hi|Hello|Hey|Greetings|Good (?:morning|afternoon|evening))\b[^\n]*\r?\n+/i;
       if (!GREETING.test(body)) rewritten = rewritten.replace(GREETING, '').trim();
-      rewritten = rewritten.replace(/\[\s*(?:first[\s_]?name|name|recipient)\s*\]/gi, '').replace(/^\s*,\s*/, '').trim();
+      rewritten = enforceHouseStyle(rewritten);
       if (rewritten.length > 40) return rewritten;
     }
   } catch {}
