@@ -139,6 +139,7 @@ Ambient monitoring: detects messages + connection accepts, auto-drafts responses
 - 2026-06-23: The financial services group has identified F1 (specifically Audi's entry) as the platform for its brand growth and has hired leadership with direct Formula One partnership experience.
 - 2026-06-23: The response is cut off and doesn't contain a complete new fact. The only substantive content is a design recommendation.; ; cron-daily-intelligence (runs 0600 daily) is the correct home for the 14-day stale-pending partnership nudge, not the fortnightly scanner itself.
 - 2026-06-23: Email "Time for a catch up" to Alex was sent Mon 15 Jun, not 16 Jun.
+- 2026-06-24: Slice 2a (pure resolveVoiceContext) is built and verified, classifying 14/14 real recipients correctly.
 ## OPERATIONAL HEALTH
 - All systems online
 
@@ -391,3 +392,15 @@ FORTNIGHTLY SCANNER — HOLD FOR CONFIRM. cron-partnership-scan.js is registered
 WHERE SUNNY CONFIRMS DETECTIONS: on the Partnership Matrix page (/partnership-matrix), in a "Pending confirmation" strip shown above the tabs whenever pending detections exist. CONFIRM flips the row to verified+active and runs checkCategoryConflict (the only place a detection becomes real and the only place it can fire a conflict). REJECT marks it rejected (kept, not deleted, so the next scan does not re-surface it). Detection is silent except the one info alert; confirmation is the only thing that touches the matrix. The HOLD principle is the point: a web rumour can never auto-write the grid or pause a live campaign.
 
 STALE-PENDING NUDGE (added 2026-06-23). Hold-for-confirm only protects the matrix if Sunny actually clears the pending strip, so cron-daily-intelligence.js checks each morning for pending+unverified f1_partnerships rows older than 14 days. If any exist it raises ONE aggregate 'partnerships_pending_stale' warning alert (deduped on type, refreshed in place, never one-per-row) naming the partners/teams and linking to the Matrix pending strip; the alert auto-dismisses once the strip is cleared. The safety net on the safety net: a detection can sit unconfirmed, but it cannot sit forgotten.
+
+## DYNAMIC VOICE — per-user, relationship-aware drafting (added 2026-06-24, built with Sunny + Kiko; verified live)
+
+Kiko holds NO single voice. For every recipient the register is resolved from REAL prior correspondence, per operator. The cold "category ownership / participation" voice is CAMPAIGN language ONLY (firm/company outreach via cron-sequence-enqueue) — NEVER a personal note. This is the fix for the "Warmer button produced a cold pitch" bug: the old rewrite path force-fed a cold, unscoped voice profile onto every email.
+
+resolveVoiceContext({ userId, recipientEmail }) (api/lib/resolve-voice-context.js) is the shared resolver. It classifies register from kiko_email_tracking: warm = a reply received on a personal thread; peer = personal thread, no reply; cold = campaign-only or no history (DEFAULT = register-neutral professional, NOT the pitch). It returns the register, up to 3 real prior bodies (personal sources only, never campaign), and the operator's voice traits (forbidden phrases). Voice is keyed on the SENDER (the email goes out as them); userIdForSender maps the sender address to the operator's user_id.
+
+BOTH individual-draft paths route through it: rewrite-email.js (the Warmer/Sharper/Shorter tone buttons) and outreach.js draftEmail (the Gmail-draft path). They preserve the email and apply ONLY register-appropriate tone + the sender's forbidden phrases; they never inject pitch/category framing. The old private, unscoped profile loader (cross-user bleed + cold-pitch) is deleted.
+
+ATTRIBUTION: all kiko_email_tracking history was backfilled to the right operator by sender (Sunny 522, Matt 622, zero null), and all four writers (gmail-sync, gmail-send, sequence-sender, reply-detect) now stamp user_id at write time, so per-user scoping stays correct and does not re-accumulate null.
+
+STILL TO COME: Step 3 = split email_voice_profile (a JSONB column on kiko_user_config, not a table) into {base, registers:{warm,peer,cold}} and re-learn bucketed by relationship per user + learn Matt's profile. Step 4 = register-conditioned behavioural-science layer + per-user learning loop. Current builds route register ONLY; no persuasion logic yet.
