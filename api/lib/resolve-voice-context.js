@@ -22,7 +22,7 @@
 // No side effects, no callers yet — built to be verified against real data before
 // 2b wires it into the draft + rewrite paths.
 
-import { loadVoiceProfile } from './email-format.js';
+import { loadVoiceProfile, mergeTraits } from './email-format.js';
 
 const PERSONAL_SOURCES = ['gmail', 'gmail_sync', 'direct_send'];
 
@@ -60,19 +60,8 @@ const sbGet = async (path) => {
   } catch { return []; }
 };
 
-// Merge the operator's base mechanics with the active register's voice. forbidden_phrases is
-// UNIONISED (a register can never silently un-ban a phrase); every other field: register wins,
-// base fills the rest. Backward-compatible: a flat profile (no `registers` key) is treated as base.
-function mergeTraits(profile, register) {
-  if (!profile) return null;
-  if (!profile.registers || typeof profile.registers !== 'object') return profile; // flat profile
-  const base = profile.base || {};
-  const reg = profile.registers[register] || profile.registers.cold || {};
-  const merged = { ...base, ...reg };
-  const forbidden = [...new Set([...(base.forbidden_phrases || []), ...(reg.forbidden_phrases || [])])];
-  if (forbidden.length) merged.forbidden_phrases = forbidden;
-  return merged;
-}
+// Merge of base + active register (forbidden unionised) lives in email-format.js as `mergeTraits`,
+// the single definition shared with voiceProfileToPrompt. Imported above.
 
 export async function resolveVoiceContext({ userId, recipientEmail } = {}) {
   const out = {

@@ -9,6 +9,47 @@ import { resolveVoiceContext, REGISTER_GUIDANCE } from '../lib/resolve-voice-con
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
+// Polish an email body into the SENDER's own voice for the resolved register. The register voice is
+// applied to TONE and PHRASING only, never to content (Kiko's Step-3 lock):
+//   - openings/closings: STRUCTURAL-ONLY (guidance for if the greeting/sign-off is adjusted; never a
+//     new sentence of content)
+//   - preferred_phrases + punctuation: ADDITIVE-OPTIONAL ("echo where they already fit naturally")
+//   - every hard guard kept verbatim (no new arguments/pitches/CTAs/category framing; preserve
+//     meaning, claims and length). It is ONE generative pass, not two.
+// Exported so it has a single definition the tests exercise directly (no prompt duplication).
+export async function alignBodyVoice(body, voiceCtx) {
+  if (!body || body.length <= 40) return body;
+  const register = voiceCtx?.register || 'cold';
+  const t = voiceCtx?.traits || {};
+  const forbiddenList = t.forbidden_phrases || [];
+  const forbidden = forbiddenList.length ? `\n\nAvoid these phrases entirely (filler / AI-tells): ${forbiddenList.join(', ')}.` : '';
+  const vlines = [];
+  if (t.tone) vlines.push(`Tone for this relationship: ${t.tone}.`);
+  if (t.formality) vlines.push(`Formality: ${t.formality}.`);
+  if (t.opening_patterns?.length) vlines.push(`If the email ALREADY has a greeting, you may shape it toward how the sender opens: ${t.opening_patterns.slice(0, 2).join(' / ')} (structural only). Never introduce a greeting, a recipient name, or a [First name] placeholder where none exists; if the body has no greeting, leave it without one.`);
+  if (t.closing_patterns?.length) vlines.push(`If the sign-off is adjusted, they tend to close like: ${t.closing_patterns.slice(0, 2).join(' / ')} (structural only).`);
+  if (t.preferred_phrases?.length) vlines.push(`You MAY echo these of the sender's own phrasings where they ALREADY fit naturally, but never insert them to add new content: ${t.preferred_phrases.slice(0, 6).join(', ')}.`);
+  if (t.punctuation_style) vlines.push(`Punctuation: ${t.punctuation_style}`);
+  const voiceGuidance = vlines.length ? `\n\nVOICE (apply to tone and phrasing ONLY, never to content):\n- ${vlines.join('\n- ')}` : '';
+  try {
+    const alignRes = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 800,
+      messages: [{ role: 'user', content: `Lightly polish this email body so it reads in the sender's own voice for this relationship. ${REGISTER_GUIDANCE[register] || REGISTER_GUIDANCE.cold}${voiceGuidance}\n\nHARD RULES (do not break):\n- Preserve the email's meaning and approximate length. Do NOT add arguments, pitches, calls to action, or "category / participation / strategic positioning" framing that is not already present.\n- Keep every stated fact, number, name, date, amount, and commitment EXACTLY as written. Warmth and register live in the greeting, the transitions, and the sign-off, never in the facts. Do not paraphrase, soften, or re-word any claim, even to sound warmer.\n- The voice notes adjust tone and phrasing only. If a register opening, closing, or preferred phrase cannot be applied without adding a sentence or altering a claim, do NOT apply it.\n- Never use em-dashes or en-dashes.${forbidden}\n\nReturn ONLY the email body — no commentary, no subject line.\n\nEmail:\n${body}` }],
+    });
+    let rewritten = alignRes.content[0]?.text?.trim();
+    if (rewritten && rewritten.length > 40) {
+      // Deterministic guards (never rely on the model obeying): do not let the polish SYNTHESISE a
+      // greeting where the body had none, and never let a literal name placeholder reach a draft.
+      const GREETING = /^\s*(Dear|Hi|Hello|Hey|Greetings|Good (?:morning|afternoon|evening))\b[^\n]*\r?\n+/i;
+      if (!GREETING.test(body)) rewritten = rewritten.replace(GREETING, '').trim();
+      rewritten = rewritten.replace(/\[\s*(?:first[\s_]?name|name|recipient)\s*\]/gi, '').replace(/^\s*,\s*/, '').trim();
+      if (rewritten.length > 40) return rewritten;
+    }
+  } catch {}
+  return body;
+}
+
 // ── Gmail Draft (voice-aware, signature-wrapped) ──
 async function draftEmail({ to, subject, body, cc, thread_id, contact_status = 'cold' }, userEmail, userId) {
   try {
@@ -23,24 +64,9 @@ async function draftEmail({ to, subject, body, cc, thread_id, contact_status = '
       loadUserSignatures(sbFetch, userId, token),
       resolveVoiceContext({ userId, recipientEmail: to }),
     ]);
-    const register = voiceCtx?.register || 'cold';
-    const forbiddenList = voiceCtx?.traits?.forbidden_phrases || [];
 
-    let finalBody = body;
-    if (body && body.length > 40) {
-      try {
-        const forbidden = forbiddenList.length
-          ? `\n\nAvoid these phrases entirely (filler / AI-tells): ${forbiddenList.join(', ')}.`
-          : '';
-        const alignRes = await anthropic.messages.create({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 800,
-          messages: [{ role: 'user', content: `Lightly polish this email body. ${REGISTER_GUIDANCE[register] || REGISTER_GUIDANCE.cold} Preserve its meaning and length. Do NOT add arguments, pitches, calls to action, or "category / participation / strategic positioning" framing that is not already present.${forbidden}\n\nReturn ONLY the email body — no commentary, no subject line.\n\nEmail:\n${body}` }],
-        });
-        const rewritten = alignRes.content[0]?.text?.trim();
-        if (rewritten && rewritten.length > 40) finalBody = rewritten;
-      } catch {}
-    }
+    // Polish into the sender's voice for the resolved register (single pass; tone + phrasing only).
+    const finalBody = await alignBodyVoice(body, voiceCtx);
 
     // Clean subject
     const cleanSubject = (subject || '')

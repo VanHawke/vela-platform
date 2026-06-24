@@ -160,18 +160,37 @@ export async function loadVoiceProfile(sbFetch, userId) {
   return null;
 }
 
-export function voiceProfileToPrompt(profile) {
-  if (!profile) return '';
+// Merge the operator's base mechanics with the active register's voice. forbidden_phrases is
+// UNIONISED (a register can never silently un-ban a phrase); every other field: register wins,
+// base fills the rest. Backward-compatible: a flat profile (no `registers` key) is returned as-is.
+// The merge rule has ONE definition and it lives here, next to the renderer. resolve-voice-context.js
+// imports it FROM this module (it already imports loadVoiceProfile here), so there is no import cycle.
+export function mergeTraits(profile, register = 'peer') {
+  if (!profile) return null;
+  if (!profile.registers || typeof profile.registers !== 'object') return profile; // flat profile
+  const base = profile.base || {};
+  const reg = profile.registers[register] || profile.registers.cold || {};
+  const merged = { ...base, ...reg };
+  const forbidden = [...new Set([...(base.forbidden_phrases || []), ...(reg.forbidden_phrases || [])])];
+  if (forbidden.length) merged.forbidden_phrases = forbidden;
+  return merged;
+}
+
+// Shape-aware: a {base, registers} profile is merged for `register` (default peer — the honest
+// "how this operator writes" baseline); a flat profile passes through unchanged (renders as before).
+export function voiceProfileToPrompt(profile, register = 'peer') {
+  const t = mergeTraits(profile, register);
+  if (!t) return '';
   const lines = ['USER VOICE PROFILE (match exactly when drafting — this was learned from their real sent emails):'];
-  if (profile.formality) lines.push(`- Formality: ${profile.formality}`);
-  if (profile.tone) lines.push(`- Tone: ${profile.tone}`);
-  if (profile.avg_length) lines.push(`- Length: ${profile.avg_length}`);
-  if (profile.opening_patterns?.length) lines.push(`- Opening style: ${profile.opening_patterns.slice(0, 3).join(' / ')}`);
-  if (profile.closing_patterns?.length) lines.push(`- Closing style: ${profile.closing_patterns.slice(0, 3).join(' / ')}`);
-  if (profile.preferred_phrases?.length) lines.push(`- Preferred phrases: ${profile.preferred_phrases.slice(0, 8).join(', ')}`);
-  if (profile.forbidden_phrases?.length) lines.push(`- NEVER use: ${profile.forbidden_phrases.slice(0, 8).join(', ')}`);
-  if (profile.sentence_structure) lines.push(`- Sentence structure: ${profile.sentence_structure}`);
-  if (profile.signature_style) lines.push(`- Sign-off style: ${profile.signature_style}`);
+  if (t.formality) lines.push(`- Formality: ${t.formality}`);
+  if (t.tone) lines.push(`- Tone: ${t.tone}`);
+  if (t.avg_length) lines.push(`- Length: ${t.avg_length}`);
+  if (t.opening_patterns?.length) lines.push(`- Opening style: ${t.opening_patterns.slice(0, 3).join(' / ')}`);
+  if (t.closing_patterns?.length) lines.push(`- Closing style: ${t.closing_patterns.slice(0, 3).join(' / ')}`);
+  if (t.preferred_phrases?.length) lines.push(`- Preferred phrases: ${t.preferred_phrases.slice(0, 8).join(', ')}`);
+  if (t.forbidden_phrases?.length) lines.push(`- NEVER use: ${t.forbidden_phrases.slice(0, 8).join(', ')}`);
+  if (t.sentence_structure) lines.push(`- Sentence structure: ${t.sentence_structure}`);
+  if (t.signature_style) lines.push(`- Sign-off style: ${t.signature_style}`);
   return lines.join('\n');
 }
 

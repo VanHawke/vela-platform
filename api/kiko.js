@@ -401,7 +401,7 @@ export default async function handler(req, res) {
     try {
       const voiceProfile = await cachedFetch('voice:' + userId, 600000, () => loadVoiceProfile(sbFetch, userId));
       if (voiceProfile) {
-        const vpPrompt = voiceProfileToPrompt(voiceProfile);
+        const vpPrompt = voiceProfileToPrompt(voiceProfile, 'peer'); // peer = the operator's baseline voice; recipient-specific register is applied later at the draft/polish layer where the recipient is known
         if (vpPrompt) systemPrompt += "\n\n" + vpPrompt;
       }
     } catch (vpErr) { console.warn("[kiko] Voice profile load failed:", vpErr.message); }
