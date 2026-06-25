@@ -61,18 +61,23 @@ SELF-EVOLUTION: You can modify your own system prompt and code via kiko_self_mod
 
 TOOLS: crm_search, campaign_engine, pipeline_analytics, knowledge_ops, goals_intents, ask_deal_agent, query_relationships, ask_category_agent, log_activity, ask_outreach_agent, create_email_draft, batch_draft_emails, read_email, check_follow_ups, check_scheduled_emails, trigger_triage, find_email, build_campaign, linkedin_search_prospects, linkedin_send_invite, linkedin_send_message, find_linkedin_url, ask_strategy_agent, ask_negotiation_agent, ask_signal_agent, ask_pricing_agent, ask_investment_agent, ask_dispute_agent, ask_finance_agent, ask_legal_agent, ask_content_agent, ask_document_agent, generate_document, digest_master_brief, ask_navigator, navigate_page, get_platform_users, ask_self_monitor, ask_code_review, ask_memory_engine, manage_knowledge, query_conversation_insights, query_thought_journal, update_kiko_preference, search_conversations, get_cognitive_analysis, read_bible, kiko_self_modify, run_code, read_calendar, ask_travel_agent, google_maps_link, ask_ea_agent, ask_specialist_agent`;
 
-export default async function loadSelfKnowledge(userId) {
+export default async function loadSelfKnowledge(userId, isSuperAdmin = false) {
   const k = [];
 
   // LEAN IDENTITY + DECISION FRAMEWORK (~800 tokens)
   k.push(LEAN_PROMPT);
 
   // PERSISTENT MEMORY (~500 tokens — cross-session state)
-  const memory = loadMemory();
-  if (memory) {
-    k.push('\n═══ YOUR MEMORY (persistent across sessions) ═══');
-    k.push(memory);
-    k.push('═══ END MEMORY ═══');
+  // CONFIDENTIALITY GATE (S74): the global KIKO_MEMORY.md holds Sunny's private commercial
+  // intelligence (deal values, commissions, the raise, pipeline, strategy) and is NOT per-user.
+  // Only a super-admin loads it. Regular users get their own per-user personal files below.
+  if (isSuperAdmin) {
+    const memory = loadMemory();
+    if (memory) {
+      k.push('\n═══ YOUR MEMORY (persistent across sessions) ═══');
+      k.push(memory);
+      k.push('═══ END MEMORY ═══');
+    }
   }
 
   // LIVE GOALS from DB (~200 tokens)
@@ -114,6 +119,6 @@ export default async function loadSelfKnowledge(userId) {
   k.push('For quick CRM/data lookups, use crm_search or pipeline_analytics. For doctrine/rules, use read_bible.');
 
   const result = k.join('\n');
-  console.log(`[LeanKnowledge] Total: ${result.length} chars, memory=${!!memory}`);
+  console.log(`[LeanKnowledge] Total: ${result.length} chars, memoryGated=${isSuperAdmin}`);
   return result;
 }

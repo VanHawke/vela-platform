@@ -339,7 +339,7 @@ export default async function handler(req, res) {
     // ═══ CONTEXT LOADING — ALWAYS FULL, NO GATES ═══
     const [entityContext, selfKnowledge, learnedRulesResult, preferencesResult, goalsResult, intentsResult, draftActionsResult, spineRecall] = await Promise.all([
       fetchEntityContext(pageEntity),
-      loadLeanKnowledge(userId).catch(() => ''),
+      loadLeanKnowledge(userId, isSuperAdmin).catch(() => ''),
       cachedFetch('rules', 300000, () => sbFetch(`kiko_learned_rules?active=eq.true&select=rule_text,category,weight&order=weight.desc&limit=15`)).catch(() => []),
       cachedFetch('prefs', 300000, () => sbFetch(`kiko_preferences?select=category,preference,confidence&order=confidence.desc&limit=15`)).catch(() => []),
       sbFetch(`kiko_goals?user_id=eq.${userId}&status=eq.active&select=title,priority,description,next_action,due_date&order=priority.desc&limit=10`).catch(() => []),
