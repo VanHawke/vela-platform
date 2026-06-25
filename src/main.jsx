@@ -25,4 +25,9 @@ if ('serviceWorker' in navigator) {
     regs.forEach(r => r.unregister())
   })
 }
-// build-bust 1775718796
+// Purge any Cache Storage left behind by an old service worker, so a stale
+// app shell can never survive a deploy (root cause of "I don't see the update").
+if ('caches' in window) {
+  caches.keys().then(keys => keys.forEach(k => caches.delete(k))).catch(() => {})
+}
+// build-bust 1782404400
