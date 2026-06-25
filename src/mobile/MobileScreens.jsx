@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 
@@ -369,20 +369,23 @@ function partOfDay() { const h = new Date().getHours(); return h < 12 ? 'this mo
 
 export function MobileHome({ userName = 'there' }) {
   const nav = useNavigate()
+  const inputRef = useRef(null)
   const [text, setText] = useState('')
   const [unread, setUnread] = useState(0)
   useEffect(() => {
     supabase.from('kiko_team_messages').select('read_by').order('created_at', { ascending: false }).limit(60)
       .then(({ data }) => setUnread((data || []).filter(m => !m.read_by || m.read_by.length === 0).length))
   }, [])
+  const hasContent = text.trim().length > 0
   const go = (msg) => {
     const t = (msg != null ? msg : text).trim()
     nav('/chat', { state: t ? { initialMessage: t } : {} })
   }
-  const ibtn = { width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: C.text, cursor: 'pointer', margin: '0 -8px', position: 'relative', WebkitTapHighlightColor: 'transparent' }
+  const ibtn = { width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: '#0A0A0A', cursor: 'pointer', margin: '0 -8px', position: 'relative', WebkitTapHighlightColor: 'transparent' }
+  const ctlBtn = { width: 32, height: 32, borderRadius: 9999, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.12)', WebkitTapHighlightColor: 'transparent', padding: 0 }
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: C.bg, fontFamily: C.sans, color: C.text }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'calc(env(safe-area-inset-top, 0px) + 14px) 18px 8px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px 4px', flexShrink: 0 }}>
         <button onClick={() => nav('/chat', { state: { openHistory: true } })} style={ibtn} aria-label="Conversation history">
           <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h11"/></svg>
         </button>
@@ -391,13 +394,21 @@ export function MobileHome({ userName = 'there' }) {
           {unread > 0 && <span style={{ position: 'absolute', top: 7, right: 7, width: 8, height: 8, borderRadius: '50%', background: '#C8553D', border: '2px solid ' + C.bg }} />}
         </button>
       </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 22px', paddingBottom: 'calc(10vh + env(safe-area-inset-bottom, 0px))' }}>
-        <div style={{ fontFamily: C.serif, fontWeight: 300, fontSize: 30, lineHeight: 1.2, letterSpacing: '-0.02em', textAlign: 'center', color: C.text }}>{greetingPart()}, {userName}</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.card, border: '1px solid rgba(0,0,0,0.11)', borderRadius: 27, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', padding: '7px 7px 7px 15px', marginTop: 22 }}>
-          <span style={{ color: C.mut, display: 'flex', flexShrink: 0 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
-          <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); go() } }} placeholder="Ask Kiko anything" enterKeyHint="send" style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'none', fontFamily: C.sans, fontSize: 16, color: C.text }} />
-          <span onClick={() => nav('/voice')} style={{ color: C.sub, display: 'flex', flexShrink: 0, cursor: 'pointer' }} aria-label="Voice"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg></span>
-          <button onClick={() => go()} aria-label="Send" style={{ width: 36, height: 36, borderRadius: '50%', background: C.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: 'none', cursor: 'pointer' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 clamp(20px, 6vw, 36px)', paddingBottom: 'calc(10vh + env(safe-area-inset-bottom, 0px))' }}>
+        <div style={{ fontFamily: C.serif, fontWeight: 300, fontSize: 'clamp(25px, 7vw, 33px)', lineHeight: 1.18, letterSpacing: '-0.02em', textAlign: 'center', color: C.text }}>{greetingPart()}, {userName}</div>
+        <div style={{ width: '100%', maxWidth: 460, margin: '22px auto 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 26, boxShadow: '0 2px 10px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02)', padding: '9px 9px 9px 14px' }}>
+            <button onClick={() => inputRef.current && inputRef.current.focus()} style={ctlBtn} aria-label="Add">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <input ref={inputRef} value={text} onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); go() } }} placeholder="Ask Kiko anything…" enterKeyHint="send" style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'none', fontFamily: C.sans, fontSize: 17, color: '#0A0A0A', padding: '2px 4px' }} />
+            <button onClick={() => nav('/voice')} style={ctlBtn} aria-label="Voice">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(90,100,112,0.6)"/><rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(90,100,112,0.8)"/><rect x="12" y="7" width="2" height="10" rx="1" fill="rgba(90,100,112,1)"/><rect x="16" y="4" width="2" height="16" rx="1" fill="rgba(90,100,112,0.8)"/><rect x="20" y="9" width="2" height="6" rx="1" fill="rgba(90,100,112,0.6)"/></svg>
+            </button>
+            <button onClick={() => go()} aria-label="Send" style={{ width: 38, height: 38, borderRadius: 9999, background: hasContent ? '#E8700A' : '#0A0A0A', border: 'none', color: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: hasContent ? '0 4px 16px rgba(232,112,10,0.3)' : '0 1px 3px rgba(0,0,0,0.2)', transition: 'all 250ms cubic-bezier(0.34, 1.56, 0.64, 1)', WebkitTapHighlightColor: 'transparent', padding: 0 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
