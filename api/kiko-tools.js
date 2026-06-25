@@ -427,10 +427,10 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'query_user_activity',
-    description: 'SUPER-ADMIN ONLY oversight tool. Lets a super-admin see another user\'s activity: what they have added to their memory, and the state of their task list split into actioned vs open. Use when Sunny asks "what has Matt added to memory", "did Matt upload the E1 costs", "where is Matt on his tasks", "what has Matt actioned and what is still open". Refuses for any non-super-admin caller. One-directional by design: it never exposes Sunny\'s own data to anyone.',
+    description: 'SUPER-ADMIN ONLY oversight tool. Lets a super-admin see and RECONCILE another user\'s activity. Use whenever Sunny asks what another user has actually done, e.g. "did Matt send the emails he marked done", "what has Matt actioned vs what is outstanding", "did Matt really do these tasks", "where is Matt on his tasks", "what has Matt added to memory", "did Matt upload the E1 costs". For any "did they actually do it" question use kind:"reconcile", which cross-checks every completed task against the real Gmail send record and stamps each with a verdict, and returns the user\'s real sends plus a digest of what they consulted Kiko on. Refuses for any non-super-admin caller. One-directional by design: it never exposes Sunny\'s own data to anyone.',
     input_schema: { type: 'object', properties: {
       target_user: { type: 'string', description: 'The user to inspect, by name or email (e.g. "Matt" or "matt.smith@vanhawke.agency").' },
-      kind: { type: 'string', enum: ['memory', 'tasks', 'both'], description: 'What to retrieve. "memory" = what they added to memory; "tasks" = their task list split into actioned vs open; "both" = both. Default both.' },
+      kind: { type: 'string', enum: ['memory', 'tasks', 'both', 'reconcile'], description: 'What to retrieve. "reconcile" = full reconciliation: every completed task verified against the real Gmail send record with a per-task verdict (sent / no artefact / stale / call or LinkedIn unverifiable), plus the user\'s actual sends and a digest of what they consulted Kiko on — USE THIS for any "did they actually do it" question. "memory" = what they added to memory; "tasks" = task list split actioned vs open (status only, no verification); "both" = memory + tasks. Default both.' },
     }, required: ['target_user'] },
   },
   {
@@ -1107,7 +1107,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
       }
       const target = (input.target_user || '').trim();
       if (!target) return JSON.stringify({ error: 'target_user is required (a name or email).' });
-      const kind = ['memory', 'tasks', 'both'].includes(input.kind) ? input.kind : 'both';
+      const kind = ['memory', 'tasks', 'both', 'reconcile'].includes(input.kind) ? input.kind : 'both';
 
       // Resolve target -> distinct user_id (one person can hold several email rows under one user_id).
       const safe = encodeURIComponent(target);
@@ -1139,6 +1139,87 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
           (done ? actioned : open).push(row);
         }
         result.tasks = { total: (tasks || []).length, actioned_count: actioned.length, open_count: open.length, actioned, open };
+      }
+
+      if (kind === 'reconcile') {
+        const DAY = 86400000;
+        const sinceISO = new Date(Date.now() - 90 * DAY).toISOString();
+
+        const tasks = await sbFetch(`tasks?user_id=eq.${targetId}&select=id,data,updated_at&order=updated_at.desc&limit=300`);
+        const sends = await sbFetch(`kiko_email_tracking?user_id=eq.${targetId}&sent_at=gte.${sinceISO}&select=recipient_email,recipient_name,company,subject,sent_at&order=sent_at.desc&limit=400`);
+        const insights = await sbFetch(`kiko_conversation_insights?user_id=eq.${targetId}&order=created_at.desc&limit=12&select=summary,entities_discussed,created_at`);
+
+        const sendList = (sends || []).map(s => ({
+          to: s.recipient_email || '', subject: s.subject || '', sent_at: s.sent_at || '',
+          hay: `${s.recipient_email || ''} ${s.recipient_name || ''} ${s.company || ''}`.toLowerCase(),
+          t: s.sent_at ? new Date(s.sent_at).getTime() : 0,
+        }));
+
+        const STOP = new Set(['technology','technologies','group','global','company','limited','holdings','partners','partner','solutions','systems','international','ventures','capital','digital','media','series','racing','sports','energy','motors','industries','consumer','marketing','agency','ltd','inc']);
+        const tokenize = (c) => (c || '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 4 && !STOP.has(w));
+        const isEmail = (t) => { const s = (t || '').toLowerCase(); return s.includes('email') || s.includes('outreach') || s.includes('follow'); };
+        const isCall = (t) => (t || '').toLowerCase().includes('call');
+        const isLinkedIn = (t, n) => { const s = `${t || ''} ${n || ''}`.toLowerCase(); return s.includes('linkedin') || s.includes('comment') || s.includes(' dm') || s.includes('connection request') || s.includes('invite') || s.includes('connect with'); };
+        const WIN = 4 * DAY;
+
+        const open_tasks = [], assigned_done = [];
+        const autoMap = new Map();
+        const sc = { assigned_done: 0, open: 0, email_assigned: 0, verified_sent: 0, no_artefact: 0, stale_no_recent_send: 0, call_unverifiable: 0, linkedin_unverifiable: 0, manual_unverifiable: 0, auto_cleared: 0, auto_followups: 0 };
+
+        const classify = (d) => {
+          const company = d.company || '', type = d.type || '', notes = d.notes || '';
+          const cAt = d.completedAt ? new Date(d.completedAt).getTime() : null;
+          const toks = tokenize(company);
+          const matches = toks.length ? sendList.filter(s => toks.some(tok => s.hay.includes(tok))) : [];
+          if (d.autoCompleted === true) return { verdict: 'auto_cleared', evidence: null, note: d.cleared_reason || 'system auto-cleared' };
+          const hit = matches.find(s => cAt && Math.abs(s.t - cAt) <= WIN);
+          if (hit) return { verdict: 'verified_sent', evidence: { to: hit.to, subject: hit.subject, sent_at: (hit.sent_at || '').slice(0, 16).replace('T', ' ') }, note: '' };
+          if (isEmail(type)) {
+            if (matches.length) { const n = matches[0]; return { verdict: 'stale_no_recent_send', evidence: { to: n.to, subject: n.subject, sent_at: (n.sent_at || '').slice(0, 16).replace('T', ' ') }, note: `no send at completion; most recent ${company} email ${(n.sent_at || '').slice(0, 10)}` }; }
+            return { verdict: 'no_artefact', evidence: null, note: `no email to ${company} on record in the last 90 days` };
+          }
+          if (isCall(type)) return { verdict: 'call_unverifiable', evidence: null, note: 'call task; calls are not logged anywhere' };
+          if (isLinkedIn(type, notes)) return { verdict: 'linkedin_unverifiable', evidence: null, note: 'LinkedIn task; outbound LinkedIn actions are not logged' };
+          return { verdict: 'manual_unverifiable', evidence: null, note: 'no verifiable artefact for this task type' };
+        };
+
+        for (const tk of (tasks || [])) {
+          const d = tk.data || {};
+          const isDone = d.completed === true || d.status === 'completed' || d.status === 'done' || d.dismissed === true;
+          const company = d.company || '', type = d.type || '';
+          if (!isDone) {
+            open_tasks.push({ company, type, contact: d.contact || '', dueDate: (d.dueDate || '').slice(0, 10) || null, notes: (d.notes || '').slice(0, 160) });
+            sc.open++; continue;
+          }
+          const c = classify(d);
+          if (d.assignedBy) {
+            sc.assigned_done++;
+            if (isEmail(type)) sc.email_assigned++;
+            sc[c.verdict] = (sc[c.verdict] || 0) + 1;
+            assigned_done.push({ company, type, assignedBy: d.assignedBy, completedAt: (d.completedAt || '').slice(0, 16).replace('T', ' ') || null, verdict: c.verdict, evidence: c.evidence, note: c.note || undefined });
+          } else {
+            sc.auto_followups++;
+            const key = `${company}|${type}|${c.verdict}`;
+            autoMap.set(key, (autoMap.get(key) || 0) + 1);
+          }
+        }
+
+        const auto_items = [...autoMap.entries()].map(([k, n]) => { const p = k.split('|'); return { company: p[0], type: p[1], verdict: p[2], count: n }; }).sort((a, b) => b.count - a.count);
+
+        result.window_days = 90;
+        result.scoreboard = sc;
+        result.assigned_tasks_done = assigned_done;
+        result.open_tasks = open_tasks;
+        result.auto_followups = { total: sc.auto_followups, note: 'system-generated follow-up reminder rows with no human assigner; deduped here, not counted as assigned work', items: auto_items };
+        result.actual_sends_last_90d = sendList.slice(0, 40).map(s => ({ to: s.to, subject: s.subject, sent_at: (s.sent_at || '').slice(0, 16).replace('T', ' ') }));
+        result.consulted_kiko = (insights || []).map(i => ({ date: (i.created_at || '').slice(0, 10), summary: (i.summary || '').slice(0, 300), entities: (i.entities_discussed || []).slice(0, 8) }));
+        result.verification_basis = {
+          email: 'verified against the real Gmail send record (reliable)',
+          calls: 'not logged anywhere; cannot be verified from data',
+          linkedin: 'outbound LinkedIn actions are not logged; cannot be verified until a LinkedIn activity reader is built',
+          note: 'a completed flag is self-reported; this tool tests it against real artefacts'
+        };
+        return JSON.stringify(result, null, 2);
       }
 
       return JSON.stringify(result, null, 2);
