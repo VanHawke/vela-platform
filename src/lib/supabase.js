@@ -3,13 +3,64 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
 
+// In-tab async lock for Supabase auth operations.
+//
+// supabase-js serialises all session access (getSession, token refresh, and the
+// one-time URL-session detection that runs on a fresh login redirect) through this
+// lock. Every data query goes from(...) -> _getAccessToken() -> getSession(), and
+// getSession waits on this lock. It was previously a no-op (fn() with no waiting),
+// which let the first queries on a cold login read the session BEFORE the redirect
+// had finished committing it. Those queries went out unauthenticated, RLS returned
+// nothing, and sections rendered blank until a manual refresh. This restores real
+// serialisation so getSession waits for the session to be ready before any query
+// reads it.
+//
+// Faithful in-memory copy of @supabase/auth-js processLock, inlined to avoid
+// importing a transitive package path. It deliberately does NOT use the Navigator
+// LockManager (which can stall under React Strict Mode double-mount, the likely
+// reason the lock was disabled in the first place), so it serialises within this
+// tab only — exactly what is needed here and free of that hazard.
+const PROCESS_LOCKS = {}
+async function processLock(name, acquireTimeout, fn) {
+  const previous = PROCESS_LOCKS[name] ?? Promise.resolve()
+  const previousHandled = (async () => { try { await previous } catch { /* ignore prior op error */ } })()
+  const current = (async () => {
+    let timeoutId = null
+    try {
+      const timeoutPromise = acquireTimeout >= 0
+        ? new Promise((_, reject) => {
+            timeoutId = setTimeout(() => {
+              const err = new Error(`Acquiring process lock "${name}" timed out`)
+              err.isAcquireTimeout = true
+              reject(err)
+            }, acquireTimeout)
+          })
+        : null
+      await Promise.race([previousHandled, timeoutPromise].filter(Boolean))
+      if (timeoutId !== null) clearTimeout(timeoutId)
+    } catch (e) {
+      if (timeoutId !== null) clearTimeout(timeoutId)
+      if (e && e.isAcquireTimeout) throw e
+      // otherwise the previous op rejected — fall through and run fn()
+    }
+    return await fn()
+  })()
+  PROCESS_LOCKS[name] = (async () => {
+    try { return await current } catch (e) {
+      if (e && e.isAcquireTimeout) { try { await previous } catch { /* ignore */ } return null }
+      throw e
+    }
+  })()
+  return await current
+}
+
 const realClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'implicit',
-    lock: async (name, acquireTimeout, fn) => fn(),
+    lock: processLock,
   },
 })
 
