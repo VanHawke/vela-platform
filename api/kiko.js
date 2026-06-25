@@ -340,8 +340,8 @@ export default async function handler(req, res) {
     const [entityContext, selfKnowledge, learnedRulesResult, preferencesResult, goalsResult, intentsResult, draftActionsResult, spineRecall] = await Promise.all([
       fetchEntityContext(pageEntity),
       loadLeanKnowledge(userId, isSuperAdmin).catch(() => ''),
-      cachedFetch('rules', 300000, () => sbFetch(`kiko_learned_rules?active=eq.true&select=rule_text,category,weight&order=weight.desc&limit=15`)).catch(() => []),
-      cachedFetch('prefs', 300000, () => sbFetch(`kiko_preferences?select=category,preference,confidence&order=confidence.desc&limit=15`)).catch(() => []),
+      cachedFetch('rules:' + userId, 300000, () => sbFetch(`kiko_learned_rules?active=eq.true&or=(user_id.eq.${userId},user_id.is.null)&select=rule_text,category,weight&order=weight.desc&limit=15`)).catch(() => []),
+      cachedFetch('prefs:' + userId, 300000, () => sbFetch(`kiko_preferences?or=(user_id.eq.${userId},user_id.is.null)&select=category,preference,confidence&order=confidence.desc&limit=15`)).catch(() => []),
       sbFetch(`kiko_goals?user_id=eq.${userId}&status=eq.active&select=title,priority,description,next_action,due_date&order=priority.desc&limit=10`).catch(() => []),
       sbFetch(`kiko_intents?user_id=eq.${userId}&status=in.(active,overdue)&select=title,description,priority,status,due_date,next_action&order=priority.desc&limit=10`).catch(() => []),
       sbFetch(`kiko_draft_actions?status=eq.pending&select=action_type,entity_name,summary,created_at&order=created_at.desc&limit=5`).catch(() => []),
