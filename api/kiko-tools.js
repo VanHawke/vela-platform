@@ -426,6 +426,14 @@ export const TOOL_DEFINITIONS = [
     } },
   },
   {
+    name: 'query_user_activity',
+    description: 'SUPER-ADMIN ONLY oversight tool. Lets a super-admin see another user\'s activity: what they have added to their memory, and the state of their task list split into actioned vs open. Use when Sunny asks "what has Matt added to memory", "did Matt upload the E1 costs", "where is Matt on his tasks", "what has Matt actioned and what is still open". Refuses for any non-super-admin caller. One-directional by design: it never exposes Sunny\'s own data to anyone.',
+    input_schema: { type: 'object', properties: {
+      target_user: { type: 'string', description: 'The user to inspect, by name or email (e.g. "Matt" or "matt.smith@vanhawke.agency").' },
+      kind: { type: 'string', enum: ['memory', 'tasks', 'both'], description: 'What to retrieve. "memory" = what they added to memory; "tasks" = their task list split into actioned vs open; "both" = both. Default both.' },
+    }, required: ['target_user'] },
+  },
+  {
     name: 'update_kiko_preference',
     description: 'Update Kiko behaviour preferences based on user feedback. Use when user says things like "be more direct", "less formal", "always include pricing", "shorter responses", "more detail on financials", "stop asking clarifying questions". Saves the preference so it applies in ALL future conversations. Also use for process adjustments like "always check CRM before emailing" or "prioritise cyber deals".',
     input_schema: { type: 'object', properties: {
@@ -1085,6 +1093,56 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.agenc
           : 'Limited view — contact your admin for account connection details.',
       }, null, 2);
     } catch (e) { return agentError('PlatformUsers', e); }
+  }
+
+  // ── Super-Admin Oversight — inspect another user's memory + task activity ──
+  // The ONLY tool that crosses the user boundary, and it opens one way: super-admin -> named user.
+  // Refuses for everyone else by construction; never exposes Sunny's data to a non-super-admin.
+  if (name === 'query_user_activity') {
+    try {
+      const callerCfg = await sbFetch(`kiko_user_config?email=eq.${encodeURIComponent(userEmail)}&select=role&limit=1`);
+      const callerRole = callerCfg?.[0]?.role || 'user';
+      if (callerRole !== 'super_admin') {
+        return JSON.stringify({ error: 'Not permitted. query_user_activity is restricted to super-admins.' });
+      }
+      const target = (input.target_user || '').trim();
+      if (!target) return JSON.stringify({ error: 'target_user is required (a name or email).' });
+      const kind = ['memory', 'tasks', 'both'].includes(input.kind) ? input.kind : 'both';
+
+      // Resolve target -> distinct user_id (one person can hold several email rows under one user_id).
+      const safe = encodeURIComponent(target);
+      const rows = await sbFetch(`kiko_user_config?or=(display_name.ilike.*${safe}*,email.ilike.*${safe}*)&select=user_id,display_name,email`);
+      const ids = [...new Set((rows || []).map(r => r.user_id).filter(Boolean))];
+      if (ids.length === 0) return JSON.stringify({ error: `No user found matching "${target}".` });
+      if (ids.length > 1) return JSON.stringify({ error: `"${target}" is ambiguous — it matches ${ids.length} users. Be more specific.`, matches: [...new Set((rows || []).map(r => r.display_name))] });
+      const targetId = ids[0];
+      const targetName = (rows.find(r => r.user_id === targetId) || {}).display_name || target;
+
+      const result = { target: targetName };
+
+      if (kind === 'memory' || kind === 'both') {
+        const mem = await sbFetch(`kiko_memories?user_id=eq.${targetId}&is_directory=eq.false&select=path,content,created_at,updated_at&order=updated_at.desc&limit=60`);
+        result.memory = {
+          count: (mem || []).length,
+          note: (mem || []).length === 0 ? 'No attributed memory rows yet for this user. Auto-extracted facts still land in the shared narrative file until the attribution write-path is live.' : undefined,
+          items: (mem || []).map(m => ({ path: m.path, added: (m.created_at || '').slice(0, 10), updated: (m.updated_at || '').slice(0, 10), content: (m.content || '').slice(0, 400) })),
+        };
+      }
+
+      if (kind === 'tasks' || kind === 'both') {
+        const tasks = await sbFetch(`tasks?user_id=eq.${targetId}&select=id,data,updated_at&order=updated_at.desc&limit=200`);
+        const actioned = [], open = [];
+        for (const t of (tasks || [])) {
+          const d = t.data || {};
+          const done = d.completed === true || d.status === 'completed' || d.status === 'done' || d.dismissed === true;
+          const row = { type: d.type || '', company: d.company || '', notes: (d.notes || '').slice(0, 200), assignedBy: d.assignedBy || '', completedAt: (d.completedAt || '').slice(0, 10) || null };
+          (done ? actioned : open).push(row);
+        }
+        result.tasks = { total: (tasks || []).length, actioned_count: actioned.length, open_count: open.length, actioned, open };
+      }
+
+      return JSON.stringify(result, null, 2);
+    } catch (e) { return agentError('UserActivity', e); }
   }
 
   // ── Cognitive Analysis — retrieve reasoning chain for an entity ──

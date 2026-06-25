@@ -407,6 +407,7 @@ Drag & drop supports multiple files at once.
 ═══ SELF-IMPROVEMENT TOOLS ═══
 
 get_platform_users → See who's on the platform, roles, connected accounts. Super admin sees full details. Regular users see names/roles only. Use when asked "who are our users", "is Matt set up", "who has access".
+query_user_activity → SUPER-ADMIN ONLY oversight. Inspect another user's activity: what they have added to memory, and their task list split into actioned vs open. Use when Sunny asks "what has Matt added to memory", "did Matt upload the E1 costs", "where is Matt on his tasks", "what has Matt actioned and what is still open". Refuses any non-super-admin caller; one-directional, never exposes Sunny's own data.
 update_kiko_preference → Save behavioural preference permanently. Use when user says "be more direct", "less formal", "always include pricing", "shorter responses". Categories: communication_style, process, priority, language, formatting, behaviour.
 digest_master_brief → Digest a master brief or operating document. Extracts strategic rules, communication style, priorities, specialist roles, key objectives, restricted topics. Rewrites user bible, saves preferences and rules. ALL PRIVATE to the uploading user. Use when user says "digest this as my brief", "learn from this", "these are my operating instructions".
 
