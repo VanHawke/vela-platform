@@ -18,14 +18,33 @@ function timeAgo(d) {
 function formatRelativeTime(d) {
   if (!d) return ''
   const date = new Date(d)
-  const now = new Date()
-  const isToday = date.toDateString() === now.toDateString()
-  const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1)
+  const nowD = new Date()
+  const isToday = date.toDateString() === nowD.toDateString()
+  const yesterday = new Date(nowD); yesterday.setDate(yesterday.getDate() - 1)
   const isYesterday = date.toDateString() === yesterday.toDateString()
   const time = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
   if (isToday) return `${time} today`
   if (isYesterday) return `${time} yesterday`
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + time
+}
+
+// ── Unread-reply tracking (persisted across refreshes) ──────────────────────
+// A conversation shows a blue dot when Kiko has replied in it since you last
+// looked at it. We persist a per-conversation "last seen" timestamp in
+// localStorage, plus a one-time baseline captured on first run so existing
+// chats do not all light up the first time this ships.
+const UNREAD_SEEN_KEY = 'kiko_conv_lastseen'
+const UNREAD_BASELINE_KEY = 'kiko_conv_unread_baseline'
+
+function readLastSeen() {
+  try { return JSON.parse(localStorage.getItem(UNREAD_SEEN_KEY) || '{}') } catch { return {} }
+}
+function getUnreadBaseline() {
+  try {
+    let b = localStorage.getItem(UNREAD_BASELINE_KEY)
+    if (!b) { b = new Date().toISOString(); localStorage.setItem(UNREAD_BASELINE_KEY, b) }
+    return b
+  } catch { return new Date().toISOString() }
 }
 
 export default function ChatHistory({ user, open, onToggle, onSelectConversation, onNewChat, activeConvId, onShowAllChats }) {
@@ -38,9 +57,27 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
   const menuRef = useRef(null)
   const orgId = user?.app_metadata?.org_id
 
-  async function loadAll() {
+  // ── Unread-reply dots ──
+  const [lastSeen, setLastSeen] = useState(readLastSeen)
+  const baselineRef = useRef(getUnreadBaseline())
+  const markSeen = (id, ts) => {
+    const t = ts || new Date().toISOString()
+    setLastSeen(prev => {
+      if (prev[id] && new Date(prev[id]) >= new Date(t)) return prev // already seen at or after this point
+      const next = { ...prev, [id]: t }
+      try { localStorage.setItem(UNREAD_SEEN_KEY, JSON.stringify(next)) } catch {}
+      return next
+    })
+  }
+  const isUnread = (conv) => {
+    if (!conv || conv.type !== 'kiko' || conv.id === activeConvId) return false
+    const seen = lastSeen[conv.id] || baselineRef.current
+    return new Date(conv.date || 0) > new Date(seen)
+  }
+
+  async function loadAll(silent) {
     if (!user?.id) return
-    setLoading(true)
+    if (!silent) setLoading(true)
     try {
       const [kikoRes, importedRes] = await Promise.all([
         // Always show own conversations only — super_admin can request Matt's via Kiko
@@ -53,11 +90,12 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
       const imported = (importedRes.data || []).map(c => ({ id: 'imp_' + c.id, realId: c.id, title: c.title || 'Untitled', date: c.original_date, type: 'imported', source: c.source }))
       setAllConvos([...kiko, ...imported].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)))
     } catch (e) { console.error('[ChatHistory] load error:', e) }
-    setLoading(false)
+    if (!silent) setLoading(false)
   }
 
   async function selectConversation(conv) {
     const now = new Date().toISOString()
+    markSeen(conv.id, now)
     setAllConvos(prev => prev.map(c => c.id === conv.id ? { ...c, date: now } : c).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)))
     if (conv.type === 'kiko') {
       const { data } = await supabase.from('conversations').select('messages').eq('id', conv.id).single()
@@ -80,6 +118,24 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
     window.addEventListener('kiko-chat-updated', handler)
     return () => window.removeEventListener('kiko-chat-updated', handler)
   }, [])
+  // Keep the conversation you are viewing marked as seen, so it never shows its
+  // own dot and stays current as Kiko replies into it.
+  useEffect(() => {
+    if (!activeConvId) return
+    const c = allConvos.find(x => x.id === activeConvId)
+    if (c?.date) markSeen(activeConvId, c.date)
+  }, [activeConvId, allConvos])
+  // Live updates: when any of the user's conversations changes (e.g. Kiko
+  // finishes a reply in a background chat), refresh quietly so the dot appears
+  // without waiting for the next sidebar open.
+  useEffect(() => {
+    if (!user?.id) return
+    const channel = supabase
+      .channel('chathistory-unread-' + user.id)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations', filter: `user_id=eq.${user.id}` }, () => loadAll(true))
+      .subscribe()
+    return () => { try { supabase.removeChannel(channel) } catch {} }
+  }, [user?.id])
   useEffect(() => {
     const handler = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpenId(null) }
     document.addEventListener('mousedown', handler)
@@ -133,11 +189,15 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
   // Conversation row renderer
   const ConvRow = ({ conv }) => {
     const active = conv.id === activeConvId
+    const unread = isUnread(conv)
     return (
       <div key={conv.id} onClick={() => selectConversation(conv)}
         style={{ padding: '10px 12px', borderRadius: 12, cursor: 'pointer', marginBottom: 1, transition: 'background 0.1s', background: active ? T.accentSoft : 'transparent', display: 'flex', alignItems: 'center', gap: 8 }}
         onMouseOver={e => { if (!active) e.currentTarget.style.background = T.surfaceHover }}
         onMouseOut={e => { if (!active) e.currentTarget.style.background = active ? T.accentSoft : 'transparent' }}>
+        {/* Unread-reply dot — blue when Kiko has replied since you last looked, a held slot otherwise so titles stay aligned */}
+        <span aria-hidden="true" title={unread ? 'New reply from Kiko' : undefined}
+          style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: unread ? '#3B82F6' : 'transparent', transition: 'background 0.2s ease' }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           {renamingId === conv.id ? (
             <input value={renameValue} onChange={e => setRenameValue(e.target.value)}
