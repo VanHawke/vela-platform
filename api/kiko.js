@@ -572,19 +572,35 @@ ${att.data.slice(0, 80000)}
         const TRANSIENT = /\b(\d+\+?\s*(unread|overdue|stale|pending)|wait(ed|ing)?\s+\d+\s+days?|deadline\s+pressure|tax\s+pressure)/i;
         if (!SPECULATION.test(extract) && !TRANSIENT.test(extract)) {
           const timestamp = new Date().toISOString().split('T')[0];
-          try {
-            const fs = await import('fs');
-            const memPath = '/home/kiko/kiko-worker/api/data/KIKO_MEMORY.md';
-            let mem = fs.readFileSync(memPath, 'utf8');
-            const insertPoint = mem.indexOf('## OPERATIONAL HEALTH');
-            if (insertPoint > 0) {
-              mem = mem.slice(0, insertPoint) + `- ${timestamp}: ${extract.replace(/\n/g, '; ')}\n` + mem.slice(insertPoint);
-            } else {
-              mem += `\n- ${timestamp}: ${extract.replace(/\n/g, '; ')}`;
-              console.warn('[Memory] No ## OPERATIONAL HEALTH marker — appended to end');
-            }
-            fs.writeFileSync(memPath, mem, 'utf8');
-          } catch (fsErr) { console.warn('[Memory] File save failed:', fsErr.message); }
+          if (isSuperAdmin) {
+            // Super-admin's facts belong in the always-loaded narrative file (unchanged behaviour).
+            try {
+              const fs = await import('fs');
+              const memPath = '/home/kiko/kiko-worker/api/data/KIKO_MEMORY.md';
+              let mem = fs.readFileSync(memPath, 'utf8');
+              const insertPoint = mem.indexOf('## OPERATIONAL HEALTH');
+              if (insertPoint > 0) {
+                mem = mem.slice(0, insertPoint) + `- ${timestamp}: ${extract.replace(/\n/g, '; ')}\n` + mem.slice(insertPoint);
+              } else {
+                mem += `\n- ${timestamp}: ${extract.replace(/\n/g, '; ')}`;
+                console.warn('[Memory] No ## OPERATIONAL HEALTH marker — appended to end');
+              }
+              fs.writeFileSync(memPath, mem, 'utf8');
+            } catch (fsErr) { console.warn('[Memory] File save failed:', fsErr.message); }
+          } else {
+            // Non-super-admin (e.g. Matt): write an ATTRIBUTED memory row instead of the shared file,
+            // so provenance is preserved and the fact never lands unattributed in the super-admin's
+            // narrative. Surfaced to a super-admin via query_user_activity. (S74 attribution model.)
+            try {
+              await sbFetch('kiko_memories', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify({
+                path: `/memories/auto/${timestamp}-${Date.now()}.md`,
+                content: `${timestamp}: ${extract.replace(/\n/g, '; ')}`,
+                is_directory: false,
+                user_id: userId,
+                updated_at: new Date().toISOString(),
+              }) });
+            } catch (dbErr) { console.warn('[Memory] Attributed memory write failed:', dbErr.message); }
+          }
         }
       }
     } catch (compactErr) { console.warn('[Memory] Compaction failed:', compactErr.message); }
