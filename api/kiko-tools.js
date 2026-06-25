@@ -1641,8 +1641,18 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
         const { name: srcName, url, category, content } = params;
         if (!srcName) return 'Error: name is required for add_source';
         if (content) {
-          await sbFetch('kiko_knowledge_sources', { method: 'POST', body: JSON.stringify({ name: srcName, type: 'document', category: category || 'general', content: content.slice(0, 50000), active: true, user_id: userId }) });
-          return `Knowledge source added: "${srcName}" (document, ${category || 'general'}). Will be processed on next ingestion cycle.`;
+          // Shared tier: super-admin only. params.shared === true writes user_id NULL (org-wide,
+          // readable by everyone). Everyone else's saved knowledge stays private to them (user_id).
+          let writeUserId = userId;
+          if (params.shared === true) {
+            const cfg = await sbFetch(`kiko_user_config?email=eq.${encodeURIComponent(userEmail)}&select=role&limit=1`);
+            if ((cfg && cfg[0] && cfg[0].role) === 'super_admin') writeUserId = null;
+            else return 'Blocked: only a super-admin can add shared knowledge visible to all users.';
+          }
+          await sbFetch('kiko_knowledge_sources', { method: 'POST', body: JSON.stringify({ name: srcName, type: 'document', category: category || 'general', content: content.slice(0, 50000), active: true, user_id: writeUserId }) });
+          return writeUserId === null
+            ? `SHARED knowledge added: "${srcName}" (${category || 'general'}) — visible to ALL users and retrievable immediately via knowledge search.`
+            : `Knowledge source added: "${srcName}" (document, ${category || 'general'}, private to you). Will be processed on next ingestion cycle.`;
         }
         if (url) {
           await sbFetch('kiko_knowledge_sources', { method: 'POST', body: JSON.stringify({ name: srcName, type: 'url', category: category || 'general', url, scrape_frequency: 'weekly', active: true }) });
@@ -1657,7 +1667,13 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
         // silently failed on any multi-word query ("qatar registration" never matches
         // "QATAR ENTRY ... REGISTRATION ROUTE"). Split into terms; ALL must appear.
         const terms = query.split(/\s+/).filter(Boolean).slice(0, 5);
-        const sources = await sbFetch('kiko_knowledge_sources?active=eq.true&select=name,category,summary,key_facts&order=relevance_score.desc&limit=30');
+        // Match terms in the DB (name/content/summary) so freshly-added facts are found regardless of
+        // relevance_score. The prior top-30-by-relevance fetch hid new rows (rank > 30) from search.
+        const srcAndGroup = terms.map(t => `or(name.ilike.*${encodeURIComponent(t)}*,content.ilike.*${encodeURIComponent(t)}*,summary.ilike.*${encodeURIComponent(t)}*)`).join(',');
+        const sources = terms.length
+          ? await sbFetch(`kiko_knowledge_sources?active=eq.true&or=(user_id.eq.${userId},user_id.is.null)&and=(${srcAndGroup})&select=name,category,summary,key_facts,content&limit=30`)
+              .catch(e => { console.error('[search_knowledge] sources query failed:', e.message); return []; })
+          : await sbFetch(`kiko_knowledge_sources?active=eq.true&or=(user_id.eq.${userId},user_id.is.null)&select=name,category,summary,key_facts&order=relevance_score.desc&limit=30`);
         const learning = await sbFetch(`kiko_learning_log?category=in.(curriculum,knowledge_source,imported_knowledge)&order=created_at.desc&limit=50&select=content,entity_name,category`);
         // Also search kiko_knowledge (competitive intel, imported sessions, discovery findings)
         // — match each term against content OR domain (imported docs carry key terms in domain)
@@ -1668,8 +1684,8 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
           : [];
         let matches = [];
         for (const s of (sources || [])) {
-          const text = `${s.name} ${s.summary || ''} ${JSON.stringify(s.key_facts || [])}`.toLowerCase();
-          if (terms.length && terms.every(t => text.includes(t))) matches.push({ type: 'source', name: s.name, category: s.category, summary: (s.summary || '').slice(0, 150) });
+          // DB already term-filtered the rows above; surface them (summary, or a content snippet for fresh docs).
+          if (terms.length) matches.push({ type: 'source', name: s.name, category: s.category, summary: (s.summary || (s.content || '').slice(0, 200)) });
         }
         for (const r of (research || [])) {
           matches.push({ type: 'research', domain: r.domain, content: (r.content || '').slice(0, 1500), date: r.researched_at });
@@ -1711,7 +1727,8 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
 
       if (operation === 'list_sources') {
         const cat = params.category;
-        const query = cat ? `kiko_knowledge_sources?active=eq.true&category=eq.${cat}&select=name,category,url,last_scraped_at,relevance_score&order=relevance_score.desc` : 'kiko_knowledge_sources?active=eq.true&select=name,category,url,last_scraped_at,relevance_score&order=category,relevance_score.desc';
+        const scope = `&or=(user_id.eq.${userId},user_id.is.null)`;
+        const query = cat ? `kiko_knowledge_sources?active=eq.true&category=eq.${cat}${scope}&select=name,category,url,last_scraped_at,relevance_score&order=relevance_score.desc` : `kiko_knowledge_sources?active=eq.true${scope}&select=name,category,url,last_scraped_at,relevance_score&order=category,relevance_score.desc`;
         const sources = await sbFetch(query);
         if (!sources?.length) return cat ? `No sources in category "${cat}".` : 'No active knowledge sources.';
         let out = `KNOWLEDGE SOURCES${cat ? ` [${cat}]` : ''} — ${sources.length} active\n\n`;

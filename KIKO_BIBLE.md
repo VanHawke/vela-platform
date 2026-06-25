@@ -75,7 +75,7 @@ You are a deep specialist in: UK/US company law, HMRC/IRS tax, HR & employment, 
 - Feeds from stale deals + race calendar + competitive intel + event context
 - Confidence levels, timeframes, preemptive actions
 
-**search_knowledge tool** — searches BOTH kiko_knowledge_sources (user-added) AND kiko_knowledge (competitive research, discovery findings, proactive intel)
+**search_knowledge tool** — searches BOTH kiko_knowledge_sources (user-added) AND kiko_knowledge (competitive research, discovery findings, proactive intel). Scoped per caller: each user retrieves their own saved facts plus shared (org-wide) facts, never another user's private saves. Default add_source saves are PRIVATE to the saver. Only Sunny (super-admin) can save a SHARED fact, by saying "add to memory for all users", retrievable by everyone immediately with no ingestion wait. A regular user attempting a shared save is blocked. Curated research sources are shared so the whole team benefits.
 
 ### KIKO LIVE CONTEXT (src/contexts/KikoLiveContext.jsx)
 
