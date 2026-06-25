@@ -98,7 +98,7 @@ export default async function loadSelfKnowledge(userId, isSuperAdmin = false) {
     }
 
     // RECENT LEARNINGS (~200 tokens)
-    const patterns = await cached('patterns', 300000, () => sbFetch("kiko_learning_log?category=eq.pattern&order=created_at.desc&limit=5&select=content"));
+    const patterns = await cached('patterns:' + userId, 300000, () => sbFetch(`kiko_learning_log?category=eq.pattern&or=(user_id.eq.${userId},user_id.is.null)&order=created_at.desc&limit=5&select=content`));
     if (patterns?.length) {
       k.push('\n═══ LEARNED PATTERNS ═══');
       for (const p of patterns) k.push(`• ${(p.content || '').slice(0, 120)}`);
