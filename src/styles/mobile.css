@@ -21,8 +21,11 @@
 
   /* ── Safe areas ── */
   main, [data-page-content] {
-    padding-bottom: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
   }
+
+  /* Mobile bottom nav: hidden on desktop (inline display:none), shown here on mobile */
+  .mobile-bottom-nav { display: flex !important; }
   body {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;

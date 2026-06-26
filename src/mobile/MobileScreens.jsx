@@ -62,7 +62,7 @@ export function MobileHome({ userName = 'there' }) {
           </button>
         </div>
       </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 clamp(20px, 6vw, 36px)', paddingBottom: 'calc(12vh + env(safe-area-inset-bottom, 0px))' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 clamp(20px, 6vw, 36px)', paddingBottom: 'calc(6vh + env(safe-area-inset-bottom, 0px))' }}>
         <div style={{ fontFamily: C.serif, fontWeight: 300, fontSize: 'clamp(25px, 7vw, 32px)', lineHeight: 1.18, letterSpacing: '-0.02em', textAlign: 'center', color: C.text }}>{greetingPart()}, {userName}</div>
         <div style={{ width: '100%', maxWidth: 460, margin: '22px auto 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 26, boxShadow: '0 2px 10px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02)', padding: '9px 9px 9px 14px' }}>

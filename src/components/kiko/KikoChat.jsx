@@ -184,6 +184,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
   const [mobileCommandOpen, setMobileCommandOpen] = useState(false)
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false)
   const [mobileHistoryConvos, setMobileHistoryConvos] = useState([])
+  const [historySearch, setHistorySearch] = useState('')
   const [commandData, setCommandData] = useState({ replies: [], tasks: [], campaigns: [], recommendations: [], overdue: [] })
 
   // Load command centre data when bell is tapped
@@ -1122,14 +1123,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
     return (
       <div ref={barRef} onMouseMove={isMobile ? undefined : handleBarMouseMove} style={{
         display: 'flex', flexDirection: 'column',
-        background: isMobile ? '#F5F4F1' : '#FFFFFF',
+        background: '#FFFFFF',
         backdropFilter: 'none', WebkitBackdropFilter: 'none',
-        borderRadius: isMobile ? 28 : (welcome ? 9999 : 9999),
-        padding: isMobile ? '10px 10px 10px 22px' : (welcome ? ('0') : '0'),
-        minHeight: isMobile ? 52 : (welcome ? 48 : undefined),
+        borderRadius: isMobile ? 26 : (welcome ? 9999 : 9999),
+        padding: isMobile ? '0' : (welcome ? ('0') : '0'),
+        minHeight: isMobile ? undefined : (welcome ? 48 : undefined),
         position: 'relative',
-        border: isMobile ? '1px solid rgba(0,0,0,0.10)' : `1px solid ${promptFocused ? 'rgba(0,0,0,0.18)' : transcribing ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.08)'}`,
-        boxShadow: isMobile ? '0 1px 4px rgba(0,0,0,0.06)' : (promptFocused
+        border: isMobile ? '1px solid rgba(0,0,0,0.08)' : `1px solid ${promptFocused ? 'rgba(0,0,0,0.18)' : transcribing ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.08)'}`,
+        boxShadow: isMobile ? '0 2px 10px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02)' : (promptFocused
           ? '0 0 0 3px rgba(10,10,10,0.04), 0 1px 2px rgba(0,0,0,0.04)'
           : '0 1px 2px rgba(0,0,0,0.04)'),
         transition: isMobile ? 'none' : `all 400ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}`,
@@ -1207,7 +1208,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
 
         {welcome ? (
         /* ── HOMEPAGE: Single row [+menu] [textarea] [mic] [EQ] [send] ── */
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 6, position: 'relative', zIndex: 2, padding: '14px 14px 14px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 5 : 6, position: 'relative', zIndex: 2, padding: isMobile ? '9px 9px 9px 14px' : '14px 14px 14px 20px' }}>
           {!isMobile && <div style={{ position: 'relative', flexShrink: 0 }}>
             <button onClick={() => setMenuOpen(!menuOpen)} disabled={fileUploading || streaming} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(0,0,0,0.04)', border: `1px solid ${menuOpen ? 'rgba(90,100,112,0.2)' : C.border}`, color: '#0A0A0A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}`, transform: menuOpen ? 'rotate(45deg)' : 'rotate(0deg)' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = '#2A2A30'; e.currentTarget.style.color = '#b4b4b4'; e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)' }}
@@ -1291,7 +1292,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
         </div>
         ) : (
         /* ── CONVERSATION: Single row matching homepage [+menu] [textarea] [mic] [EQ] [send] ── */
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 6, position: 'relative', zIndex: 2, padding: '14px 14px 14px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 5 : 6, position: 'relative', zIndex: 2, padding: isMobile ? '9px 9px 9px 14px' : '14px 14px 14px 20px' }}>
           {!isMobile && <div style={{ position: 'relative', flexShrink: 0 }}>
             <button onClick={() => setMenuOpen(!menuOpen)} disabled={fileUploading || streaming} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(0,0,0,0.04)', border: `1px solid ${menuOpen ? 'rgba(90,100,112,0.2)' : C.border}`, color: '#0A0A0A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}`, transform: menuOpen ? 'rotate(45deg)' : 'rotate(0deg)' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = '#2A2A30'; e.currentTarget.style.color = '#b4b4b4'; e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)' }}
@@ -1703,31 +1704,30 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
       if (isYesterday) return time + ' yesterday'
       return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + time
     }
+    const shownConvos = mobileHistoryConvos.filter(c => !historySearch.trim() || (c.title || '').toLowerCase().includes(historySearch.trim().toLowerCase()))
     return (
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FFFFFF', zIndex: 200, display: 'flex', flexDirection: 'column', overflow: 'hidden', overscrollBehavior: 'none', touchAction: 'none' }}>
         <div style={{ padding: '10px 20px', paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <button onClick={() => setMobileHistoryOpen(false)}
-              style={{ width: 44, height: 44, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="12" y1="7" x2="12" y2="13"/></svg>
+            <button onClick={() => setMobileHistoryOpen(false)} aria-label="Back"
+              style={{ width: 40, height: 40, borderRadius: '50%', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A', marginLeft: -6, WebkitTapHighlightColor: 'transparent' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             </button>
-            <div onClick={() => { setMobileHistoryOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer' }}>Kiko</div>
+            <div style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 26, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em' }}>Conversations</div>
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => { setMobileHistoryOpen(false); navigate('/voice') }} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
-            </button>
-            <button onClick={() => { setMobileHistoryOpen(false); setMobileCommandOpen(true); loadCommandData() }} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            </button>
-          </div>
+          <button onClick={() => { setMobileHistoryOpen(false); startNewChat() }} aria-label="New chat" style={{ width: 40, height: 40, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
         </div>
-        <div style={{ padding: '4px 20px 10px', flexShrink: 0 }}>
-          <div style={{ fontSize: 11, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>Recent conversations</div>
+        <div style={{ padding: '4px 18px 10px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F4F3EF', borderRadius: 12, padding: '10px 13px' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input value={historySearch} onChange={e => setHistorySearch(e.target.value)} placeholder="Search conversations" style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'none', fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14, color: '#0A0A0A' }} />
+          </div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 18px 24px', overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
-          {mobileHistoryConvos.length === 0 && <div style={{ fontSize: 14, color: '#A0A0A0', padding: '20px 0', textAlign: 'center' }}>No conversations yet</div>}
-          {mobileHistoryConvos.map(c => (
+          {shownConvos.length === 0 && <div style={{ fontSize: 14, color: '#A0A0A0', padding: '20px 0', textAlign: 'center' }}>{historySearch.trim() ? 'No matches' : 'No conversations yet'}</div>}
+          {shownConvos.map(c => (
             <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 4 }}>
               <button onClick={async () => { 
                 const { data } = await supabase.from('conversations').select('id, title, messages, updated_at').eq('id', c.id).single()
@@ -1768,7 +1768,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
   // ── WELCOME STATE (no text messages, not in voice mode) ──
   if (!hasMessages && !compact) {
     return (
-      <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 'calc(54px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
+      <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
       <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
         style={{ flex: 1, display: 'flex', flexDirection: 'column', background: isMobile ? '#FFFFFF' : 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
@@ -1952,7 +1952,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
 
         {/* Mobile prompt bar — pinned to bottom, outside centered content */}
         {isMobile && !voiceActive && (
-          <div style={{ flexShrink: 0, padding: '10px 18px', paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))' }}>
+          <div style={{ flexShrink: 0, padding: '10px clamp(20px, 6vw, 36px)', paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))' }}>
             {PromptBar({ welcome: true })}
           </div>
         )}
@@ -1976,7 +1976,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
 
   // ── CONVERSATION STATE (text messages) ──
   return (
-    <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 'calc(54px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
+    <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
     <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
       style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: isMobile ? '#FFFFFF' : 'transparent', position: 'relative', overflow: 'hidden' }}>
@@ -2173,7 +2173,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
         </div>
       )}
       </>
-      <div style={{ padding: compact ? 12 : (isMobile ? '8px 16px' : 16), paddingBottom: isMobile ? 'calc(8px + env(safe-area-inset-bottom, 0px))' : undefined, flexShrink: 0 }}>
+      <div style={{ padding: compact ? 12 : (isMobile ? '8px clamp(20px, 6vw, 36px)' : 16), paddingBottom: isMobile ? 'calc(8px + env(safe-area-inset-bottom, 0px))' : undefined, flexShrink: 0 }}>
         <div style={{ maxWidth: compact ? '100%' : (isMobile ? '100%' : 680), margin: '0 auto' }}>
           {PromptBar({})}
           {!isMobile && dictateError && (
