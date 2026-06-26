@@ -1792,7 +1792,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
           {!isMobile && <div style={{ flex: voiceActive ? 1 : (0.3), transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />}
 
           {/* Wave — hidden in redesign mode, carried over from past iteration */}
-          {!USE_REDESIGN_DASHBOARD && <div id="kikoWaveHome" style={{
+          {!USE_REDESIGN_DASHBOARD && !isMobile && <div id="kikoWaveHome" style={{
             marginBottom: voiceActive ? 0 : (isMobile ? 20 : 28), overflow: 'visible', padding: isMobile ? '8px 0' : '16px 0',
             cursor: voiceActive ? 'default' : 'pointer',
             transform: voiceActive ? 'scale(1.15)' : 'scale(1)',
@@ -1829,7 +1829,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
           </div>}
 
           {/* Greeting — on desktop fades in voice mode, on mobile always visible */}
-          <div id="kikoGreeting" style={isMobile ? { textAlign: 'center' } : {
+          <div id="kikoGreeting" style={isMobile ? { display: 'none' } : {
             opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 140,
             transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1)',
@@ -1842,7 +1842,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
           </div>
 
           {/* Daily Briefing Card — hidden when redesign dashboard is active (replaced by priority actions) */}
-          {!voiceActive && morningBriefing && !USE_REDESIGN_DASHBOARD && (
+          {!voiceActive && morningBriefing && !USE_REDESIGN_DASHBOARD && !isMobile && (
             <div style={{
               width: '100%', maxWidth: 680, margin: '20px auto 0',
               background: '#FAFAF9', border: '1px solid rgba(0,0,0,0.06)',
