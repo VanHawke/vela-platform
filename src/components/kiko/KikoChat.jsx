@@ -1230,6 +1230,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
               </div>
             )}
           </div>}
+          {isMobile && (
+            <button onClick={() => fileInputRef.current?.click()} aria-label="Attach" style={{ width: 32, height: 32, borderRadius: 9999, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.12)', padding: 0 }}>
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            </button>
+          )}
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
             <textarea ref={inputRef} value={input} dir="ltr" onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px' }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (streaming) { const qt = input.trim(); if (qt) { queuedMessageRef.current = qt; setQueuedMessage(qt); setInput(''); if (inputRef.current) inputRef.current.style.height = 'auto'; } } else { handleSubmit(); } } }}
               onPaste={e => { 
@@ -1260,8 +1265,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
             <button onClick={stopVoice} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'rgba(239,68,68,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
           ) : (<>
             {isMobile && (
-              <button onClick={() => fileInputRef.current?.click()} style={{ width: 28, height: 28, borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+              <button onClick={startVoice} aria-label="Voice" style={{ width: 32, height: 32, borderRadius: 9999, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.12)' }}>
+                <svg width={16} height={16} viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(90,100,112,0.6)" /><rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(90,100,112,0.8)" /><rect x="12" y="7" width="2" height="10" rx="1" fill="rgba(90,100,112,1)" /><rect x="16" y="4" width="2" height="16" rx="1" fill="rgba(90,100,112,0.8)" /><rect x="20" y="9" width="2" height="6" rx="1" fill="rgba(90,100,112,0.6)" /></svg>
               </button>
             )}
             {!isMobile && <>
@@ -1309,6 +1314,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
               </div>
             )}
           </div>}
+          {isMobile && (
+            <button onClick={() => fileInputRef.current?.click()} aria-label="Attach" style={{ width: 32, height: 32, borderRadius: 9999, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.12)', padding: 0 }}>
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            </button>
+          )}
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
             <textarea ref={inputRef} value={input} dir="ltr" onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px' }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (streaming) { const qt = input.trim(); if (qt) { queuedMessageRef.current = qt; setQueuedMessage(qt); setInput(''); if (inputRef.current) inputRef.current.style.height = 'auto'; } } else { handleSubmit(); } } }}
               onPaste={e => { 
@@ -1335,8 +1345,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
             <button onClick={stopVoice} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'rgba(239,68,68,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
           ) : (<>
             {isMobile && (
-              <button onClick={() => fileInputRef.current?.click()} style={{ width: 28, height: 28, borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+              <button onClick={startVoice} aria-label="Voice" style={{ width: 32, height: 32, borderRadius: 9999, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.12)' }}>
+                <svg width={16} height={16} viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(90,100,112,0.6)" /><rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(90,100,112,0.8)" /><rect x="12" y="7" width="2" height="10" rx="1" fill="rgba(90,100,112,1)" /><rect x="16" y="4" width="2" height="16" rx="1" fill="rgba(90,100,112,0.8)" /><rect x="20" y="9" width="2" height="6" rx="1" fill="rgba(90,100,112,0.6)" /></svg>
               </button>
             )}
             {!isMobile && <>
