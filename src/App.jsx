@@ -7,7 +7,7 @@ import AuthCallback from '@/pages/AuthCallback'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
 import useMobile from '@/hooks/useMobile'
-import { MobileMessenger, MobileHome } from '@/mobile/MobileScreens'
+import { MobileMessenger, MobileHome, MobileHistory, MobileChat } from '@/mobile/MobileScreens'
 
 function MobileChatRoute({ user }) {
   const loc = useLocation()
@@ -132,9 +132,10 @@ export default function App() {
         <Route path="/voice" element={session ? <Suspense fallback={null}><MobileVoicePage /></Suspense> : <Navigate to="/login" replace />} />
         <Route element={session ? <Layout key="app" user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={isMobile ? <MobileHome userName={firstName} /> : <KikoChat user={user} />} />
-          <Route path="chat" element={isMobile ? <MobileChatRoute user={user} /> : <KikoChat user={user} />} />
+          <Route path="chat" element={isMobile ? <MobileChat user={user} /> : <KikoChat user={user} />} />
+          <Route path="history" element={isMobile ? <MobileHistory /> : <Navigate to="/" replace />} />
           <Route path="today" element={isMobile ? <Navigate to="/" replace /> : <KikoChat user={user} />} />
-          <Route path="home" element={isMobile ? <MobileChatRoute user={user} /> : <KikoChat user={user} />} />
+          <Route path="home" element={isMobile ? <MobileChat user={user} /> : <KikoChat user={user} />} />
           <Route path="dashboard" element={<KikoChat user={user} />} />
           <Route path="pipeline" element={<PermissionGate pageKey="pipeline" user={user}>{isMobile ? <Navigate to="/" replace /> : <Pipeline user={user} />}</PermissionGate>} />
           <Route path="contacts/:id" element={<PermissionGate pageKey="contacts" user={user}><ContactDetail user={user} /></PermissionGate>} />

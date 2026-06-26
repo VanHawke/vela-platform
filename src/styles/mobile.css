@@ -10,7 +10,6 @@
   .kiko-mobile-root {
     height: 100vh !important;
     height: 100dvh !important;
-    height: -webkit-fill-available !important;
   }
 
   /* ── Navigation ── */
@@ -21,7 +20,7 @@
 
   /* ── Safe areas ── */
   main, [data-page-content] {
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    padding-bottom: 0 !important;
   }
 
   /* Mobile bottom nav: hidden on desktop (inline display:none), shown here on mobile */

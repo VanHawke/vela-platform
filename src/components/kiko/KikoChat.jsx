@@ -149,7 +149,7 @@ const CtaEq = () => {
   )
 }
 
-export default function KikoChat({ user, compact = false, initialMessage = '', openHistory = false }) {
+export default function KikoChat({ user, compact = false, initialMessage = '', openHistory = false, embedded = false }) {
   const navigate = useNavigate()
   const outletCtx = useOutletContext() || {}
   const isMobile = outletCtx.isMobile || false
@@ -1766,15 +1766,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
   // ── ALL CHATS — rendered as fixed overlay below ──
 
   // ── WELCOME STATE (no text messages, not in voice mode) ──
-  if (!hasMessages && !compact) {
+  if (!hasMessages && !compact && !embedded) {
     return (
-      <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
+      <div style={embedded ? { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, height: '100%', width: '100%', background: '#FFFFFF', position: 'relative' } : (isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' })}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
       <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
         style={{ flex: 1, display: 'flex', flexDirection: 'column', background: isMobile ? '#FFFFFF' : 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
-        {MobileHeader()}
-        {MobileCommandCentre()}
-        {MobileChatHistory()}
+        {!embedded && MobileHeader()}
+        {!embedded && MobileCommandCentre()}
+        {!embedded && MobileChatHistory()}
         {chatDragOver && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,10,14,0.92)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(90,100,112,0.5)', borderRadius: 8, margin: 8, pointerEvents: 'none' }}>
             <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(90,100,112,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
@@ -1976,13 +1976,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '', o
 
   // ── CONVERSATION STATE (text messages) ──
   return (
-    <div style={isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' }}>
+    <div style={embedded ? { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, height: '100%', width: '100%', background: '#FFFFFF', position: 'relative' } : (isMobile ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#FFFFFF', zIndex: 50 } : { display: 'flex', flex: 1, height: '100%', minHeight: 0, position: 'relative' })}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
     <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
       style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: isMobile ? '#FFFFFF' : 'transparent', position: 'relative', overflow: 'hidden' }}>
-      {MobileHeader()}
-      {MobileCommandCentre()}
-      {MobileChatHistory()}
+      {!embedded && MobileHeader()}
+      {!embedded && MobileCommandCentre()}
+      {!embedded && MobileChatHistory()}
       {chatDragOver && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,10,14,0.92)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(90,100,112,0.5)', borderRadius: 8, margin: 8, pointerEvents: 'none' }}>
           <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(90,100,112,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
