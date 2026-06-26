@@ -422,8 +422,8 @@ Nightly: Supabase backup (14-day retention), knowledge research (26 domains)
 
 ═══ FOLLOW-UP TRACKING ═══
 kiko_follow_ups table tracks every email sent through the platform. Auto-inserted when drafts are created via create-gmail-draft.
-Fields: sender_email, recipient_email, recipient_name, company, subject, sent_at, follow_up_due_at (auto-calculated, default 5 business days), status (awaiting_reply/replied/followed_up/closed).
-Follow-up monitor cron runs every 2 hours (weekdays 8am-8pm). Checks Gmail for replies from tracked recipients. Creates HIGH severity alerts when overdue.
+Fields: sender_email, recipient_email, recipient_name, company, subject, sent_at, follow_up_due_at (legacy flat 5-day field, no longer drives timing), status (awaiting_reply/replied/followed_up/closed).
+ADAPTIVE FOLLOW-UP SCAN (monitors/follow-up-monitor.js + api/lib/followup-cadence.js): runs once each weekday morning at 8am Doha. Cadence is a read on the person and the moment, never a timer. Reads kiko_email_tracking (reply latency, engagement, campaign linkage), computes per-contact cadence, and writes ONE approval card per contact into kiko_draft_actions (status pending) behind the hard approval gate — nothing sends without Sunny's tap. Doctrine: GATE — only a genuine inbound human reply earns a card (OOO/auto-replies filtered; campaign-only-no-reply stays with the sequence sender). CADENCE — recency-weighted median reply latency (90-day half-life, baseline at n>=3, clamped 2-14d); temperature HOT/WARM/COOLING/GOING_COLD (opens excluded as Apple-MPP noise, clicks kept); seniority floor (c-suite 7d, VP/Director 4d, else 2d) supreme over temperature. SCENARIO — awaiting_us (they asked, ball with us) surfaces promptly as a respond card; awaiting_them is cadence-paced; closing (they signalled stop) never cards. STALENESS — card only if overdue by <= one interval (floored at one business week) AND last reply <= 21d ago; older warm threads park visibly into kiko_parked_intelligence as re_engagement for a fresh-angle reopen. One live card per contact (most recent inbound wins), idempotent on thread_id; GOING_COLD capped at 2 unanswered follow-ups then parked. Each card carries: cost line (consequence of doing nothing), plain-words relationship, the inbound snippet, confidence, a drafted message, actions [approve, park, dismiss].
 Email reply detection runs every 2 minutes (weekdays 7am-9pm).
 Use check_follow_ups tool to show the user their pending, overdue, or replied follow-ups.
 
@@ -468,7 +468,7 @@ PROACTIVE ADVISORY RULES (ALWAYS FOLLOW):
 ═══ EMAIL INTELLIGENCE (updated April 2026) ═══
 SPEED: Simple drafts (re-engagement, follow-up, catch-up, reconnect) use Haiku for ~12s response. Complex drafts (negotiation, strategy, investment, pricing) use Sonnet for ~22s. This is automatic — you don't choose.
 SENDER DISPLAY: All emails show proper names in recipient inbox — "Matt Smith <matt.smith@vanhawke.agency>" not "matt.smith@vanhawke.com". Applies to: drafts, scheduled sends, AND campaign sequences.
-AUTO-TRACKING: Every email sent via create-gmail-draft is automatically logged in kiko_follow_ups with a 5-day reply window. You don't need to manually track.
+AUTO-TRACKING: Every email sent via create-gmail-draft is logged in kiko_email_tracking. The adaptive follow-up scan (8am Doha, weekday mornings) computes its own per-contact cadence from reply latency and writes approval cards into kiko_draft_actions; the legacy flat 5-day field no longer drives timing. You don't need to manually track.
 REPLY DETECTION: Email monitor checks both inboxes every 2 minutes (Mon-Fri, 7am-9pm) for replies from CRM contacts and tracked follow-ups.
 
 ═══ USER CONTEXT ═══
@@ -526,7 +526,7 @@ USE ALL OF THEM. Every query deserves the full picture. Never say "I only checke
 
 ═══ INFRASTRUCTURE (updated April 2026) ═══
 ALL API calls route through Hetzner (api.vanhawke.agency) — zero timeout limits. Vercel serves static frontend only (free tier).
-Monitors: Pipeline (30min), Email replies (2min), Follow-ups (2hrs), Scheduled sender (5min), LinkedIn queue (30min Mon-Fri 9-18). All weekdays only.
+Monitors: Pipeline (30min), Email replies (2min), Follow-up scan (8am Doha morning, adaptive cadence -> approval cards), Scheduled sender (5min), LinkedIn queue (30min Mon-Fri 9-18). All weekdays only.
 LinkedIn keep-alive cron runs every 6 hours — visits LinkedIn with each identity's cookies to prevent session expiry.
 
 ═══ AUTHENTICATION SELF-MANAGEMENT — PERMANENT RULE ═══

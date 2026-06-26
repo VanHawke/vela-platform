@@ -21,14 +21,14 @@ export function startMonitors() {
     try { await runEmailMonitor(); } catch (e) { console.error('[cron] email-monitor:', e.message); }
   }, { timezone: 'Europe/London' });
 
-  // Follow-up monitor — every 2 hours, weekdays 8am-8pm
-  cron.schedule('0 8-20/2 * * 1-5', async () => {
-    try { await runFollowUpMonitor(); } catch (e) { console.error('[cron] follow-up-monitor:', e.message); }
-  }, { timezone: 'Europe/London' });
+  // Follow-up scan — once each weekday morning, Doha time (adaptive cadence -> approval cards)
+  cron.schedule('0 8 * * 1-5', async () => {
+    try { await runFollowUpMonitor(); } catch (e) { console.error('[cron] follow-up-scan:', e.message); }
+  }, { timezone: 'Asia/Qatar' });
 
   console.log('[monitors] Pipeline: every 30min (Mon-Fri)');
   console.log('[monitors] Email: every 2min (Mon-Fri, 7am-9pm)');
-  console.log('[monitors] Follow-ups: every 2hrs (Mon-Fri, 8am-8pm)');
+  console.log('[monitors] Follow-up scan: weekday mornings 8am Doha (adaptive -> cards)');
   console.log('[monitors] Scheduled sender: every 5min (Mon-Fri, 7am-9pm)');
   // Re-enabled: proactive-intel creates partnership_gap and category_recommendation alerts
   // that the Partnership Matrix reads. Heartbeat/morning-synthesis do NOT create these.
@@ -63,6 +63,5 @@ export function startMonitors() {
     console.log('[monitors] Running initial scan...');
     try { await runPipelineMonitor(); } catch (e) { console.error('[monitors] Pipeline:', e.message); }
     try { await runEmailMonitor(); } catch (e) { console.error('[monitors] Email:', e.message); }
-    try { await runFollowUpMonitor(); } catch (e) { console.error('[monitors] Follow-up:', e.message); }
   }, 10000);
 }
