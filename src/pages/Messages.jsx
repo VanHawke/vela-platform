@@ -16,8 +16,8 @@ const C = {
   bg: '#FFFFFF', surface: '#FAFAFA', card: '#F5F5F5',
   border: 'rgba(0,0,0,0.06)', borderLight: 'rgba(0,0,0,0.04)',
   text: '#0A0A0A', sub: '#6B6B6B', muted: '#A0A0A0',
-  accent: '#E8700A', accentSoft: 'rgba(232,112,10,0.08)',
-  green: '#16A34A', amber: '#D97706', red: '#DC2626', purple: '#7C3AED',
+  accent: '#1d1d20', accentSoft: 'rgba(0,0,0,0.05)',
+  green: '#16A34A', amber: '#D97706', red: '#DC2626', purple: '#52525B',
   font: "'Inter', system-ui, -apple-system, sans-serif",
 }
 const STATUS_COLORS = { online: C.green, away: C.amber, busy: C.red, offline: '#9CA3AF' }
@@ -54,7 +54,7 @@ const Icon = ({ name, size = 16, color = 'currentColor', strokeWidth = 1.8 }) =>
 function Avatar({ name, size = 32, color, status }) {
   const initials = (name || '??').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   const hue = name ? name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360 : 0
-  const bg = color || `hsl(${hue}, 55%, 50%)`
+  const bg = color || '#2b2b30'
   return (
     <div style={{ width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.36, fontWeight: 600, color: '#fff', fontFamily: C.font, position: 'relative', flexShrink: 0 }}>
       {initials}
@@ -410,7 +410,7 @@ export default function Messages({ user }) {
             return (
               <div key={ch.id} onClick={() => { setActiveChannel(ch.id); if (window.innerWidth < 768) setShowMobileSidebar(false) }} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', borderRadius: 10, cursor: 'pointer', marginBottom: 1, background: isActive ? C.accentSoft : 'transparent', transition: 'background 100ms' }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }} onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,58,237,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: C.purple, flexShrink: 0 }}>#</div>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: C.sub, flexShrink: 0 }}>#</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 13, fontWeight: ch.unreadCount ? 600 : 500 }}>{getChannelDisplayName(ch)}</span>
@@ -434,7 +434,7 @@ export default function Messages({ user }) {
       <div style={{ flex: 1, display: isMobile && showMobileSidebar ? 'none' : 'flex', flexDirection: 'column', position: 'relative' }} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
         {/* Teams-style drag overlay — full translucent with centered icon */}
         {dragOver && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(232,112,10,0.04)', backdropFilter: 'blur(2px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.03)', backdropFilter: 'blur(2px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, pointerEvents: 'none' }}>
             <div style={{ width: 64, height: 64, borderRadius: 16, background: C.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>📁</div>
             <div style={{ fontSize: 15, fontWeight: 600, color: C.accent }}>Drop files to share</div>
             <div style={{ fontSize: 12, color: C.sub }}>Up to {MAX_FILES} files, max 50MB each</div>
@@ -445,7 +445,7 @@ export default function Messages({ user }) {
         {activeChannelData && (
           <div style={{ padding: '10px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {activeChannelData.channel_type === 'group' ? <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(124,58,237,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>👥</div> : <Avatar name={getChannelDisplayName(activeChannelData)} size={32} status={getPresenceStatus(activeChannelData)} />}
+              {activeChannelData.channel_type === 'group' ? <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>👥</div> : <Avatar name={getChannelDisplayName(activeChannelData)} size={32} status={getPresenceStatus(activeChannelData)} />}
               <div>
                 <div style={{ fontSize: 14, fontWeight: 500 }}>{getChannelDisplayName(activeChannelData)}</div>
                 {(() => { const st = getPresenceStatus(activeChannelData); if (!st) return <div style={{ fontSize: 11, color: C.muted }}>{activeChannelData.members?.length || 0} members</div>; return <div style={{ fontSize: 11, color: STATUS_COLORS[st], display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: STATUS_COLORS[st] }} />{st === 'online' ? 'Online' : st === 'away' ? 'Away' : st === 'busy' ? 'Do Not Disturb' : 'Offline'}</div> })()}
@@ -523,19 +523,10 @@ export default function Messages({ user }) {
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 18, fontWeight: 600 }}>{voice.remoteName}</div>
               <div style={{ fontSize: 13, color: voice.callState === 'connected' ? C.green : C.muted, fontWeight: 500, marginTop: 4 }}>
-                {/* Video elements */}
-                {voice.isVideoCall && voice.callState === 'connected' && (
-                  <div style={{ position: 'relative', width: '100%', maxWidth: 500, margin: '0 auto 12px', borderRadius: 12, overflow: 'hidden', background: '#000' }}>
-                    <video ref={voice.remoteVideoRef} autoPlay playsInline style={{ width: '100%', borderRadius: 12 }} />
-                    <video ref={voice.localVideoRef} autoPlay playsInline muted style={{ position: 'absolute', bottom: 8, right: 8, width: 120, borderRadius: 8, border: '2px solid rgba(255,255,255,0.3)' }} />
-                  </div>
-                )}
                 {voice.callState === 'ended' ? (voice.callEndReason === 'missed' ? 'No answer' : `Call ended${voice.callDuration > 0 ? ' \u00B7 ' + String(Math.floor(voice.callDuration / 60)).padStart(2, '0') + ':' + String(voice.callDuration % 60).padStart(2, '0') : ''}`) : voice.callState === 'calling' ? 'Calling...' : `${String(Math.floor(voice.callDuration / 60)).padStart(2, '0')}:${String(voice.callDuration % 60).padStart(2, '0')}`}
               </div>
             </div>
             {voice.callState !== 'ended' && <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-              {voice.isVideoCall && <button onClick={() => voice.toggleVideo()} style={{ width: 48, height: 48, borderRadius: '50%', background: voice.isVideoEnabled ? C.card : 'rgba(220,38,38,0.1)', border: `1px solid ${voice.isVideoEnabled ? C.border : 'rgba(220,38,38,0.3)'}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={voice.isVideoEnabled ? C.sub : C.red} strokeWidth="2"><rect x="2" y="6" width="14" height="12" rx="2"/><path d={voice.isVideoEnabled ? "m16 10 5-3v10l-5-3" : "m16 10 5-3v10l-5-3M2 2l20 20"}/></svg><span style={{ fontSize: 9, color: voice.isVideoEnabled ? C.sub : C.red }}>{voice.isVideoEnabled ? 'Cam' : 'Off'}</span></button>}
-              <button onClick={() => voice.toggleScreenShare()} style={{ width: 48, height: 48, borderRadius: '50%', background: voice.isScreenSharing ? C.accentSoft : C.card, border: `1px solid ${voice.isScreenSharing ? C.accent : C.border}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={voice.isScreenSharing ? C.accent : C.sub} strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span style={{ fontSize: 9, color: voice.isScreenSharing ? C.accent : C.sub }}>{voice.isScreenSharing ? 'Stop' : 'Share'}</span></button>
               <button onClick={() => voice.toggleMute()} style={{ width: 48, height: 48, borderRadius: 14, background: voice.isMuted ? C.accentSoft : C.card, border: `1px solid ${voice.isMuted ? C.accent : C.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
                 <Icon name={voice.isMuted ? 'muted' : 'phone'} size={18} color={voice.isMuted ? C.accent : C.sub} />
                 <span style={{ fontSize: 9, color: C.sub }}>{voice.isMuted ? 'Unmute' : 'Mute'}</span>
@@ -569,15 +560,13 @@ export default function Messages({ user }) {
             const isFile = msg.content?.includes('📎 [')
 
             return (
-              <div key={msg.id} style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: 10, padding: '4px 4px', borderRadius: 8, marginTop: showAvatar ? 12 : 1 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.015)'; setHoveredMsg(msg.id) }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; setHoveredMsg(null); setShowReactions(null) }}>
-                <div style={{ width: 32, flexShrink: 0, cursor: showAvatar ? 'pointer' : 'default' }} onClick={() => { if (showAvatar && !isMine) { const member = TEAM_MEMBERS.find(m => m.name === msg.from_name); if (member) setContactCard(member) } }}>
-                  {showAvatar && <Avatar name={msg.from_name} size={32} color={isBot ? C.purple : isMine ? '#0A0A0A' : undefined} status={!isMine ? presence[msg.from_user_id]?.status : undefined} />}</div>
-                <div style={{ flex: 1, position: 'relative' }}>
-                  {showAvatar && <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}><span style={{ fontSize: 13, fontWeight: 600, color: isBot ? C.purple : C.sub }}>{msg.from_name}{isBot && <span style={{ background: 'rgba(124,58,237,0.12)', color: C.purple, padding: '1px 6px', borderRadius: 4, fontSize: 9, marginLeft: 5 }}>AI</span>}</span><span style={{ fontSize: 11, color: C.muted }}>{new Date(msg.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div>}
-                  {msg.pinned && <div style={{ fontSize: 10, color: C.accent, marginBottom: 3, display: 'flex', alignItems: 'center', gap: 3 }}><Icon name="pin" size={12} color={C.accent} /> Pinned</div>}
-                  {replyMsg && <div style={{ fontSize: 11, color: C.muted, padding: '4px 8px', borderLeft: `2px solid ${C.accent}`, marginBottom: 4, borderRadius: '0 4px 4px 0', background: 'rgba(0,0,0,0.02)' }}><span style={{ fontWeight: 600 }}>{replyMsg.from_name}:</span> {replyMsg.content?.slice(0, 60)}</div>}
-                  <div style={{ padding: isFile ? '4px' : '2px 0', borderRadius: 0, background: 'transparent', border: 'none', fontSize: 13, lineHeight: 1.6, color: isDeleted ? C.muted : C.text, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontStyle: isDeleted ? 'italic' : 'normal', overflow: 'hidden' }}>
+              <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isMine ? 'flex-end' : 'flex-start', marginTop: showAvatar ? 14 : 2 }}>
+                {showAvatar && !isMine && <div onClick={() => { const member = TEAM_MEMBERS.find(m => m.name === msg.from_name); if (member) setContactCard(member) }} style={{ display: 'flex', alignItems: 'center', gap: 7, margin: '0 0 4px 10px', cursor: 'pointer' }}><span style={{ fontSize: 11.5, fontWeight: 600, color: C.sub }}>{msg.from_name}</span>{isBot && <span style={{ background: 'rgba(0,0,0,0.05)', color: C.sub, padding: '1px 5px', borderRadius: 4, fontSize: 9, fontWeight: 800, letterSpacing: '0.4px' }}>AI</span>}</div>}
+                <div style={{ position: 'relative', maxWidth: '68%', display: 'flex', flexDirection: 'column', alignItems: isMine ? 'flex-end' : 'flex-start' }}
+                  onMouseEnter={() => setHoveredMsg(msg.id)} onMouseLeave={() => { setHoveredMsg(null); setShowReactions(null) }}>
+                  {msg.pinned && <div style={{ fontSize: 10, color: C.sub, marginBottom: 3, display: 'flex', alignItems: 'center', gap: 3 }}><Icon name="pin" size={12} color={C.sub} /> Pinned</div>}
+                  {replyMsg && <div style={{ fontSize: 11, color: C.muted, padding: '4px 8px', borderLeft: `2px solid ${C.muted}`, marginBottom: 4, borderRadius: '0 4px 4px 0', background: 'rgba(0,0,0,0.03)', maxWidth: '100%' }}><span style={{ fontWeight: 600 }}>{replyMsg.from_name}:</span> {replyMsg.content?.slice(0, 60)}</div>}
+                  <div style={{ padding: isFile ? 5 : '9px 14px', borderRadius: 20, borderBottomRightRadius: isMine ? 6 : 20, borderBottomLeftRadius: isMine ? 20 : 6, background: isDeleted ? 'transparent' : isMine ? '#1d1d20' : '#F0F0F2', border: isDeleted ? `1px solid ${C.border}` : 'none', fontSize: 14.5, lineHeight: 1.42, color: isDeleted ? C.muted : isMine ? '#fff' : '#18181b', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontStyle: isDeleted ? 'italic' : 'normal', overflow: 'hidden', maxWidth: '100%' }}>
                     {isDeleted ? 'This message was deleted' : isFile ? <FileCard content={msg.content} isMine={isMine} /> :
                       editingMsg === msg.id ? (
                         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
@@ -599,10 +588,10 @@ export default function Messages({ user }) {
                   {/* Link preview for URLs in messages */}
                   {!isDeleted && !isFile && (() => { const urlMatch = msg.content?.match(/(https?:\/\/[^\s]+)/); return urlMatch ? <LinkPreview url={urlMatch[1]} isMine={isMine} /> : null })()}
                   {Object.keys(reactions).length > 0 && <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>{Object.entries(reactions).map(([emoji, users]) => <button key={emoji} onClick={() => handleReact(msg.id, emoji)} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 6px', borderRadius: 10, fontSize: 12, cursor: 'pointer', background: users.includes(userId) ? C.accentSoft : 'rgba(0,0,0,0.03)', border: `1px solid ${users.includes(userId) ? C.accent : C.borderLight}` }}>{emoji} <span style={{ fontSize: 10, color: C.sub }}>{users.length}</span></button>)}</div>}
-                  <div style={{ fontSize: 10, color: C.muted, marginTop: 3, textAlign: isMine ? 'right' : 'left', display: 'flex', alignItems: 'center', gap: 4, justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+                  <div style={{ fontSize: 10.5, color: C.muted, marginTop: 3, display: 'flex', alignItems: 'center', gap: 5, justifyContent: isMine ? 'flex-end' : 'flex-start', padding: '0 4px' }}>
                     {new Date(msg.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                    {isLastFromMe && allRead && <span style={{ color: C.green, fontSize: 9 }}>✓✓ Seen</span>}
-                    {isLastFromMe && !allRead && !msg.id?.toString().startsWith('temp-') && <span style={{ fontSize: 9 }}><Icon name="check" size={12} /></span>}
+                    {isLastFromMe && allRead && <span style={{ color: C.muted, fontSize: 10.5 }}>· Read</span>}
+                    {isLastFromMe && !allRead && !msg.id?.toString().startsWith('temp-') && <span style={{ fontSize: 10.5 }}><Icon name="check" size={12} /></span>}
                   </div>
                   {hoveredMsg === msg.id && !isDeleted && (
                     <div style={{ position: 'absolute', top: -4, [isMine ? 'left' : 'right']: 0, display: 'flex', gap: 2, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: '2px 4px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', zIndex: 10 }}>
@@ -627,7 +616,7 @@ export default function Messages({ user }) {
 
         {/* Reply bar */}
         {replyTo && (
-          <div style={{ padding: '6px 24px', paddingRight: 90, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(232,112,10,0.04)', borderTop: `1px solid ${C.borderLight}` }}>
+          <div style={{ padding: '6px 24px', paddingRight: 90, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,0,0,0.03)', borderTop: `1px solid ${C.borderLight}` }}>
             <div style={{ flex: 1, fontSize: 12, color: C.sub, borderLeft: `2px solid ${C.accent}`, paddingLeft: 8 }}>Replying to <strong>{replyTo.from_name}</strong>: {replyTo.content?.slice(0, 60)}</div>
             <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14 }}><Icon name="x" size={12} /></button>
           </div>
@@ -678,8 +667,8 @@ export default function Messages({ user }) {
               placeholder={stagedFiles.length ? `Add a message to ${stagedFiles.length} file${stagedFiles.length > 1 ? 's' : ''}...` : 'Type a message... @ to mention'}
               style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: C.text, fontSize: 13, fontFamily: C.font, padding: '6px 4px' }} />
             <button onClick={sendMessage} disabled={(!input.trim() && stagedFiles.length === 0) || sending} style={{
-              width: 30, height: 30, borderRadius: 9999, background: (input.trim() || stagedFiles.length) ? C.accent : 'rgba(0,0,0,0.04)',
-              border: `1px solid ${(input.trim() || stagedFiles.length) ? C.accent : C.border}`, cursor: (input.trim() || stagedFiles.length) ? 'pointer' : 'default',
+              width: 30, height: 30, borderRadius: 9999, background: (input.trim() || stagedFiles.length) ? '#E8700A' : 'rgba(0,0,0,0.04)',
+              border: `1px solid ${(input.trim() || stagedFiles.length) ? '#E8700A' : C.border}`, cursor: (input.trim() || stagedFiles.length) ? 'pointer' : 'default',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 200ms ease',
             }}>
               <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke={(input.trim() || stagedFiles.length) ? '#fff' : C.muted} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>

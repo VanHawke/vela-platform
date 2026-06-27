@@ -87,6 +87,27 @@ const ICE_SERVERS = [
   { urls: 'stun:stun1.l.google.com:19302' },
 ]
 
+// Fetch short-lived TURN credentials from the backend (self-hosted coturn relay) so
+// calls connect across NATs and restrictive firewalls. Cached until shortly before
+// expiry; falls back to STUN-only if the endpoint is unreachable so a call still
+// attempts a direct connection rather than hard-failing.
+let _iceCache = null
+let _iceCacheExpiry = 0
+async function fetchIceServers(userId) {
+  const now = Date.now()
+  if (_iceCache && now < _iceCacheExpiry) return _iceCache
+  try {
+    const res = await fetch(`${API}/api/team-messages?action=turn-credentials&userId=${encodeURIComponent(userId || 'anon')}`)
+    const data = await res.json()
+    if (data && Array.isArray(data.iceServers) && data.iceServers.length) {
+      _iceCache = data.iceServers
+      _iceCacheExpiry = now + Math.max(60, (data.ttl || 3600) - 300) * 1000
+      return _iceCache
+    }
+  } catch (e) { /* fall through to STUN-only */ }
+  return ICE_SERVERS
+}
+
 export function useVoiceCall({ userId, userName, channelId }) {
   const [callState, setCallState] = useState('idle') // idle, calling, ringing, connected, ended
   const [callDuration, setCallDuration] = useState(0)
@@ -108,8 +129,9 @@ export function useVoiceCall({ userId, userName, channelId }) {
   const callIdRef = useRef(null)
 
   // Create peer connection
-  const createPC = useCallback(() => {
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS })
+  const createPC = useCallback(async () => {
+    const iceServers = await fetchIceServers(userId)
+    const pc = new RTCPeerConnection({ iceServers })
     pc.onicecandidate = (e) => {
       if (e.candidate && signalingRef.current) {
         signalingRef.current.send({ type: 'broadcast', event: 'ice-candidate', payload: { candidate: e.candidate, from: userId } })
@@ -140,7 +162,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
 
   // Get media (audio + optional video)
   const getMedia = useCallback(async (withVideo = false) => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: withVideo ? { width: 640, height: 480, facingMode: 'user' } : false })
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     localStreamRef.current = stream
     if (withVideo && localVideoRef.current) { localVideoRef.current.srcObject = stream }
     return stream
@@ -155,7 +177,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
     try {
       const stream = await getMedia(video)
       console.log(`[VoiceCall] Media acquired (video=${video})`)
-      const pc = createPC()
+      const pc = await createPC()
       stream.getTracks().forEach(t => pc.addTrack(t, stream))
 
       // Create signaling channel
@@ -221,7 +243,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
     callIdRef.current = incomingCallId; setCallId(incomingCallId)
     try {
       const stream = await getMedia(isVideoCall)
-      const pc = createPC()
+      const pc = await createPC()
       stream.getTracks().forEach(t => pc.addTrack(t, stream))
 
       // Set remote offer

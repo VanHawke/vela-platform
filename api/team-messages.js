@@ -1,5 +1,6 @@
 // api/team-messages.js — Team messaging API
 import { sbFetch } from './kiko-tools.js';
+import crypto from 'node:crypto';
 
 export default async function handler(req, res) {
   const { action } = req.query || {};
@@ -351,6 +352,24 @@ export default async function handler(req, res) {
         }
         await sbFetch(`kiko_team_messages?id=eq.${messageId}`, { method: 'PATCH', body: JSON.stringify({ reactions }) });
         return res.json({ success: true });
+      }
+
+      case 'turn-credentials': {
+        // Issue short-lived TURN credentials (coturn use-auth-secret / REST mechanism).
+        // The long-term secret lives only in the worker env; clients get HMAC creds that expire.
+        const secret = process.env.TURN_SECRET;
+        if (!secret) return res.status(500).json({ error: 'TURN not configured' });
+        const userId = req.query?.userId || req.body?.userId || 'anon';
+        const ttl = 3600; // seconds
+        const username = `${Math.floor(Date.now() / 1000) + ttl}:${userId}`;
+        const credential = crypto.createHmac('sha1', secret).update(username).digest('base64');
+        return res.json({
+          iceServers: [
+            { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+            { urls: ['turn:178.104.73.22:3478?transport=udp', 'turn:178.104.73.22:3478?transport=tcp'], username, credential }
+          ],
+          ttl
+        });
       }
 
       default:
