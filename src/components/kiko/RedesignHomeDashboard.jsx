@@ -71,6 +71,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
   const [hotReplies, setHotReplies] = useState([])
   const [nextRace, setNextRace] = useState(null)
   const [calendarEvents, setCalendarEvents] = useState([])
+  const [drafts, setDrafts] = useState([])
 
   // Cap the visible task list to 2 cards (measured, so the natural card height is preserved); the rest scrolls.
   const taskScrollRef = useRef(null)
@@ -128,6 +129,7 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
         const filteredTasks = (tasksRes.data || []).filter(t => !t.data?.completed)
         setTasks(filteredTasks)
         setHotReplies(repliesRes.data || [])
+        setDrafts(draftsRes.data || [])
         setNextRace(raceRes.data || null)
 
 
@@ -192,8 +194,50 @@ export default function RedesignHomeDashboard({ user, onPromptClick }) {
     } catch (e) { console.error('[completeTask]', e) }
   }
 
+  // Clear a follow-up card. The status drives the scan's idempotency so it will not re-card.
+  const actionDraft = async (draft, status) => {
+    setDrafts(prev => prev.filter(x => x.id !== draft.id))
+    try {
+      await supabase.from('kiko_draft_actions').update({ status, reviewed_at: new Date().toISOString() }).eq('id', draft.id)
+    } catch (e) { console.error('[actionDraft]', e) }
+  }
+
   return (
     <div style={{ maxWidth: 720, width: '100%', margin: '24px auto 0', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+      {/* Follow-ups — adaptive cadence cards (kiko_draft_actions), behind the approval gate. Tap routes the draft into chat to review and send. */}
+      {drafts.length > 0 && (
+        <div>
+          <h2 style={{ ...sectionTitle, margin: '0 0 12px 0' }}>Follow-ups <span style={{ color: '#A0A0A0', fontWeight: 300, fontSize: 15 }}>{drafts.length}</span></h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {drafts.map(d => {
+              const p = d.payload || {}
+              const isRespond = p.scenario === 'respond'
+              const tagColor = isRespond ? '#b8643e' : '#B89C5C'
+              const tagText = isRespond ? 'Respond' : 'Follow up'
+              const draftText = p.draft || ''
+              return (
+                <div key={d.id} style={{ ...cardStyle, position: 'relative' }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}
+                  onClick={() => onPromptClick && onPromptClick(`Help me action this follow-up to ${p.entity || 'this contact'}. Here is the draft you prepared:\n\n${draftText}\n\nLet me review and send it.`)}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.entity || 'Contact'}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase', color: tagColor, background: `${tagColor}1a`, border: `1px solid ${tagColor}38`, borderRadius: 5, padding: '1px 5px', lineHeight: 1.5 }}>{tagText}</span>
+                      <button onClick={(e) => { e.stopPropagation(); actionDraft(d, 'rejected') }} title="Dismiss" style={{ width: 16, height: 16, borderRadius: '50%', border: '1.5px solid rgba(0,0,0,0.2)', background: 'transparent', cursor: 'pointer', padding: 0, color: '#A0A0A0', fontSize: 12, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={(e)=>{e.currentTarget.style.borderColor='#b8643e';e.currentTarget.style.color='#b8643e'}} onMouseLeave={(e)=>{e.currentTarget.style.borderColor='rgba(0,0,0,0.2)';e.currentTarget.style.color='#A0A0A0'}}>×</button>
+                    </div>
+                  </div>
+                  {p.cost_line && <div style={{ fontSize: 12.5, fontWeight: 500, color: '#0A0A0A', marginBottom: 3 }}>{p.cost_line}</div>}
+                  {p.relationship && <div style={{ fontSize: 11.5, color: '#6B6B6B', marginBottom: 8 }}>{p.relationship}</div>}
+                  {draftText && (
+                    <div style={{ fontSize: 12, color: '#6B6B6B', background: 'rgba(0,0,0,0.025)', borderRadius: 9, padding: '8px 10px', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{draftText}</div>
+                  )}
+                  <div style={{ fontSize: 11, fontWeight: 500, color: tagColor, marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 2 }}>Review &amp; send <ChevronRight size={13} /></div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Tasks Due — scoped to the current user, sorted by urgency */}
       {tasks.length > 0 && (
