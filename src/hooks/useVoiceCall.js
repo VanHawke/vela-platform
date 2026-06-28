@@ -196,7 +196,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
         }
       })
       ch.on('broadcast', { event: 'hangup' }, ({ payload }) => {
-        if (payload.from !== userId) endCall()
+        if (payload.from !== userId) endCall(payload.reason || 'ended', true)
       })
       await ch.subscribe()
 
@@ -220,8 +220,8 @@ export function useVoiceCall({ userId, userName, channelId }) {
       globalCh.send({ type: 'broadcast', event: 'incoming-call', payload: { from: userId, callerName: userName, callId: data.callId, channelId, timestamp: Date.now() } })
       setTimeout(() => supabase.removeChannel(globalCh), 2000)
 
-      // Auto-end after 30s if no answer
-      setTimeout(() => { if (callState === 'calling') endCall('missed') }, 30000)
+      // Auto-end after 30s if no answer (read the live state via ref — the closure's callState is stale)
+      setTimeout(() => { if (callStateRef.current === 'calling') endCall('missed') }, 30000)
     } catch (e) { 
       console.error('[VoiceCall] Start failed:', e)
       tones.stop()
@@ -258,7 +258,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
         }
       })
       ch.on('broadcast', { event: 'hangup' }, ({ payload }) => {
-        if (payload.from !== userId) endCall()
+        if (payload.from !== userId) endCall(payload.reason || 'ended', true)
       })
       if (!ch.state || ch.state === 'closed') await ch.subscribe()
 
@@ -269,7 +269,10 @@ export function useVoiceCall({ userId, userName, channelId }) {
     } catch (e) { console.error('[VoiceCall] Answer failed:', e); endCall() }
   }, [channelId, userId, createPC, getMedia])
 
-  // Decline call
+  // Decline call (callee). We own the signalling here: tell the caller it was declined, log it, and post
+  // the single chat line. The caller, on receiving this hangup, ends as 'declined' (busy tone) without
+  // posting a duplicate. We deliberately do NOT remove our standing incoming-call channel, so we still
+  // receive future calls.
   const declineCall = useCallback(() => {
     tones.busy() // Busy/declined beeps
     if (signalingRef.current) {
@@ -278,11 +281,16 @@ export function useVoiceCall({ userId, userName, channelId }) {
     setCallState('idle'); setRemoteName('')
     if (callIdRef.current) {
       fetch(`${API}/api/team-messages?action=call-end`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ callId: callIdRef.current, status: 'declined', duration: 0 }) }).catch(() => {})
+      callIdRef.current = null
     }
-  }, [userId])
+    if (channelId) {
+      fetch(`${API}/api/team-messages?action=send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelId, fromUserId: userId, fromName: userName, content: '📞 Call declined', messageType: 'system' }) }).catch(() => {})
+    }
+  }, [userId, channelId, userName])
 
-  // End call
-  const endCall = useCallback((reason = 'ended') => {
+  // End call. `remote` = true when we are ending because we RECEIVED a hangup; in that case we must not
+  // echo the hangup back, re-log the end, or post a duplicate chat line — the initiating side owns those.
+  const endCall = useCallback((reason = 'ended', remote = false) => {
     // ALWAYS stop tones first — unconditional, prevents stuck ringing
     tones.stop()
     
@@ -294,17 +302,17 @@ export function useVoiceCall({ userId, userName, channelId }) {
     if (pcRef.current) { pcRef.current.close(); pcRef.current = null }
     if (localStreamRef.current) { localStreamRef.current.getTracks().forEach(t => t.stop()); localStreamRef.current = null }
     if (signalingRef.current) {
-      signalingRef.current.send({ type: 'broadcast', event: 'hangup', payload: { from: userId, reason } }).catch(() => {})
+      if (!remote) signalingRef.current.send({ type: 'broadcast', event: 'hangup', payload: { from: userId, reason } }).catch(() => {})
       supabase.removeChannel(signalingRef.current); signalingRef.current = null
     }
     if (durationTimerRef.current) { clearInterval(durationTimerRef.current); durationTimerRef.current = null }
-    // Log end
+    // Log end (initiator only)
     if (callIdRef.current) {
-      fetch(`${API}/api/team-messages?action=call-end`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ callId: callIdRef.current, status: reason, duration: callDuration }) }).catch(() => {})
+      if (!remote) fetch(`${API}/api/team-messages?action=call-end`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ callId: callIdRef.current, status: reason, duration: callDuration }) }).catch(() => {})
       callIdRef.current = null
     }
-    // Post missed/ended call message in chat
-    if (channelId && (reason === 'missed' || reason === 'declined' || (reason === 'ended' && callDuration > 0))) {
+    // Post one missed/ended/declined line to chat (initiator only — the receiver no longer posts a duplicate)
+    if (!remote && channelId && (reason === 'missed' || reason === 'declined' || (reason === 'ended' && callDuration > 0))) {
       const callMsg = reason === 'missed' ? `📞 Missed call` : reason === 'declined' ? `📞 Call declined` : `📞 Call ended · ${Math.floor(callDuration / 60)}:${String(callDuration % 60).padStart(2, '0')}`
       fetch(`${API}/api/team-messages?action=send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelId, fromUserId: userId, fromName: userName, content: callMsg, messageType: 'system' }) }).catch(() => {})
     }
@@ -313,7 +321,7 @@ export function useVoiceCall({ userId, userName, channelId }) {
     setCallState('ended')
     setIsMuted(false); setCallId(null)
     setTimeout(() => { setCallState('idle'); setCallDuration(0); setCallEndReason(null) }, 3000)
-  }, [userId, callDuration])
+  }, [userId, callDuration, channelId, userName])
 
   // Toggle mute
   const toggleMute = useCallback(() => {
@@ -404,6 +412,15 @@ export function useVoiceCall({ userId, userName, channelId }) {
         window.__incomingOffer = payload.offer
         window.__incomingCallerName = payload.callerName
         window.__incomingCallId = payload.callId
+      }
+    })
+    // Caller cancelled or rang out before we answered -> stop ringing and clear the incoming UI. We keep
+    // this channel subscribed (it is our standing incoming-call listener), so we only reset call state.
+    ch.on('broadcast', { event: 'hangup' }, ({ payload }) => {
+      if (payload.from !== userId && callStateRef.current === 'ringing') {
+        tones.stop()
+        callIdRef.current = null
+        setCallState('idle'); setRemoteName(''); setCallId(null)
       }
     })
     ch.subscribe()

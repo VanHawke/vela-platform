@@ -458,10 +458,16 @@ export default function Layout({ user }) {
 
   // Global incoming call listener — shows overlay on ANY page
   const [incomingCall, setIncomingCall] = useState(null)
+  // On the desktop Messages page the in-page caller (useVoiceCall) already rings and shows its own incoming
+  // UI, so suppress this global overlay+ring there to avoid a doubled ring. Mobile /messages has no in-page
+  // ring, so it still relies on this global one.
+  const suppressGlobalCallRef = useRef(false)
+  suppressGlobalCallRef.current = !isMobile && loc.pathname === '/messages'
   useEffect(() => {
     if (!user?.id) return
     const ch = supabase.channel(`call-notify-${user.id}`)
     ch.on('broadcast', { event: 'incoming-call' }, ({ payload }) => {
+      if (suppressGlobalCallRef.current) return
       if (payload.from !== user.id && (Date.now() - (payload.timestamp || 0)) < 30000) {
         setIncomingCall(payload)
         // Play ringtone for global incoming call
