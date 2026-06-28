@@ -218,6 +218,9 @@ export function useVoiceCall({ userId, userName, channelId }) {
       const globalCh = supabase.channel(`call-notify-${recipientId}`)
       await globalCh.subscribe()
       globalCh.send({ type: 'broadcast', event: 'incoming-call', payload: { from: userId, callerName: userName, callId: data.callId, channelId, timestamp: Date.now() } })
+      // Tier-3: also push a server web-push to the callee so the call still rings if their tab is frozen or
+      // closed while the browser is alive. Fire-and-forget — never block call signalling on this (per Kiko).
+      fetch(`${API}/api/push-send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'call', toUserId: recipientId, callerName: userName, callId: data.callId }) }).catch(() => {})
       setTimeout(() => supabase.removeChannel(globalCh), 2000)
 
       // Auto-end after 30s if no answer (read the live state via ref — the closure's callState is stale)

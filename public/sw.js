@@ -26,6 +26,9 @@ self.addEventListener('push', (event) => {
 // Handle notification click — open the app
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
+  // Decline action on a call push: just dismiss. The callee tab is likely frozen/closed, so we cannot
+  // signal a WebRTC decline from the service worker; dismissing is the honest behavior for now.
+  if (event.action === 'decline') return
   const url = event.notification.data || '/'
 
   event.waitUntil(
