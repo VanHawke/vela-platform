@@ -517,12 +517,12 @@ export default function Layout({ user }) {
       {/* Global incoming call overlay — works on ANY page */}
       {incomingCall && (
         <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 10000, background: '#fff', borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.18)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, minWidth: 280, border: '1px solid rgba(0,0,0,0.06)' }}>
-          <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #16A34A, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#3F3F46', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 600 }}>{incomingCall.callerName}</div>
-            <div style={{ fontSize: 12, color: '#16A34A', fontWeight: 500 }}>Incoming call...</div>
+            <div style={{ fontSize: 12, color: '#6B6B6B', fontWeight: 500 }}>Incoming call...</div>
           </div>
           <button onClick={() => { if (window.__globalCallRingTimer) { clearInterval(window.__globalCallRingTimer); window.__globalCallRingTimer = null }; setIncomingCall(null); nav('/messages') }} style={{ padding: '8px 14px', borderRadius: 10, background: '#16A34A', border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Answer</button>
           <button onClick={() => { if (window.__globalCallRingTimer) { clearInterval(window.__globalCallRingTimer); window.__globalCallRingTimer = null }; setIncomingCall(null) }} style={{ padding: '8px 10px', borderRadius: 10, background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>✕</button>

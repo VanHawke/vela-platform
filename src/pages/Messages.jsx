@@ -490,12 +490,12 @@ export default function Messages({ user }) {
         {/* Incoming call overlay */}
         {voice.callState === 'ringing' && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
-            <div style={{ width: 72, height: 72, borderRadius: '50%', background: `linear-gradient(135deg, ${C.green}, #059669)`, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'callPulse 2s ease-in-out infinite', boxShadow: `0 8px 32px rgba(22,163,74,0.2)` }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#3F3F46', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'callPulse 2s ease-in-out infinite', boxShadow: `0 8px 32px rgba(0,0,0,0.12)` }}>
               <Icon name="phone" size={28} color="#fff" />
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 18, fontWeight: 600 }}>{voice.remoteName}</div>
-              <div style={{ fontSize: 13, color: C.green, fontWeight: 500, marginTop: 4 }}>Incoming call...</div>
+              <div style={{ fontSize: 13, color: C.sub, fontWeight: 500, marginTop: 4 }}>Incoming call...</div>
             </div>
             <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
               <button onClick={() => voice.answerCall(window.__incomingOffer, window.__incomingCallerName, window.__incomingCallId)} style={{ width: 56, height: 56, borderRadius: '50%', background: C.green, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 16px rgba(22,163,74,0.3)` }}>
@@ -516,13 +516,13 @@ export default function Messages({ user }) {
         {/* Active call overlay (calling or connected) */}
         {(voice.callState === 'calling' || voice.callState === 'connected' || voice.callState === 'ended') && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
-            <style>{`@keyframes callPulse { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(22,163,74,0.2)} 50%{transform:scale(1.04);box-shadow:0 0 0 12px rgba(22,163,74,0)} }`}</style>
-            <div style={{ width: 72, height: 72, borderRadius: '50%', background: voice.callState === 'ended' ? (voice.callEndReason === 'missed' ? C.card : `linear-gradient(135deg, ${C.green}, #059669)`) : voice.callState === 'connected' ? `linear-gradient(135deg, ${C.green}, #059669)` : C.card, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: voice.callState === 'calling' ? 'callPulse 2s ease-in-out infinite' : 'none' }}>
-              <Icon name="phone" size={28} color={voice.callState === 'connected' ? '#fff' : C.sub} />
+            <style>{`@keyframes callPulse { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(0,0,0,0.12)} 50%{transform:scale(1.04);box-shadow:0 0 0 12px rgba(0,0,0,0)} }`}</style>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: (voice.callState === 'connected' || (voice.callState === 'ended' && voice.callEndReason !== 'missed')) ? '#3F3F46' : C.card, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: voice.callState === 'calling' ? 'callPulse 2s ease-in-out infinite' : 'none' }}>
+              <Icon name="phone" size={28} color={(voice.callState === 'connected' || (voice.callState === 'ended' && voice.callEndReason !== 'missed')) ? '#fff' : C.sub} />
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 18, fontWeight: 600 }}>{voice.remoteName}</div>
-              <div style={{ fontSize: 13, color: voice.callState === 'connected' ? C.green : C.muted, fontWeight: 500, marginTop: 4 }}>
+              <div style={{ fontSize: 13, color: voice.callState === 'connected' ? C.sub : C.muted, fontWeight: 500, marginTop: 4 }}>
                 {voice.callState === 'ended' ? (voice.callEndReason === 'missed' ? 'No answer' : `Call ended${voice.callDuration > 0 ? ' \u00B7 ' + String(Math.floor(voice.callDuration / 60)).padStart(2, '0') + ':' + String(voice.callDuration % 60).padStart(2, '0') : ''}`) : voice.callState === 'calling' ? 'Calling...' : `${String(Math.floor(voice.callDuration / 60)).padStart(2, '0')}:${String(voice.callDuration % 60).padStart(2, '0')}`}
               </div>
             </div>
