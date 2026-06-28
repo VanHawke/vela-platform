@@ -463,12 +463,33 @@ export default function Layout({ user }) {
   // ring, so it still relies on this global one.
   const suppressGlobalCallRef = useRef(false)
   suppressGlobalCallRef.current = !isMobile && loc.pathname === '/messages'
+  // OS-level incoming-call notification (tier 2): fires when the Kiko tab is backgrounded so the call reaches
+  // the user even when they are in another tab, window, or app. Clicking it focuses Kiko and opens Messages.
+  const notifyIncomingCall = useCallback((payload) => {
+    try {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return
+      const n = new Notification('Incoming call', {
+        body: `${payload.callerName || 'Someone'} is calling`,
+        icon: '/kiko-icon-192.png',
+        badge: '/kiko-icon-192.png',
+        tag: `kiko-call-${payload.callId || 'x'}`,
+        renotify: true,
+        requireInteraction: true,
+      })
+      n.onclick = () => { try { window.focus() } catch {} ; nav('/messages'); n.close() }
+      // Best-effort cleanup so the banner does not linger past the ring window on an unanswered call.
+      setTimeout(() => { try { n.close() } catch {} }, 35000)
+    } catch {}
+  }, [nav])
   useEffect(() => {
     if (!user?.id) return
     const ch = supabase.channel(`call-notify-${user.id}`)
     ch.on('broadcast', { event: 'incoming-call' }, ({ payload }) => {
-      if (suppressGlobalCallRef.current) return
       if (payload.from !== user.id && (Date.now() - (payload.timestamp || 0)) < 30000) {
+        // OS notification when the Kiko tab isn't focused (another tab/window/app). A backgrounded tab
+        // throttles the in-page ring, so this notification is the alert that actually reaches the user.
+        if (document.visibilityState !== 'visible' || !document.hasFocus()) notifyIncomingCall(payload)
+        if (suppressGlobalCallRef.current) return
         setIncomingCall(payload)
         // Play ringtone for global incoming call
         try {
