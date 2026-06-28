@@ -28,6 +28,16 @@ const TAB_ICONS = {
   'partnership-matrix': (c) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>,
 }
 
+// Messages icon in its UNREAD state: the speech bubble filled solid platform-orange
+// (#E8700A, same as the composer send button) with a small white unread count inside.
+// Reverts to the outline TAB_ICONS['messages'] at zero. Count caps at 9+.
+const MessagesUnreadIcon = ({ count }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="#E8700A" stroke="#E8700A" strokeWidth="1.6" strokeLinejoin="round"/>
+    <text x="12" y="10.5" textAnchor="middle" dominantBaseline="central" fill="#FFFFFF" fontSize="11" fontWeight="700" fontFamily="'Inter', system-ui, sans-serif">{count > 9 ? '9+' : count}</text>
+  </svg>
+)
+
 export default function RedesignTopNav({ user, profile, customLogo, onSearchClick }) {
   const nav = useNavigate()
   const loc = useLocation()
@@ -137,15 +147,10 @@ export default function RedesignTopNav({ user, profile, customLogo, onSearchClic
                 position: 'relative',
               }}
             >
-              {IconFn && IconFn(color)}
+              {tab.id === 'messages' && unreadMessages > 0
+                ? <MessagesUnreadIcon count={unreadMessages} />
+                : (IconFn && IconFn(color))}
               {tab.label}
-              {tab.id === 'messages' && unreadMessages > 0 && (
-                <span style={{
-                  position: 'absolute', top: 2, right: 4,
-                  width: 8, height: 8, borderRadius: '50%',
-                  background: '#E8700A',
-                }} />
-              )}
             </button>
           )
         })}

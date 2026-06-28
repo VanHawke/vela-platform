@@ -224,6 +224,30 @@ export default function Layout({ user }) {
     return () => window.removeEventListener('kiko_profile_updated', load)
   }, [user?.id, userSettings])
 
+  // Global unread-message tracker — keeps the nav badge live on EVERY page.
+  // (Messages.jsx only dispatches kiko_unread_messages while mounted on /messages;
+  //  this runs app-wide so a new message alerts the user wherever they are.)
+  useEffect(() => {
+    if (!user?.id) return
+    const API = 'https://api.vanhawke.agency'
+    let debounce = null, cancelled = false
+    const refresh = async () => {
+      try {
+        const res = await fetch(`${API}/api/team-messages?action=channels&userId=${user.id}`)
+        const d = await res.json()
+        const total = (d.channels || []).reduce((s, ch) => s + (ch.unreadCount || 0), 0)
+        if (!cancelled) window.dispatchEvent(new CustomEvent('kiko_unread_messages', { detail: { count: total } }))
+      } catch {}
+    }
+    const debounced = () => { clearTimeout(debounce); debounce = setTimeout(refresh, 600) }
+    refresh()
+    const poll = setInterval(refresh, 45000)
+    const sub = supabase.channel('global-unread-tracker')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kiko_team_messages' }, debounced)
+      .subscribe()
+    return () => { cancelled = true; clearTimeout(debounce); clearInterval(poll); supabase.removeChannel(sub) }
+  }, [user?.id])
+
   // Close avatar dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
