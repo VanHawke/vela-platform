@@ -102,7 +102,7 @@ async function parkReengagement(cand, now, dryRun) {
 // which email thread produced it. Owner-scoped (each user's own Google token), so it holds for all users.
 // Fails OPEN (returns null) on any missing-token / API error, so a calendar hiccup never silences a real
 // follow-up; it only ever SUPPRESSES on a positive "meeting exists" signal.
-async function meetingBookedWith(ownerEmail, contactEmail) {
+export async function meetingBookedWith(ownerEmail, contactEmail) {
   if (!ownerEmail || !contactEmail) return null
   let token
   try { token = await getGoogleToken(ownerEmail) } catch { return null }
@@ -127,6 +127,39 @@ async function meetingBookedWith(ownerEmail, contactEmail) {
     }
   } catch { return null }
   return null
+}
+
+// Cross-thread interaction read (Gmail): the single most recent message exchanged with this contact
+// across ALL threads, including mail sent outside the platform (e.g. a reply from Outlook that never
+// hit kiko_email_tracking). Returns { direction, at } or null. 'outbound' = our message is the most
+// recent, so we have already replied / are in active contact; 'inbound' = their message is the most
+// recent, so they are genuinely waiting on us. This is the authoritative reconciliation the per-thread
+// snapshot cannot give, because Gmail routinely splits one conversation across separate threads.
+// Fails OPEN (null) on any token/API error so a hiccup never changes the monitor's behaviour.
+export async function latestMailWith(ownerEmail, contactEmail) {
+  if (!ownerEmail || !contactEmail) return null
+  let token
+  try { token = await getGoogleToken(ownerEmail) } catch { return null }
+  if (!token) return null
+  const c = contactEmail.toLowerCase()
+  const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me'
+  try {
+    const q = encodeURIComponent(`from:${contactEmail} OR to:${contactEmail}`)
+    const listRes = await fetch(`${GMAIL}/messages?q=${q}&maxResults=1`, { headers: { Authorization: `Bearer ${token}` } })
+    if (!listRes.ok) return null
+    const list = await listRes.json()
+    const msgId = list?.messages?.[0]?.id
+    if (!msgId) return null
+    const msgRes = await fetch(`${GMAIL}/messages/${msgId}?format=metadata&metadataHeaders=From`, { headers: { Authorization: `Bearer ${token}` } })
+    if (!msgRes.ok) return null
+    const msg = await msgRes.json()
+    const labels = Array.isArray(msg.labelIds) ? msg.labelIds : []
+    const fromVal = ((msg.payload?.headers || []).find(h => (h.name || '').toLowerCase() === 'from')?.value || '').toLowerCase()
+    // SENT label is definitive for "we sent this". Fall back to the From line, then the INBOX label.
+    const direction = labels.includes('SENT') ? 'outbound' : (fromVal.includes(c) ? 'inbound' : (labels.includes('INBOX') ? 'inbound' : (fromVal ? 'outbound' : 'inbound')))
+    const at = msg.internalDate ? new Date(parseInt(msg.internalDate, 10)).toISOString() : null
+    return { direction, at }
+  } catch { return null }
 }
 
 export async function runFollowUpMonitor(opts = {}) {
@@ -214,7 +247,7 @@ export async function runFollowUpMonitor(opts = {}) {
   const byContactCand = {}
   for (const c of candidates) { const k = c.contact; if (!byContactCand[k] || c.lastInboundReplyAt > byContactCand[k].lastInboundReplyAt) byContactCand[k] = c }
 
-  const cards = []; let reengage = 0, drafts = 0, resolvedByCalendar = 0
+  const cards = []; let reengage = 0, drafts = 0, resolvedByCalendar = 0, reconciled = 0
   for (const win of Object.values(byContactCand)) {
     if (win.verdict === 'park') {
       await parkReengagement(win, now, dryRun); reengage++
@@ -237,6 +270,25 @@ export async function runFollowUpMonitor(opts = {}) {
       if (!dryRun) await sbFetch(`kiko_draft_actions?action_type=eq.follow_up&status=eq.pending&payload->>thread_id=eq.${encodeURIComponent(win.threadId)}`, { method: 'PATCH', body: JSON.stringify({ status: 'superseded' }) })
       console.log(`[follow-up-scan] resolved-by-calendar: ${win.contact} has meeting "${booked.summary}" @ ${booked.start} -- suppressing card`)
       resolvedByCalendar++; continue
+    }
+
+    // CROSS-THREAD RECONCILIATION (Gmail): the per-thread verdict is a first guess. The true ball-position
+    // is the latest message exchanged with this contact across ALL threads (and mail sent outside the
+    // platform). If it contradicts the card, trust the full interaction record and suppress.
+    const lastMail = ownerEmail ? await latestMailWith(ownerEmail, win.contact) : null
+    if (lastMail && lastMail.direction === 'outbound' && win.intent === 'awaiting_us') {
+      // Card says the ball is with us, but our message is the most recent: we already replied, possibly in
+      // a separate thread. Suppress, and retire any stale pending card on this thread.
+      if (!dryRun) await sbFetch(`kiko_draft_actions?action_type=eq.follow_up&status=eq.pending&payload->>thread_id=eq.${encodeURIComponent(win.threadId)}`, { method: 'PATCH', body: JSON.stringify({ status: 'superseded' }) })
+      console.log(`[follow-up-scan] reconciled-cross-thread: ${win.contact} -- our reply is latest (${lastMail.at}); ball is not with us -- suppressing respond card`)
+      reconciled++; continue
+    }
+    if (lastMail && lastMail.direction === 'inbound' && win.intent === 'awaiting_them') {
+      // Card is chasing them, but their message is the most recent: they already replied, possibly in a
+      // separate thread, so chasing is wrong. Suppress the chase; an owed response surfaces fresh next cycle.
+      if (!dryRun) await sbFetch(`kiko_draft_actions?action_type=eq.follow_up&status=eq.pending&payload->>thread_id=eq.${encodeURIComponent(win.threadId)}`, { method: 'PATCH', body: JSON.stringify({ status: 'superseded' }) })
+      console.log(`[follow-up-scan] reconciled-cross-thread: ${win.contact} -- their reply is latest (${lastMail.at}); do not chase -- suppressing follow-up card`)
+      reconciled++; continue
     }
     const samples = replyLatencySamples(win.cRows, now)
     const repliedCount = win.cRows.filter(isGenuineReply).length
@@ -282,6 +334,6 @@ export async function runFollowUpMonitor(opts = {}) {
     cards.push({ to: win.name, scenario: ctx.scenario, interval: win.cad.interval_days, temp: win.cad.temperature })
   }
 
-  console.log(`[follow-up-scan] done. threads=${Object.keys(byThread).length} contacts=${Object.keys(byContactCand).length} cards=${cards.length} reengage=${reengage} resolvedByCalendar=${resolvedByCalendar} skipped=${skipped}${dryRun ? ' (DRY RUN, nothing written)' : ''}`)
-  return { dryRun, candidates: Object.keys(byThread).length, cards, reengage, resolvedByCalendar, skipped }
+  console.log(`[follow-up-scan] done. threads=${Object.keys(byThread).length} contacts=${Object.keys(byContactCand).length} cards=${cards.length} reengage=${reengage} resolvedByCalendar=${resolvedByCalendar} reconciled=${reconciled} skipped=${skipped}${dryRun ? ' (DRY RUN, nothing written)' : ''}`)
+  return { dryRun, candidates: Object.keys(byThread).length, cards, reengage, resolvedByCalendar, reconciled, skipped }
 }
